@@ -1,3 +1,4 @@
+package com.gerantech.towers.sfs.utils;
 import java.util.Random;
 
 public class PasswordGenerator

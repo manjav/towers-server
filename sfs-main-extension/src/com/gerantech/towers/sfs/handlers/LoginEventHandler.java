@@ -1,5 +1,7 @@
+package com.gerantech.towers.sfs.handlers;
 import java.sql.SQLException;
 
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
