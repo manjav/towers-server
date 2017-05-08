@@ -27,9 +27,6 @@ public class IABHandler extends BaseClientRequestHandler
 	
 	public IABHandler() {}
 
-	/* (non-Javadoc)
-	 * @see com.smartfoxserver.v2.extensions.IClientRequestHandler#handleClientRequest(com.smartfoxserver.v2.entities.User, com.smartfoxserver.v2.entities.data.ISFSObject)
-	 */
 	public void handleClientRequest(User sender, ISFSObject params)
     {
         // Get the client parameters
@@ -44,6 +41,8 @@ public class IABHandler extends BaseClientRequestHandler
         ISFSObject resObj = SFSObject.newInstance(); 
         Data data = verify(productID, purchaseToken);
         
+        // send purchase data to client
+        // if consumptionState is zero, thats mean product consumed.
         if(data.statusCode == HttpStatus.SC_OK)
         {
     		resObj.putBool("success", true);
@@ -55,6 +54,7 @@ public class IABHandler extends BaseClientRequestHandler
     		return;
         }
         
+        // when product id or purchase token is wrong
         if(data.statusCode == HttpStatus.SC_NOT_FOUND)
 		{
 			resObj.putBool("success", false);
@@ -63,6 +63,7 @@ public class IABHandler extends BaseClientRequestHandler
     		return;
 	    }
         
+        // when access token expired
 		if(data.statusCode == HttpStatus.SC_UNAUTHORIZED)
 		{
 			if(refreshAccessToken())
@@ -76,9 +77,20 @@ public class IABHandler extends BaseClientRequestHandler
 			}
     		return;
 		}
+		
+        // unknown error
 	    trace(ExtensionLogLevel.ERROR, "Unknown Error.");
 	}
 
+	/**
+	 * This method only called in initial setup
+	 * @return json string contains:<br/>
+	 *  <b>"access_token"</b>: access token needs per verification.<br/>
+	 *  <b>"token_type"</b>: "Bearer"<br/>
+	 *  <b>"expires_in"</b>: after expires_in seconds, access_token expired.<br/>
+	 *  <b>"refresh_token"</b>: we need refresh token for get new access token when expired.<br/>
+	 *  <b>"scope"</b>: "androidpublisher"
+	 */
 	String requestAccessToken()
 	{
 		List<NameValuePair> argus = new ArrayList<NameValuePair>();
@@ -90,6 +102,16 @@ public class IABHandler extends BaseClientRequestHandler
         return(HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus).text);
     }
 
+	/**
+	 * This method called when access token expired.<br/>
+	 * Web request get json string contains:<br/>
+	 * <b>"access_token"</b>: access token needs per verification.<br/>
+	 * <b>"token_type"</b>: "Bearer"<br/>
+	 * <b>"expires_in"</b>: after expires_in seconds, access_token expired.<br/>
+	 * <b>"scope"</b>: "androidpublisher"
+	 * @return boolean value <br/>
+	 * if access dtoken refreshed return true else false
+	 */
 	Boolean refreshAccessToken()
 	{
 		List<NameValuePair> argus = new ArrayList<NameValuePair>();
@@ -106,6 +128,16 @@ public class IABHandler extends BaseClientRequestHandler
 		return true;
     }
 
+	/**
+	 * Server side purchase verification method.<br/>
+	 * Web request get json string if succeed, contains:<br/>
+	 * 	<b>"consumptionState"</b>: if consumptionState is zero, thats mean product consumed.<br/>
+	 * 	<b>"purchaseState"</b>: type of purchase.<br/>
+	 * 	<b>"kind"</b>: "androidpublisher#inappPurchase"<br/>
+	 * 	<b>"developerPayload"</b>: the payload that developer when started purchase flow send to market server.<br/>
+	 * 	<b>"purchaseTime"</b>: purchase time in miliseconds<br/>
+	 * @return Data <br/>
+	 */
 	Data verify(String productID, String purchaseToken)
 	{
 		Data data = HttpTool.get("https://pardakht.cafebazaar.ir/devapi/v2/api/validate/"+packageName+"/inapp/"+productID+"/purchases/"+purchaseToken+"/?access_token="+accessToken);
