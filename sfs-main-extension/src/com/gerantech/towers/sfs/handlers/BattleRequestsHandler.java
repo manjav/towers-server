@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,7 +20,7 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
  
     private final AtomicInteger roomId = new AtomicInteger();
 
-	private ISFSObject params;
+	//private ISFSObject params;
  
     public void init()
     {
@@ -33,7 +34,7 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
     {
         try
         {
-        	this.params = params;
+        	//this.params = params;
             //if (params.getText("cmd").equals("joinMe"))
             joinUser(sender);
         }
@@ -66,9 +67,7 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
         {
             getApi().joinRoom(user, theRoom);
             
-            //SFSObject sfsO = new SFSObject();
-            //sfsO.putSFSObject("param", params);
-            user.setProperty("towers", params);
+            //user.setProperty("towers", params);
             
             if(theRoom.isFull())
             {
@@ -76,8 +75,14 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
                 for (int i=0; i<players.size(); i++)
                 {
                 	User me = players.get(i);
-                	User their = players.get(i==0?1:0);
-                	send("startBattle", ((SFSObject)their.getProperty("towers")), me);
+                	//User their = players.get(i==0 ? 1 : 0);
+                	
+                    SFSObject sfsO = new SFSObject();
+                    sfsO.putLong("time", Instant.now().toEpochMilli());
+                    sfsO.putInt("troopType", i);
+                    //sfsO.putIntArray("towers", ((SFSObject)their.getProperty("towers")).getIntArray("s"));
+                	
+                	send("startBattle", sfsO, me);
                 }
             }
         }
@@ -89,15 +94,12 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
  
     private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
-        Room room = null;
- 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
         rs.setName("BattleRoom_" + roomId.getAndIncrement());
         rs.setMaxUsers(2);
  
-        room = getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
-        return room;
+        return getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
     }
 }

@@ -1,17 +1,19 @@
 package com.gerantech.towers.sfs.handlers;
 import java.sql.SQLException;
 
+import com.gerantech.towers.sfs.utils.Logger;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gerantech.towers.sfs.utils.UserManager;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSErrorCode;
-import com.smartfoxserver.v2.exceptions.SFSErrorData;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.exceptions.SFSLoginException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 /**
@@ -39,18 +41,71 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if (name.equals("-1")) 
 		{
 			password = PasswordGenerator.generate().toString();
-			outData.putText("password", password);
 			
 	        try
 	        {
-	        	// Insert to DB
+	        	// Insert to DataBase
 	            long playerId = (Long) dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {});
-				reterivePlayerData(outData, playerId);
+	    		
+	    		SFSArray resources = new SFSArray();
+	    		
+	    		SFSObject so = new SFSObject();
+	    		so.putInt("type", 1000);
+	    		so.putInt("count", 0);
+	    		so.putInt("level", 0);
+	    		resources.addSFSObject( so );
+	    		so = new SFSObject();
+	    		so.putInt("type", 1001);
+	    		so.putInt("count", 0);
+	    		so.putInt("level", 0);
+	    		resources.addSFSObject( so );
+	    		so = new SFSObject();
+	    		so.putInt("type", 1002);
+	    		so.putInt("count", 100);
+	    		so.putInt("level", 0);
+	    		resources.addSFSObject( so );
+	    		so = new SFSObject();
+	    		so.putInt("type", 1003);
+	    		so.putInt("count", 30);
+	    		so.putInt("level", 0);
+	    		resources.addSFSObject( so );
+	    		
+	    		so = new SFSObject();
+	    		so.putInt("type", 0);
+	    		so.putInt("count", 1);
+	    		so.putInt("level", 1);
+	    		resources.addSFSObject( so );
+	    		so = new SFSObject();
+	    		so.putInt("type", 1);
+	    		so.putInt("count", 1);
+	    		so.putInt("level", 1);
+	    		resources.addSFSObject( so );
+	    		so = new SFSObject();
+	    		so.putInt("type", 2);
+	    		so.putInt("count", 1);
+	    		so.putInt("level", 1);
+	    		resources.addSFSObject( so );
+	    		
+	    		// create insert query
+	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`) VALUES ";
+	    		for(int i=0; i<resources.size(); i++)
+	    		{
+	    			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "')" ;
+	    			query += i<resources.size()-1 ? ", " : ";";
+	    		}
+
+	    		dbManager.executeInsert(query, new Object[] {});
+	    		
+	    		// send data to user
+	    		outData.putLong("id", playerId);
+	    		outData.putText("name", "guest");
+				outData.putText("password", password);
+	    		outData.putSFSArray("resources",resources);
 	        }
 	        catch (SQLException e)
 	        {
 	        	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
-	        	warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+	        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
 	        }
 			return;
 		} 
@@ -65,35 +120,28 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        if(res.size() != 1)
 	        {
 	        	//trace("name", name, "id", id, "password", password);
-	        	warn(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
+	        	Logger.warn(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
 	        	return;
 	        }
 	        
-        	if(!getApi().checkSecurePassword(session, res.getSFSObject(0).getText("password"), password))
+	        ISFSObject userData = res.getSFSObject(0);
+        	if(!getApi().checkSecurePassword(session, userData.getText("password"), password))
         	{
-	        	warn(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
+        		Logger.warn(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
 	        	return;
         	}
-			reterivePlayerData(outData, id);
-        }
+    		
+    		// Retrieve player data from db
+        	outData.putLong("id", id);
+        	outData.putText("name",  userData.getText("name"));
+    		SFSArray resources = UserManager.getResources(getParentExtension(), id);
+    		outData.putSFSArray("resources", resources);
+    		//trace(res.getDump());
+		}
         catch (SQLException e)
         {
-        	warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
         }
 	}
 
-	
-	private void warn(SFSErrorCode errorCode, String message, String param) throws SFSException 
-	{
-    	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
-		SFSErrorData errData = new SFSErrorData(errorCode);
-		errData.addParameter(param);
-		throw new SFSLoginException(message, errData);		
-	}
-
-	private void reterivePlayerData(ISFSObject outData, long playerId) 
-	{
-		outData.putLong("id", playerId);
-		// load player data from db
-	}
 }
