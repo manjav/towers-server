@@ -1,26 +1,26 @@
 package com.gerantech.towers.sfs.handlers;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.smartfoxserver.v2.api.CreateRoomSettings;
+import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  
-public class BattleRequestsHandler extends BaseClientRequestHandler
+public class BattleAutoJoinHandler extends BaseClientRequestHandler
 {
     private final String version = "1.0.1";
  
-    private final AtomicInteger roomId = new AtomicInteger();
+    private static AtomicInteger roomId = new AtomicInteger();
 
-	//private ISFSObject params;
+	private Room theRoom;
+
  
     public void init()
     {
@@ -35,7 +35,6 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
         try
         {
         	//this.params = params;
-            //if (params.getText("cmd").equals("joinMe"))
             joinUser(sender);
         }
         catch(Exception err)
@@ -47,8 +46,7 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
     private void joinUser(User user) throws SFSException
     {
         List<Room> rList = getParentExtension().getParentZone().getRoomList();
-        Room theRoom = null;
- 
+
         for (Room room : rList)
         {
             if (room.isFull())
@@ -62,44 +60,29 @@ public class BattleRequestsHandler extends BaseClientRequestHandler
  
         if (theRoom == null)
             theRoom = makeNewRoom(user);
- 
+       
         try
         {
             getApi().joinRoom(user, theRoom);
-            
-            //user.setProperty("towers", params);
-            
-            if(theRoom.isFull())
-            {
-            	List<User> players = theRoom.getPlayersList();
-                for (int i=0; i<players.size(); i++)
-                {
-                	User me = players.get(i);
-                	//User their = players.get(i==0 ? 1 : 0);
-                	
-                    SFSObject sfsO = new SFSObject();
-                    sfsO.putLong("time", Instant.now().toEpochMilli());
-                    sfsO.putInt("troopType", i);
-                    //sfsO.putIntArray("towers", ((SFSObject)their.getProperty("towers")).getIntArray("s"));
-                	
-                	send("startBattle", sfsO, me);
-                }
-            }
         }
         catch (SFSJoinRoomException e)
         {
             trace(ExtensionLogLevel.ERROR, e.toString());
         }
     }
- 
-    private Room makeNewRoom(User owner) throws SFSCreateRoomException
+
+	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
+    	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
+    	
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
-        rs.setName("BattleRoom_" + roomId.getAndIncrement());
+        rs.setName("room_battle_" + roomId.getAndIncrement());
         rs.setMaxUsers(2);
- 
+        rs.setGroupId("battles");
+        rs.setExtension(res);
+        
         return getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
     }
 }

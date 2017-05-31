@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import com.gerantech.towers.sfs.utils.Logger;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gerantech.towers.sfs.utils.UserManager;
+import com.gt.towers.Game;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -35,7 +36,6 @@ public class LoginEventHandler extends BaseServerEventHandler
         ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
-		
 
 		// Create new user ============================================================
 		if (name.equals("-1")) 
@@ -47,44 +47,19 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        	// Insert to DataBase
 	            long playerId = (Long) dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {});
 	    		
+	            // get initial user resources
 	    		SFSArray resources = new SFSArray();
-	    		
-	    		SFSObject so = new SFSObject();
-	    		so.putInt("type", 1000);
-	    		so.putInt("count", 0);
-	    		so.putInt("level", 0);
-	    		resources.addSFSObject( so );
-	    		so = new SFSObject();
-	    		so.putInt("type", 1001);
-	    		so.putInt("count", 0);
-	    		so.putInt("level", 0);
-	    		resources.addSFSObject( so );
-	    		so = new SFSObject();
-	    		so.putInt("type", 1002);
-	    		so.putInt("count", 100);
-	    		so.putInt("level", 0);
-	    		resources.addSFSObject( so );
-	    		so = new SFSObject();
-	    		so.putInt("type", 1003);
-	    		so.putInt("count", 30);
-	    		so.putInt("level", 0);
-	    		resources.addSFSObject( so );
-	    		
-	    		so = new SFSObject();
-	    		so.putInt("type", 0);
-	    		so.putInt("count", 1);
-	    		so.putInt("level", 1);
-	    		resources.addSFSObject( so );
-	    		so = new SFSObject();
-	    		so.putInt("type", 1);
-	    		so.putInt("count", 1);
-	    		so.putInt("level", 1);
-	    		resources.addSFSObject( so );
-	    		so = new SFSObject();
-	    		so.putInt("type", 2);
-	    		so.putInt("count", 1);
-	    		so.putInt("level", 1);
-	    		resources.addSFSObject( so );
+	    		for (int i : Game.loginData.resources.keys())
+	    		{
+		    		SFSObject so = new SFSObject();
+		    		
+		    		so.putInt("type", i);
+		    		so.putInt("count", Game.loginData.resources.get(i));
+		    		if(i < 1000)
+		    			so.putInt("level", Game.loginData.buildingsLevel.get(i));
+		    		
+		    		resources.addSFSObject( so );
+	    		}
 	    		
 	    		// create insert query
 	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`) VALUES ";
@@ -101,6 +76,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		outData.putText("name", "guest");
 				outData.putText("password", password);
 	    		outData.putSFSArray("resources",resources);
+	        	outData.putDouble("coreVersion", Game.loginData.coreVersion);
 	        }
 	        catch (SQLException e)
 	        {
@@ -130,10 +106,11 @@ public class LoginEventHandler extends BaseServerEventHandler
         		Logger.warn(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
 	        	return;
         	}
-    		
-    		// Retrieve player data from db
+
+        	// Retrieve player data from db
         	outData.putLong("id", id);
-        	outData.putText("name",  userData.getText("name"));
+        	outData.putText("name", userData.getText("name"));
+        	outData.putDouble("coreVersion", Game.loginData.coreVersion);
     		SFSArray resources = UserManager.getResources(getParentExtension(), id);
     		outData.putSFSArray("resources", resources);
     		//trace(res.getDump());

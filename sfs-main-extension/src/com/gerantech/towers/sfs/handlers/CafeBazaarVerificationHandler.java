@@ -19,13 +19,13 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  * @author ManJav
  *
  */
-public class IABHandler extends BaseClientRequestHandler 
+public class CafeBazaarVerificationHandler extends BaseClientRequestHandler 
 {
 
 	private static String packageName = "air.com.gilaas.tank";
 	private static String accessToken = "8tVrY3BKnp08BoW1MEVEvLQjVzagnB";
 	
-	public IABHandler() {}
+	public CafeBazaarVerificationHandler() {}
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
