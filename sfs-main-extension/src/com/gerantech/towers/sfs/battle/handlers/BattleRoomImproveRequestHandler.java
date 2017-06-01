@@ -5,7 +5,7 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-public class BattleRoomUpgradeRequestHandler extends BaseClientRequestHandler
+public class BattleRoomImproveRequestHandler extends BaseClientRequestHandler
 {
 
 	public void handleClientRequest(User sender, ISFSObject params)
