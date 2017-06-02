@@ -186,9 +186,11 @@ public class BattleRoom extends SFSExtension
 		
 		if(timer != null)
 			timer.cancel();
+		timer = null;
 		
 		if(autoJoinTimer != null)
 			autoJoinTimer.cancel();
+		autoJoinTimer = null;
 		
 		GTimer.stopAll();
 		clearAllHandlers();
