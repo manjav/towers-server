@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.utils.Logger;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
+import com.gt.towers.InitData;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -75,8 +76,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		outData.putLong("id", playerId);
 	    		outData.putText("name", "guest");
 				outData.putText("password", password);
-	    		outData.putSFSArray("resources",resources);
-	        	outData.putDouble("coreVersion", Game.loginData.coreVersion);
+				outData.putText("coreVersion", Game.loginData.coreVersion);
+	    		outData.putSFSArray("resources", resources);
+	    		outData.putSFSArray("quests", new SFSArray());
+	    		initiateCore(session, outData);
 	        }
 	        catch (SQLException e)
 	        {
@@ -110,10 +113,10 @@ public class LoginEventHandler extends BaseServerEventHandler
         	// Retrieve player data from db
         	outData.putLong("id", id);
         	outData.putText("name", userData.getText("name"));
-        	outData.putDouble("coreVersion", Game.loginData.coreVersion);
-    		SFSArray resources = UserManager.getResources(getParentExtension(), id);
-    		outData.putSFSArray("resources", resources);
-    		//trace(res.getDump());
+        	outData.putText("coreVersion", Game.loginData.coreVersion);
+    		outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
+    		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
+    		initiateCore(session, outData);
 		}
         catch (SQLException e)
         {
@@ -121,4 +124,31 @@ public class LoginEventHandler extends BaseServerEventHandler
         }
 	}
 
+	private void initiateCore(ISession session, ISFSObject outData)
+	{
+		InitData initData = new InitData();
+		initData.nickName = outData.getText("name");
+		initData.id = outData.getLong("id").intValue();
+		
+		ISFSObject element;
+		
+		// create resources init data
+		ISFSArray resources = outData.getSFSArray("resources");
+		for(int i=0; i<resources.size(); i++)
+		{
+			element = resources.getSFSObject(i);
+			initData.resources.set(element.getInt("type"), element.getInt("count"));
+			if(element.getInt("type") < 1000)
+				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
+		}
+
+		// create quests init data
+		ISFSArray quests = outData.getSFSArray("quests");
+		for(int i=0; i<quests.size(); i++)
+		{
+			element = quests.getSFSObject(i);
+			initData.quests.set(element.getInt("index"), element.getInt("score"));
+		}
+		session.setProperty("core", new Game(initData));
+	}		
 }

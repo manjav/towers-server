@@ -29,4 +29,19 @@ public class UserManager {
 		}
 		return null;
 	}
+	
+	public static SFSArray getQuests(ISFSExtension extension, long playerId) throws SFSException 
+	{
+		IDBManager dbManager = extension.getParentZone().getDBManager();
+        try
+        {
+        	return (SFSArray) dbManager.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id="+playerId, new Object[] {});
+        }
+        catch (SQLException e)
+		{
+        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+		}
+		return null;
+	}
+
 }
