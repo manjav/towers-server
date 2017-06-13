@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.battle;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -9,6 +10,9 @@ import com.gerantech.towers.sfs.battle.handlers.BattleRoomFightRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomHitRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomImproveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
+import com.gerantech.towers.sfs.utils.UserManager;
+import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
@@ -21,6 +25,7 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
+import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 public class BattleRoom extends SFSExtension 
@@ -40,6 +45,9 @@ public class BattleRoom extends SFSExtension
 	private boolean singleMode;
 	private AIEnemy aiEnemy;
 	private int timerCount = 11;
+
+	private long startBattleAt;
+
 	
 	public void init() 
 	{
@@ -54,13 +62,13 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
 	}
 
-
-	public void createGame() 
+	public void createGame(String mapName) 
 	{
+		startBattleAt = Instant.now().toEpochMilli();
 		if(autoJoinTimer != null)
 			autoJoinTimer.cancel();
 		
-		battleField = new BattleField();
+		battleField = new BattleField(mapName, 0);
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
@@ -109,7 +117,7 @@ public class BattleRoom extends SFSExtension
 					sfsApi.setRoomVariables(null, room, listOfVars);
 				}
 
-				// fight enemy
+				// fight enemy bot
 		    	if(singleMode && aiEnemy.doAction(timerCount % 15))
 		    	{
 		    		if(aiEnemy.actionType == "fight")
@@ -125,6 +133,66 @@ public class BattleRoom extends SFSExtension
 //							trace("dest", d);
 		    		}
 		    	}
+		    	
+		    	// check ending battle
+		    	int[] numBuildings = new int[2];
+		    	int[] populations = new int[2];
+				for(int i = 0; i<reservedTroopTypes.length; i++)
+				{
+					if( reservedTroopTypes[i] >= 0 )
+					{
+						//trace(i, reservedTroopTypes[i], reservedPopulations[i]);
+						numBuildings[reservedTroopTypes[i]] ++;
+						populations[reservedTroopTypes[i]] += reservedPopulations[i];
+					}
+				}
+				if( numBuildings[0] == 0 || numBuildings[1] == 0 )
+				{
+					trace("ending battle", numBuildings[0], numBuildings[1], reservedPopulations[0], reservedPopulations[1]);
+					
+				    for (int i=0; i < room.getPlayersList().size(); i++)
+				    {
+				    	SFSObject sfsO = SFSObject.newInstance();
+				    	User user = room.getPlayersList().get(i);
+			        	Player player = ((Game)user.getSession().getProperty("core")).get_player();
+			        	
+			        	int score = 0;
+				        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1];
+				        if(wins)
+				        {
+				        	int battleDuration = (int) ((int)Instant.now().toEpochMilli() - startBattleAt);
+				        	if(battleDuration < battleField.map.times.get(0))
+				        		score = 3;
+				        	else if(battleDuration < battleField.map.times.get(1))
+				        		score = 2;
+				        	else
+				        		score = 1;
+
+				        	if ( room.getGroupId() == "quests" )
+				        	{
+					        	player.get_quests().set(battleField.map.index, score);
+					        	try {
+									UserManager.addQuest(getParentZone().getExtension(), (long)player.get_id(), battleField.map.index, score);
+								} catch (SFSException e) {
+									e.printStackTrace();
+								}
+				        	}
+				        }
+				        
+				        // add rewards
+				        // ........
+				        
+				        sfsO.putBool( "youWin", wins );
+				        sfsO.putInt( "score", score );
+				    	send( "endBattle", sfsO, user );
+				    }
+				    
+					if(timer != null)
+						timer.cancel();
+					timer = null;
+				}
+
+		    	
 		    	timerCount ++;
 			}
 		}, 0, 500);
@@ -139,7 +207,7 @@ public class BattleRoom extends SFSExtension
 		
 		for(int i = 0; i<objects.length; i++)
 		{
-			trace("fight", (Integer)objects[i], "to", destination);
+			//trace("fight", (Integer)objects[i], "to", destination);
 			srcs.addInt((Integer)objects[i]);
 			battleField.places.get((Integer)objects[i]).fight(battleField.places.get(destination), battleField.places);
 		}
@@ -154,7 +222,7 @@ public class BattleRoom extends SFSExtension
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void improveBuilding(User sender, ISFSObject params) 
 	{
-		trace("improve", params.getDump());
+		//trace("improve", params.getDump());
 		Building b = battleField.places.get(params.getInt("i")).building;
 		b.improve(params.getInt("t"));
 	}
@@ -169,7 +237,7 @@ public class BattleRoom extends SFSExtension
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void hit(int troopId)
 	{
-		int index = (int) Math.floor((double)(troopId/10000));
+		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
 		battleField.places.get(index).killTroop(troopId);
 	}
 	@Override
@@ -197,5 +265,4 @@ public class BattleRoom extends SFSExtension
 		
 		trace("destroyGame");
 	}
-
 }

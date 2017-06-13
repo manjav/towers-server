@@ -21,6 +21,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
 	private Room theRoom;
 
+	private Boolean isQuest;
+
  
     public void init()
     {
@@ -34,7 +36,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         try
         {
-        	//this.params = params;
+        	isQuest = params.getBool("quest");
+        	//trace(((Game)sender.getSession().getProperty("core")).get_player().get_id());
             joinUser(sender);
         }
         catch(Exception err)
@@ -78,9 +81,9 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
-        rs.setName("room_battle_" + roomId.getAndIncrement());
-        rs.setMaxUsers(2);
-        rs.setGroupId("battles");
+        rs.setName((isQuest?"room_quest_":"room_battle_") + roomId.getAndIncrement());
+        rs.setMaxUsers(isQuest?1:2);
+        rs.setGroupId(isQuest?"quests":"battles");
         rs.setExtension(res);
         
         return getApi().createRoom(getParentExtension().getParentZone(), rs, owner);

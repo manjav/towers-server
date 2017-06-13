@@ -5,6 +5,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -32,7 +33,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		
 		if(arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
 		{
-			trace(room.getId(), room.getMaxUsers(), room.isFull());
+			//trace(room.getId(), room.getMaxUsers(), room.isFull());
 			if(!room.isFull())
 			{
 		       	roomClass.autoJoinTimer = new Timer();
@@ -44,7 +45,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						room.setMaxUsers(1);
 		            	sendStartBattleResponse();
 					}
-	    		}, 5000, 5000);
+	    		}, 3333, 3333);
 			}
 			else
 			{
@@ -59,16 +60,20 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	
 	private void sendStartBattleResponse()
 	{
+		String mapName = "battle_0";//"+(Math.random()>0.5?1:0);
 		List<User> players = room.getPlayersList();
+		if(room.getGroupId() == "quests")
+			mapName = "quest_" + ((Game)players.get(0).getSession().getProperty("core")).get_player().get_questIndex();
 	    for (int i=0; i < players.size(); i++)
 	    {
 	        SFSObject sfsO = new SFSObject();
 	        //sfsO.putLong("time", Instant.now().toEpochMilli());
 	        sfsO.putInt("troopType", i);
 	        sfsO.putInt("roomId", room.getId());
+	        sfsO.putText("mapName", mapName);
 	    	send("startBattle", sfsO, players.get(i));
 	    }
-	
-		roomClass.createGame();
+	    
+		roomClass.createGame(mapName);
 	}
 }

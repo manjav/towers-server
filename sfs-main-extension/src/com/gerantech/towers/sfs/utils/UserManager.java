@@ -43,5 +43,19 @@ public class UserManager {
 		}
 		return null;
 	}
+	
+	public static void addQuest(ISFSExtension extension, long playerId, int index, int score) throws SFSException 
+	{
+		IDBManager dbManager = extension.getParentZone().getDBManager();
+        try
+        {
+    		String query = "INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + playerId + "', '" + score + "');";
+    		dbManager.executeInsert(query, new Object[] {});
+    	}
+        catch (SQLException e)
+		{
+        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+		}
+	}
 
 }
