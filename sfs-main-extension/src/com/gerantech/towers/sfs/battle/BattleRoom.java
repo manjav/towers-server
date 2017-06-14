@@ -146,61 +146,63 @@ public class BattleRoom extends SFSExtension
 						populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-				if( numBuildings[0] == 0 || numBuildings[1] == 0 )
-				{
-					trace("ending battle", numBuildings[0], numBuildings[1], reservedPopulations[0], reservedPopulations[1]);
-					
-				    for (int i=0; i < room.getPlayersList().size(); i++)
-				    {
-				    	SFSObject sfsO = SFSObject.newInstance();
-				    	User user = room.getPlayersList().get(i);
-			        	Player player = ((Game)user.getSession().getProperty("core")).get_player();
-			        	
-			        	int score = 0;
-				        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1];
-				        if(wins)
-				        {
-				        	int battleDuration = (int) ((int)Instant.now().toEpochMilli() - startBattleAt);
-				        	if(battleDuration < battleField.map.times.get(0))
-				        		score = 3;
-				        	else if(battleDuration < battleField.map.times.get(1))
-				        		score = 2;
-				        	else
-				        		score = 1;
-
-				        	if ( room.getGroupId() == "quests" )
-				        	{
-					        	player.get_quests().set(battleField.map.index, score);
-					        	try {
-									UserManager.addQuest(getParentZone().getExtension(), (long)player.get_id(), battleField.map.index, score);
-								} catch (SFSException e) {
-									e.printStackTrace();
-								}
-				        	}
-				        }
-				        
-				        // add rewards
-				        // ........
-				        
-				        sfsO.putBool( "youWin", wins );
-				        sfsO.putInt( "score", score );
-				    	send( "endBattle", sfsO, user );
-				    }
-				    
-					if(timer != null)
-						timer.cancel();
-					timer = null;
-				}
-
+	        	int battleDuration = (int) ((int)Instant.now().toEpochMilli() - startBattleAt) / 1000;
+				if( battleDuration > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+					endBattle(numBuildings, battleDuration);
 		    	
 		    	timerCount ++;
 			}
+
+
 		}, 0, 500);
 		
 		trace("createGame");
 	}
+	private void endBattle(int[] numBuildings, int battleDuration) {
+		trace("Battle Ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
+		
+	    for (int i=0; i < room.getPlayersList().size(); i++)
+	    {
+	    	SFSObject sfsO = SFSObject.newInstance();
+	    	User user = room.getPlayersList().get(i);
+        	Player player = ((Game)user.getSession().getProperty("core")).get_player();
+        	
+        	int score = 0;
+	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
+	        if(wins)
+	        {
+	        	trace(battleDuration, battleField.map.times.get(0), battleField.map.times.get(1));
+	        	if(battleDuration < battleField.map.times.get(0))
+	        		score = 3;
+	        	else if(battleDuration < battleField.map.times.get(1))
+	        		score = 2;
+	        	else
+	        		score = 1;
 
-	
+	        	if ( room.getGroupId() == "quests" )
+	        	{
+		        	player.get_quests().set(battleField.map.index, score);
+		        	try {
+						UserManager.addQuest(getParentZone().getExtension(), (long)player.get_id(), battleField.map.index, score);
+					} catch (SFSException e) {
+						e.printStackTrace();
+					}
+	        	}
+	        }
+	        
+	        // add rewards
+	        // ........
+	        
+	        sfsO.putBool( "youWin", wins );
+	        sfsO.putInt( "score", score );
+	    	send( "endBattle", sfsO, user );
+	    }
+	    
+		if(timer != null)
+			timer.cancel();
+		timer = null;		
+	}
+
 	public void fight(Object[] objects, int destination) 
 	{
 		SFSArray srcs = SFSArray.newInstance();
