@@ -1,5 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -19,9 +21,9 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
  
     private static AtomicInteger roomId = new AtomicInteger();
 
-	private Room theRoom;
-
+	private int index;
 	private Boolean isQuest;
+	private Room theRoom;
 
  
     public void init()
@@ -36,7 +38,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         try
         {
-        	isQuest = params.getBool("quest");
+        	index = params.getInt("i");
+        	isQuest = params.getBool("q");
         	//trace(((Game)sender.getSession().getProperty("core")).get_player().get_id());
             joinUser(sender);
         }
@@ -78,9 +81,14 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
     	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
     	
+        Map<Object, Object> roomProperties = new HashMap<Object, Object>();
+        roomProperties.put("isQuest", isQuest);
+        roomProperties.put("index", index);
+    	
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
+		rs.setRoomProperties( roomProperties );
         rs.setName((isQuest?"room_quest_":"room_battle_") + roomId.getAndIncrement());
         rs.setMaxUsers(isQuest?1:2);
         rs.setGroupId(isQuest?"quests":"battles");

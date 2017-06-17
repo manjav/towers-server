@@ -56,17 +56,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 		    		
 		    		so.putInt("type", i);
 		    		so.putInt("count", Game.loginData.resources.get(i));
-		    		if(i < 1000)
-		    			so.putInt("level", Game.loginData.buildingsLevel.get(i));
+		    		so.putInt("level", i < 1000 ? Game.loginData.buildingsLevel.get(i) : 0);
 		    		
 		    		resources.addSFSObject( so );
 	    		}
 	    		
 	    		// create insert query
-	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`) VALUES ";
+	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
 	    		for(int i=0; i<resources.size(); i++)
 	    		{
-	    			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "')" ;
+	    			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
 	    			query += i<resources.size()-1 ? ", " : ";";
 	    		}
 

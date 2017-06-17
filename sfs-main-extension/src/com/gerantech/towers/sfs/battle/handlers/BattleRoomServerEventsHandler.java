@@ -5,7 +5,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gt.towers.Game;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -60,10 +59,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	
 	private void sendStartBattleResponse()
 	{
-		String mapName = "battle_0";//"+(Math.random()>0.5?1:0);
+		Boolean isQuest = (Boolean)room.getProperty("isQuest");
+		int index = (Integer)room.getProperty("index");
+	
+		String mapName = "battle_" + index;//"+(Math.random()>0.5?1:0);
 		List<User> players = room.getPlayersList();
-		if(room.getGroupId() == "quests")
-			mapName = "quest_" + ((Game)players.get(0).getSession().getProperty("core")).get_player().get_questIndex();
+		if(isQuest)
+			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).get_player().get_questIndex();
 	    for (int i=0; i < players.size(); i++)
 	    {
 	        SFSObject sfsO = new SFSObject();
@@ -74,6 +76,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	    	send("startBattle", sfsO, players.get(i));
 	    }
 	    
-		roomClass.createGame(mapName);
+		roomClass.createGame(mapName, isQuest);
 	}
 }
