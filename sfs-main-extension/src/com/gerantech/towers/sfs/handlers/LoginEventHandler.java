@@ -9,7 +9,6 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.Exchange;
-import com.gt.towers.exchanges.Exchanger;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -90,15 +89,15 @@ public class LoginEventHandler extends BaseServerEventHandler
 					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
 					{
 			    		so.putInt("outcome", Game.loginData.buildingsLevel.getRandomKey());
-			    		so.putLong("expired_at", now + Exchanger.S_21_BUILDING_TIME);
+			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
 					}
 					// chests :
 					if( t == ExchangeType.S_31_CHEST )
-			    		so.putLong("expired_at", now + Exchanger.S_31_CHEST_TIME);
+			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
 					else if( t == ExchangeType.S_32_CHEST )
-			    		so.putLong("expired_at", now + Exchanger.S_32_CHEST_TIME);
+			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
 					else if( t == ExchangeType.S_33_CHEST )
-			    		so.putLong("expired_at", now + Exchanger.S_33_CHEST_TIME);
+			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
 					
 					exchanges.addSFSObject( so );
 	    		}
@@ -203,23 +202,24 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			element = exchanges.getSFSObject(i);
 			
+			int t = element.getInt("type");
 			// bonus items :
-			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.S_20_BUILDING )
+			if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
 			{
 				if( element.getLong("expired_at") < now )
 				{
-					element.putLong("expired_at", now+Exchanger.S_21_BUILDING_TIME );
+					element.putLong("expired_at", now + ExchangeType.getCooldown(t) );
 					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
 					element.putInt("num_exchanges", 1 );
 					try {
-						UserManager.updateExchange(getParentExtension(), element.getInt("type"), initData.id, now+Exchanger.S_21_BUILDING_TIME, 1, element.getInt("outcome"));
+						UserManager.updateExchange(getParentExtension(), t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
 					} catch (SQLException e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}
-		      		trace("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(now+Exchanger.S_21_BUILDING_TIME) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + element.getInt("type") + " AND `player_id`=" + initData.id + ";");
+		      		trace("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
 				}
 			}
-			initData.exchanges.set( element.getInt("type"), new Exchange( element.getInt("type"), element.getInt("num_exchanges"), (float)element.getLong("expired_at"), element.getInt("outcome")));
+			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), (float)element.getLong("expired_at"), element.getInt("outcome")));
 		}
 
 		session.setProperty("core", new Game(initData));
