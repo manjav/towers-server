@@ -191,8 +191,8 @@ public class BattleRoom extends SFSExtension
 	        // consume outcomes and set quest score
         	try 
         	{
-				UserManager.updateResources(getParentZone().getExtension(), player, outcomes, getLogger());
-				BattleOutcome.consume_outcomes(player, outcomes);
+        		BattleOutcome.consume_outcomes(player, outcomes);
+		        UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
 				
 	        	if ( isQuest )
 	        	{

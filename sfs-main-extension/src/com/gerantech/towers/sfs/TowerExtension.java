@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.handlers.BattleAutoJoinHandler;
+import com.gerantech.towers.sfs.handlers.BuildingUpgradeHandler;
 import com.gerantech.towers.sfs.handlers.CafeBazaarVerificationHandler;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -16,6 +17,9 @@ public class TowerExtension extends SFSExtension
 
         // Add startBattle request handler
 		addRequestHandler("startBattle", BattleAutoJoinHandler.class);
+		
+        // Add in app billing verification handler
+		addRequestHandler("buildingUpgrade", BuildingUpgradeHandler.class);
 		
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);

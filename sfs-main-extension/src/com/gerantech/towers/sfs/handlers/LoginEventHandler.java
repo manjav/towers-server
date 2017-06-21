@@ -1,11 +1,15 @@
 package com.gerantech.towers.sfs.handlers;
 import java.sql.SQLException;
+import java.time.Instant;
 
 import com.gerantech.towers.sfs.utils.Logger;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
+import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.exchanges.Exchange;
+import com.gt.towers.exchanges.Exchanger;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -17,6 +21,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 
 /**
  * @author ManJav
@@ -48,6 +53,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        	// Insert to DataBase
 	            long playerId = (Long) dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {});
 	    		
+	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 	            // get initial user resources
 	    		SFSArray resources = new SFSArray();
 	    		for (int i : Game.loginData.resources.keys())
@@ -61,7 +67,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		    		resources.addSFSObject( so );
 	    		}
 	    		
-	    		// create insert query
 	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
 	    		for(int i=0; i<resources.size(); i++)
 	    		{
@@ -71,6 +76,42 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 	    		dbManager.executeInsert(query, new Object[] {});
 	    		
+	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+	    		SFSArray exchanges = new SFSArray();
+	    		long now = Instant.now().toEpochMilli();
+	    		for (int t=0; t<Game.loginData.exchanges.size(); t++)
+	    		{
+		    		SFSObject so = new SFSObject();
+		    		so.putInt("type", t);
+		    		so.putInt("num_exchanges", 1);
+		    		so.putInt("outcome", 0);
+	    		
+		    		// bonus :
+					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
+					{
+			    		so.putInt("outcome", Game.loginData.buildingsLevel.getRandomKey());
+			    		so.putLong("expired_at", now + Exchanger.S_21_BUILDING_TIME);
+					}
+					// chests :
+					if( t == ExchangeType.S_31_CHEST )
+			    		so.putLong("expired_at", now + Exchanger.S_31_CHEST_TIME);
+					else if( t == ExchangeType.S_32_CHEST )
+			    		so.putLong("expired_at", now + Exchanger.S_32_CHEST_TIME);
+					else if( t == ExchangeType.S_33_CHEST )
+			    		so.putLong("expired_at", now + Exchanger.S_33_CHEST_TIME);
+					
+					exchanges.addSFSObject( so );
+	    		}
+	    		
+	    		query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
+	    		for(int i=0; i<exchanges.size(); i++)
+	    		{
+	    			query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  new java.sql.Timestamp(exchanges.getSFSObject(i).getLong("expired_at")) + "', '" +  exchanges.getSFSObject(i).getInt("outcome") + "')" ;
+	    			query += i<exchanges.size()-1 ? ", " : ";";
+	    		}
+	    		dbManager.executeInsert(query, new Object[] {});
+	    		trace(query);
+	    		
 	    		// send data to user
 	    		outData.putLong("id", playerId);
 	    		outData.putText("name", "guest");
@@ -78,6 +119,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				outData.putText("coreVersion", Game.loginData.coreVersion);
 	    		outData.putSFSArray("resources", resources);
 	    		outData.putSFSArray("quests", new SFSArray());
+	    		outData.putSFSArray("exchanges", exchanges);
 	    		initiateCore(session, outData);
 	        }
 	        catch (SQLException e)
@@ -115,16 +157,22 @@ public class LoginEventHandler extends BaseServerEventHandler
         	outData.putText("coreVersion", Game.loginData.coreVersion);
     		outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
     		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
+    		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
+    		
     		initiateCore(session, outData);
 		}
         catch (SQLException e)
         {
-        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
         }
+		//trace("initData", outData.getDump());
 	}
 
 	private void initiateCore(ISession session, ISFSObject outData)
 	{
+		long now = Instant.now().toEpochMilli();
+		outData.putLong("serverTime", now);
+		
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
 		initData.id = outData.getLong("id").intValue();
@@ -148,6 +196,32 @@ public class LoginEventHandler extends BaseServerEventHandler
 			element = quests.getSFSObject(i);
 			initData.quests.set(element.getInt("index"), element.getInt("score"));
 		}
+		
+		// create exchanges init data
+		ISFSArray exchanges = outData.getSFSArray("exchanges");
+		for(int i=0; i<exchanges.size(); i++)
+		{
+			element = exchanges.getSFSObject(i);
+			
+			// bonus items :
+			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.S_20_BUILDING )
+			{
+				if( element.getLong("expired_at") < now )
+				{
+					element.putLong("expired_at", now+Exchanger.S_21_BUILDING_TIME );
+					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
+					element.putInt("num_exchanges", 1 );
+					try {
+						UserManager.updateExchange(getParentExtension(), element.getInt("type"), initData.id, now+Exchanger.S_21_BUILDING_TIME, 1, element.getInt("outcome"));
+					} catch (SQLException e) {
+						trace(ExtensionLogLevel.ERROR, e.getMessage());
+					}
+		      		trace("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(now+Exchanger.S_21_BUILDING_TIME) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + element.getInt("type") + " AND `player_id`=" + initData.id + ";");
+				}
+			}
+			initData.exchanges.set( element.getInt("type"), new Exchange( element.getInt("type"), element.getInt("num_exchanges"), (float)element.getLong("expired_at"), element.getInt("outcome")));
+		}
+
 		session.setProperty("core", new Game(initData));
 	}		
 }
