@@ -25,62 +25,59 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-    	int bundleType = (int)params.getInt("type");
+		int hardsConfimed = 0;
+    	int type = params.getInt("type");
+    	if(params.containsKey("hards"))
+    		hardsConfimed = params.getInt("hards");
+    	
 		Exchanger exchanger = ((Game)sender.getSession().getProperty("core")).get_exchanger();
 		Player player = ((Game)sender.getSession().getProperty("core")).get_player();
-		ExchangeItem exchangeItem = exchanger.bundlesMap.get(bundleType);
-		Long now = Instant.now().toEpochMilli();
+		ExchangeItem item = exchanger.bundlesMap.get(type);
+		int now = (int)Instant.now().getEpochSecond();
 		
-		Boolean succeed = ExchangeType.getCategory(bundleType) != ExchangeType.S_30_CHEST || exchangeItem.expiredAt < now;
-		trace(bundleType, exchangeItem.expiredAt<now);
-		
-		if(!succeed)
-		{
-			params.putBool("succeed", succeed);
-			send("exchange", params, sender);
-			return ;
-		}
-
-		succeed = exchanger.exchange(bundleType);
+		Boolean succeed = exchanger.exchange(item, now, hardsConfimed);
 		params.putBool("succeed", succeed);
-		if(!succeed)
+		params.putInt("now", now);
+		if( !succeed )
 		{
 			send("exchange", params, sender);
 			return ;
 		}
-		
-		if(ExchangeType.getCategory(bundleType) == ExchangeType.S_30_CHEST)
-		{
-			Bundle rewards = exchanger.instantiateChest(bundleType);
-			player.get_resources().increaseMap(rewards);
-			try {
-				
-	    		SFSArray sfsRewards = new SFSArray();
-	    		for (int i : rewards.keys())
-	    		{
-		    		SFSObject so = new SFSObject();
-		    		so.putInt("type", i);
-		    		so.putInt("count", rewards.get(i));
-		    		sfsRewards.addSFSObject( so );
-	    		}
-				params.putSFSArray("rewards", sfsRewards);
-				params.putLong("expiredAt", now+ExchangeType.getCooldown(bundleType));
-				
-				UserManager.updateResources(getParentExtension(), player, rewards.keys());
-				UserManager.updateExchange(getParentExtension(), bundleType, player.get_id(), now+ExchangeType.getCooldown(bundleType), 0, 0);
-			} catch (Exception e) {
-				trace(e.getMessage());
-			}
-		}
 
-		int[] reqs = exchangeItem.requirements.keys();
+		// logs .....
+		int[] reqs = item.requirements.keys();
 		for(int i = 0; i<reqs.length; i++)
-			trace("requirements", reqs[i], exchangeItem.requirements.get(reqs[i]));
-		
-		int[] outs = exchangeItem.outcomes.keys();
+			trace("requirements", reqs[i], item.requirements.get(reqs[i]));
+		int[] outs = item.outcomes.keys();
 		for(int o = 0; o<outs.length; o++)
-			trace("outcomes", outs[o], exchangeItem.outcomes.get(outs[o]));
-			
+			trace("outcomes", outs[o], item.outcomes.get(outs[o]));
+		trace(type, item.expiredAt, now, hardsConfimed, succeed, item.numExchanges);
+
+		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
+		{
+    		SFSArray sfsRewards = new SFSArray();
+    		for (int i : item.outcomes.keys())
+    		{
+	    		SFSObject so = new SFSObject();
+	    		so.putInt("type", i);
+	    		so.putInt("count", item.outcomes.get(i));
+	    		sfsRewards.addSFSObject( so );
+    		}
+    		params.putSFSArray("rewards", sfsRewards);
+		}
+		
+		// update database
+		//add reqs to resources
+        Bundle resources = item.outcomes;
+        for(int r:item.requirements.keys())
+        	resources.set(r, 0);
+		try {
+			UserManager.updateResources(getParentExtension(), player, resources.keys());
+			UserManager.updateExchange(getParentExtension(), type, player.get_id(), now+ExchangeType.getCooldown(type), item.numExchanges, 0);
+		} catch (Exception e) {
+			trace(e.getMessage());
+		}
+		
 		send("exchange", params, sender);
     }
 	
