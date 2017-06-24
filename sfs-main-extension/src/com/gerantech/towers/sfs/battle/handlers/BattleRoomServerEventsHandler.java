@@ -69,7 +69,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	    for (int i=0; i < players.size(); i++)
 	    {
 	        SFSObject sfsO = new SFSObject();
-	        //sfsO.putLong("time", Instant.now().toEpochMilli());
+	        //sfsO.putLong("time", Instant.now().getEpochSecond());
 	        sfsO.putInt("troopType", i);
 	        sfsO.putInt("roomId", room.getId());
 	        sfsO.putText("mapName", mapName);

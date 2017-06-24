@@ -32,7 +32,7 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
         	reqs.set(r, 0);//add rewards to reqs
 
 		trace(buildingType, building.level);
-		if(!building.upgrade())
+		if(!building.upgrade(0))
 		{
 			trace(ExtensionLogLevel.WARN, "building " + buildingType + "can not upgrade.");
 			return;

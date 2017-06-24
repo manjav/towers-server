@@ -69,7 +69,7 @@ public class BattleRoom extends SFSExtension
 	{
 		this.isQuest = isQuest;
 		
-		startBattleAt = Instant.now().toEpochMilli();
+		startBattleAt = Instant.now().getEpochSecond();
 		if(autoJoinTimer != null)
 			autoJoinTimer.cancel();
 		
@@ -151,7 +151,7 @@ public class BattleRoom extends SFSExtension
 						populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-	        	int battleDuration = (int) ((int)Instant.now().toEpochMilli() - startBattleAt) / 1000;
+	        	int battleDuration = (int) ((int)Instant.now().getEpochSecond() - startBattleAt) / 1000;
 				if( battleDuration > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
 					endBattle(numBuildings, battleDuration);
 		    	

@@ -50,7 +50,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        try
 	        {
 	        	// Insert to DataBase
-	            long playerId = (Long) dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {});
+	            int playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
 	    		
 	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 	            // get initial user resources
@@ -77,45 +77,40 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		
 	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 	    		SFSArray exchanges = new SFSArray();
-	    		long now = Instant.now().toEpochMilli();
-	    		for (int t=0; t<Game.loginData.exchanges.size(); t++)
+	    		int now = (int)Instant.now().getEpochSecond();
+	    		for (int i=0; i<Game.loginData.exchanges.size(); i++)
 	    		{
+	    			int t = Game.loginData.exchanges.get(i);
 		    		SFSObject so = new SFSObject();
 		    		so.putInt("type", t);
 		    		so.putInt("num_exchanges", 1);
 		    		so.putInt("outcome", 0);
+		    		
+					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING || ExchangeType.getCategory(t) == ExchangeType.S_30_CHEST)
+						so.putInt("expired_at", now + ExchangeType.getCooldown(t));
+					else
+						so.putInt("expired_at", 0);
 	    		
 		    		// bonus :
 					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
-					{
 			    		so.putInt("outcome", Game.loginData.buildingsLevel.getRandomKey());
-			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
-					}
-					// chests :
-					if( t == ExchangeType.S_31_CHEST )
-			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
-					else if( t == ExchangeType.S_32_CHEST )
-			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
-					else if( t == ExchangeType.S_33_CHEST )
-			    		so.putLong("expired_at", now + ExchangeType.getCooldown(t));
-					
+
 					exchanges.addSFSObject( so );
 	    		}
-	    		
+	    		trace(exchanges.getDump());
 	    		query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
 	    		for(int i=0; i<exchanges.size(); i++)
 	    		{
-	    			query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  new java.sql.Timestamp(exchanges.getSFSObject(i).getLong("expired_at")) + "', '" +  exchanges.getSFSObject(i).getInt("outcome") + "')" ;
+	    			query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  exchanges.getSFSObject(i).getInt("expired_at") + "', '" +  exchanges.getSFSObject(i).getInt("outcome") + "')" ;
 	    			query += i<exchanges.size()-1 ? ", " : ";";
 	    		}
 	    		dbManager.executeInsert(query, new Object[] {});
 	    		trace(query);
 	    		
 	    		// send data to user
-	    		outData.putLong("id", playerId);
+	    		outData.putInt("id", playerId);
 	    		outData.putText("name", "guest");
 				outData.putText("password", password);
-				outData.putText("coreVersion", Game.loginData.coreVersion);
 	    		outData.putSFSArray("resources", resources);
 	    		outData.putSFSArray("quests", new SFSArray());
 	    		outData.putSFSArray("exchanges", exchanges);
@@ -124,7 +119,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        catch (SQLException e)
 	        {
 	        	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
-	        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+	        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
 	        }
 			return;
 		} 
@@ -133,7 +128,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// Find player in DB ===========================================================
 		try
         {
-			long id = Integer.parseInt(name);
+			int id = Integer.parseInt(name);
 	        ISFSArray res = dbManager.executeQuery("SELECT * FROM players WHERE id="+id+"", new Object[] {});
 	        
 	        if(res.size() != 1)
@@ -151,9 +146,8 @@ public class LoginEventHandler extends BaseServerEventHandler
         	}
 
         	// Retrieve player data from db
-        	outData.putLong("id", id);
+        	outData.putInt("id", id);
         	outData.putText("name", userData.getText("name"));
-        	outData.putText("coreVersion", Game.loginData.coreVersion);
     		outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
     		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
     		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
@@ -169,12 +163,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 	private void initiateCore(ISession session, ISFSObject outData)
 	{
-		long now = Instant.now().toEpochMilli();
-		outData.putLong("serverTime", now);
+		int now = (int)Instant.now().getEpochSecond();
+		outData.putInt("serverTime", now);
+		outData.putText("coreVersion", Game.loginData.coreVersion);
 		
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
-		initData.id = outData.getLong("id").intValue();
+		initData.id = outData.getInt("id");
 		
 		ISFSObject element;
 		
@@ -206,9 +201,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			// bonus items :
 			if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
 			{
-				if( element.getLong("expired_at") < now )
+				if( element.getInt("expired_at") < now )
 				{
-					element.putLong("expired_at", now + ExchangeType.getCooldown(t) );
+					element.putInt("expired_at", now + ExchangeType.getCooldown(t) );
 					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
 					element.putInt("num_exchanges", 1 );
 					try {
@@ -216,10 +211,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 					} catch (SQLException e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}
-		      		trace("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
+		      		trace("UPDATE `exchanges` SET `expired_at`='" + (now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
 				}
 			}
-			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), (float)element.getLong("expired_at"), element.getInt("outcome")));
+			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 		}
 
 		session.setProperty("core", new Game(initData));
