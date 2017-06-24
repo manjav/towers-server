@@ -13,7 +13,7 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
 
 public class UserManager {
 
-	public static SFSArray getResources(ISFSExtension extension, long playerId) throws SFSException 
+	public static SFSArray getResources(ISFSExtension extension, int playerId) throws SFSException 
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
         try
@@ -33,43 +33,22 @@ public class UserManager {
 		return null;
 	}
 	
-	public static SFSArray getQuests(ISFSExtension extension, long playerId) throws SFSException, SQLException 
+	public static SFSArray getQuests(ISFSExtension extension, int playerId) throws SFSException, SQLException 
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
     	return (SFSArray) dbManager.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id="+playerId, new Object[] {});
 	}
 
-	public static ISFSArray getExchanges(SFSExtension extension, long playerId)throws SFSException, SQLException 
+	public static ISFSArray getExchanges(SFSExtension extension, int playerId)throws SFSException, SQLException 
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-		SFSArray exchanges = (SFSArray) dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
-
-//		ISFSObject element;
-//		long now = Instant.now().toEpochMilli();
-//		for(int i=0; i<exchanges.size(); i++)
-//		{
-//			element = exchanges.getSFSObject(i);
-//			
-//			// bonus items :
-//			if( ShopItemType.getCategory(element.getInt("type")) == ShopItemType.S_20_BUILDING )
-//			{
-//				if( element.getLong("expired_at") < now )
-//				{
-//					element.putLong("expired_at", now+Exchanger.S_21_BUILDING_TIME );
-//					element.putInt("outcome", 0 );
-//					element.putInt("num_exchanges", 0 );
-//		      		dbManager.executeUpdate("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(now+Exchanger.S_21_BUILDING_TIME) + "', `num_exchanges`='" + 0 + "' WHERE `type`=" + element.getInt("type") + " AND `player_id`=" + playerId + ";", new Object[] {});
-//				}
-//			}
-//		}
-		return exchanges;
+		return (SFSArray) dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
 	}
-	public static void updateExchange(SFSExtension extension, int type, int playerId, long expireAt, int numExchanges, int outcome) throws SQLException
+	public static void updateExchange(SFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-		dbManager.executeUpdate("UPDATE `exchanges` SET `expired_at`='" + new java.sql.Timestamp(expireAt) + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcome + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";", new Object[] {});
+		dbManager.executeUpdate("UPDATE `exchanges` SET `expired_at`='" + expireAt + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcome + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";", new Object[] {});
 	}
-	
 	
 	public static void setQuestScore(ISFSExtension extension, Player player, int index, int score) throws SFSException, SQLException 
 	{
