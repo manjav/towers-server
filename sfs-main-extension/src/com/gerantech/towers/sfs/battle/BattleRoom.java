@@ -18,7 +18,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.utils.GTimer;
-import com.gt.towers.utils.maps.Bundle;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -65,7 +65,7 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
 	}
 
-	public void createGame(String mapName, Boolean isQuest) 
+	public void createGame(Game game, String mapName, Boolean isQuest) 
 	{
 		this.isQuest = isQuest;
 		
@@ -73,7 +73,7 @@ public class BattleRoom extends SFSExtension
 		if(autoJoinTimer != null)
 			autoJoinTimer.cancel();
 		
-		battleField = new BattleField(mapName, 0);
+		battleField = new BattleField(game, mapName, 0);
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
@@ -171,7 +171,7 @@ public class BattleRoom extends SFSExtension
 	    {
 	    	SFSObject sfsO = SFSObject.newInstance();
 	    	User user = room.getPlayersList().get(i);
-        	Player player = ((Game)user.getSession().getProperty("core")).get_player();
+        	Player player = ((Game)user.getSession().getProperty("core")).player;
         	
         	int score = 0;
 	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
@@ -186,7 +186,7 @@ public class BattleRoom extends SFSExtension
 	        }
 	        
 	        // get outcomes
-	        Bundle outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
+	        IntIntMap outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
 	        
 	        // consume outcomes and set quest score
         	try 
@@ -197,7 +197,7 @@ public class BattleRoom extends SFSExtension
 	        	if ( isQuest )
 	        	{
 					UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, score);
-					player.get_quests().set(battleField.map.index, score);
+					player.quests.set(battleField.map.index, score);
 	        	}
 			}
         	catch (Exception e) {

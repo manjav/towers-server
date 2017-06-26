@@ -54,10 +54,10 @@ public class UserManager {
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 
-      	if( player.get_quests().exists( index ) )
-      		dbManager.executeUpdate("UPDATE `quests` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.get_id() + ";", new Object[] {});
+      	if( player.quests.exists( index ) )
+      		dbManager.executeUpdate("UPDATE `quests` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
       	else
-      		dbManager.executeInsert("INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.get_id() + "', '" + score + "');", new Object[] {});
+      		dbManager.executeInsert("INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
 	}
 
 	public static String updateResources(ISFSExtension extension, Player player, int[] keys) throws SFSException, SQLException 
@@ -70,7 +70,7 @@ public class UserManager {
         int r = 0;
         while( r < keyLen )
         {
-        	query += "WHEN type = " + keys[r] + " AND player_id = " + player.get_id() + " THEN " + player.get_resources().get(keys[r]) + "\r";
+        	query += "WHEN type = " + keys[r] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[r]) + "\r";
         	r ++;
         }
         query += "ELSE count END WHERE type IN (";
@@ -86,7 +86,7 @@ public class UserManager {
         r = 0;
         while( r < keyLen )
         {
-        	query += player.get_id() + (r < keyLen-1 ? "," : "");
+        	query += player.id + (r < keyLen-1 ? "," : "");
         	r ++;
         }
         query += ");";
@@ -98,7 +98,7 @@ public class UserManager {
 	public static void upgradeBuilding(SFSExtension extension, Player player, int type, int level) throws SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-  		dbManager.executeUpdate("UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.get_id() + ";", new Object[] {});
+  		dbManager.executeUpdate("UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";", new Object[] {});
 	}
 
 

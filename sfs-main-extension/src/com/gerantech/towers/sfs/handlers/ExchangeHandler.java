@@ -8,7 +8,7 @@ import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.Exchanger;
-import com.gt.towers.utils.maps.Bundle;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -30,9 +30,9 @@ public class ExchangeHandler extends BaseClientRequestHandler
     	if(params.containsKey("hards"))
     		hardsConfimed = params.getInt("hards");
     	
-		Exchanger exchanger = ((Game)sender.getSession().getProperty("core")).get_exchanger();
-		Player player = ((Game)sender.getSession().getProperty("core")).get_player();
-		ExchangeItem item = exchanger.bundlesMap.get(type);
+		Exchanger exchanger = ((Game)sender.getSession().getProperty("core")).exchanger;
+		Player player = ((Game)sender.getSession().getProperty("core")).player;
+		ExchangeItem item = exchanger.items.get(type);
 		int now = (int)Instant.now().getEpochSecond();
 		
 		Boolean succeed = exchanger.exchange(item, now, hardsConfimed);
@@ -68,12 +68,12 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		
 		// update database
 		//add reqs to resources
-        Bundle resources = item.outcomes;
+        IntIntMap resources = item.outcomes;
         for(int r:item.requirements.keys())
         	resources.set(r, 0);
 		try {
 			UserManager.updateResources(getParentExtension(), player, resources.keys());
-			UserManager.updateExchange(getParentExtension(), type, player.get_id(), now+ExchangeType.getCooldown(type), item.numExchanges, 0);
+			UserManager.updateExchange(getParentExtension(), type, player.id, now+ExchangeType.getCooldown(type), item.numExchanges, 0);
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}

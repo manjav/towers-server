@@ -40,7 +40,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         {
         	index = params.getInt("i");
         	isQuest = params.getBool("q");
-        	//trace(((Game)sender.getSession().getProperty("core")).get_player().get_id());
+        	//trace(((Game)sender.getSession().getProperty("core")).player.id);
             joinUser(sender);
         }
         catch(Exception err)

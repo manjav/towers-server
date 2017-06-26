@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
+import com.gt.towers.LoginData;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.Exchange;
 import com.smartfoxserver.bitswarm.sessions.ISession;
@@ -27,6 +28,7 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
+
 	/*
 	 * (non-Javadoc)
 	 * @see
@@ -39,6 +41,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		String password = (String) event.getParameter(SFSEventParam.LOGIN_PASSWORD);
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
         ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
+        LoginData loginData = new LoginData();
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
@@ -55,13 +58,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 	            // get initial user resources
 	    		SFSArray resources = new SFSArray();
-	    		for (int i : Game.loginData.resources.keys())
+	    		for (int i : loginData.resources.keys())
 	    		{
 		    		SFSObject so = new SFSObject();
 		    		
 		    		so.putInt("type", i);
-		    		so.putInt("count", Game.loginData.resources.get(i));
-		    		so.putInt("level", i < 1000 ? Game.loginData.buildingsLevel.get(i) : 0);
+		    		so.putInt("count", loginData.resources.get(i));
+		    		so.putInt("level", i < 1000 ? loginData.buildingsLevel.get(i) : 0);
 		    		
 		    		resources.addSFSObject( so );
 	    		}
@@ -78,9 +81,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 	    		SFSArray exchanges = new SFSArray();
 	    		int now = (int)Instant.now().getEpochSecond();
-	    		for (int i=0; i<Game.loginData.exchanges.size(); i++)
+	    		for (int i=0; i<loginData.exchanges.size(); i++)
 	    		{
-	    			int t = Game.loginData.exchanges.get(i);
+	    			int t = loginData.exchanges.get(i);
 		    		SFSObject so = new SFSObject();
 		    		so.putInt("type", t);
 		    		so.putInt("num_exchanges", 1);
@@ -93,7 +96,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		
 		    		// bonus :
 					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
-			    		so.putInt("outcome", Game.loginData.buildingsLevel.getRandomKey());
+			    		so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
 
 					exchanges.addSFSObject( so );
 	    		}
@@ -114,7 +117,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		outData.putSFSArray("resources", resources);
 	    		outData.putSFSArray("quests", new SFSArray());
 	    		outData.putSFSArray("exchanges", exchanges);
-	    		initiateCore(session, outData);
+	    		initiateCore(session, outData, loginData);
 	        }
 	        catch (SQLException e)
 	        {
@@ -152,7 +155,7 @@ public class LoginEventHandler extends BaseServerEventHandler
     		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
     		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
     		
-    		initiateCore(session, outData);
+    		initiateCore(session, outData, loginData);
 		}
         catch (SQLException e)
         {
@@ -161,11 +164,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 		//trace("initData", outData.getDump());
 	}
 
-	private void initiateCore(ISession session, ISFSObject outData)
+	private void initiateCore(ISession session, ISFSObject outData, LoginData loginData)
 	{
 		int now = (int)Instant.now().getEpochSecond();
 		outData.putInt("serverTime", now);
-		outData.putText("coreVersion", Game.loginData.coreVersion);
+		outData.putInt("noticeVersion", loginData.noticeVersion);
+		outData.putInt("forceVersion", loginData.forceVersion);
+		outData.putText("coreVersion", loginData.coreVersion);
 		
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
