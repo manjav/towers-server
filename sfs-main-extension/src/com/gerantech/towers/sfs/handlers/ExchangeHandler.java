@@ -59,8 +59,8 @@ public class ExchangeHandler extends BaseClientRequestHandler
     		for (int i : item.outcomes.keys())
     		{
 	    		SFSObject so = new SFSObject();
-	    		so.putInt("type", i);
-	    		so.putInt("count", item.outcomes.get(i));
+	    		so.putInt("t", i);
+	    		so.putInt("c", item.outcomes.get(i));
 	    		sfsRewards.addSFSObject( so );
     		}
     		params.putSFSArray("rewards", sfsRewards);
