@@ -40,17 +40,17 @@ public class BattleRoom extends SFSExtension
 	
 	private Room room;
 	private Timer timer;
-	private boolean destroyed;
 	private BattleField battleField;
 
-	private Boolean isQuest;
+	private boolean destroyed;
+	private boolean isQuest;
+	private boolean allowFightBot;
 	private boolean singleMode;
+
 	private AIEnemy aiEnemy;
 	private int timerCount = 11;
 
 	private long startBattleAt;
-
-
 	
 	public void init() 
 	{
@@ -123,7 +123,7 @@ public class BattleRoom extends SFSExtension
 				}
 
 				// fight enemy bot
-		    	if(singleMode && aiEnemy.doAction(timerCount % 15))
+		    	if(singleMode && allowFightBot && aiEnemy.doAction(timerCount % 15))
 		    	{
 		    		if(aiEnemy.actionType == "fight")
 		    		{
@@ -131,12 +131,12 @@ public class BattleRoom extends SFSExtension
 						for(int j = 0; j<ss.length; j++)
 							ss[j] = aiEnemy.sources.get(j);
     					//trace(singleMode, timerCount, aiEnemy.destination, aiEnemy.sources.get(0), aiEnemy.actionType);
-    					fight(ss, aiEnemy.destination);
-    					
-//    					trace("dests", aiEnemy.destinations.size());
-//						for(Object d:aiEnemy.destinations._list)
-//							trace("dest", d);
+    					fight(ss, aiEnemy.target);
 		    		}
+//		    		else if(aiEnemy.actionType == "improve")
+//		    		{
+//    					improveBuilding(sender, params)(ss, aiEnemy.target);
+//		    		}
 		    	}
 		    	
 		    	// check ending battle
@@ -191,14 +191,13 @@ public class BattleRoom extends SFSExtension
 	        // consume outcomes and set quest score
         	try 
         	{
-        		BattleOutcome.consume_outcomes(player, outcomes);
-		        UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
-				
-	        	if ( isQuest )
+	        	if ( isQuest && player.quests.get( battleField.map.index ) < score)
 	        	{
 					UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, score);
 					player.quests.set(battleField.map.index, score);
 	        	}
+	        	BattleOutcome.consume_outcomes(player, outcomes);
+	        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
 			}
         	catch (Exception e) {
 				trace(e.getMessage());
@@ -228,6 +227,7 @@ public class BattleRoom extends SFSExtension
 
 	public void fight(Object[] objects, int destination) 
 	{
+		allowFightBot = true;
 		SFSArray srcs = SFSArray.newInstance();
 		
 		for(int i = 0; i<objects.length; i++)
@@ -253,6 +253,7 @@ public class BattleRoom extends SFSExtension
 	}
 	private void sendImproveResponse(int index, int type, int level)
 	{
+		allowFightBot = true;
 		SFSObject params = SFSObject.newInstance();
 		params.putInt("i", index);
 		params.putInt("t", type);

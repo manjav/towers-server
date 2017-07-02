@@ -62,6 +62,9 @@ public class UserManager {
 
 	public static String updateResources(ISFSExtension extension, Player player, int[] keys) throws SFSException, SQLException 
 	{
+		if(keys.length == 0)
+			return null;
+		
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		
 		String query = "Update resources SET count = CASE\r";
