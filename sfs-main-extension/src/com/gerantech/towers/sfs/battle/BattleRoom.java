@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomFightRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomHitRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomImproveRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
@@ -31,7 +32,15 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
 
 public class BattleRoom extends SFSExtension 
 {
+	public static final int STATE_WAITING = 0;
+	public static final int STATE_CREATED = 1;
+	public static final int STATE_BATTLE_STARTED = 2;
+	public static final int STATE_BATTLE_ENDED = 2;
+	public static final int STATE_DESTROYED = 3;
+	
+	public int state = 0;
 	public Timer autoJoinTimer;
+	public List<User> regidteredPlayers;
 	
 	private int[] reservedPopulations;
 	private int[] reservedTypes;
@@ -39,18 +48,19 @@ public class BattleRoom extends SFSExtension
 	private int[] reservedTroopTypes;
 	
 	private Room room;
+	private boolean singleMode;
+
 	private Timer timer;
 	private BattleField battleField;
 
-	private boolean destroyed;
+	//private boolean destroyed;
 	private boolean isQuest;
-	private boolean allowFightBot;
-	private boolean singleMode;
-
 	private AIEnemy aiEnemy;
+
 	private int timerCount = 11;
 
 	private long startBattleAt;
+
 	
 	public void init() 
 	{
@@ -58,16 +68,21 @@ public class BattleRoom extends SFSExtension
 		
 		addEventHandler(SFSEventType.ROOM_REMOVED, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
-		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleRoomServerEventsHandler.class);
+		//addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleRoomServerEventsHandler.class);
 		
 		addRequestHandler("h", BattleRoomHitRequestHandler.class);
 		addRequestHandler("f", BattleRoomFightRequestHandler.class);
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
+		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
 	}
 
 	public void createGame(Game game, String mapName, Boolean isQuest) 
 	{
+		state = STATE_CREATED;
 		this.isQuest = isQuest;
+		regidteredPlayers = new ArrayList<User>();
+	    for (int i=0; i < room.getPlayersList().size(); i++)
+	    	regidteredPlayers.add( room.getPlayersList().get(i));
 		
 		startBattleAt = Instant.now().getEpochSecond();
 		if(autoJoinTimer != null)
@@ -79,7 +94,7 @@ public class BattleRoom extends SFSExtension
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
 		
-		singleMode = room.getMaxUsers() == 1;
+		singleMode = room.getMaxUsers()==1 || room.getUserByName("npc") != null;
 		if(singleMode)
 			aiEnemy = new AIEnemy(battleField);
 		
@@ -123,7 +138,7 @@ public class BattleRoom extends SFSExtension
 				}
 
 				// fight enemy bot
-		    	if(singleMode && allowFightBot && aiEnemy.doAction(timerCount % 15))
+		    	if(singleMode && state==STATE_BATTLE_STARTED && aiEnemy.doAction(timerCount % 15))
 		    	{
 		    		if(aiEnemy.actionType == "fight")
 		    		{
@@ -163,16 +178,34 @@ public class BattleRoom extends SFSExtension
 		
 		trace("createGame");
 	}
+	
+
+	public void leaveGame(User user) 
+	{
+		if(!isQuest)
+			return;
+	    
+		state = STATE_BATTLE_ENDED;
+		if(timer != null)
+			timer.cancel();
+		timer = null;		
+		
+	    for (int i=0; i < room.getPlayersList().size(); i++)
+	    	if( room.getPlayersList().get(i).getId() == user.getId() ) 
+	    		calculateEndBattleResponse(user, 0);
+	}
+	
 	private void endBattle(int[] numBuildings, int battleDuration)
 	{
+		state = STATE_BATTLE_ENDED;
+		if(timer != null)
+			timer.cancel();
+		timer = null;
+		
 		trace("Battle Ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
 	    for (int i=0; i < room.getPlayersList().size(); i++)
 	    {
-	    	SFSObject sfsO = SFSObject.newInstance();
-	    	User user = room.getPlayersList().get(i);
-        	Player player = ((Game)user.getSession().getProperty("core")).player;
-        	
         	int score = 0;
 	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
 	        if(wins)
@@ -184,50 +217,80 @@ public class BattleRoom extends SFSExtension
 	        	else
 	        		score = 1;
 	        }
-	        
-	        // get outcomes
-	        IntIntMap outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
-	        
-	        // consume outcomes and set quest score
-        	try 
-        	{
-	        	if ( isQuest && player.quests.get( battleField.map.index ) < score)
-	        	{
-					UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, score);
-					player.quests.set(battleField.map.index, score);
-	        	}
-	        	BattleOutcome.consume_outcomes(player, outcomes);
-	        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
-			}
-        	catch (Exception e) {
-				trace(e.getMessage());
-			}
-        	
-        	// provide sfs rewards map
-        	SFSObject sfsReward = null;
-        	SFSArray sfsRewards  = new SFSArray();
-        	for(int r : outcomes.keys())
-        	{
-        		sfsReward = new SFSObject();
-        		sfsReward.putInt("t", r);
-        		sfsReward.putInt("c", outcomes.get(r));
-        		sfsRewards.addSFSObject(sfsReward);
-        	}
-        	sfsO.putSFSArray("rewards", sfsRewards);
-        	
-	        sfsO.putBool( "youWin", wins );
-	        sfsO.putInt( "score", score );
-	    	send( "endBattle", sfsO, user );
+	        calculateEndBattleResponse( room.getPlayersList().get(i), score );
 	    }
-	    
-		if(timer != null)
-			timer.cancel();
-		timer = null;		
+	}
+
+	private void calculateEndBattleResponse(User user, int score)
+	{
+        // consume outcomes and set quest score
+		IntIntMap outcomes = null;
+    	Player player = ((Game)user.getSession().getProperty("core")).player;
+    	try 
+    	{
+    		trace("isQuest", isQuest, player.quests.get( battleField.map.index ) , score);
+        	if ( isQuest)
+        	{
+		        // get outcomes
+		        outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
+        		if( player.quests.get( battleField.map.index ) < score )
+        		{
+        			UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, score);
+        			player.quests.set(battleField.map.index, score);
+ 
+		        	BattleOutcome.consume_outcomes(player, outcomes);
+		        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
+    		    	sendEndBattleResponse(user, outcomes, score);
+        		}
+    		}
+        	else
+        	{
+        		trace("score", score);
+        		if(score > 0)
+        		{
+        		    for (int i=0; i < room.getPlayersList().size(); i++)
+        		    {
+        		    	score = (user.getId()==room.getPlayersList().get(i).getId()?1:-1) * score;
+        		    	outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
+			        	BattleOutcome.consume_outcomes(player, outcomes);
+			        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
+        		    	sendEndBattleResponse(room.getPlayersList().get(i), outcomes, score);
+        		    }
+        		}
+        	}
+        	
+		}
+    	catch (Exception e) {
+			trace(e.getMessage());
+		}
+    		
+	}
+
+	private void sendEndBattleResponse(User user, IntIntMap outcomes, int score)
+	{
+    	// provide sfs rewards map
+    	SFSObject sfsO = SFSObject.newInstance();
+    	
+    	sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
+    	SFSObject sfsReward = null;
+    	SFSArray sfsRewards  = new SFSArray();
+    	for(int r : outcomes.keys())
+    	{
+    		sfsReward = new SFSObject();
+    		sfsReward.putInt("t", r);
+    		sfsReward.putInt("c", outcomes.get(r));
+    		sfsRewards.addSFSObject(sfsReward);
+    	}
+    	sfsO.putSFSArray("rewards", sfsRewards);
+    	
+        sfsO.putBool( "youWin", score>0 );
+        sfsO.putInt( "score", score );trace(sfsO.getDump());
+    	send( "endBattle", sfsO, user );		
 	}
 
 	public void fight(Object[] objects, int destination) 
 	{
-		allowFightBot = true;
+		state = STATE_BATTLE_STARTED;
 		SFSArray srcs = SFSArray.newInstance();
 		
 		for(int i = 0; i<objects.length; i++)
@@ -253,7 +316,7 @@ public class BattleRoom extends SFSExtension
 	}
 	private void sendImproveResponse(int index, int type, int level)
 	{
-		allowFightBot = true;
+		state = STATE_BATTLE_STARTED;
 		SFSObject params = SFSObject.newInstance();
 		params.putInt("i", index);
 		params.putInt("t", type);
@@ -274,9 +337,10 @@ public class BattleRoom extends SFSExtension
 	}
 	public void destroyGame()
 	{
-		if(destroyed)
+		if(state >= STATE_DESTROYED)
 			return;
-		destroyed = true;
+			
+		state = STATE_DESTROYED;
 		
 		if(timer != null)
 			timer.cancel();
@@ -291,4 +355,5 @@ public class BattleRoom extends SFSExtension
 		
 		trace("destroyGame");
 	}
+
 }

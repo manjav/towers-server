@@ -18,10 +18,6 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
-
-
-
-
 	private BattleRoom roomClass;
 	private Room room;
 
@@ -43,7 +39,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					@Override
 					public void run()
 					{
-						room.setMaxUsers(1);
+						//room.setMaxUsers(1);
+						try {
+							room.addUser(getApi().createNPC("npc", getParentExtension().getParentZone(), true));
+						} catch (Exception e) {
+							trace(e.getMessage());
+						}
 		            	sendStartBattleResponse();
 					}
 	    		}, 3333, 3333);
@@ -53,10 +54,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
             	sendStartBattleResponse();
 	        }
 		}
-		else if(arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) || arg.getType().equals(SFSEventType.ROOM_REMOVED))
-		{
-			roomClass.destroyGame();
-		}
+//		else if(arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) || arg.getType().equals(SFSEventType.ROOM_REMOVED))
+//		{
+//		}
 	}
 	
 	private void sendStartBattleResponse()

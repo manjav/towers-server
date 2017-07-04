@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -55,11 +56,15 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
         for (Room room : rList)
         {
-            if (room.isFull())
+            if (room.isFull() || room.getGroupId()=="quests")
+            {
                 continue;
+            }
             else
             {
-                theRoom = room;
+               	BattleRoom battleRoom = (BattleRoom) room.getExtension();
+            	if(battleRoom.state == BattleRoom.STATE_WAITING)
+            		theRoom = room;
                 break;
             }
         }
