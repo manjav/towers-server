@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.entities.Room;
+import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
@@ -50,25 +52,11 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
     }
  
-    private void joinUser(User user) throws SFSException
+	private void joinUser(User user) throws SFSException
     {
-        List<Room> rList = getParentExtension().getParentZone().getRoomList();
+    	if( !isQuest )
+            theRoom = findActiveRoom(user);
 
-        for (Room room : rList)
-        {
-            if (room.isFull() || room.getGroupId()=="quests")
-            {
-                continue;
-            }
-            else
-            {
-               	BattleRoom battleRoom = (BattleRoom) room.getExtension();
-            	if(battleRoom.state == BattleRoom.STATE_WAITING)
-            		theRoom = room;
-                break;
-            }
-        }
- 
         if (theRoom == null)
             theRoom = makeNewRoom(user);
        
@@ -82,6 +70,29 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
     }
 
+	@SuppressWarnings("unchecked")
+	private Room findActiveRoom(User user) 
+	{
+		List<Room> rList = getParentExtension().getParentZone().getRoomList();
+        for (Room room : rList)
+        {
+            if ( !room.isFull() || room.getGroupId()!="quests" )
+            {
+            	int roomState = (Integer)room.getProperty("state");
+            	if(roomState == BattleRoom.STATE_WAITING )
+            	{
+            		return room;
+             	}
+            	else if( roomState == BattleRoom.STATE_BATTLE_STARTED )
+            	{
+            		if(((List<String>)room.getProperty("regidteredPlayersId")).contains(user.getName()))
+                		return room;
+            	}
+            }
+        }
+        return null;
+	}
+
 	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
     	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
@@ -89,10 +100,12 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         Map<Object, Object> roomProperties = new HashMap<Object, Object>();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
-    	
+        roomProperties.put("startAt", (int)Instant.now().getEpochSecond());
+   	
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
+        rs.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 		rs.setRoomProperties( roomProperties );
         rs.setName((isQuest?"room_quest_":"room_battle_") + roomId.getAndIncrement());
         rs.setMaxUsers(isQuest?1:2);

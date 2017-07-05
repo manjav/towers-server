@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,19 +17,77 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
+	private static boolean _ENABLED = true;
+	
 	private BattleRoom roomClass;
 	private Room room;
 
 	public void handleServerEvent(ISFSEvent arg) throws SFSException
 	{
+		if(!_ENABLED)
+			return;
+		trace("HANDLESERVEREVENT______", arg);
+		User user = (User)arg.getParameter(SFSEventParam.USER); 
+		
+		if(arg.getType().equals(SFSEventType.USER_DISCONNECT))
+		{
+			_ENABLED = false;
+			@SuppressWarnings("unchecked")
+			List<Room> joinedRooms = (List<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
+		    for(Room r:joinedRooms)
+		    {
+		    	int state = (Integer)r.getProperty("state");
+		    	if(state < BattleRoom.STATE_CREATED || state < BattleRoom.STATE_BATTLE_STARTED && r.getUserManager().getNPCCount() > 0)
+		    		getApi().removeRoom(r);
+		    	else
+		    	{
+				    for(User u:r.getPlayersList())
+				    {
+				    	if(!u.isNpc() && !u.equals(user))
+				    	{
+				    		SFSObject sfs = SFSObject.newInstance();
+				    		sfs.putInt("user", user.getId());
+				    		send("leftBattle", sfs, u);
+				    	}
+				    }
+		    	}
+		    }
+			_ENABLED = true;
+		    return;
+		}
+		
 		room = (Room)arg.getParameter(SFSEventParam.ROOM);
 		roomClass = (BattleRoom) room.getExtension();
-		//User user = (User)arg.getParameter(SFSEventParam.USER); 
 		//Zone zone = (Zone)arg.getParameter(SFSEventParam.ZONE); 
-		
 		if(arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
 		{
-			//trace(room.getId(), room.getMaxUsers(), room.isFull());
+			//trace(room.getId(), room.getMaxUsers(), room.isFull(), room.getCapacity(), room.getSize(), room.getProperties().keySet().toArray());
+			
+			// return to previous room
+			if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
+			{
+				List<User> players = roomClass.getPlayers();
+				for (int i=0; i < players.size(); i++)
+			    {
+					SFSObject sfsO = new SFSObject();
+			    	if(players.get(i).equals(user))
+			    	{
+				        sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
+				        sfsO.putInt("troopType", i);
+				        sfsO.putInt("roomId", room.getId());
+				        sfsO.putText("mapName", getMapName(false));
+				    	send("startBattle", sfsO, players.get(i));
+			    	}
+			    	else if( !players.get(i).isNpc() )
+			    	{
+			    		sfsO.putInt("user", user.getId());
+			    		send("rejoinBattle", sfsO, players.get(i));	
+		    		}
+			    }
+				return;
+			}
+			
+			// wait to match making ( complete battle room players )
 			if(!room.isFull())
 			{
 		       	roomClass.autoJoinTimer = new Timer();
@@ -39,13 +96,18 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					@Override
 					public void run()
 					{
-						//room.setMaxUsers(1);
 						try {
-							room.addUser(getApi().createNPC("npc", getParentExtension().getParentZone(), true));
+							int npcName=Integer.MAX_VALUE;
+							while(true)
+							{
+								if(getParentExtension().getParentZone().getUserManager().getUserByName(npcName+"") == null)
+									break;
+								npcName --;
+							}
+							getApi().joinRoom(getApi().createNPC(npcName+"", getParentExtension().getParentZone(), true), room);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}
-		            	sendStartBattleResponse();
 					}
 	    		}, 3333, 3333);
 			}
@@ -54,31 +116,42 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
             	sendStartBattleResponse();
 	        }
 		}
-//		else if(arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) || arg.getType().equals(SFSEventType.ROOM_REMOVED))
-//		{
-//		}
+//		else if(arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) || arg.getType().equals(SFSEventType.ROOM_REMOVED)){}
 	}
 	
 	private void sendStartBattleResponse()
 	{
-		Boolean isQuest = (Boolean)room.getProperty("isQuest");
-	
-		int index = (Integer)room.getProperty("index");
-		String mapName = "battle_" + index;//"+(Math.random()>0.5?1:0);
-		if(isQuest)
-			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).player.get_questIndex();
+		boolean isQuest = (Boolean)room.getProperty("isQuest");
+		boolean existsNpc = false;
+		String mapName = getMapName(isQuest);
 		
-		List<User> players = room.getPlayersList();
+		List<User> players = roomClass.getPlayers();
 	    for (int i=0; i < players.size(); i++)
 	    {
-	        SFSObject sfsO = new SFSObject();
-	        sfsO.putInt("startAt", (int)Instant.now().getEpochSecond());
-	        sfsO.putInt("troopType", i);
-	        sfsO.putInt("roomId", room.getId());
-	        sfsO.putText("mapName", mapName);
-	    	send("startBattle", sfsO, players.get(i));
+	    	if(!players.get(i).isNpc())
+	    	{
+		        SFSObject sfsO = new SFSObject();
+		        sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
+		        sfsO.putInt("troopType", i);
+		        sfsO.putInt("roomId", room.getId());
+		        sfsO.putText("mapName", mapName);
+		    	send("startBattle", sfsO, players.get(i));
+	    	}
+	    	else
+	    	{
+	    		existsNpc = true;
+	    	}
 	    }
 	    
-		roomClass.createGame(((Game)players.get(0).getSession().getProperty("core")), mapName, isQuest);
+		roomClass.createGame(((Game)players.get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
+	}
+
+	private String getMapName(boolean isQuest)
+	{
+		int index = (Integer)room.getProperty("index");
+		String mapName = "battle_2";// + index;//"+(Math.random()>0.5?1:0);
+		if(isQuest)
+			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).player.get_questIndex();
+		return mapName;
 	}
 }

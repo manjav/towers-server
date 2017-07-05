@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,6 +11,7 @@ import com.gerantech.towers.sfs.battle.handlers.BattleRoomFightRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomHitRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomImproveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleRoomResetVarsRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
@@ -38,55 +40,63 @@ public class BattleRoom extends SFSExtension
 	public static final int STATE_BATTLE_ENDED = 2;
 	public static final int STATE_DESTROYED = 3;
 	
-	public int state = 0;
 	public Timer autoJoinTimer;
-	public List<User> regidteredPlayers;
+
+	private int _state = -1;
 	
+	private List<String> regidteredPlayersId;
 	private int[] reservedPopulations;
 	private int[] reservedTypes;
 	private int[] reservedLevels;
 	private int[] reservedTroopTypes;
+	private int[] scores;
 	
 	private Room room;
-	private boolean singleMode;
-
 	private Timer timer;
+	private AIEnemy aiEnemy;
 	private BattleField battleField;
 
-	//private boolean destroyed;
 	private boolean isQuest;
-	private AIEnemy aiEnemy;
-
+	private boolean singleMode;
+	public int updaterCount = 1;
 	private int timerCount = 11;
-
 	private long startBattleAt;
-
 	
 	public void init() 
 	{
 		room = getParentRoom();
+		setState( STATE_WAITING );
 		
 		addEventHandler(SFSEventType.ROOM_REMOVED, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		//addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleRoomServerEventsHandler.class);
+		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		
 		addRequestHandler("h", BattleRoomHitRequestHandler.class);
 		addRequestHandler("f", BattleRoomFightRequestHandler.class);
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
 		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
+		addRequestHandler("resetAllVars", BattleRoomResetVarsRequestHandler.class);
 	}
 
-	public void createGame(Game game, String mapName, Boolean isQuest) 
+	public void createGame(Game game, String mapName, Boolean isQuest, final boolean singleMode) 
 	{
-		state = STATE_CREATED;
-		this.isQuest = isQuest;
-		regidteredPlayers = new ArrayList<User>();
-	    for (int i=0; i < room.getPlayersList().size(); i++)
-	    	regidteredPlayers.add( room.getPlayersList().get(i));
-		
-		startBattleAt = Instant.now().getEpochSecond();
 		if(autoJoinTimer != null)
 			autoJoinTimer.cancel();
+
+		setState( STATE_CREATED );
+		this.isQuest = isQuest;
+		this.singleMode = singleMode;
+		
+		regidteredPlayersId = new ArrayList<String>();
+		List<User> players = getPlayers();
+        for (User u: players)
+        	if(!u.isNpc())
+        		regidteredPlayersId.add( u.getName());
+        room.setProperty("regidteredPlayersId", regidteredPlayersId);
+		
+		startBattleAt = Instant.now().getEpochSecond();
+		
 		
 		battleField = new BattleField(game, mapName, 0);
 		reservedTypes = new int[battleField.places.size()];
@@ -94,8 +104,7 @@ public class BattleRoom extends SFSExtension
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
 		
-		singleMode = room.getMaxUsers()==1 || room.getUserByName("npc") != null;
-		if(singleMode)
+		if(this.singleMode)
 			aiEnemy = new AIEnemy(battleField);
 		
 		for(int i = 0; i<battleField.places.size(); i++)
@@ -106,6 +115,7 @@ public class BattleRoom extends SFSExtension
 		
     	timer = new Timer();
     	timer.schedule(new TimerTask() {
+
 			@Override
 			public void run() {
 				Building b = null;
@@ -113,7 +123,7 @@ public class BattleRoom extends SFSExtension
 				for(int i = 0; i<battleField.places.size(); i++)
 				{
 					b = battleField.places.get(i).building;
-					if(b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i])
+					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || updaterCount == 0 )
 					{
 						reservedPopulations[i] = b.get_population();
 						reservedTroopTypes[i] = b.troopType;
@@ -121,7 +131,7 @@ public class BattleRoom extends SFSExtension
 						//trace(i+","+b.get_population()+","+b.troopType);
 					}
 					
-					if(b.level != reservedLevels[i] || b.type != reservedTypes[i] )
+					if( b.level != reservedLevels[i] || b.type != reservedTypes[i] || updaterCount == 0 )
 					{
 						sendImproveResponse(i, b.type, b.level);
 						reservedTypes[i] = b.type;
@@ -132,13 +142,14 @@ public class BattleRoom extends SFSExtension
 				if(vars.size() > 0)
 				{
 					// Set variables
+					//trace("vars.size()", vars.size());
 					List<RoomVariable> listOfVars = new ArrayList<RoomVariable>();
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 					sfsApi.setRoomVariables(null, room, listOfVars);
 				}
 
 				// fight enemy bot
-		    	if(singleMode && state==STATE_BATTLE_STARTED && aiEnemy.doAction(timerCount % 15))
+		    	if(singleMode && getState()==STATE_BATTLE_STARTED && aiEnemy.doAction(timerCount % 15))
 		    	{
 		    		if(aiEnemy.actionType == "fight")
 		    		{
@@ -171,6 +182,7 @@ public class BattleRoom extends SFSExtension
 					endBattle(numBuildings, battleDuration);
 		    	
 		    	timerCount ++;
+		    	updaterCount ++;
 			}
 
 
@@ -185,85 +197,88 @@ public class BattleRoom extends SFSExtension
 		if(!isQuest)
 			return;
 	    
-		state = STATE_BATTLE_ENDED;
-		if(timer != null)
-			timer.cancel();
-		timer = null;		
-		
-	    for (int i=0; i < room.getPlayersList().size(); i++)
-	    	if( room.getPlayersList().get(i).getId() == user.getId() ) 
-	    		calculateEndBattleResponse(user, 0);
+		setState( STATE_BATTLE_ENDED );
+//		if(timer != null)
+//			timer.cancel();
+//		timer = null;		
+
+		scores = new int[1];
+		scores[0] = 0;
+	    calculateEndBattleResponse();
 	}
 	
 	private void endBattle(int[] numBuildings, int battleDuration)
 	{
-		state = STATE_BATTLE_ENDED;
-		if(timer != null)
-			timer.cancel();
-		timer = null;
+		setState( STATE_BATTLE_ENDED );
+//		if(timer != null)
+//			timer.cancel();
+//		timer = null;
 		
 		trace("Battle Ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
-	    for (int i=0; i < room.getPlayersList().size(); i++)
+		scores = new int[2];
+	    for (int i=0; i < scores.length; i++)
 	    {
-        	int score = 0;
+        	scores[i] = 0;
 	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
 	        if(wins)
 	        {
 	        	if(battleDuration < battleField.map.times.get(0))
-	        		score = 3;
+	        		scores[i] = 3;
 	        	else if(battleDuration < battleField.map.times.get(1))
-	        		score = 2;
+	        		scores[i] = 2;
 	        	else
-	        		score = 1;
+	        		scores[i] = 1;
 	        }
-	        calculateEndBattleResponse( room.getPlayersList().get(i), score );
 	    }
+	    
+	    // balance live battle scores
+	    if( !isQuest )
+	    {
+		    for (int i=0; i < scores.length; i++)
+		    {
+		    	if( scores[i] == 0 )
+		    		scores[i] = -scores[i==0?1:0];
+		    }
+	    }
+	    
+	    calculateEndBattleResponse();
+	  //  destroyGame();
 	}
 
-	private void calculateEndBattleResponse(User user, int score)
+	private void calculateEndBattleResponse()
 	{
-        // consume outcomes and set quest score
-		IntIntMap outcomes = null;
-    	Player player = ((Game)user.getSession().getProperty("core")).player;
-    	try 
-    	{
-    		trace("isQuest", isQuest, player.quests.get( battleField.map.index ) , score);
-        	if ( isQuest)
-        	{
-		        // get outcomes
-		        outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
-        		if( player.quests.get( battleField.map.index ) < score )
-        		{
-        			UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, score);
-        			player.quests.set(battleField.map.index, score);
- 
-		        	BattleOutcome.consume_outcomes(player, outcomes);
-		        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
-    		    	sendEndBattleResponse(user, outcomes, score);
-        		}
-    		}
-        	else
-        	{
-        		trace("score", score);
-        		if(score > 0)
-        		{
-        		    for (int i=0; i < room.getPlayersList().size(); i++)
-        		    {
-        		    	score = (user.getId()==room.getPlayersList().get(i).getId()?1:-1) * score;
-        		    	outcomes = BattleOutcome.get_outcomes(player, battleField.map, score);
-			        	BattleOutcome.consume_outcomes(player, outcomes);
-			        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
-        		    	sendEndBattleResponse(room.getPlayersList().get(i), outcomes, score);
-        		    }
-        		}
-        	}
-        	
-		}
-    	catch (Exception e) {
-			trace(e.getMessage());
-		}
-    		
+		List<User> users = getPlayers();
+	    for (int i=0; i < users.size(); i++)
+	    {
+	    	User user = users.get(i);
+	    	if( !user.isNpc() )
+	    	{
+	    		Player player = ((Game)user.getSession().getProperty("core")).player;
+	    		IntIntMap outcomes = BattleOutcome.get_outcomes( player, battleField.map, scores[i] );
+	    		trace("isQuest", isQuest, scores[i]);
+try {
+	        	if ( isQuest )
+	        	{
+	        		if( player.quests.get( battleField.map.index ) < scores[i] )
+	        		{
+						UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, scores[i]);
+	        			player.quests.set(battleField.map.index, scores[i]);
+	        		}
+	        	}
+
+	        	BattleOutcome.consume_outcomes(player, outcomes);
+	        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
+	        	sendEndBattleResponse(user, outcomes, scores[i]);
+	        	
+} catch (Exception e) {
+	trace(e.getMessage());
+}
+	    	}
+	    	getApi().leaveRoom(user, room);
+	    	if(user.isNpc())
+	    		getApi().disconnect(user.getSession());
+	    }
 	}
 
 	private void sendEndBattleResponse(User user, IntIntMap outcomes, int score)
@@ -271,7 +286,7 @@ public class BattleRoom extends SFSExtension
     	// provide sfs rewards map
     	SFSObject sfsO = SFSObject.newInstance();
     	
-    	sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
+    	//sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
     	SFSObject sfsReward = null;
     	SFSArray sfsRewards  = new SFSArray();
     	for(int r : outcomes.keys())
@@ -284,15 +299,17 @@ public class BattleRoom extends SFSExtension
     	sfsO.putSFSArray("rewards", sfsRewards);
     	
         sfsO.putBool( "youWin", score>0 );
-        sfsO.putInt( "score", score );trace(sfsO.getDump());
+        sfsO.putInt( "score", score );//trace(sfsO.getDump());
     	send( "endBattle", sfsO, user );		
 	}
 
+	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void fight(Object[] objects, int destination) 
 	{
-		state = STATE_BATTLE_STARTED;
+		setState( STATE_BATTLE_STARTED );
 		SFSArray srcs = SFSArray.newInstance();
-		
+		trace("fight to", destination);
+
 		for(int i = 0; i<objects.length; i++)
 		{
 			//trace("fight", (Integer)objects[i], "to", destination);
@@ -306,7 +323,7 @@ public class BattleRoom extends SFSExtension
 		listOfVars.add( new SFSRoomVariable("d", destination) );
 		sfsApi.setRoomVariables(null, room, listOfVars);
 	}
-
+	
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void improveBuilding(User sender, ISFSObject params) 
 	{
@@ -316,12 +333,15 @@ public class BattleRoom extends SFSExtension
 	}
 	private void sendImproveResponse(int index, int type, int level)
 	{
-		state = STATE_BATTLE_STARTED;
+		if(getState() == STATE_CREATED)
+			setState( STATE_BATTLE_STARTED );
+		
 		SFSObject params = SFSObject.newInstance();
 		params.putInt("i", index);
 		params.putInt("t", type);
 		params.putInt("l", level);
-		sfsApi.sendExtensionResponse("i", params, room.getPlayersList(), room, false);		
+		sfsApi.sendExtensionResponse("i", params, getPlayers(), room, false);
+
 	}
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void hit(int troopId)
@@ -337,11 +357,6 @@ public class BattleRoom extends SFSExtension
 	}
 	public void destroyGame()
 	{
-		if(state >= STATE_DESTROYED)
-			return;
-			
-		state = STATE_DESTROYED;
-		
 		if(timer != null)
 			timer.cancel();
 		timer = null;
@@ -350,10 +365,42 @@ public class BattleRoom extends SFSExtension
 			autoJoinTimer.cancel();
 		autoJoinTimer = null;
 		
+		if(getState() >= STATE_DESTROYED)
+			return;
+			
+		setState( STATE_DESTROYED );
+		
 		GTimer.stopAll();
 		clearAllHandlers();
 		
 		trace("destroyGame");
+	}
+
+
+	public List<User> getPlayers()
+	{
+		List<User> players = room.getPlayersList();
+//		for (int i=0; i < players.size(); i++)
+//	    	trace("===>", i, players.get(i).getName());	
+		
+		boolean needForReverse = ( players.size()==2 && Integer.parseInt(players.get(0).getName()) > Integer.parseInt(players.get(1).getName()) );
+		if( needForReverse )
+			Collections.reverse(players);
+
+		return players;
+	}
+	
+	private void setState(int value)
+	{
+		if(_state == value)
+			return;
+		
+		_state = value;
+		room.setProperty("state", _state);
+	}
+	private int getState()
+	{
+		return _state;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 
 import com.gerantech.towers.sfs.utils.Logger;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
@@ -14,6 +15,7 @@ import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -35,6 +37,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	 * com.smartfoxserver.v2.extensions.IServerEventHandler#handleServerEvent
 	 * (com.smartfoxserver.v2.core.ISFSEvent)
 	 */
+	@SuppressWarnings("unchecked")
 	public void handleServerEvent(ISFSEvent event) throws SFSException 
 	{
 		String name = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
@@ -154,6 +157,20 @@ public class LoginEventHandler extends BaseServerEventHandler
     		outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
     		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
     		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
+    		
+    		// find active battle rooms
+            List<Room> rList = getParentExtension().getParentZone().getRoomList();
+            for (Room room : rList)
+            {
+                if (!room.isFull() || room.getGroupId()!="quests")
+                {
+                	if(((List<String>)room.getProperty("regidteredPlayersId")).contains(id+""))
+                	{
+                		outData.putBool("inBattle", true);
+                		break;
+                	}
+                }
+            }
     		
     		initiateCore(session, outData, loginData);
 		}
