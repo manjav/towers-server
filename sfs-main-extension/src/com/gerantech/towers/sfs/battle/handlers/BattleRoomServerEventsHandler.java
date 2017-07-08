@@ -45,9 +45,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				    {
 				    	if(!u.isNpc() && !u.equals(user))
 				    	{
-				    		SFSObject sfs = SFSObject.newInstance();
-				    		sfs.putInt("user", user.getId());
-				    		send("leftBattle", sfs, u);
+				    		SFSObject sfsO = SFSObject.newInstance();
+				    		sfsO.putText("user", user.getName());
+				    		send("leftBattle", sfsO, u);
 				    	}
 				    }
 		    	}
@@ -80,14 +80,14 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			    	}
 			    	else if( !players.get(i).isNpc() )
 			    	{
-			    		sfsO.putInt("user", user.getId());
+			    		sfsO.putText("user", user.getName());
 			    		send("rejoinBattle", sfsO, players.get(i));	
 		    		}
 			    }
 				return;
 			}
 			
-			// wait to match making ( complete battle room players )
+			// wait to match making ( complete battle-room`s players )
 			if(!room.isFull())
 			{
 		       	roomClass.autoJoinTimer = new Timer();
@@ -149,7 +149,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private String getMapName(boolean isQuest)
 	{
 		int index = (Integer)room.getProperty("index");
-		String mapName = "battle_2";// + index;//"+(Math.random()>0.5?1:0);
+		String mapName = "battle_1";// + index;//"+(Math.random()>0.5?1:0);
 		if(isQuest)
 			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).player.get_questIndex();
 		return mapName;

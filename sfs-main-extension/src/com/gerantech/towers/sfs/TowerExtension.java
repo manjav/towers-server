@@ -22,6 +22,9 @@ public class TowerExtension extends SFSExtension
         // Add billing upgrade handler
 		addRequestHandler("buildingUpgrade", BuildingUpgradeHandler.class);
 		
+        // Add rank handler
+		addRequestHandler("rank", RankRequestHandler.class);
+	
         // Add exchange handler
 		addRequestHandler("exchange", ExchangeHandler.class);
 		
