@@ -194,17 +194,25 @@ public class BattleRoom extends SFSExtension
 
 	public void leaveGame(User user) 
 	{
-		if(!isQuest)
-			return;
+		//if(!isQuest)
+		//	return;
 	    
 		setState( STATE_BATTLE_ENDED );
 //		if(timer != null)
 //			timer.cancel();
 //		timer = null;		
 
+		if(isQuest)
+		{
 		scores = new int[1];
 		scores[0] = 0;
-	    calculateEndBattleResponse();
+		calculateEndBattleResponse();
+		}
+		else
+		{
+			scores = new int[2];
+			calculateEndBattleResponse();
+		}
 	}
 	
 	private void endBattle(int[] numBuildings, int battleDuration)

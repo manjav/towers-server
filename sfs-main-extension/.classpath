@@ -9,7 +9,9 @@
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.7.5.jar"/>
 	<classpathentry kind="lib" path="libs/httpclient-4.5.3.jar"/>
 	<classpathentry kind="lib" path="libs/httpcore-4.4.6.jar"/>
-	<classpathentry kind="lib" path="libs/json-lib-2.2.3-jdk15.jar"/>
 	<classpathentry kind="lib" path="C:/Users/ManJav/SmartFoxServer_2X/SFS2X/extensions/__lib__/core.jar"/>
+	<classpathentry kind="lib" path="libs/hazelcast-3.8.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/ManJav/SmartFoxServer_2X/SFS2X/extensions/__lib__/hazel.jar"/>
+	<classpathentry kind="lib" path="libs/json-lib-2.2.3-jdk15.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

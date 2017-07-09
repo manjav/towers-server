@@ -4,6 +4,10 @@ import com.gerantech.towers.sfs.handlers.BuildingUpgradeHandler;
 import com.gerantech.towers.sfs.handlers.CafeBazaarVerificationHandler;
 import com.gerantech.towers.sfs.handlers.ExchangeHandler;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
+import com.gerantech.towers.sfs.handlers.RankRequestHandler;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 /**
@@ -11,6 +15,8 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
  */
 public class TowerExtension extends SFSExtension
 {
+	private HazelcastInstance _hazelcast;
+
 	public void init()
     {
 		// Add user login handler
@@ -30,5 +36,35 @@ public class TowerExtension extends SFSExtension
 		
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
-   }
+		
+	}
+	
+	public HazelcastInstance getHazelCast()
+	{
+		if(_hazelcast != null)
+			return _hazelcast;
+		Config hazelcastCfg = new Config("aaa");
+//		Map<String, MapConfig> mcs = cfg.getMapConfigs();
+//		MapConfig mc = new MapConfig();
+//		mc.setInMemoryFormat(InMemoryFormat.OBJECT);
+//		mcs.putIfAbsent("mc", mc);
+//		for(String s:mcs.keySet())
+//			trace("MapConfig ", s);
+				
+		//NetworkConfig network = config.getNetworkConfig(); 
+		//JoinConfig join = network.getJoin();
+		//join.getMulticastConfig().setEnabled(false);
+		
+		
+		
+//		MapConfig mapCfg = new MapConfig();
+//		mapCfg.setAsyncBackupCount(1);
+//		mapCfg.setName("users");
+//		mapCfg.setInMemoryFormat(InMemoryFormat.BINARY);
+//		hazelcastCfg.addMapConfig(mapCfg);
+//		
+		trace("_______________________ NEW HAZELCAST INSTANCE _____________________");
+		_hazelcast = Hazelcast.newHazelcastInstance(hazelcastCfg);
+		return _hazelcast;
+	}
 }

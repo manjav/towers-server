@@ -2,7 +2,11 @@ package com.gerantech.towers.sfs.utils;
 
 import java.sql.SQLException;
 
+import com.gerantech.towers.sfs.TowerExtension;
+import com.gt.hazel.RankData;
 import com.gt.towers.Player;
+import com.gt.towers.constants.ResourceType;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -65,14 +69,15 @@ public class UserManager {
 		if(keys.length == 0)
 			return null;
 		
+		boolean hasRankFields = false;
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-		
 		String query = "Update resources SET count = CASE\r";
-		
+	
         int keyLen = keys.length;
         int r = 0;
         while( r < keyLen )
         {
+        	hasRankFields = keys[r]==ResourceType.XP || keys[r]==ResourceType.POINT;
         	query += "WHEN type = " + keys[r] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[r]) + "\r";
         	r ++;
         }
@@ -95,7 +100,14 @@ public class UserManager {
         query += ");";
         
 		dbManager.executeUpdate(query, new Object[] {});
-        return query;
+        
+        // update hazelcast map
+		if( hasRankFields )
+        {
+        	IMap<Integer, RankData> users =  ((TowerExtension)extension).getHazelCast().getMap("users");
+        	users.put(player.id, new RankData(player.id, player.nickName,  player.get_point(), player.get_xp()));
+        }
+		return query;
     }
 	
 	public static void upgradeBuilding(SFSExtension extension, Player player, int type, int level) throws SQLException
@@ -103,8 +115,4 @@ public class UserManager {
 		IDBManager dbManager = extension.getParentZone().getDBManager();
   		dbManager.executeUpdate("UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";", new Object[] {});
 	}
-
-
-
-
 }
