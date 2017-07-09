@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.buildings.Building;
@@ -38,11 +37,11 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			return;
 		}
 		trace(buildingType, building.level);
-		try {
-			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
-			trace(UserManager.updateResources(getParentExtension(), player, reqs.keys()));
-		} catch (Exception e) {
-			trace(e.getMessage());
-		}
+//		try {
+//			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
+//			trace(UserManager.updateResources(getParentExtension(), player, reqs.keys()));
+//		} catch (Exception e) {
+//			trace(e.getMessage());
+//		}
     }
 }

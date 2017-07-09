@@ -1,4 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
+import haxe.root.Array;
+
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -11,6 +13,7 @@ import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.Exchange;
+import com.gt.towers.utils.Tracer;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -239,6 +242,46 @@ public class LoginEventHandler extends BaseServerEventHandler
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 		}
 
-		session.setProperty("core", new Game(initData));
+		Tracer tracer = new Tracer() {
+			
+			public double __hx_setField_f(String arg0, double arg1, boolean arg2) {
+				return 0;
+			}
+			public Object __hx_setField(String arg0, Object arg1, boolean arg2) {
+				return null;
+			}
+			public double __hx_lookupSetField_f(String arg0, double arg1) {
+				return 0;
+			}
+			public Object __hx_lookupSetField(String arg0, Object arg1) {
+				return null;
+			}
+			public double __hx_lookupField_f(String arg0, boolean arg1) {
+				return 0;
+			}
+			public Object __hx_lookupField(String arg0, boolean arg1, boolean arg2) {
+				return null;
+			}
+			@SuppressWarnings("rawtypes")
+			public Object __hx_invokeField(String arg0, Array arg1) {
+				return null;
+			}
+			public void __hx_getFields(Array<String> arg0) {
+			}
+			public double __hx_getField_f(String arg0, boolean arg1, boolean arg2) {
+				return 0;
+			}
+			public Object __hx_getField(String arg0, boolean arg1, boolean arg2, boolean arg3) {
+				return null;
+			}
+			public boolean __hx_deleteField(String arg0) {
+				return false;
+			}
+			public void log(String arg0) {
+				trace(arg0);
+			}
+		};
+		
+		session.setProperty("core", new Game(initData, tracer));
 	}		
 }

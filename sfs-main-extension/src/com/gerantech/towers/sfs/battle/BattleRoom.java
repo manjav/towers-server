@@ -372,7 +372,7 @@ try {
 		
 		GTimer.stopAll();
 		clearAllHandlers();
-		
+		battleField = null;
 		trace("destroyGame");
 	}
 
