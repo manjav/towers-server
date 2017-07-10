@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -96,6 +97,9 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
     	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
+    	
+    	if( !isQuest )
+    		index = ((Game)owner.getSession().getProperty("core")).player.get_arena();
     	
         Map<Object, Object> roomProperties = new HashMap<Object, Object>();
         roomProperties.put("isQuest", isQuest);

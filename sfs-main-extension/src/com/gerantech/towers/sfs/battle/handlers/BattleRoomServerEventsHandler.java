@@ -26,7 +26,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	{
 		if(!_ENABLED)
 			return;
-		trace("HANDLESERVEREVENT______", arg);
+		//trace("HANDLESERVEREVENT______", arg);
 		User user = (User)arg.getParameter(SFSEventParam.USER); 
 		
 		if(arg.getType().equals(SFSEventType.USER_DISCONNECT))
@@ -149,7 +149,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private String getMapName(boolean isQuest)
 	{
 		int index = (Integer)room.getProperty("index");
-		String mapName = "battle_1";// + index;//"+(Math.random()>0.5?1:0);
+		String mapName = "battle_" + index;
 		if(isQuest)
 			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).player.get_questIndex();
 		return mapName;

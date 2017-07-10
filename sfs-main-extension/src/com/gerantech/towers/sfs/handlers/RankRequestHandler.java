@@ -37,8 +37,8 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		
 		trace("users.size():", users.size());
 		if(users.size() == 0)
-			for ( int i=0; i<6000; i++)
-				users.put(i , new RankData(i, "player-"+(i+10000), RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
+			for ( int i=10000; i<16000; i++)
+				users.put(i , new RankData(i, "player-"+i, RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
 		
 		//for ( Integer k:users.keySet())
 		//	trace("users:", k, users.get(k).age);
