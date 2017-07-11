@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.handlers.CafeBazaarVerificationHandler;
 import com.gerantech.towers.sfs.handlers.ExchangeHandler;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.handlers.RankRequestHandler;
+import com.gerantech.towers.sfs.handlers.SelectNameRequestHandler;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -30,13 +31,15 @@ public class TowerExtension extends SFSExtension
 		
         // Add rank handler
 		addRequestHandler("rank", RankRequestHandler.class);
+		
+        // Add select name handler
+		addRequestHandler("selectName", SelectNameRequestHandler.class);
 	
         // Add exchange handler
 		addRequestHandler("exchange", ExchangeHandler.class);
 		
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
-		
 	}
 	
 	public HazelcastInstance getHazelCast()
@@ -44,6 +47,7 @@ public class TowerExtension extends SFSExtension
 		if(_hazelcast != null)
 			return _hazelcast;
 		Config hazelcastCfg = new Config("aaa");
+		
 //		Map<String, MapConfig> mcs = cfg.getMapConfigs();
 //		MapConfig mc = new MapConfig();
 //		mc.setInMemoryFormat(InMemoryFormat.OBJECT);
@@ -54,9 +58,7 @@ public class TowerExtension extends SFSExtension
 		//NetworkConfig network = config.getNetworkConfig(); 
 		//JoinConfig join = network.getJoin();
 		//join.getMulticastConfig().setEnabled(false);
-		
-		
-		
+
 //		MapConfig mapCfg = new MapConfig();
 //		mapCfg.setAsyncBackupCount(1);
 //		mapCfg.setName("users");
