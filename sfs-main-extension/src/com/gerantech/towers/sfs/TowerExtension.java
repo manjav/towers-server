@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.handlers.BuildingUpgradeHandler;
 import com.gerantech.towers.sfs.handlers.CafeBazaarVerificationHandler;
 import com.gerantech.towers.sfs.handlers.ExchangeHandler;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
+import com.gerantech.towers.sfs.handlers.OauthHandler;
 import com.gerantech.towers.sfs.handlers.RankRequestHandler;
 import com.gerantech.towers.sfs.handlers.SelectNameRequestHandler;
 import com.hazelcast.config.Config;
@@ -37,6 +38,9 @@ public class TowerExtension extends SFSExtension
 	
         // Add exchange handler
 		addRequestHandler("exchange", ExchangeHandler.class);
+		
+        // Add socials open authentication handler
+		addRequestHandler("oauth", OauthHandler.class);
 		
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
