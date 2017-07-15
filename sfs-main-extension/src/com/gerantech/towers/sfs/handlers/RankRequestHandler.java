@@ -7,7 +7,7 @@ import java.util.Map;
 import com.gerantech.towers.sfs.TowerExtension;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
-import com.gt.towers.utils.maps.IntIntMap;
+import com.gt.towers.utils.maps.IntArenaMap;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.EntryObject;
 import com.hazelcast.query.PagingPredicate;
@@ -31,7 +31,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
-		IntIntMap arenas = ((Game)sender.getSession().getProperty("core")).arenas;
+		IntArenaMap arenas = ((Game)sender.getSession().getProperty("core")).arenas;
 		int arenaIndex = params.getInt("arena");
 		IMap<Integer, RankData> users =  ((TowerExtension)getParentExtension()).getHazelCast().getMap("users");
 		
@@ -45,7 +45,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
-		Predicate sqlQuery = eo.get("point").between(arenas.get(arenaIndex), arenaIndex>=arenas.keys().length-1?100000:arenas.get(arenaIndex+1));//.and(eo.get("xp").equal(12));
+		Predicate sqlQuery = eo.get("point").between(arenas.get(arenaIndex).min, arenas.get(arenaIndex).max);//.and(eo.get("xp").equal(12));
 		
         // a comparator which helps to sort in descending order of point field
         Comparator<Map.Entry> descendingComparator = new Comparator<Map.Entry>() {
