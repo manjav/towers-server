@@ -20,7 +20,6 @@ import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
-import com.gt.towers.utils.GTimer;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
@@ -314,7 +313,11 @@ try {
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void fight(Object[] objects, int destination) 
 	{
-		setState( STATE_BATTLE_STARTED );
+		if(getState() == STATE_CREATED)
+			setState( STATE_BATTLE_STARTED );
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+		
 		SFSArray srcs = SFSArray.newInstance();
 		trace("fight to", destination);
 
@@ -335,15 +338,17 @@ try {
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void improveBuilding(User sender, ISFSObject params) 
 	{
+		if(getState() == STATE_CREATED)
+			setState( STATE_BATTLE_STARTED );
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+		
 		Building b = battleField.places.get(params.getInt("i")).building;
 		trace("improve", params.getDump(), b.improvable(params.getInt("t")));
 		b.improve(params.getInt("t"));
 	}
 	private void sendImproveResponse(int index, int type, int level)
 	{
-		if(getState() == STATE_CREATED)
-			setState( STATE_BATTLE_STARTED );
-		
 		SFSObject params = SFSObject.newInstance();
 		params.putInt("i", index);
 		params.putInt("t", type);
@@ -354,6 +359,9 @@ try {
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void hit(int troopId)
 	{
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+		
 		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
 		battleField.places.get(index).killTroop(troopId);
 	}
@@ -375,11 +383,13 @@ try {
 		
 		if(getState() >= STATE_DESTROYED)
 			return;
-			
 		setState( STATE_DESTROYED );
+			
 		
-		GTimer.stopAll();
+		//GTimer.stopAll();
 		clearAllHandlers();
+		
+		battleField.dispose();
 		battleField = null;
 		trace("destroyGame");
 	}

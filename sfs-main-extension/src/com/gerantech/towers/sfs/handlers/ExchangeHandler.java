@@ -51,7 +51,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int[] outs = item.outcomes.keys();
 		for(int o = 0; o<outs.length; o++)
 			trace("outcomes", outs[o], item.outcomes.get(outs[o]));
-		trace(type, item.expiredAt, now, hardsConfimed, succeed, item.numExchanges);
+		trace("type:", type, "expiredAt:", item.expiredAt, "now:", now, "hardsConfimed:", hardsConfimed, "succeed:", succeed, "numExchanges:", item.numExchanges, "outcome:", item.outcome);
 
 		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
 		{
@@ -68,12 +68,13 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		
 		// update database
 		//add reqs to resources
+		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_BUILDING ? item.outcomes.keys()[0] : 0;
         IntIntMap resources = item.outcomes;
         for(int r:item.requirements.keys())
         	resources.set(r, 0);
 		try {
 			UserManager.updateResources(getParentExtension(), player, resources.keys());
-			UserManager.updateExchange(getParentExtension(), type, player.id, now+ExchangeType.getCooldown(type), item.numExchanges, 0);
+			UserManager.updateExchange(getParentExtension(), type, player.id, now+ExchangeType.getCooldown(type), item.numExchanges, outcome);
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}

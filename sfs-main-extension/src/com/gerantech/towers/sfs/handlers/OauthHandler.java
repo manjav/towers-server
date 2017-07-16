@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
