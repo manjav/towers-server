@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -60,7 +61,11 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
         if (theRoom == null)
             theRoom = makeNewRoom(user);
-       
+        
+    	Player player = ((Game)user.getSession().getProperty("core")).player;
+        user.setProperty("name", player.nickName);
+        user.setProperty("point", player.get_point());
+        
         try
         {
             getApi().joinRoom(user, theRoom);

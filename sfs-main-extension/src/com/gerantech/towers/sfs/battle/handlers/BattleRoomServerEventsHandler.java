@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -104,7 +105,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 									break;
 								npcName --;
 							}
-							getApi().joinRoom(getApi().createNPC(npcName+"", getParentExtension().getParentZone(), true), room);
+							User npcUser = getApi().createNPC(npcName+"", getParentExtension().getParentZone(), true);
+							Random ran = new Random();
+							int point = (Integer)room.getPlayersList().get(0).getProperty("point");						
+							npcUser.setProperty("name", "NPC");
+							npcUser.setProperty("point", point+ran.nextInt(10)-5);
+							getApi().joinRoom(npcUser, room);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}
@@ -128,13 +134,23 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		List<User> players = roomClass.getPlayers();
 	    for (int i=0; i < players.size(); i++)
 	    {
-	    	if(!players.get(i).isNpc())
+	    	if( !players.get(i).isNpc() )
 	    	{
 		        SFSObject sfsO = new SFSObject();
 		        sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
 		        sfsO.putInt("troopType", i);
 		        sfsO.putInt("roomId", room.getId());
 		        sfsO.putText("mapName", mapName);
+		        
+		        if( players.size() == 2 )
+		        {
+		        	User opponent = players.get(i==0?1:0);
+	        		SFSObject sfsOpp = new SFSObject();
+	        		sfsOpp.putText("name", (String)opponent.getProperty("name"));
+	        		sfsOpp.putInt("point", (Integer)opponent.getProperty("point"));
+	        		sfsO.putSFSObject("opponent", sfsOpp);
+		        }
+		        
 		    	send("startBattle", sfsO, players.get(i));
 	    	}
 	    	else
