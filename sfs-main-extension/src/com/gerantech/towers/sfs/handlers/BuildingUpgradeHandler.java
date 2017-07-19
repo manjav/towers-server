@@ -38,10 +38,9 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade.");
 			return;
 		}
-		trace(buildingType, building.level);
 		try {
 			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
-			trace(UserManager.updateResources(getParentExtension(), player, reqs.keys()));
+			UserManager.updateResources(getParentExtension(), player, reqs.keys());
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}
