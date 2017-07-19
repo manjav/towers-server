@@ -22,6 +22,7 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
     	int buildingType = (int)params.getInt("type");
+    	int confirmedHards = (int)params.getInt("confirmedHards");
 		Player player = ((Game)sender.getSession().getProperty("core")).player;
 		Building building = player.buildings.get(buildingType);
 		
@@ -32,9 +33,9 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
         	reqs.set(r, 0);//add rewards to reqs
 
 		trace(buildingType, building.level);
-		if(!building.upgrade(0))
+		if( !building.upgrade(confirmedHards) )
 		{
-			trace(ExtensionLogLevel.WARN, "building " + buildingType + "can not upgrade.");
+			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade.");
 			return;
 		}
 		trace(buildingType, building.level);
@@ -44,5 +45,6 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}
+		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.level );
     }
 }

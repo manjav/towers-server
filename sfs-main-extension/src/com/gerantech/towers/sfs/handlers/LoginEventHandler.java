@@ -96,7 +96,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		    		so.putInt("outcome", 0);
 		    		
 					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING || ExchangeType.getCategory(t) == ExchangeType.S_30_CHEST)
-						so.putInt("expired_at", now + ExchangeType.getCooldown(t));
+						so.putInt("expired_at", now + (t==ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
 					else
 						so.putInt("expired_at", 0);
 	    		
