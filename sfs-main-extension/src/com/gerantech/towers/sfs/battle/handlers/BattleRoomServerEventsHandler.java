@@ -106,10 +106,16 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 								npcName --;
 							}
 							User npcUser = getApi().createNPC(npcName+"", getParentExtension().getParentZone(), true);
+							
+							// random point near player point
 							Random ran = new Random();
-							int point = (Integer)room.getPlayersList().get(0).getProperty("point");						
+							int point = (Integer)room.getPlayersList().get(0).getProperty("point");
+							point = point+ran.nextInt(10)-5;
+							if( point < 0 )
+								point = 0;
+							npcUser.setProperty("point", point);
+							
 							npcUser.setProperty("name", "NPC");
-							npcUser.setProperty("point", point+ran.nextInt(10)-5);
 							getApi().joinRoom(npcUser, room);
 						} catch (Exception e) {
 							trace(e.getMessage());

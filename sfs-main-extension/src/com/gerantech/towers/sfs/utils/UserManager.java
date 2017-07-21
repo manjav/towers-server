@@ -2,11 +2,13 @@ package com.gerantech.towers.sfs.utils;
 
 import java.sql.SQLException;
 
-import com.gerantech.towers.sfs.TowerExtension;
 import com.gt.hazel.RankData;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -77,7 +79,9 @@ public class UserManager {
         int r = 0;
         while( r < keyLen )
         {
-        	hasRankFields = keys[r]==ResourceType.XP || keys[r]==ResourceType.POINT;
+        	if( !hasRankFields )
+        		hasRankFields = keys[r]==ResourceType.XP || keys[r]==ResourceType.POINT;
+        	
         	query += "WHEN type = " + keys[r] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[r]) + "\r";
         	r ++;
         }
@@ -104,8 +108,17 @@ public class UserManager {
         // update hazelcast map
 		if( hasRankFields )
         {
-        	IMap<Integer, RankData> users =  ((TowerExtension)extension).getHazelCast().getMap("users");
-        	users.put(player.id, new RankData(player.id, player.nickName,  player.get_point(), player.get_xp()));
+			IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+			if(users.size() == 0)
+				for ( int i=1000; i<1600; i++)
+					users.put(i , new RankData(i, "player-"+i, RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
+			
+        	RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.get_xp());
+        	query = "id:"+player.id+", nickName:"+player.nickName+", point:"+ player.get_point()+", xp:"+player.get_xp();
+        	if( users.containsKey(player.id))
+        		users.replace(player.id, rd);
+        	else
+        		users.put(player.id, rd);
         }
 		return query;
     }

@@ -4,16 +4,16 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 
-import com.gerantech.towers.sfs.TowerExtension;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.utils.maps.IntArenaMap;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.EntryObject;
 import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -31,17 +31,19 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
+		IMap<Integer, RankData> users =  Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+
 		IntArenaMap arenas = ((Game)sender.getSession().getProperty("core")).arenas;
 		int arenaIndex = params.getInt("arena");
-		IMap<Integer, RankData> users =  ((TowerExtension)getParentExtension()).getHazelCast().getMap("users");
-		
+		SFSArray players = new SFSArray();
+
 		trace("users.size():", users.size());
 		if(users.size() == 0)
-			for ( int i=10000; i<16000; i++)
-				users.put(i , new RankData(i, "player-"+i, RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
-		
-		//for ( Integer k:users.keySet())
-		//	trace("users:", k, users.get(k).age);
+		{
+			params.putSFSArray("list", players);
+			send("rank", params, sender);
+			return;
+		}
 
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
@@ -59,7 +61,6 @@ public class RankRequestHandler extends BaseClientRequestHandler
         PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 30);
 		Collection<RankData> result1 = users.values(pagingPredicate);
 
-		SFSArray players = new SFSArray();
 		SFSObject player = null;
 		for (RankData r : result1)
 		{

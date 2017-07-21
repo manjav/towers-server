@@ -7,9 +7,6 @@ import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.handlers.OauthHandler;
 import com.gerantech.towers.sfs.handlers.RankRequestHandler;
 import com.gerantech.towers.sfs.handlers.SelectNameRequestHandler;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 /**
@@ -17,7 +14,7 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
  */
 public class TowerExtension extends SFSExtension
 {
-	private HazelcastInstance _hazelcast;
+	//private HazelcastInstance _hazelcast;
 
 	public void init()
     {
@@ -46,31 +43,31 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
 	}
 	
-	public HazelcastInstance getHazelCast()
-	{
-		if(_hazelcast != null)
-			return _hazelcast;
-		Config hazelcastCfg = new Config("aaa");
-		
-//		Map<String, MapConfig> mcs = cfg.getMapConfigs();
-//		MapConfig mc = new MapConfig();
-//		mc.setInMemoryFormat(InMemoryFormat.OBJECT);
-//		mcs.putIfAbsent("mc", mc);
-//		for(String s:mcs.keySet())
-//			trace("MapConfig ", s);
-				
-		//NetworkConfig network = config.getNetworkConfig(); 
-		//JoinConfig join = network.getJoin();
-		//join.getMulticastConfig().setEnabled(false);
-
-//		MapConfig mapCfg = new MapConfig();
-//		mapCfg.setAsyncBackupCount(1);
-//		mapCfg.setName("users");
-//		mapCfg.setInMemoryFormat(InMemoryFormat.BINARY);
-//		hazelcastCfg.addMapConfig(mapCfg);
+//	public HazelcastInstance getHazelCast()
+//	{
+//		if(_hazelcast != null)
+//			return _hazelcast;
+//		Config hazelcastCfg = new Config("aaa");
 //		
-		trace("_______________________ NEW HAZELCAST INSTANCE _____________________");
-		_hazelcast = Hazelcast.newHazelcastInstance(hazelcastCfg);
-		return _hazelcast;
-	}
+////		Map<String, MapConfig> mcs = cfg.getMapConfigs();
+////		MapConfig mc = new MapConfig();
+////		mc.setInMemoryFormat(InMemoryFormat.OBJECT);
+////		mcs.putIfAbsent("mc", mc);
+////		for(String s:mcs.keySet())
+////			trace("MapConfig ", s);
+//				
+//		//NetworkConfig network = config.getNetworkConfig(); 
+//		//JoinConfig join = network.getJoin();
+//		//join.getMulticastConfig().setEnabled(false);
+//
+////		MapConfig mapCfg = new MapConfig();
+////		mapCfg.setAsyncBackupCount(1);
+////		mapCfg.setName("users");
+////		mapCfg.setInMemoryFormat(InMemoryFormat.BINARY);
+////		hazelcastCfg.addMapConfig(mapCfg);
+////		
+//		trace("_______________________ NEW HAZELCAST INSTANCE _____________________");
+//		_hazelcast = Hazelcast.newHazelcastInstance(hazelcastCfg);
+//		return _hazelcast;
+//	}
 }

@@ -15,7 +15,6 @@ import com.gerantech.towers.sfs.battle.handlers.BattleRoomResetVarsRequestHandle
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
@@ -261,21 +260,21 @@ public class BattleRoom extends SFSExtension
 	    	User user = users.get(i);
 	    	if( !user.isNpc() )
 	    	{
-	    		Player player = ((Game)user.getSession().getProperty("core")).player;
-	    		IntIntMap outcomes = BattleOutcome.get_outcomes( player, battleField.map, scores[i] );
+	    		Game game = ((Game)user.getSession().getProperty("core"));
+	    		IntIntMap outcomes = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
 	    		trace("isQuest", isQuest, scores[i]);
 try {
 	        	if ( isQuest )
 	        	{
-	        		if( player.quests.get( battleField.map.index ) < scores[i] )
+	        		if( game.player.quests.get( battleField.map.index ) < scores[i] )
 	        		{
-						UserManager.setQuestScore(getParentZone().getExtension(), player, battleField.map.index, scores[i]);
-	        			player.quests.set(battleField.map.index, scores[i]);
+						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+						game.player.quests.set(battleField.map.index, scores[i]);
 	        		}
 	        	}
 
-	        	BattleOutcome.consume_outcomes(player, outcomes);
-	        	UserManager.updateResources(getParentZone().getExtension(), player, outcomes.keys());
+	        	BattleOutcome.consume_outcomes(game.player, outcomes);
+	        	trace(UserManager.updateResources(getParentZone().getExtension(), game.player, outcomes.keys()));
 	        	sendEndBattleResponse(user, outcomes, scores[i]);
 	        	
 } catch (Exception e) {
