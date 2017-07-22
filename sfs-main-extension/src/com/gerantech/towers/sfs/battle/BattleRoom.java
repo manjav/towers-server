@@ -42,7 +42,6 @@ public class BattleRoom extends SFSExtension
 
 	private int _state = -1;
 	
-	private List<String> regidteredPlayersId;
 	private int[] reservedPopulations;
 	private int[] reservedTypes;
 	private int[] reservedLevels;
@@ -67,7 +66,6 @@ public class BattleRoom extends SFSExtension
 		
 		addEventHandler(SFSEventType.ROOM_REMOVED, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
-		//addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		
 		addRequestHandler("h", BattleRoomHitRequestHandler.class);
@@ -85,17 +83,16 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_CREATED );
 		this.isQuest = isQuest;
 		this.singleMode = singleMode;
-		
-		regidteredPlayersId = new ArrayList<String>();
+
+		ArrayList<String> registeredPlayersId = new ArrayList<String>();
 		List<User> players = getPlayers();
         for (User u: players)
         	if(!u.isNpc())
-        		regidteredPlayersId.add( u.getName());
-        room.setProperty("regidteredPlayersId", regidteredPlayersId);
+				registeredPlayersId.add( u.getName());
+        room.setProperty("registeredPlayersId", registeredPlayersId);
 		
 		startBattleAt = Instant.now().getEpochSecond();
-		
-		
+
 		battleField = new BattleField(game, mapName, 0);
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
@@ -273,8 +270,24 @@ try {
 	        		}
 	        	}
 
-	        	BattleOutcome.consume_outcomes(game.player, outcomes);
-	        	trace(UserManager.updateResources(getParentZone().getExtension(), game.player, outcomes.keys()));
+	        	IntIntMap insertMap = new IntIntMap();
+                IntIntMap updateMap = new IntIntMap();
+
+            	int[] outk = outcomes.keys();
+	        	int r = 0;
+	        	while ( r < outk.length )
+				{
+					if ( game.player.resources.exists(outk[r]) )
+                        updateMap.set(outk[r], outcomes.get(outk[r]));
+					else
+						insertMap.set(outk[r], outcomes.get(outk[r]));
+					trace(r, outk[r],outcomes.get(outk[r]) );
+                    r ++;
+				}
+
+	        	BattleOutcome.consume_outcomes(game, outcomes);
+                trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
+                trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
 	        	sendEndBattleResponse(user, outcomes, scores[i]);
 	        	
 } catch (Exception e) {

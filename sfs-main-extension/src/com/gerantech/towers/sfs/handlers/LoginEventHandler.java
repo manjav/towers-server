@@ -167,7 +167,7 @@ public class LoginEventHandler extends BaseServerEventHandler
             {
                 if (!room.isFull() || room.getGroupId()!="quests")
                 {
-                	if(((List<String>)room.getProperty("regidteredPlayersId")).contains(id+""))
+					if (((List<String>) room.getProperty("registeredPlayersId")).contains(id + "")) {
                 	{
                 		outData.putBool("inBattle", true);
                 		break;

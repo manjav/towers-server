@@ -91,7 +91,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
              	}
             	else if( roomState == BattleRoom.STATE_BATTLE_STARTED )
             	{
-            		if(((List<String>)room.getProperty("regidteredPlayersId")).contains(user.getName()))
+            		if(((List<String>)room.getProperty("registeredPlayersId")).contains(user.getName()))
                 		return room;
             	}
             }
