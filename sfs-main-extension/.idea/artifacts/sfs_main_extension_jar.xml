@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sfs-main-extension:jar">
+    <output-path>C:/Program Files (x86)/SmartFoxServer_2X/SFS2X/extensions/TowerExtension</output-path>
+    <root id="archive" name="sfs-main-extension.jar">
+      <element id="module-output" name="sfs-main-extension" />
+    </root>
+  </artifact>
+</component>
