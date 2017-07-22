@@ -139,7 +139,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         {
 			int id = Integer.parseInt(name);
 	        ISFSArray res = dbManager.executeQuery("SELECT * FROM players WHERE id="+id+"", new Object[] {});
-	        
+
 	        if(res.size() != 1)
 	        {
 	        	//trace("name", name, "id", id, "password", password);
@@ -167,7 +167,7 @@ public class LoginEventHandler extends BaseServerEventHandler
             {
                 if (!room.isFull() || room.getGroupId()!="quests")
                 {
-					if (((List<String>) room.getProperty("registeredPlayersId")).contains(id + "")) {
+					if (((List<String>) room.getProperty("registeredPlayersId")).contains(id + ""))
                 	{
                 		outData.putBool("inBattle", true);
                 		break;
