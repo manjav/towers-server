@@ -28,19 +28,18 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		
 		trace(building.improveLevel, building.level, building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
 		
-        IntIntMap reqs = building.get_upgradeRequirements();
+        IntIntMap upgradeRequirements = building.get_upgradeRequirements();
         for(int r:building.get_upgradeRewards().keys())
-        	reqs.set(r, 0);//add rewards to reqs
+        	upgradeRequirements.set(r, 0);//add rewards to reqs
 
-		trace(buildingType, building.level);
 		if( !building.upgrade(confirmedHards) )
 		{
-			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade.");
+			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.level);
 			return;
 		}
 		try {
 			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
-			UserManager.updateResources(getParentExtension(), player, reqs.keys());
+			UserManager.updateResources(getParentExtension(), player, upgradeRequirements);
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}

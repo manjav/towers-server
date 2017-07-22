@@ -73,7 +73,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
         for(int r:item.requirements.keys())
         	resources.set(r, 0);
 		try {
-			UserManager.updateResources(getParentExtension(), player, resources.keys());
+			UserManager.updateResources(getParentExtension(), player, resources);
 			UserManager.updateExchange(getParentExtension(), type, player.id, now+ExchangeType.getCooldown(type), item.numExchanges, outcome);
 		} catch (Exception e) {
 			trace(e.getMessage());

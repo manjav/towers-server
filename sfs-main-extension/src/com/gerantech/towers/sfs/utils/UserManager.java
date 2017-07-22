@@ -1,10 +1,12 @@
 package com.gerantech.towers.sfs.utils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import com.gt.hazel.RankData;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -66,45 +68,40 @@ public class UserManager {
       		dbManager.executeInsert("INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
 	}
 
-	public static String updateResources(ISFSExtension extension, Player player, int[] keys) throws SFSException, SQLException 
+	public static String updateResources(ISFSExtension extension, Player player, IntIntMap resources) throws SFSException, SQLException
 	{
-		if(keys.length == 0)
-			return null;
-		
-		boolean hasRankFields = false;
+		int[] keys = resources.keys();
+		int keyLen = keys.length;
+		if(keyLen == 0) {
+			return "";
+		}
+
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		String query = "Update resources SET count = CASE\r";
-	
-        int keyLen = keys.length;
-        int r = 0;
-        while( r < keyLen )
+		boolean hasRankFields = false;
+
+        keyLen = keys.length;
+		for (int i = 0; i < keyLen; i++)
         {
         	if( !hasRankFields )
-        		hasRankFields = keys[r]==ResourceType.XP || keys[r]==ResourceType.POINT;
-        	
-        	query += "WHEN type = " + keys[r] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[r]) + "\r";
-        	r ++;
+        		hasRankFields = keys[i]==ResourceType.XP || keys[i]==ResourceType.POINT;
+
+        	query += "WHEN type = " + keys[i] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[i]) + "\r";
         }
         query += "ELSE count END WHERE type IN (";
-        
-        r = 0;
-        while( r < keyLen )
-        {
-        	query += keys[r] + (r < keyLen-1 ? "," : "");
-        	r ++;
-        }
+
+		for (int i = 0; i < keyLen; i++)
+        	query += keys[i] + (i < keyLen-1 ? "," : "");
+
         query += ") AND player_id IN (";
-        
-        r = 0;
-        while( r < keyLen )
-        {
-        	query += player.id + (r < keyLen-1 ? "," : "");
-        	r ++;
-        }
+
+		for (int i = 0; i < keyLen; i++)
+        	query += player.id + (i < keyLen-1 ? "," : "");
+
         query += ");";
-        
+
 		dbManager.executeUpdate(query, new Object[] {});
-        
+
         // update hazelcast map
 		if( hasRankFields )
         {
@@ -114,7 +111,7 @@ public class UserManager {
 					users.put(i , new RankData(i, "player-"+i, RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
 			
         	RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.get_xp());
-        	query = "id:"+player.id+", nickName:"+player.nickName+", point:"+ player.get_point()+", xp:"+player.get_xp();
+        	query += "\rid:"+player.id+", nickName:"+player.nickName+", point:"+ player.get_point()+", xp:"+player.get_xp();
         	if( users.containsKey(player.id))
         		users.replace(player.id, rd);
         	else
@@ -122,10 +119,33 @@ public class UserManager {
         }
 		return query;
     }
-	
+	public static String insertResources(ISFSExtension extension, Player player, IntIntMap resources) throws SQLException
+	{
+		int[] keys = resources.keys();
+		int keyLen = keys.length;
+		if(keyLen == 0) {
+			return "";
+		}
+
+		IDBManager dbManager = extension.getParentZone().getDBManager();
+		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
+
+		keyLen = keys.length;
+		for (int i = 0; i < keyLen; i++)
+		{
+			query += "('" + player.id + "', '" + keys[i] + "', '" + resources.get(keys[i]) + "', '" + (ResourceType.isBuilding(keys[i])?1:0) + "')";
+			query += i < keyLen - 1 ? ", " : ";";
+		}
+
+		dbManager.executeInsert(query, new Object[] {});
+		return query;
+	}
+
+
 	public static void upgradeBuilding(SFSExtension extension, Player player, int type, int level) throws SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
   		dbManager.executeUpdate("UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";", new Object[] {});
 	}
+
 }
