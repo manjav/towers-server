@@ -1,8 +1,5 @@
 package com.gerantech.towers.sfs.utils;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-
 import com.gt.hazel.RankData;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;
@@ -10,7 +7,6 @@ import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -18,6 +14,8 @@ import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+
+import java.sql.SQLException;
 
 public class UserManager {
 
@@ -106,12 +104,9 @@ public class UserManager {
 		if( hasRankFields )
         {
 			IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-			if(users.size() == 0)
-				for ( int i=1000; i<1600; i++)
-					users.put(i , new RankData(i, "player-"+i, RandomPicker.getInt(0, 3200), RandomPicker.getInt(0, 3200)));
-			
         	RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.get_xp());
         	query += "\rid:"+player.id+", nickName:"+player.nickName+", point:"+ player.get_point()+", xp:"+player.get_xp();
+
         	if( users.containsKey(player.id))
         		users.replace(player.id, rd);
         	else

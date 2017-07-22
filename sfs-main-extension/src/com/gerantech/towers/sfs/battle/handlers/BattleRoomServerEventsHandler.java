@@ -6,7 +6,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gerantech.towers.sfs.utils.RankingTools;
+import com.gt.hazel.RankData;
 import com.gt.towers.Game;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -97,29 +102,38 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					@Override
 					public void run()
 					{
+
+						Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
+
+						IMap<Integer, RankData> users = RankingTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+
+						//						trace(game.player.id, game.player.nickName, game.player.get_point());
+						RankData opponent = RankingTools.getNearOpponent(users, game.player.get_point(), 20);
+						trace(users.size(), opponent);
 						try {
-							int npcName=Integer.MAX_VALUE;
+							/*int npcName=Integer.MAX_VALUE;
 							while(true)
 							{
 								if(getParentExtension().getParentZone().getUserManager().getUserByName(npcName+"") == null)
 									break;
 								npcName --;
-							}
-							User npcUser = getApi().createNPC(npcName+"", getParentExtension().getParentZone(), true);
-							
+							}*/
+							User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
+
 							// random point near player point
-							Random ran = new Random();
+							/*Random ran = new Random();
 							int point = (Integer)room.getPlayersList().get(0).getProperty("point");
 							point = point+ran.nextInt(10)-5;
 							if( point < 0 )
-								point = 0;
-							npcUser.setProperty("point", point);
-							
-							npcUser.setProperty("name", "NPC");
+								point = 0;*/
+							npcUser.setProperty("point", opponent.point);
+							npcUser.setProperty("name", opponent.name);
 							getApi().joinRoom(npcUser, room);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}
+						roomClass.autoJoinTimer.cancel();
+						sendStartBattleResponse();
 					}
 	    		}, 3333, 3333);
 			}
