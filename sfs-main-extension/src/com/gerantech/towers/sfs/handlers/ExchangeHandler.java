@@ -45,12 +45,12 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		}
 
 		// logs .....
-		int[] reqs = item.requirements.keys();
+		/*int[] reqs = item.requirements.keys();
 		for(int i = 0; i<reqs.length; i++)
 			trace("requirements", reqs[i], item.requirements.get(reqs[i]));
 		int[] outs = item.outcomes.keys();
 		for(int o = 0; o<outs.length; o++)
-			trace("outcomes", outs[o], item.outcomes.get(outs[o]));
+			trace("outcomes", outs[o], item.outcomes.get(outs[o]));*/
 		trace("type:", type, "expiredAt:", item.expiredAt, "now:", now, "hardsConfimed:", hardsConfimed, "succeed:", succeed, "numExchanges:", item.numExchanges, "outcome:", item.outcome);
 
 		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
@@ -65,16 +65,19 @@ public class ExchangeHandler extends BaseClientRequestHandler
     		}
     		params.putSFSArray("rewards", sfsRewards);
 		}
-		
+
+		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_BUILDING ? item.outcomes.keys()[0] : 0;
 		// update database
 		//add reqs to resources
-		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_BUILDING ? item.outcomes.keys()[0] : 0;
-        IntIntMap resources = item.outcomes;
+		IntIntMap resources = new IntIntMap();
+		for(int o:item.outcomes.keys())
+			resources.set(o, 0);
         for(int r:item.requirements.keys())
         	resources.set(r, 0);
+
 		try {
 			UserManager.updateResources(getParentExtension(), player, resources);
-			UserManager.updateExchange(getParentExtension(), type, player.id, now+ExchangeType.getCooldown(type), item.numExchanges, outcome);
+			trace(UserManager.updateExchange(getParentExtension(), type, player.id, item.expiredAt, item.numExchanges, outcome));
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}

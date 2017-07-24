@@ -40,7 +40,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 			params.putText("errorCode", e.getErrorCode()+"");
 			trace(e.getMessage());
 		}
-		
+		game.player.nickName = name;
 		send("selectName", params, sender);
     }
 }
