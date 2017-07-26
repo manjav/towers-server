@@ -1,8 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 
 import com.gerantech.towers.sfs.utils.RankingTools;
 import com.gt.hazel.RankData;
@@ -27,24 +25,30 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
  */
 public class RankRequestHandler extends BaseClientRequestHandler 
 {
+	private ArrayList allUsers;
+
 	public RankRequestHandler() {}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		IMap<Integer, RankData> users = RankingTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
 
-		int arenaIndex = params.getInt("arena");
-		SFSArray players = new SFSArray();
+		users.putIfAbsent(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
+	//	int playerId = params.getInt("pId");
+		RankData playerRD = users.get(game.player.id);
+		int arenaIndex = params.getInt("arena"); //game.player.get_arena( playerRD.point ) ;//params.getInt("arena");
 
-		trace("users.size():", users.size());
-		if(users.size() == 0)
+		SFSArray players = new SFSArray();
+		if( users.size() == 0 )
 		{
 			params.putSFSArray("list", players);
 			send("rank", params, sender);
 			return;
 		}
+
+		/*for(RankData u:users.values())
+			trace("user:", u.name, u.id, u.point);*/
 
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
@@ -59,21 +63,77 @@ public class RankRequestHandler extends BaseClientRequestHandler
             }
         };
 
-        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 30);
-		Collection<RankData> result1 = users.values(pagingPredicate);
+        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 8);
+		Collection<RankData> result = users.values(pagingPredicate);
 
-		SFSObject player = null;
-		for (RankData r : result1)
+		for (RankData r : result)
+			players.addSFSObject( getRankSFS(r) );
+
+		// find near me
+		if ( game.player.get_arena( playerRD.point ) == arenaIndex && indexOf(result, playerRD.id) == -1 )
 		{
-			player = new SFSObject();
-			player.putInt("i", r.id);
-			player.putText("n", r.name);
-			player.putInt("p", r.point);
-			player.putInt("x", r.xp);
-			players.addSFSObject(player);
+			allUsers = new ArrayList<RankData>();
+			allUsers.addAll(result);
+			
+			players.addSFSObject( new SFSObject() );
+			List<RankData> nears = getNearMe(playerRD, users, pagingPredicate);
+
+			for (RankData rd : nears)
+			{
+				ISFSObject p = getRankSFS(rd);
+				p.putInt("s",  allUsers.indexOf(rd));
+				players.addSFSObject(p);
+			}
+			allUsers.clear();
 		}
 		params.putSFSArray("list", players);
 		send("rank", params, sender);
 	}
-	
+
+	private ISFSObject getRankSFS(RankData r) {
+		SFSObject player = new SFSObject();
+		player.putInt("i", r.id);
+		player.putText("n", r.name);
+		player.putInt("p", r.point);
+		//player.putInt("x", r.xp);
+		return player;
+	}
+	private List<RankData> getNearMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
+	{
+		pagingPredicate.nextPage();
+		trace(pagingPredicate.getPage(), pagingPredicate.getPageSize());
+		Collection<RankData> result = users.values(pagingPredicate);
+		allUsers.addAll(result);
+		int index = indexOf(result, playerRD.id);
+		if ( index == -1 && result.size() == pagingPredicate.getPageSize() )
+			return getNearMe(playerRD, users, pagingPredicate);
+
+		int playerIndex = pagingPredicate.getPage() * pagingPredicate.getPageSize() + index;
+		List<RankData> ret = new ArrayList<>() ;
+
+		if( playerIndex > pagingPredicate.getPageSize()+1 )
+			ret.add( (RankData) allUsers.get(playerIndex-2) );
+		if( playerIndex > pagingPredicate.getPageSize() )
+			ret.add( (RankData) allUsers.get(playerIndex-1) );
+
+		ret.add((RankData) allUsers.get(playerIndex));
+
+		if( playerIndex < allUsers.size()-1 )
+			ret.add( (RankData) allUsers.get(playerIndex+1) );
+		if( playerIndex < allUsers.size()-2 )
+			ret.add( (RankData) allUsers.get(playerIndex+2) );
+
+		return ret;
+	}
+
+	private int indexOf(Collection<RankData> ranks, int id)
+	{
+		int i = 0;
+		for (RankData r : ranks) {
+			if (r.id == id)
+				return i;
+			i ++;
+		}
+		return -1;
+	}
 }
