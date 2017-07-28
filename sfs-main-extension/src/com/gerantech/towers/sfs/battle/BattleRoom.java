@@ -7,12 +7,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomFightRequestHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomHitRequestHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomImproveRequestHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomResetVarsRequestHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
+import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.battle.AIEnemy;
@@ -71,6 +66,7 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler("h", BattleRoomHitRequestHandler.class);
 		addRequestHandler("f", BattleRoomFightRequestHandler.class);
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
+		addRequestHandler("ss", BattleRoomStickerRequestHandler.class);
 		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
 		addRequestHandler("resetAllVars", BattleRoomResetVarsRequestHandler.class);
 	}

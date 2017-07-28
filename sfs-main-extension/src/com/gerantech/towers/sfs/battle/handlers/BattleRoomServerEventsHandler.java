@@ -113,14 +113,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						}
 						cancel();
 						roomClass.autoJoinTimer.cancel();
-						trace("11111111111111111111111");
 						//sendStartBattleResponse();
 					}
 	    		}, 3333, 3333);
 			}
 			else
 			{
-				trace("222222222222222");
 				sendStartBattleResponse();
 	        }
 		}
