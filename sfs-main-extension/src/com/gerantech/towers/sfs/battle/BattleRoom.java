@@ -35,8 +35,8 @@ public class BattleRoom extends SFSExtension
 	public static final int STATE_WAITING = 0;
 	public static final int STATE_CREATED = 1;
 	public static final int STATE_BATTLE_STARTED = 2;
-	public static final int STATE_BATTLE_ENDED = 2;
-	public static final int STATE_DESTROYED = 3;
+	public static final int STATE_BATTLE_ENDED = 3;
+	public static final int STATE_DESTROYED = 4;
 	
 	public Timer autoJoinTimer;
 
@@ -113,6 +113,8 @@ public class BattleRoom extends SFSExtension
 
 			@Override
 			public void run() {
+				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED)
+					return;
 				Building b = null;
 				SFSArray vars = SFSArray.newInstance();
 				for(int i = 0; i<battleField.places.size(); i++)
@@ -385,6 +387,8 @@ try {
 	}
 	public void destroyGame()
 	{
+		clearAllHandlers();
+
 		if(timer != null)
 			timer.cancel();
 		timer = null;
@@ -399,8 +403,7 @@ try {
 			
 		
 		//GTimer.stopAll();
-		clearAllHandlers();
-		
+
 		battleField.dispose();
 		battleField = null;
 		trace("destroyGame");

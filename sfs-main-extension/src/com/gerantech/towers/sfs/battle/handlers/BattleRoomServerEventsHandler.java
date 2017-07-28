@@ -66,7 +66,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		//Zone zone = (Zone)arg.getParameter(SFSEventParam.ZONE); 
 		if(arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
 		{
-			//trace(room.getId(), room.getMaxUsers(), room.isFull(), room.getCapacity(), room.getSize(), room.getProperties().keySet().toArray());
+			//trace(room.getId(), room.getProperty("state"), room.getMaxUsers(), room.isFull(), room.getCapacity(), room.getSize(), room.getProperties().keySet().toArray());
 			
 			// return to previous room
 			if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
@@ -89,7 +89,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			}
 			
 			// wait to match making ( complete battle-room`s players )
-			if(!room.isFull())
+			if( !room.isFull() )
 			{
 		       	roomClass.autoJoinTimer = new Timer();
 		       	roomClass.autoJoinTimer.scheduleAtFixedRate(new TimerTask()
@@ -111,14 +111,17 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}
+						cancel();
 						roomClass.autoJoinTimer.cancel();
-						sendStartBattleResponse();
+						trace("11111111111111111111111");
+						//sendStartBattleResponse();
 					}
 	    		}, 3333, 3333);
 			}
 			else
 			{
-            	sendStartBattleResponse();
+				trace("222222222222222");
+				sendStartBattleResponse();
 	        }
 		}
 //		else if(arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) || arg.getType().equals(SFSEventType.ROOM_REMOVED)){}
