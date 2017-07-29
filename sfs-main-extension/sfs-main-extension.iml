@@ -7,24 +7,15 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="libs" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/libs" />
+          <root url="file://C:/SmartFoxServer_2X/SFS2X/extensions/__lib__" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/libs" recursive="false" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://C:/Program Files (x86)/SmartFoxServer_2X/SFS2X/extensions/__lib__" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://C:/Program Files (x86)/SmartFoxServer_2X/SFS2X/extensions/__lib__" recursive="false" />
+        <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X/extensions/__lib__" recursive="false" />
       </library>
     </orderEntry>
   </component>
