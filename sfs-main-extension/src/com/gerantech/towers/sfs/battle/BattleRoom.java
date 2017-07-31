@@ -283,7 +283,7 @@ try {
                     r ++;
 				}
 
-	        	BattleOutcome.consume_outcomes(game, outcomes);
+	        	game.player.addResources(outcomes);
                 trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
                 trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
 	        	sendEndBattleResponse(user, outcomes, scores[i]);
