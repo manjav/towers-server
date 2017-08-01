@@ -1,12 +1,5 @@
 package com.gerantech.towers.sfs;
-import com.gerantech.towers.sfs.handlers.BattleAutoJoinHandler;
-import com.gerantech.towers.sfs.handlers.BuildingUpgradeHandler;
-import com.gerantech.towers.sfs.handlers.CafeBazaarVerificationHandler;
-import com.gerantech.towers.sfs.handlers.ExchangeHandler;
-import com.gerantech.towers.sfs.handlers.LoginEventHandler;
-import com.gerantech.towers.sfs.handlers.OauthHandler;
-import com.gerantech.towers.sfs.handlers.RankRequestHandler;
-import com.gerantech.towers.sfs.handlers.SelectNameRequestHandler;
+import com.gerantech.towers.sfs.handlers.*;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 /**
@@ -29,11 +22,14 @@ public class TowerExtension extends SFSExtension
 		
         // Add rank handler
 		addRequestHandler("rank", RankRequestHandler.class);
-		
-        // Add select name handler
+
+		// Add select name handler
 		addRequestHandler("selectName", SelectNameRequestHandler.class);
-	
-        // Add exchange handler
+
+		// Add select name handler
+		addRequestHandler("bugReport", BugReportRequestHandler.class);
+
+		// Add exchange handler
 		addRequestHandler("exchange", ExchangeHandler.class);
 		
         // Add socials open authentication handler
