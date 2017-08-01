@@ -45,12 +45,12 @@ public class UserManager {
     	return (SFSArray) dbManager.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id="+playerId, new Object[] {});
 	}
 
-	public static ISFSArray getExchanges(SFSExtension extension, int playerId)throws SFSException, SQLException 
+	public static ISFSArray getExchanges(ISFSExtension extension, int playerId)throws SFSException, SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		return (SFSArray) dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
 	}
-	public static String updateExchange(SFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws SQLException
+	public static String updateExchange(ISFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		String query = "UPDATE `exchanges` SET `expired_at`='" + expireAt + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcome + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";";

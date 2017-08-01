@@ -14,6 +14,8 @@ import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
+import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
@@ -284,8 +286,10 @@ try {
 				}
 
 	        	game.player.addResources(outcomes);
-                trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
-                trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
+				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+				trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
+				trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
+				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
 	        	sendEndBattleResponse(user, outcomes, scores[i]);
 	        	
 } catch (Exception e) {
@@ -304,7 +308,7 @@ try {
     	SFSObject sfsO = SFSObject.newInstance();
     	
     	//sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
-    	SFSObject sfsReward = null;
+    	SFSObject sfsReward;
     	SFSArray sfsRewards  = new SFSArray();
     	for(int r : outcomes.keys())
     	{
@@ -346,7 +350,7 @@ try {
 	}
 	
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void improveBuilding(User sender, ISFSObject params) 
+	public void improveBuilding(User sender, ISFSObject params)
 	{
 		if(getState() == STATE_CREATED)
 			setState( STATE_BATTLE_STARTED );

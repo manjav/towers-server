@@ -85,7 +85,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
     		params.putSFSArray("rewards", sfsRewards);
 		}
 
-		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_BUILDING ? item.outcomes.keys()[0] : 0;
+		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS ? item.outcomes.keys()[0] : 0;
 
 		// add reqs keys to query
 		outk = item.requirements.keys();

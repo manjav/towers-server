@@ -92,16 +92,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    			int t = loginData.exchanges.get(i);
 		    		SFSObject so = new SFSObject();
 		    		so.putInt("type", t);
-		    		so.putInt("num_exchanges", 1);
+		    		so.putInt("num_exchanges", 0);
 		    		so.putInt("outcome", 0);
-		    		
-					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING || ExchangeType.getCategory(t) == ExchangeType.S_30_CHEST)
+
+					int ct = ExchangeType.getCategory(t);
+					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
 						so.putInt("expired_at", now + (t==ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
 					else
 						so.putInt("expired_at", 0);
 	    		
 		    		// bonus :
-					if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
+					if( ct == ExchangeType.S_20_SPECIALS )
 			    		so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
 
 					exchanges.addSFSObject( so );
@@ -224,13 +225,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 			
 			int t = element.getInt("type");
 			// bonus items :
-			if( ExchangeType.getCategory(t) == ExchangeType.S_20_BUILDING )
+			int ct = ExchangeType.getCategory(t);
+			if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_40_OTHERS )
 			{
 				if( element.getInt("expired_at") < now )
 				{
 					element.putInt("expired_at", now + ExchangeType.getCooldown(t) );
 					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
-					element.putInt("num_exchanges", 1 );
+					element.putInt("num_exchanges", 0 );
 					try {
 						UserManager.updateExchange(getParentExtension(), t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
 					} catch (SQLException e) {
