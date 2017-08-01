@@ -23,7 +23,7 @@ public class BugReportRequestHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		String email = params.getText("email");
-		String description = params.getText("description");
+		String description = params.getUtfString("description");
 		trace(game.player.id, email, description);
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();

@@ -22,7 +22,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 		params.putBool("succeed", true);
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		String name = params.getText("name");
+		String name = params.getUtfString("name");
 		trace(name, game.player.id);
 		if(name.length() < game.loginData.nameMinLen || name.length() > game.loginData.nameMaxLen)
 		{
