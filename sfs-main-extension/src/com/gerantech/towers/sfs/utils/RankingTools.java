@@ -35,8 +35,7 @@ public class RankingTools
         {
             int len = (int) Math.floor(names.length/arenas.length);
             for ( int i=0;  i<len;   i++,start--,nameIndex++ )
-                users.put(start , new RankData(start, names[nameIndex
-                        ], RandomPicker.getInt(a.min, a.max), 0));
+                users.put(start , new RankData(start, names[nameIndex], RandomPicker.getInt(a.min, a.max), -1));
         }
         return users;
     }
@@ -53,7 +52,7 @@ public class RankingTools
     private static Collection<RankData> getResult(IMap<Integer, RankData> users, int point, int range)
     {
         EntryObject eo = new PredicateBuilder().getEntryObject();
-        Predicate sqlQuery = eo.get("point").between(point-range, point+range).and(eo.get("point").notEqual(point));
+        Predicate sqlQuery = eo.get("point").between(point-range, point+range).and(eo.get("point").notEqual(point)).and(eo.get("xp").equal(-1));
 
         // a comparator which helps to sort in descending order of point field
         Comparator<Map.Entry> descendingComparator = new Comparator<Map.Entry>() {
