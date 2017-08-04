@@ -34,7 +34,10 @@ public class BattleRoom extends SFSExtension
 	public static final int STATE_BATTLE_STARTED = 2;
 	public static final int STATE_BATTLE_ENDED = 3;
 	public static final int STATE_DESTROYED = 4;
-	
+
+	private static final double TIMER_PERIOD = 0.5;
+
+
 	public Timer autoJoinTimer;
 
 	private int _state = -1;
@@ -53,9 +56,7 @@ public class BattleRoom extends SFSExtension
 	private boolean isQuest;
 	private boolean singleMode;
 	public int updaterCount = 1;
-	private int timerCount = 11;
-	private long startBattleAt;
-	
+
 	public void init() 
 	{
 		room = getParentRoom();
@@ -88,10 +89,9 @@ public class BattleRoom extends SFSExtension
         	if(!u.isNpc())
 				registeredPlayersId.add( u.getName());
         room.setProperty("registeredPlayersId", registeredPlayersId);
-		
-		startBattleAt = Instant.now().getEpochSecond();
 
 		battleField = new BattleField(game, mapName, 0);
+		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
@@ -105,7 +105,7 @@ public class BattleRoom extends SFSExtension
 			reservedTypes[i] = battleField.places.get(i).building.type;
 			reservedLevels[i] = battleField.places.get(i).building.level;
 		}
-		
+
     	timer = new Timer();
     	timer.schedule(new TimerTask() {
 
@@ -144,7 +144,7 @@ public class BattleRoom extends SFSExtension
 				}
 
 				// fight enemy bot
-		    	if(singleMode && getState()==STATE_BATTLE_STARTED && aiEnemy.doAction(timerCount % 15))
+		    	if(singleMode && getState()==STATE_BATTLE_STARTED && aiEnemy.doAction())
 		    	{
 		    		if(aiEnemy.actionType == "fight")
 		    		{
@@ -172,16 +172,15 @@ public class BattleRoom extends SFSExtension
 						populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-	        	int battleDuration = (int) ((int)Instant.now().getEpochSecond() - startBattleAt);
-				if( battleDuration > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
-					endBattle(numBuildings, battleDuration);
-		    	
-		    	timerCount ++;
+				if( battleField.getDuration() > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+					endBattle(numBuildings, battleField.getDuration());
+
+				battleField.now += TIMER_PERIOD;
 		    	updaterCount ++;
 			}
 
 
-		}, 0, 500);
+		}, 0, Math.round(TIMER_PERIOD*1000));
 		
 		trace("createGame");
 	}
@@ -210,7 +209,7 @@ public class BattleRoom extends SFSExtension
 		}
 	}
 	
-	private void endBattle(int[] numBuildings, int battleDuration)
+	private void endBattle(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
 //		if(timer != null)
