@@ -1,5 +1,8 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
+import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.smartfoxserver.v2.core.SFSEventParam;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -11,9 +14,7 @@ public class BattleRoomStickerRequestHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        trace(params.getDump());
-        for (User u : getParentExtension().getParentRoom().getPlayersList())
-            if (!u.isNpc() && u.getId()!=sender.getId())
-                send("ss", params, u);
+        BattleRoom battleRoom = (BattleRoom) getParentExtension().getParentRoom().getExtension();
+        battleRoom.sendSticker(sender, params);
     }
 }

@@ -15,6 +15,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -56,6 +57,7 @@ public class BattleRoom extends SFSExtension
 	private boolean isQuest;
 	private boolean singleMode;
 	public int updaterCount = 1;
+	private ISFSObject stickerParams;
 
 	public void init() 
 	{
@@ -144,22 +146,35 @@ public class BattleRoom extends SFSExtension
 				}
 
 				// fight enemy bot
-		    	if(singleMode && getState()==STATE_BATTLE_STARTED && aiEnemy.doAction())
-		    	{
-		    		if(aiEnemy.actionType == "fight")
-		    		{
-		    			Object[] ss = new Object[aiEnemy.sources.size()];
-						for(int j = 0; j<ss.length; j++)
-							ss[j] = aiEnemy.sources.get(j);
-    					//trace(singleMode, timerCount, aiEnemy.destination, aiEnemy.sources.get(0), aiEnemy.actionType);
-    					fight(ss, aiEnemy.target);
-		    		}
-//		    		else if(aiEnemy.actionType == "improve")
-//		    		{
-//    					improveBuilding(sender, params)(ss, aiEnemy.target);
-//		    		}
-		    	}
-		    	
+				if(singleMode && getState()==STATE_BATTLE_STARTED )
+				{
+					// send answer of sticker from bot
+					if(stickerParams != null)
+					{
+						if( stickerParams.getInt("wait") < 4 )
+						{
+							stickerParams.putInt("wait", stickerParams.getInt("wait")+1);
+						}
+						else
+							{
+							stickerParams.removeElement("wait");
+							send("ss", stickerParams, getRealPlayers());
+							stickerParams = null;
+						}
+					}
+
+					// fight
+					if (aiEnemy.actionType == "fight2x")
+					{
+						botFight();
+						aiEnemy.actionType = "";
+					}
+					else if (aiEnemy.doAction())
+					{
+						if (aiEnemy.actionType == "fight" || aiEnemy.actionType == "fight2x")
+							botFight();
+					}
+				}
 		    	// check ending battle
 		    	int[] numBuildings = new int[2];
 		    	int[] populations = new int[2];
@@ -184,7 +199,15 @@ public class BattleRoom extends SFSExtension
 		
 		trace("createGame");
 	}
-	
+
+	private void botFight() {
+		Object[] ss = new Object[aiEnemy.sources.size()];
+		for(int j = 0; j<ss.length; j++)
+			ss[j] = aiEnemy.sources.get(j);
+		trace("botFight", aiEnemy.actionType, aiEnemy.target);
+		fight(ss, aiEnemy.target);
+	}
+
 
 	public void leaveGame(User user) 
 	{
@@ -347,7 +370,31 @@ try {
 		listOfVars.add( new SFSRoomVariable("d", destination) );
 		sfsApi.setRoomVariables(null, room, listOfVars);
 	}
-	
+
+	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public void sendSticker(User sender, ISFSObject params)
+	{
+		for (User u : room.getPlayersList())
+		{
+			if (u.isNpc())
+			{
+				if(aiEnemy.actionType != "fight2x" && Math.random()>0.5)
+				{
+					int answer = StickerType.getRandomAnswer( params.getInt("t") );
+					if(answer > -1) {
+						params.putInt("t", answer);
+						stickerParams = params;
+						stickerParams.putInt("wait", 0);
+					}
+				}
+			}
+			else if (u.getId() != sender.getId())
+			{
+				send("ss", params, u);
+			}
+		}
+	}
+
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void improveBuilding(User sender, ISFSObject params)
 	{
@@ -408,6 +455,15 @@ try {
 		trace("destroyGame");
 	}
 
+	public List<User> getRealPlayers()
+	{
+		List<User> ret = new ArrayList<>();
+		List<User> players = room.getPlayersList();
+		for (int i=0; i < players.size(); i++)
+	    	if( !players.get(i).isNpc() && !players.get(i).isSpectator())
+				ret.add(players.get(i));
+		return ret;
+	}
 
 	public List<User> getPlayers()
 	{
@@ -434,5 +490,4 @@ try {
 	{
 		return _state;
 	}
-
 }
