@@ -22,8 +22,8 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class CafeBazaarVerificationHandler extends BaseClientRequestHandler 
 {
 
-	private static String packageName = "air.com.gilaas.tank";
-	private static String accessToken = "8tVrY3BKnp08BoW1MEVEvLQjVzagnB";
+	private static String packageName = "air.com.grantech.towers";
+	private static String accessToken = "riN8RxzQMsC9x05kCz8EWscxwjSu7r";
 	
 	public CafeBazaarVerificationHandler() {}
 
@@ -95,11 +95,13 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	{
 		List<NameValuePair> argus = new ArrayList<NameValuePair>();
 		argus.add(new BasicNameValuePair("grant_type", "authorization_code"));
-		argus.add(new BasicNameValuePair("code", "n5dAwjsTPYUhkKGUzYwSrZwLODdSP7"));
-		argus.add(new BasicNameValuePair("client_id", "XFkcFFhCzh8QrtUcrHFm8DDB9Cd9PthIdUXQQyss"));
-		argus.add(new BasicNameValuePair("client_secret", "qnbM4vCdkNQOLEva8iAXZ0kYFrEL8YpSYtgtqYkLTcU8O1Hoijkch6U6SZh2"));
-		argus.add(new BasicNameValuePair("redirect_uri", "http://www.gerantech.com/tanks/test.php?as=asdasda"));
-        return(HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus).text);
+		argus.add(new BasicNameValuePair("code", "OerQgUmJk5U2ASq8UqiGA98nPyDlHq"));
+		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
+		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
+		argus.add(new BasicNameValuePair("redirect_uri", "http://www.gerantech.com/tanks/test.php?a=b"));
+		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus);
+		trace("request_AccessToken", data.statusCode, data.text);
+		return(data.text);
     }
 
 	/**
@@ -116,11 +118,11 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	{
 		List<NameValuePair> argus = new ArrayList<NameValuePair>();
 		argus.add(new BasicNameValuePair("grant_type", "refresh_token"));
-		argus.add(new BasicNameValuePair("client_id", "XFkcFFhCzh8QrtUcrHFm8DDB9Cd9PthIdUXQQyss"));
-		argus.add(new BasicNameValuePair("client_secret", "qnbM4vCdkNQOLEva8iAXZ0kYFrEL8YpSYtgtqYkLTcU8O1Hoijkch6U6SZh2"));
-		argus.add(new BasicNameValuePair("refresh_token", "3OqZ66EgXWyxA4WZUGf6iXryCEYQqL"));
+		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
+		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
+		argus.add(new BasicNameValuePair("refresh_token", "7Q3ZAgkZyDTd5Iftdpbvq09IPF2iyh"));
 		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus);
-		//trace("refresh_token", data.statusCode, data.text);
+		trace("refresh_token", data.statusCode, data.text);
 		if(data.statusCode != HttpStatus.SC_OK || !data.json.containsKey("access_token") )
 			return false;
 
@@ -141,7 +143,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	Data verify(String productID, String purchaseToken)
 	{
 		Data data = HttpTool.get("https://pardakht.cafebazaar.ir/devapi/v2/api/validate/"+packageName+"/inapp/"+productID+"/purchases/"+purchaseToken+"/?access_token="+accessToken);
-		//trace("verify", data.statusCode, data.text);
+		trace("verify", data.statusCode, data.text);
 		return data;
 	}	
 }
