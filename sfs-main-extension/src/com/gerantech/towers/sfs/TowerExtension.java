@@ -7,6 +7,7 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
  */
 public class TowerExtension extends SFSExtension
 {
+	public ExchangeHandler exchangeHandler;
 	//private HazelcastInstance _hazelcast;
 
 	public void init()
@@ -30,11 +31,12 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("bugReport", BugReportRequestHandler.class);
 
 		// Add exchange handler
-		addRequestHandler("exchange", ExchangeHandler.class);
+		exchangeHandler = new ExchangeHandler();
+		addRequestHandler("exchange", exchangeHandler);
 		
         // Add socials open authentication handler
 		addRequestHandler("oauth", OauthHandler.class);
-		
+
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
 	}

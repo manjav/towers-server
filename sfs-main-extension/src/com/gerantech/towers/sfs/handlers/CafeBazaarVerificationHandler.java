@@ -3,6 +3,8 @@ package com.gerantech.towers.sfs.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gerantech.towers.sfs.TowerExtension;
+import com.gt.towers.Game;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -45,6 +47,16 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
         // if consumptionState is zero, thats mean product consumed.
         if(data.statusCode == HttpStatus.SC_OK)
         {
+			Game game = ((Game)sender.getSession().getProperty("core"));
+			ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
+			int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
+			if( !exchangeHandler.exchange(game, item, 0, 0))
+			{
+				resObj.putBool("success", false);
+				resObj.putText("message", data.json.getString("error_exchange"));
+				return;
+			}
+
     		resObj.putBool("success", true);
     		resObj.putInt("consumptionState", data.json.getInt("consumptionState"));
     		resObj.putInt("purchaseState", data.json.getInt("purchaseState"));
