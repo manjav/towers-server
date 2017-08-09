@@ -104,7 +104,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
     	
     	if( !isQuest )
-    		index = ((Game)owner.getSession().getProperty("core")).player.get_arena(0)*100+1;
+    		index = ((Game)owner.getSession().getProperty("core")).player.get_arena(0)*100+(int)Math.ceil(Math.random()*2);
     	
         Map<Object, Object> roomProperties = new HashMap<Object, Object>();
         roomProperties.put("isQuest", isQuest);
