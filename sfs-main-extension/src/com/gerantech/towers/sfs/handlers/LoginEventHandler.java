@@ -3,6 +3,7 @@ import haxe.root.Array;
 
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.gerantech.towers.sfs.utils.Logger;
@@ -168,11 +169,15 @@ public class LoginEventHandler extends BaseServerEventHandler
             {
                 if (!room.isFull() || room.getGroupId()!="quests")
                 {
-					if (((List<String>) room.getProperty("registeredPlayersId")).contains(id + ""))
-                	{
-                		outData.putBool("inBattle", true);
-                		break;
-                	}
+					ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+					for (Game g:registeredPlayers)
+					{
+						if ( g.player.id == id )
+						{
+							outData.putBool("inBattle", true);
+							break;
+						}
+					}
                 }
             }
     		
@@ -235,7 +240,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					element.putInt("num_exchanges", 0 );
 					try {
 						UserManager.updateExchange(getParentExtension(), t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
-					} catch (SQLException e) {
+					} catch (Exception e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}
 		      		trace("UPDATE `exchanges` SET `expired_at`='" + (now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");

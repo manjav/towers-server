@@ -58,6 +58,7 @@ public class BattleRoom extends SFSExtension
 	private boolean singleMode;
 	public int updaterCount = 1;
 	private ISFSObject stickerParams;
+	private ArrayList<Game> registeredPlayers;
 
 	public void init() 
 	{
@@ -85,12 +86,13 @@ public class BattleRoom extends SFSExtension
 		this.isQuest = isQuest;
 		this.singleMode = singleMode;
 
-		ArrayList<String> registeredPlayersId = new ArrayList<String>();
+		// reserve player data
+		registeredPlayers = new ArrayList();
 		List<User> players = getPlayers();
         for (User u: players)
         	if(!u.isNpc())
-				registeredPlayersId.add( u.getName());
-        room.setProperty("registeredPlayersId", registeredPlayersId);
+				registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
+        room.setProperty("registeredPlayers", registeredPlayers);
 
 		battleField = new BattleField(game, mapName, 0);
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
@@ -189,8 +191,9 @@ public class BattleRoom extends SFSExtension
 				}
 				if( battleField.getDuration() > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
 					endBattle(numBuildings, battleField.getDuration());
+				else
+					battleField.now += TIMER_PERIOD;
 
-				battleField.now += TIMER_PERIOD;
 		    	updaterCount ++;
 			}
 
@@ -209,6 +212,87 @@ public class BattleRoom extends SFSExtension
 	}
 
 
+	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public void fight(Object[] objects, int destination)
+	{
+		if(getState() == STATE_CREATED)
+			setState( STATE_BATTLE_STARTED );
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+
+		SFSArray srcs = SFSArray.newInstance();
+		trace("fight to", destination);
+
+		for(int i = 0; i<objects.length; i++)
+		{
+			//trace("fight", (Integer)objects[i], "to", destination);
+			srcs.addInt((Integer)objects[i]);
+			battleField.places.get((Integer)objects[i]).fight(battleField.places.get(destination), battleField.places);
+		}
+
+		// Set variables
+		List<RoomVariable> listOfVars = new ArrayList<RoomVariable>();
+		listOfVars.add( new SFSRoomVariable("s", srcs) );
+		listOfVars.add( new SFSRoomVariable("d", destination) );
+		sfsApi.setRoomVariables(null, room, listOfVars);
+	}
+
+	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public void sendSticker(User sender, ISFSObject params)
+	{
+		for (User u : room.getPlayersList())
+		{
+			if (u.isNpc())
+			{
+				if(aiEnemy.actionType != "fight2x" && Math.random()>0.5)
+				{
+					int answer = StickerType.getRandomAnswer( params.getInt("t") );
+					if(answer > -1) {
+						params.putInt("t", answer);
+						stickerParams = params;
+						stickerParams.putInt("wait", 0);
+					}
+				}
+			}
+			else if (u.getId() != sender.getId())
+			{
+				send("ss", params, u);
+			}
+		}
+	}
+
+	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public void improveBuilding(User sender, ISFSObject params)
+	{
+		if(getState() == STATE_CREATED)
+			setState( STATE_BATTLE_STARTED );
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+
+		Building b = battleField.places.get(params.getInt("i")).building;
+		trace("improve", params.getDump(), b.improvable(params.getInt("t")));
+		b.improve(params.getInt("t"));
+	}
+	private void sendImproveResponse(int index, int type, int level)
+	{
+		SFSObject params = SFSObject.newInstance();
+		params.putInt("i", index);
+		params.putInt("t", type);
+		params.putInt("l", level);
+		sfsApi.sendExtensionResponse("i", params, getPlayers(), room, false);
+
+	}
+	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public void hit(int troopId)
+	{
+		if ( getState() != STATE_BATTLE_STARTED )
+			return;
+
+		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
+		battleField.places.get(index).killTroop(troopId);
+	}
+
+	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void leaveGame(User user) 
 	{
 		//if(!isQuest)
@@ -273,55 +357,59 @@ public class BattleRoom extends SFSExtension
 
 	private void calculateEndBattleResponse()
 	{
-		List<User> users = getPlayers();
-	    for (int i=0; i < users.size(); i++)
+	    for (int i=0; i < registeredPlayers.size(); i++)
 	    {
-	    	User user = users.get(i);
-	    	if( !user.isNpc() )
-	    	{
-	    		Game game = ((Game)user.getSession().getProperty("core"));
-	    		IntIntMap outcomes = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
-	    		trace("isQuest", isQuest, scores[i]);
+			Game game = registeredPlayers.get(i);
+			IntIntMap outcomes = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
+			trace("isQuest", isQuest, scores[i]);
 try {
-	        	if ( isQuest )
-	        	{
-	        		if( game.player.quests.get( battleField.map.index ) < scores[i] )
-	        		{
-						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
-						game.player.quests.set(battleField.map.index, scores[i]);
-	        		}
-	        	}
-
-	        	IntIntMap insertMap = new IntIntMap();
-                IntIntMap updateMap = new IntIntMap();
-
-            	int[] outk = outcomes.keys();
-	        	int r = 0;
-	        	while ( r < outk.length )
+			if ( isQuest )
+			{
+				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
-					if ( game.player.resources.exists(outk[r]) )
-                        updateMap.set(outk[r], outcomes.get(outk[r]));
-					else
-						insertMap.set(outk[r], outcomes.get(outk[r]));
-					trace(r, outk[r],outcomes.get(outk[r]) );
-                    r ++;
+					UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+					game.player.quests.set(battleField.map.index, scores[i]);
 				}
+			}
 
-	        	game.player.addResources(outcomes);
-				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
-				trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
-				trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
-				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
-	        	sendEndBattleResponse(user, outcomes, scores[i]);
-	        	
+			IntIntMap insertMap = new IntIntMap();
+			IntIntMap updateMap = new IntIntMap();
+
+			int[] outk = outcomes.keys();
+			int r = 0;
+			while ( r < outk.length )
+			{
+				if ( game.player.resources.exists(outk[r]) )
+					updateMap.set(outk[r], outcomes.get(outk[r]));
+				else
+					insertMap.set(outk[r], outcomes.get(outk[r]));
+				trace(r, outk[r],outcomes.get(outk[r]) );
+				r ++;
+			}
+
+			game.player.addResources(outcomes);
+			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+			trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
+			trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
+			trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
+
+			// send end battle response if player connected
+			User p = getRealPlayer(game.player.id);
+			if( p != null )
+				sendEndBattleResponse(p, outcomes, scores[i]);
+
 } catch (Exception e) {
 	trace(e.getMessage());
 }
-	    	}
-	    	getApi().leaveRoom(user, room);
-	    	if(user.isNpc())
-	    		getApi().disconnect(user.getSession());
-	    }
+		}
+		List<User> users = getPlayers();
+		for (int i=0; i < users.size(); i++)
+		{
+			User user = users.get(i);
+			getApi().leaveRoom(user, room);
+			if ( user.isNpc() )
+				getApi().disconnect(user.getSession());
+		}
 	}
 
 	private void sendEndBattleResponse(User user, IntIntMap outcomes, int score)
@@ -346,85 +434,6 @@ try {
     	send( "endBattle", sfsO, user );		
 	}
 
-	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void fight(Object[] objects, int destination) 
-	{
-		if(getState() == STATE_CREATED)
-			setState( STATE_BATTLE_STARTED );
-		if ( getState() != STATE_BATTLE_STARTED )
-			return;
-		
-		SFSArray srcs = SFSArray.newInstance();
-		trace("fight to", destination);
-
-		for(int i = 0; i<objects.length; i++)
-		{
-			//trace("fight", (Integer)objects[i], "to", destination);
-			srcs.addInt((Integer)objects[i]);
-			battleField.places.get((Integer)objects[i]).fight(battleField.places.get(destination), battleField.places);
-		}
-		
-		// Set variables
-		List<RoomVariable> listOfVars = new ArrayList<RoomVariable>();
-		listOfVars.add( new SFSRoomVariable("s", srcs) );
-		listOfVars.add( new SFSRoomVariable("d", destination) );
-		sfsApi.setRoomVariables(null, room, listOfVars);
-	}
-
-	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void sendSticker(User sender, ISFSObject params)
-	{
-		for (User u : room.getPlayersList())
-		{
-			if (u.isNpc())
-			{
-				if(aiEnemy.actionType != "fight2x" && Math.random()>0.5)
-				{
-					int answer = StickerType.getRandomAnswer( params.getInt("t") );
-					if(answer > -1) {
-						params.putInt("t", answer);
-						stickerParams = params;
-						stickerParams.putInt("wait", 0);
-					}
-				}
-			}
-			else if (u.getId() != sender.getId())
-			{
-				send("ss", params, u);
-			}
-		}
-	}
-
-	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void improveBuilding(User sender, ISFSObject params)
-	{
-		if(getState() == STATE_CREATED)
-			setState( STATE_BATTLE_STARTED );
-		if ( getState() != STATE_BATTLE_STARTED )
-			return;
-		
-		Building b = battleField.places.get(params.getInt("i")).building;
-		trace("improve", params.getDump(), b.improvable(params.getInt("t")));
-		b.improve(params.getInt("t"));
-	}
-	private void sendImproveResponse(int index, int type, int level)
-	{
-		SFSObject params = SFSObject.newInstance();
-		params.putInt("i", index);
-		params.putInt("t", type);
-		params.putInt("l", level);
-		sfsApi.sendExtensionResponse("i", params, getPlayers(), room, false);
-
-	}
-	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void hit(int troopId)
-	{
-		if ( getState() != STATE_BATTLE_STARTED )
-			return;
-		
-		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
-		battleField.places.get(index).killTroop(troopId);
-	}
 	@Override
 	public void destroy()
 	{
@@ -464,6 +473,16 @@ try {
 				ret.add(players.get(i));
 		return ret;
 	}
+
+	public User getRealPlayer(int id)
+	{
+		List<User> players = getRealPlayers();
+		for (int i=0; i < players.size(); i++)
+			if( players.get(i).getName().equals(id+"") )
+				return  players.get(i);
+		return null;
+	}
+
 
 	public List<User> getPlayers()
 	{

@@ -50,11 +50,10 @@ public class UserManager {
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		return (SFSArray) dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
 	}
-	public static String updateExchange(ISFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws SQLException
+	public static String updateExchange(ISFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws Exception
 	{
-		IDBManager dbManager = extension.getParentZone().getDBManager();
 		String query = "UPDATE `exchanges` SET `expired_at`='" + expireAt + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcome + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";";
-
+		IDBManager dbManager = extension.getParentZone().getDBManager();
 		dbManager.executeUpdate(query, new Object[] {});
 		return query;
 	}

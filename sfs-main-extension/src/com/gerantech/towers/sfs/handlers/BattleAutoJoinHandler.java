@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +77,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
     }
 
-	@SuppressWarnings("unchecked")
-	private Room findActiveRoom(User user) 
+	private Room findActiveRoom(User user)
 	{
 		List<Room> rList = getParentExtension().getParentZone().getRoomList();
         for (Room room : rList)
@@ -91,9 +91,11 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
              	}
             	else if( roomState == BattleRoom.STATE_BATTLE_STARTED )
             	{
-            		if(((List<String>)room.getProperty("registeredPlayersId")).contains(user.getName()))
-                		return room;
-            	}
+                    ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+                        for (Game g:registeredPlayers)
+                            if ( user.getName().equals(g.player.id + "") )
+                                return room;
+                }
             }
         }
         return null;
