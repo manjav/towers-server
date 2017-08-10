@@ -108,6 +108,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 							npcUser.setProperty("point", opponent.point);
 							npcUser.setProperty("name", opponent.name);
 							getApi().joinRoom(npcUser, room);
+
+							// exclude npc from npc-opponents list
+							opponent.xp = -2;
+							users.replace(opponent.id, opponent);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}

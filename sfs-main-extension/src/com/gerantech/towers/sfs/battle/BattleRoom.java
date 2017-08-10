@@ -408,7 +408,16 @@ try {
 			User user = users.get(i);
 			getApi().leaveRoom(user, room);
 			if ( user.isNpc() )
+			{
+				// return npc to npc-opponents list
+				IMap<Integer, RankData> usersMap = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+				RankData opponent = usersMap.get(Integer.parseInt(user.getName()));
+				opponent.xp = -1;
+				usersMap.replace(opponent.id, opponent);
+
+				// remove npc
 				getApi().disconnect(user.getSession());
+			}
 		}
 	}
 
