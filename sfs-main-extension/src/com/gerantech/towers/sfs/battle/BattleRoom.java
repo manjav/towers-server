@@ -9,6 +9,7 @@ import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.UserManager;
+import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
@@ -18,6 +19,9 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -166,15 +170,19 @@ public class BattleRoom extends SFSExtension
 					}
 
 					// fight
-					if (aiEnemy.actionType == "fight2x")
+					if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
 					{
 						botFight();
-						aiEnemy.actionType = "";
+						aiEnemy.actionType = AIEnemy.TYPE_FIGHT;
 					}
-					else if (aiEnemy.doAction())
+					else
 					{
-						if (aiEnemy.actionType == "fight" || aiEnemy.actionType == "fight2x")
-							botFight();
+						//trace("aiEnemy->actionType", aiEnemy.actionType, aiEnemy.target);
+						if ( aiEnemy.doAction() > 0 )
+						{
+							if ( aiEnemy.actionType ==  AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE )
+								botFight();
+						}
 					}
 				}
 		    	// check ending battle
@@ -203,14 +211,14 @@ public class BattleRoom extends SFSExtension
 		trace("createGame");
 	}
 
+	// bot fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	private void botFight() {
 		Object[] ss = new Object[aiEnemy.sources.size()];
 		for(int j = 0; j<ss.length; j++)
 			ss[j] = aiEnemy.sources.get(j);
-		trace("botFight", aiEnemy.actionType, aiEnemy.target);
+		//trace("botFight", aiEnemy.actionType, aiEnemy.target);
 		fight(ss, aiEnemy.target);
 	}
-
 
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void fight(Object[] objects, int destination)
@@ -221,7 +229,7 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		SFSArray srcs = SFSArray.newInstance();
-		trace("fight to", destination);
+		//trace("fight to", destination);
 
 		for(int i = 0; i<objects.length; i++)
 		{
@@ -244,7 +252,7 @@ public class BattleRoom extends SFSExtension
 		{
 			if (u.isNpc())
 			{
-				if(aiEnemy.actionType != "fight2x" && Math.random()>0.5)
+				if(aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5)
 				{
 					int answer = StickerType.getRandomAnswer( params.getInt("t") );
 					if(answer > -1) {
@@ -287,6 +295,7 @@ public class BattleRoom extends SFSExtension
 	{
 		if ( getState() != STATE_BATTLE_STARTED )
 			return;
+		//trace("hit", troopId);
 
 		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
 		battleField.places.get(index).killTroop(troopId);
