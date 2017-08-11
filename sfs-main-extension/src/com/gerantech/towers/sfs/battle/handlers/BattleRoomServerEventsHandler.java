@@ -43,7 +43,23 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		    {
 		    	int state = (Integer)r.getProperty("state");
 		    	if(state < BattleRoom.STATE_CREATED || state < BattleRoom.STATE_BATTLE_STARTED && r.getUserManager().getNPCCount() > 0)
-		    		getApi().removeRoom(r);
+				{
+					List<User> users = r.getPlayersList();
+					for (int i=0; i < users.size(); i++)
+					{
+						User u = users.get(i);
+						if ( u.isNpc() )
+						{
+							// return npc to npc-opponents list
+							NPCTools.setXP(Integer.parseInt(u.getName()), -1);
+
+							// remove npc
+							getApi().disconnect(u.getSession());
+						}
+					}
+
+					getApi().removeRoom(r);
+				}
 		    	else
 		    	{
 				    for(User u:r.getPlayersList())
@@ -108,6 +124,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 							npcUser.setProperty("point", opponent.point);
 							npcUser.setProperty("name", opponent.name);
 							getApi().joinRoom(npcUser, room);
+
+							// exclude npc from npc-opponents list
+							opponent.xp = -2;
+							users.replace(opponent.id, opponent);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}

@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
@@ -411,6 +412,7 @@ try {
 	trace(e.getMessage());
 }
 		}
+
 		List<User> users = getPlayers();
 		for (int i=0; i < users.size(); i++)
 		{
@@ -419,10 +421,7 @@ try {
 			if ( user.isNpc() )
 			{
 				// return npc to npc-opponents list
-				IMap<Integer, RankData> usersMap = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-				RankData opponent = usersMap.get(Integer.parseInt(user.getName()));
-				opponent.xp = -1;
-				usersMap.replace(opponent.id, opponent);
+				NPCTools.setXP(Integer.parseInt(user.getName()), -1);
 
 				// remove npc
 				getApi().disconnect(user.getSession());
