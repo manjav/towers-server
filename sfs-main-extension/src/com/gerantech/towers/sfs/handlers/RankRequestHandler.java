@@ -24,6 +24,8 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
  */
 public class RankRequestHandler extends BaseClientRequestHandler 
 {
+	public static int PAGE_SIZE = 10;
+
 	private ArrayList allUsers;
 
 	public RankRequestHandler() {}
@@ -31,7 +33,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
-		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 
 		users.putIfAbsent(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
 	//	int playerId = params.getInt("pId");
@@ -62,7 +64,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
             }
         };
 
-        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 8);
+        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, PAGE_SIZE);
 		Collection<RankData> result = users.values(pagingPredicate);
 
 		for (RankData r : result)

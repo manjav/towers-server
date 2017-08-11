@@ -117,7 +117,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 						// trace(game.player.id, game.player.nickName, game.player.get_point());
 
-						IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+						IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 						RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(), 20);
 						try {
 							User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
