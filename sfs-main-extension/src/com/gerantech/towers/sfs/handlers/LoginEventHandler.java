@@ -164,6 +164,7 @@ public class LoginEventHandler extends BaseServerEventHandler
     		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
     		
     		// find active battle rooms
+			session.setProperty("joinedRoomId", -1);
             List<Room> rList = getParentExtension().getParentZone().getRoomList();
             for (Room room : rList)
             {
@@ -175,6 +176,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 						if ( g.player.id == id )
 						{
 							outData.putBool("inBattle", true);
+							session.setProperty("joinedRoomId", room.getId());
 							break;
 						}
 					}

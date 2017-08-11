@@ -57,16 +57,18 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
  
 	private void joinUser(User user) throws SFSException
     {
-    	if( !isQuest )
-            theRoom = findActiveRoom(user);
+        int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
+        if( joinedRoomId > -1 )
+            theRoom = getParentExtension().getParentZone().getRoomById(joinedRoomId);
+        else if( !isQuest )
+            theRoom = findWaitingBattlsRoom(user);
 
         if (theRoom == null)
             theRoom = makeNewRoom(user);
-        
-    	Player player = ((Game)user.getSession().getProperty("core")).player;
+
+        Player player = ((Game)user.getSession().getProperty("core")).player;
         user.setProperty("name", player.nickName);
         user.setProperty("point", player.get_point());
-        
         try
         {
             getApi().joinRoom(user, theRoom);
@@ -77,42 +79,27 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
     }
 
-	private Room findActiveRoom(User user)
+    private Room findWaitingBattlsRoom(User user)
 	{
-		List<Room> rList = getParentExtension().getParentZone().getRoomList();
+		List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room room : rList)
-        {
-            if ( !room.isFull() || room.getGroupId()!="quests" )
-            {
-            	int roomState = (Integer)room.getProperty("state");
-            	if(roomState == BattleRoom.STATE_WAITING )
-            	{
-            		return room;
-             	}
-            	else if( roomState == BattleRoom.STATE_BATTLE_STARTED )
-            	{
-                    ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
-                        for (Game g:registeredPlayers)
-                            if ( user.getName().equals(g.player.id + "") )
-                                return room;
-                }
-            }
-        }
+            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING )
+              		return room;
         return null;
 	}
 
 	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
     	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
-    	
+
     	if( !isQuest )
     		index = ((Game)owner.getSession().getProperty("core")).player.get_arena(0)*100+(int)Math.ceil(Math.random()*2);
-    	
+
         Map<Object, Object> roomProperties = new HashMap<Object, Object>();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
         roomProperties.put("startAt", (int)Instant.now().getEpochSecond());
-   	
+
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
         rs.setDynamic(true);
@@ -122,7 +109,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         rs.setMaxUsers(isQuest?1:2);
         rs.setGroupId(isQuest?"quests":"battles");
         rs.setExtension(res);
-        
+
         return getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
     }
 }
