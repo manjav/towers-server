@@ -5,7 +5,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.utils.RankingTools;
+import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.hazelcast.config.Config;
@@ -101,17 +101,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 						// trace(game.player.id, game.player.nickName, game.player.get_point());
 
-						IMap<Integer, RankData> users = RankingTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
-						RankData opponent = RankingTools.getNearOpponent(users, game.player.get_point(), 20);
+						IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+						RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(), 20);
 						try {
 							User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
 							npcUser.setProperty("point", opponent.point);
 							npcUser.setProperty("name", opponent.name);
 							getApi().joinRoom(npcUser, room);
-
-							// exclude npc from npc-opponents list
-							opponent.xp = -2;
-							users.replace(opponent.id, opponent);
 						} catch (Exception e) {
 							trace(e.getMessage());
 						}

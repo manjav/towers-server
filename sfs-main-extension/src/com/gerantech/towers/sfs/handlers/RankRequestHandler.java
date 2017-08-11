@@ -2,10 +2,9 @@ package com.gerantech.towers.sfs.handlers;
 
 import java.util.*;
 
-import com.gerantech.towers.sfs.utils.RankingTools;
+import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
-import com.gt.towers.utils.maps.IntArenaMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -32,7 +31,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
-		IMap<Integer, RankData> users = RankingTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
 
 		users.putIfAbsent(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
 	//	int playerId = params.getInt("pId");
