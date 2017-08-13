@@ -466,10 +466,8 @@ public class BattleRoom extends SFSExtension
 			return;
 		setState( STATE_DESTROYED );
 			
-		
-		//GTimer.stopAll();
-
-		battleField.dispose();
+		if( battleField != null )
+			battleField.dispose();
 		battleField = null;
 		trace("destroyGame");
 	}
