@@ -77,7 +77,7 @@ public class UserManager {
 		}
 
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-		String query = "Update resources SET count = CASE\r";
+		String query = "Update resources SET count = CASE ";
 		boolean hasRankFields = false;
 
         keyLen = keys.length;
@@ -86,7 +86,7 @@ public class UserManager {
         	if( !hasRankFields )
         		hasRankFields = keys[i]==ResourceType.XP || keys[i]==ResourceType.POINT;
 
-        	query += "WHEN type = " + keys[i] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[i]) + "\r";
+        	query += "WHEN type = " + keys[i] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[i]) + " ";
         }
         query += "ELSE count END WHERE type IN (";
 

@@ -55,7 +55,7 @@ public class OauthHandler extends BaseClientRequestHandler
 		if( playerPassword != null )
 			params.putText("playerPassword", playerPassword);
 		send("oauth", params, sender);
-		trace(params.getDump());
+		//trace(params.getDump());
 
     }
 	private boolean linkExists(ISFSArray res, int accountType )

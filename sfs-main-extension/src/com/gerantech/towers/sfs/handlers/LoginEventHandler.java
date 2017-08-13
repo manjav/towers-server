@@ -108,7 +108,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 					exchanges.addSFSObject( so );
 	    		}
-	    		trace(exchanges.getDump());
+
 	    		query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
 	    		for(int i=0; i<exchanges.size(); i++)
 	    		{

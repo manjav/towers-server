@@ -271,7 +271,7 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		Building b = battleField.places.get(params.getInt("i")).building;
-		trace("improve", params.getDump(), b.improvable(params.getInt("t")));
+		//trace("improve", params.getDump(), b.improvable(params.getInt("t")));
 		b.improve(params.getInt("t"));
 	}
 	private void sendImproveResponse(int index, int type, int level)
@@ -290,7 +290,7 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		int index = (int) Math.floor((double)(troopId/10000));
-		trace("hit index:", index, ", troopId:", troopId, ", damage:", damage);
+		//trace("hit index:", index, ", troopId:", troopId, ", damage:", damage);
 		battleField.places.get(index).hit(troopId, damage);
 	}
 
