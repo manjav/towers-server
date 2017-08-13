@@ -163,26 +163,11 @@ public class LoginEventHandler extends BaseServerEventHandler
     		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
     		outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
     		
-    		// find active battle rooms
-			session.setProperty("joinedRoomId", -1);
-            List<Room> rList = getParentExtension().getParentZone().getRoomList();
-            for (Room room : rList)
-            {
-                if (!room.isFull() || room.getGroupId()!="quests")
-                {
-					ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
-					for (Game g:registeredPlayers)
-					{
-						if ( g.player.id == id )
-						{
-							outData.putBool("inBattle", true);
-							session.setProperty("joinedRoomId", room.getId());
-							break;
-						}
-					}
-                }
-            }
-    		
+    		// Find active battle room
+			int joinedRoomId = findActiveBattleRoom(id);
+			session.setProperty("joinedRoomId", joinedRoomId);
+			outData.putBool("inBattle", joinedRoomId > -1 );
+
     		initiateCore(session, outData, loginData);
 		}
         catch (SQLException e)
@@ -191,6 +176,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         }
 		//trace("initData", outData.getDump());
 	}
+
 
 	private void initiateCore(ISession session, ISFSObject outData, LoginData loginData)
 	{
@@ -252,7 +238,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		Tracer tracer = new Tracer() {
-			
 			public double __hx_setField_f(String arg0, double arg1, boolean arg2) {
 				return 0;
 			}
@@ -271,12 +256,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 			public Object __hx_lookupField(String arg0, boolean arg1, boolean arg2) {
 				return null;
 			}
-			@SuppressWarnings("rawtypes")
 			public Object __hx_invokeField(String arg0, Array arg1) {
 				return null;
 			}
-			public void __hx_getFields(Array<String> arg0) {
-			}
+			public void __hx_getFields(Array<String> arg0) {}
 			public double __hx_getField_f(String arg0, boolean arg1, boolean arg2) {
 				return 0;
 			}
@@ -292,5 +275,25 @@ public class LoginEventHandler extends BaseServerEventHandler
 		};
 		
 		session.setProperty("core", new Game(initData, tracer));
-	}		
+	}
+
+
+
+	private int findActiveBattleRoom(int id)
+	{
+		List<Room> rList = getParentExtension().getParentZone().getRoomList();
+		for (Room room : rList)
+		{
+			if ( !room.isFull() || room.getGroupId() != "quests" )
+			{
+				ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+				if( registeredPlayers != null )
+					for (Game g : registeredPlayers)
+						if (g.player.id == id)
+							return room.getId();
+			}
+		}
+		return -1;
+	}
+
 }
