@@ -83,17 +83,18 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if(arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
 		{
 			//trace(room.getId(), room.getProperty("state"), room.getMaxUsers(), room.isFull(), room.getCapacity(), room.getSize(), room.getProperties().keySet().toArray());
-			
+
 			// return to previous room
 			if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
 			{
+				boolean singleMode = room.getUserManager().getNPCCount() > 0;
 				List<User> players = roomClass.getPlayers();
 				for (int i=0; i < players.size(); i++)
 			    {
 					SFSObject sfsO = new SFSObject();
-			    	if(players.get(i).equals(user))
+					if(players.get(i).equals(user))
 			    	{
-				    	sendBattleData(sfsO, players, i, false);
+						sendBattleData(sfsO, players, i, false, singleMode);
 			    	}
 			    	else if( !players.get(i).isNpc() )
 			    	{
@@ -148,17 +149,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private void sendStartBattleResponse()
 	{
 		boolean isQuest = (Boolean)room.getProperty("isQuest");
-		boolean existsNpc = false;
+		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
 		String mapName = getMapName(isQuest);
 
 		List<User> players = roomClass.getPlayers();
 	    for (int i=0; i < players.size(); i++)
-	    {
-	    	if( players.get(i).isNpc() )
-	    		existsNpc = true;
-	    	sendBattleData(new SFSObject(), players, i, isQuest);
-	    }
-	    
+	    	sendBattleData(new SFSObject(), players, i, isQuest, existsNpc||isQuest);
+
 		roomClass.createGame(((Game)players.get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
 	}
 
@@ -172,13 +169,14 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	}
 
 
-	private void sendBattleData(SFSObject sfsO, List<User> players, int palyerIndex, boolean isQuest)
+	private void sendBattleData(SFSObject sfsO, List<User> players, int palyerIndex, boolean isQuest, boolean singleMode)
 	{
 		if(players.get(palyerIndex).isNpc())
 			return;
 
 		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
 		sfsO.putInt("troopType", palyerIndex);
+		sfsO.putBool("singleMode", singleMode);
 		sfsO.putInt("roomId", room.getId());
 		sfsO.putText("mapName", getMapName(isQuest));
 

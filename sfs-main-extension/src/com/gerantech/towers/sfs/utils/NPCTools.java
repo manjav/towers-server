@@ -35,9 +35,9 @@ public class NPCTools
     {
         if( users.size() > 10 )
         {
-            for (RankData rd:users.values())
+           /* for (RankData rd:users.values())
                 if(rd.xp != -1)
-                    game.tracer.log( rd.id + " ====> " + rd.xp);
+                    game.tracer.log( rd.id + " ====> " + rd.xp);*/
             return users;
         }
 
