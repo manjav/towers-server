@@ -284,14 +284,14 @@ public class BattleRoom extends SFSExtension
 
 	}
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void hit(int troopId)
+	public void hit(int troopId, double damage)
 	{
 		if ( getState() != STATE_BATTLE_STARTED )
 			return;
-		//trace("hit", troopId);
 
-		int index = (int) Math.floor((double)(troopId/10000));//trace("hit", index, troopId);
-		battleField.places.get(index).killTroop(troopId);
+		int index = (int) Math.floor((double)(troopId/10000));
+		trace("hit index:", index, ", troopId:", troopId, ", damage:", damage);
+		battleField.places.get(index).hit(troopId, damage);
 	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
