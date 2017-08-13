@@ -1,16 +1,8 @@
 package com.gerantech.towers.sfs.battle;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gerantech.towers.sfs.utils.UserManager;
-import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
@@ -20,9 +12,6 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -32,6 +21,9 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+
+import java.time.Instant;
+import java.util.*;
 
 public class BattleRoom extends SFSExtension 
 {
@@ -313,11 +305,11 @@ public class BattleRoom extends SFSExtension
 //			timer.cancel();
 //		timer = null;		
 
-		if(isQuest)
+		if( isQuest )
 		{
-		scores = new int[1];
-		scores[0] = 0;
-		calculateEndBattleResponse();
+			scores = new int[1];
+			scores[0] = 0;
+			calculateEndBattleResponse();
 		}
 		else
 		{
@@ -372,12 +364,13 @@ public class BattleRoom extends SFSExtension
 			Game game = registeredPlayers.get(i);
 			IntIntMap outcomes = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
 			trace("isQuest", isQuest, scores[i]);
-try {
 			if ( isQuest )
 			{
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
-					UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+					try {
+						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+					} catch (Exception e) { trace(e.getMessage()); }
 					game.player.quests.set(battleField.map.index, scores[i]);
 				}
 			}
@@ -399,18 +392,18 @@ try {
 
 			game.player.addResources(outcomes);
 			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
-			trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
-			trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
-			trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
-
+			try {
+				trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
+				trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
+				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
+			} catch (Exception e) {
+				e.printStackTrace();
+				//trace(e.getMessage());
+			}
 			// send end battle response if player connected
 			User p = getRealPlayer(game.player.id);
 			if( p != null )
 				sendEndBattleResponse(p, outcomes, scores[i]);
-
-} catch (Exception e) {
-	trace(e.getMessage());
-}
 		}
 
 		List<User> users = getPlayers();
