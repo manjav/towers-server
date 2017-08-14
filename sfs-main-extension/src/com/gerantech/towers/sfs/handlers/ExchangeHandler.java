@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 
 import java.time.Instant;
 
+import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -70,22 +71,10 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
 			item.outcomes = game.exchanger.getChestOutcomes(type);
 
-		// define new outcomes for inert query
-		IntIntMap updateMap = new IntIntMap();
-		IntIntMap insertMap = new IntIntMap();
-		int[] outk = item.outcomes.keys();
-		int r = 0;
-		while ( r < outk.length )
-		{
-			if ( game.player.resources.exists(outk[r]) )
-				updateMap.set(outk[r], 0);
-			else
-				insertMap.set(outk[r], item.outcomes.get(outk[r]));
-			//trace(r, outk[r], 0 );
-			r ++;
-		}
-
+		MapChangeCallback mapChangeCallback = new MapChangeCallback();
+		game.player.resources.changeCallback = mapChangeCallback;
 		Boolean succeed = game.exchanger.exchange(item, now, hardsConfimed);
+		game.player.resources.changeCallback = null;
 		if( !succeed )
 			return false;
 
@@ -100,20 +89,11 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS ? item.outcomes.keys()[0] : 0;
 
-		// add reqs keys to query
-		outk = item.requirements.keys();
-		r = 0;
-		while ( r < outk.length )
-		{
-			updateMap.set(r, 0);
-			r ++;
-		}
-
-		// update database
+		// Run db queries
 		try
 		{
-			trace(UserManager.updateResources(getParentExtension(), game.player, updateMap));
-			trace(UserManager.insertResources(getParentExtension(), game.player, insertMap));
+			trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
+			trace(UserManager.insertResources(getParentExtension(), game.player, mapChangeCallback.inserts));
 			if( ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST ||  ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS )
 				trace(UserManager.updateExchange(getParentExtension(), type, game.player.id, item.expiredAt, item.numExchanges, outcome));
 		}

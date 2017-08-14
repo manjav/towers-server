@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -28,18 +29,19 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		
 		trace(building.improveLevel, building.level, building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
 		
-        IntIntMap upgradeRequirements = building.get_upgradeRequirements();
-        for(int r:building.get_upgradeRewards().keys())
-        	upgradeRequirements.set(r, 0);//add rewards to reqs
+  		MapChangeCallback mapChangeCallback = new MapChangeCallback();
+		player.resources.changeCallback = mapChangeCallback;
+		boolean success = building.upgrade(confirmedHards);
+		player.resources.changeCallback = null;
 
-		if( !building.upgrade(confirmedHards) )
+		if( !success )
 		{
 			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.level);
 			return;
 		}
 		try {
 			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
-			UserManager.updateResources(getParentExtension(), player, upgradeRequirements);
+			UserManager.updateResources(getParentExtension(), player, mapChangeCallback.updates);
 		} catch (Exception e) {
 			trace(e.getMessage());
 		}
