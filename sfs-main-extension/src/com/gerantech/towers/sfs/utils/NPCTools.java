@@ -107,8 +107,8 @@ public class NPCTools
 
         Collection<RankData> result = users.values(pagingPredicate);
 
-        if(result.size() == 0 && range < 100)
-            result = getResult(users, point, range + 10);
+        if(result.size() == 0 && range < 1000)
+            result = getResult(users, point, range * 2);
 
         return result;
     }
