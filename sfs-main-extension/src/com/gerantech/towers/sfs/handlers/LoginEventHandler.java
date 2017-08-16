@@ -46,19 +46,38 @@ public class LoginEventHandler extends BaseServerEventHandler
 	{
 		String name = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
 		String password = (String) event.getParameter(SFSEventParam.LOGIN_PASSWORD);
+		ISFSObject inData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_IN_DATA);
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
-        ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
-        LoginData loginData = new LoginData();
+		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
+		LoginData loginData = new LoginData();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
 		// Create new user ============================================================
-		if (name.equals("-1")) 
+		if ( inData != null )
 		{
-			password = PasswordGenerator.generate().toString();
-			
-	        try
-	        {
+			try
+			{
+				String udid = inData.getText("udid");
+				String device = inData.getText("device");
+				if( udid != null )
+				{
+					// retrieve user that saved account before
+					ISFSArray res = dbManager.executeQuery("SELECT player_id FROM accounts WHERE image_url='" + udid + "' AND name='" + device + "' AND type='-1'", new Object[]{});
+					if (res.size() > 0) {
+						ISFSArray res2 = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + res.getSFSObject(0).getInt("player_id"), new Object[]{});
+						if (res2.size() > 0) {
+							outData.putBool("exists", true);
+							outData.putInt("id", res2.getSFSObject(0).getInt("id"));
+							outData.putText("name", res2.getSFSObject(0).getText("name"));
+							outData.putText("password", res2.getSFSObject(0).getText("password"));
+							return;
+						}
+					}
+				}
+
+				password = PasswordGenerator.generate().toString();
+
 	        	// Insert to DataBase
 	            int playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
 	    		
@@ -116,7 +135,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    			query += i<exchanges.size()-1 ? ", " : ";";
 	    		}
 	    		dbManager.executeInsert(query, new Object[] {});
-	    		trace(query);
+	    		//trace(query);
 	    		
 	    		// send data to user
 	    		outData.putInt("id", playerId);
@@ -126,11 +145,15 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		outData.putSFSArray("quests", new SFSArray());
 	    		outData.putSFSArray("exchanges", exchanges);
 	    		initiateCore(session, outData, loginData);
+
+				// add udid and device as account id for restore players
+				if( udid != null )
+					dbManager.executeInsert("INSERT INTO accounts (`player_id`, `type`, `id`, `name`, `image_url`) VALUES ('" + playerId + "', '-1', '', '" + device + "', '" + udid + "');", new Object[] {});
 	        }
 	        catch (SQLException e)
 	        {
 	        	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
-	        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+	        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
 	        }
 			return;
 		} 
@@ -145,14 +168,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        if(res.size() != 1)
 	        {
 	        	//trace("name", name, "id", id, "password", password);
-	        	Logger.warn(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
+	        	Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
 	        	return;
 	        }
 	        
 	        ISFSObject userData = res.getSFSObject(0);
         	if(!getApi().checkSecurePassword(session, userData.getText("password"), password))
         	{
-        		Logger.warn(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
+        		Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
 	        	return;
         	}
 
@@ -172,7 +195,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
         catch (SQLException e)
         {
-        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
         }
 		//trace("initData", outData.getDump());
 	}

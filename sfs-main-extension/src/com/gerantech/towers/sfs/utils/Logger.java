@@ -8,7 +8,7 @@ import com.smartfoxserver.v2.exceptions.SFSLoginException;
 public class Logger 
 {
 
-	public static void warn(SFSErrorCode errorCode, String message, String param) throws SFSException 
+	public static void throwLoginException(SFSErrorCode errorCode, String message, String param) throws SFSException
 	{
     	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
 		SFSErrorData errData = new SFSErrorData(errorCode);

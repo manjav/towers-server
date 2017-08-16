@@ -28,13 +28,13 @@ public class UserManager {
 	        if(ret.size() == 0)
 	        {
 	        	//trace("name", name, "id", id, "password", password);
-	        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", "user resources nou found.");
+	        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", "user resources nou found.");
 	        }
 	        return ret;
         }
         catch (SQLException e)
 		{
-        	Logger.warn(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
 		}
 		return null;
 	}
