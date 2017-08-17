@@ -438,7 +438,7 @@ public class BattleRoom extends SFSExtension
     		sfsRewards.addSFSObject(sfsReward);
     	}
     	sfsO.putSFSArray("rewards", sfsRewards);
-    	
+
         sfsO.putBool( "youWin", score>0 );
         sfsO.putInt( "score", score );//trace(sfsO.getDump());
     	send( "endBattle", sfsO, user );		

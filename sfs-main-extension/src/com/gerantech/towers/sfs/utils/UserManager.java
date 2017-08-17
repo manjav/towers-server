@@ -48,8 +48,17 @@ public class UserManager {
 	public static ISFSArray getExchanges(ISFSExtension extension, int playerId)throws SFSException, SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-		return (SFSArray) dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
+		return dbManager.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
 	}
+
+	public static ISFSArray getFriends(SFSExtension extension, int playerId)throws SFSException, SQLException
+	{
+		IDBManager dbManager = extension.getParentZone().getDBManager();
+		String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN friendship ON players.id=friendship.invitee_id OR players.id=friendship.inviter_id INNER JOIN resources ON resources.type=1001 AND players.id=resources.player_id WHERE players.id!=" + playerId + " AND friendship.inviter_id=" + playerId + " OR friendship.invitee_id=" + playerId + " ORDER BY resources.count DESC LIMIT 0,100";
+		return dbManager.executeQuery(query , new Object[] {});
+	}
+
+
 	public static String updateExchange(ISFSExtension extension, int type, int playerId, int expireAt, int numExchanges, int outcome) throws Exception
 	{
 		String query = "UPDATE `exchanges` SET `expired_at`='" + expireAt + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcome + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";";
