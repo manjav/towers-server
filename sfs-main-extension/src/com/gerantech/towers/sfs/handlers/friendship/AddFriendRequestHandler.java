@@ -19,6 +19,8 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
     private int REPETITIVE_INVITATION_CODE = -2;
     private int USER_ADD_HIMSELF = -3;
     private int WRONGE_INVITATION_CODE = -4;
+    private int ALREADY_FRIEND = -5;
+    private int ALREADY_ADDED = -6;
 
 
     public AddFriendRequestHandler() {}
@@ -38,8 +40,8 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
         try {
             String str = "SELECT `invitee_id` FROM `friendship` WHERE `invitee_id`="+ inviteeId +" AND `inviter_reward`="+ 1;
             trace("\nQUERY: ",str);
-            ISFSArray friendReward = dbManager.executeQuery(str, new Object[] {});
-            if(friendReward.size() > 0)
+            ISFSArray sfsArray = dbManager.executeQuery(str, new Object[] {});
+            if(sfsArray.size() > 0)
             {
                 sendResult(sender, params, RESPONSE_ALREADY_EXISTS);
                 return;
@@ -47,8 +49,8 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
 
             str = "SELECT `invitation_code` FROM `friendship` WHERE `invitation_code`="+ invitationCode;
             trace("\nQUERY: ", str);
-            ISFSArray invCode = dbManager.executeQuery(str, new Object[] {});
-            if(invCode.size() > 0)
+            sfsArray = dbManager.executeQuery(str, new Object[] {});
+            if(sfsArray.size() > 0)
             {
                 sendResult(sender, params, REPETITIVE_INVITATION_CODE);
                 return;
@@ -66,6 +68,23 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
                 return;
             }
     */
+            str = "SELECT `invitee_id` FROM `friendship` WHERE `inviter_id`="+ game.player.id +" AND `invitee_id`="+ inviteeId;
+            trace("QUERY: ", str);
+            sfsArray = dbManager.executeQuery(str, new Object[]{});
+            if(sfsArray.size() > 0)
+            {
+                sendResult(sender, params, ALREADY_ADDED);
+                return;
+            }
+
+            str = "SELECT `invitee_id` FROM `friendship` WHERE `inviter_id`="+ inviteeId +" AND `invitee_id`="+ game.player.id;
+            trace("QUERY: ", str);
+            sfsArray = dbManager.executeQuery(str, new Object[]{});
+            if(sfsArray.size() > 0)
+            {
+                sendResult(sender, params, ALREADY_FRIEND);
+                return;
+            }
             str = "INSERT INTO `friendship` (`inviter_id`, `invitee_id`, `invitation_code`, `inviter_reward`, `invitee_reward`) VALUES ("+ game.player.id +", "+ inviteeId +", '"+ invitationCode +"', "+ inviterReward +", "+ inviteeReward +")";
             trace("\nINPUT string to DB:",str);
             dbManager.executeInsert(str, new Object[] {});
