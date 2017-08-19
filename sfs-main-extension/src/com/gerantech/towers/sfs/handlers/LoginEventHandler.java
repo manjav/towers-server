@@ -58,12 +58,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			try
 			{
-				String udid = inData.getText("udid");
-				String device = inData.getText("device");
-				if( udid != null )
+				String deviceUDID = inData.getText("udid");
+				String deviceModel = inData.getText("device");
+				if( deviceUDID != null )
 				{
 					// retrieve user that saved account before
-					ISFSArray res = dbManager.executeQuery("SELECT player_id FROM accounts WHERE image_url='" + udid + "' AND name='" + device + "' AND type='-1'", new Object[]{});
+					ISFSArray res = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + "'", new Object[]{});
 					if (res.size() > 0) {
 						ISFSArray res2 = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + res.getSFSObject(0).getInt("player_id"), new Object[]{});
 						if (res2.size() > 0) {
@@ -147,12 +147,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    		initiateCore(session, outData, loginData);
 
 				// add udid and device as account id for restore players
-				if( udid != null )
-					dbManager.executeInsert("INSERT INTO accounts (`player_id`, `type`, `id`, `name`, `image_url`) VALUES ('" + playerId + "', '-1', '', '" + device + "', '" + udid + "');", new Object[] {});
+				if( deviceUDID != null )
+					dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
 	        }
 	        catch (SQLException e)
 	        {
-	        	//trace(ExtensionLogLevel.WARN, "SQL Failed: " + e.toString());
+				e.printStackTrace();
 	        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
 	        }
 			return;
@@ -198,7 +198,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         {
         	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
         }
-		//trace("initData", outData.getDump());
+		trace("initData", outData.getDump());
 	}
 
 
@@ -209,7 +209,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("noticeVersion", loginData.noticeVersion);
 		outData.putInt("forceVersion", loginData.forceVersion);
 		outData.putText("coreVersion", loginData.coreVersion);
-		
+		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
+
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
 		initData.id = outData.getInt("id");

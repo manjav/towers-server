@@ -9,6 +9,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
@@ -55,7 +56,18 @@ public class UserManager {
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
 		String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN friendship ON players.id=friendship.invitee_id OR players.id=friendship.inviter_id INNER JOIN resources ON resources.type=1001 AND players.id=resources.player_id WHERE players.id!=" + playerId + " AND friendship.inviter_id=" + playerId + " OR friendship.invitee_id=" + playerId + " ORDER BY resources.count DESC LIMIT 0,100";
-		return dbManager.executeQuery(query , new Object[] {});
+		ISFSArray result = dbManager.executeQuery(query , new Object[] {});
+		/*ISFSArray ret = new SFSArray();
+		ISFSObject f;
+		for ( int i=0; i<result.size(); i++)
+		{
+			f = result.getSFSObject(i);
+			f.putUtfString("n", f.getUtfString("name")); f.removeElement("name");
+			f.putInt("i", f.getInt("id")); f.removeElement("id");
+			f.putInt("p", f.getInt("count")); f.removeElement("count");
+			ret.addSFSObject(f);
+		}*/
+		return result;
 	}
 
 
