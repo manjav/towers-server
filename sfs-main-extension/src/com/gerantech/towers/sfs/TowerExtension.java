@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.handlers.*;
+import com.gerantech.towers.sfs.handlers.friendship.AddFriendRequestHandler;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 /**
@@ -39,6 +40,8 @@ public class TowerExtension extends SFSExtension
 
         // Add in app billing verification handler
 		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
+
+		addRequestHandler("addFriend", AddFriendRequestHandler.class);
 	}
 	
 //	public HazelcastInstance getHazelCast()
