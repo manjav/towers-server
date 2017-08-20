@@ -135,8 +135,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	    			query += i<exchanges.size()-1 ? ", " : ";";
 	    		}
 	    		dbManager.executeInsert(query, new Object[] {});
-	    		//trace(query);
-	    		
+
 	    		// send data to user
 	    		outData.putInt("id", playerId);
 	    		outData.putText("name", "guest");
@@ -198,7 +197,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         {
         	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
         }
-		trace("initData", outData.getDump());
+		//trace("initData", outData.getDump());
 	}
 
 

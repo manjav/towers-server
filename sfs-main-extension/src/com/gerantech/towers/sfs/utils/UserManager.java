@@ -151,7 +151,7 @@ public class UserManager {
 		keyLen = keys.length;
 		for (int i = 0; i < keyLen; i++)
 		{
-			query += "('" + player.id + "', '" + keys[i] + "', '" + resources.get(keys[i]) + "', '" + (ResourceType.isBuilding(keys[i])?1:0) + "')";
+			query += "('" + player.id + "', '" + keys[i] + "', '" + player.resources.get(keys[i]) + "', '" + (ResourceType.isBuilding(keys[i])?1:0) + "')";
 			query += i < keyLen - 1 ? ", " : ";";
 		}
 
@@ -160,10 +160,12 @@ public class UserManager {
 	}
 
 
-	public static void upgradeBuilding(SFSExtension extension, Player player, int type, int level) throws SQLException
+	public static String upgradeBuilding(SFSExtension extension, Player player, int type, int level) throws SQLException
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
-  		dbManager.executeUpdate("UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";", new Object[] {});
+		String query = "UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";";
+		dbManager.executeUpdate(query, new Object[] {});
+		return query;
 	}
 
 }

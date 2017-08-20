@@ -71,6 +71,12 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
 			item.outcomes = game.exchanger.getChestOutcomes(type);
 
+		/*String log = "";
+		int[] keys = game.player.resources.keys();
+		for(int i = 0; i<keys.length; i++)
+			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
+		trace ( log );*/
+
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
 		Boolean succeed = game.exchanger.exchange(item, now, hardsConfimed);
@@ -79,12 +85,12 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			return false;
 
 		// logs .....
-		/*int[] reqs = item.requirements.keys();
-		for(int i = 0; i<reqs.length; i++)
-			trace("requirements", reqs[i], item.requirements.get(reqs[i]));
-		int[] outs = item.outcomes.keys();
-		for(int o = 0; o<outs.length; o++)
-			trace("outcomes", outs[o], item.outcomes.get(outs[o]));*/
+		/*int[] inserts = mapChangeCallback.inserts.keys();
+		for(int i = 0; i<inserts.length; i++)
+			trace("inserts", inserts[i], mapChangeCallback.inserts.get(inserts[i]));
+		int[] updates = mapChangeCallback.updates.keys();
+		for(int o = 0; o<updates.length; o++)
+			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
 		trace("type:", type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
 		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS ? item.outcomes.keys()[0] : 0;

@@ -40,10 +40,11 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			return;
 		}
 		try {
-			UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level);
-			UserManager.updateResources(getParentExtension(), player, mapChangeCallback.updates);
+			trace(UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level));
+			trace(UserManager.updateResources(getParentExtension(), player, mapChangeCallback.updates));
 		} catch (Exception e) {
-			trace(e.getMessage());
+			e.printStackTrace();
+			return;
 		}
 		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.level );
     }

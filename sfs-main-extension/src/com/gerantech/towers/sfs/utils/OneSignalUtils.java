@@ -15,7 +15,7 @@ public class OneSignalUtils
 
     }
 
-    public void send(String message)
+    public void send(String message, int playerId)
     {
         try
         {
