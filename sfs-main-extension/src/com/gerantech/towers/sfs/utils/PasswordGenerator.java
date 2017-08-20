@@ -52,8 +52,12 @@ public class PasswordGenerator
 		return index;
 	}
 
-	public static String getInvitationCode(int id)
+	public static String getInvitationCode(int playerId)
 	{
-		return Integer.toString(id,30)+Integer.toString(id,36)+Integer.toString(id, 24);
+		return Integer.toString( playerId,30) + "z" + Integer.toString(playerId,35 );
+	}
+	public static int recoverPlayerId(String invitationCode)
+	{
+		return Integer.parseInt( invitationCode.split("z")[1] ,35 );
 	}
 }
