@@ -82,7 +82,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             // If nothing is wrong Insert to friendship
             queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
             trace("INPUT string to DB:", queryStr);
-            //dbManager.executeInsert(queryStr, new Object[] {});
+            dbManager.executeInsert(queryStr, new Object[] {});
             params.putText("inviter", inviterName);
         }
         catch (SQLException e)
