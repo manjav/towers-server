@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import haxe.root.Array;
 
 import java.sql.SQLException;
@@ -54,7 +55,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
 		// Create new user ============================================================
-		if ( inData != null )
+		if ( inData.containsKey("udid") )
 		{
 			try
 			{
@@ -78,114 +79,119 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				password = PasswordGenerator.generate().toString();
 
-	        	// Insert to DataBase
-	            int playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
-	    		
-	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-	            // get initial user resources
-	    		SFSArray resources = new SFSArray();
-	    		for (int i : loginData.resources.keys())
-	    		{
-		    		SFSObject so = new SFSObject();
-		    		
-		    		so.putInt("type", i);
-		    		so.putInt("count", loginData.resources.get(i));
-		    		so.putInt("level", i < 1000 ? loginData.buildingsLevel.get(i) : 0);
-		    		
-		    		resources.addSFSObject( so );
-	    		}
-	    		
-	    		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
-	    		for(int i=0; i<resources.size(); i++)
-	    		{
-	    			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
-	    			query += i<resources.size()-1 ? ", " : ";";
-	    		}
+				// Insert to DataBase
+				int playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
 
-	    		dbManager.executeInsert(query, new Object[] {});
-	    		
-	            // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-	    		SFSArray exchanges = new SFSArray();
-	    		int now = (int)Instant.now().getEpochSecond();
-	    		for (int i=0; i<loginData.exchanges.size(); i++)
+				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+				// get initial user resources
+				SFSArray resources = new SFSArray();
+				for (int i : loginData.resources.keys())
 	    		{
-	    			int t = loginData.exchanges.get(i);
-		    		SFSObject so = new SFSObject();
-		    		so.putInt("type", t);
-		    		so.putInt("num_exchanges", 0);
-		    		so.putInt("outcome", 0);
+					SFSObject so = new SFSObject();
+
+					so.putInt("type", i);
+					so.putInt("count", loginData.resources.get(i));
+					so.putInt("level", i < 1000 ? loginData.buildingsLevel.get(i) : 0);
+
+					resources.addSFSObject( so );
+				}
+
+				String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
+				for(int i=0; i<resources.size(); i++)
+	    		{
+					query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
+					query += i<resources.size()-1 ? ", " : ";";
+				}
+
+				dbManager.executeInsert(query, new Object[] {});
+
+				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+				SFSArray exchanges = new SFSArray();
+				int now = (int)Instant.now().getEpochSecond();
+				for (int i=0; i<loginData.exchanges.size(); i++)
+	    		{
+					int t = loginData.exchanges.get(i);
+					SFSObject so = new SFSObject();
+					so.putInt("type", t);
+					so.putInt("num_exchanges", 0);
+					so.putInt("outcome", 0);
 
 					int ct = ExchangeType.getCategory(t);
-					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
-						so.putInt("expired_at", now + (t==ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
-					else
+					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS ) {
+						so.putInt("expired_at", now + (t== ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
+					}
+					else {
 						so.putInt("expired_at", 0);
-	    		
-		    		// bonus :
-					if( ct == ExchangeType.S_20_SPECIALS )
-			    		so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
+					}
+
+					// bonus :
+					if( ct == ExchangeType.S_20_SPECIALS ) {
+						so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
+					}
 
 					exchanges.addSFSObject( so );
-	    		}
+				}
 
-	    		query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
-	    		for(int i=0; i<exchanges.size(); i++)
+				query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
+				for(int i=0; i<exchanges.size(); i++)
 	    		{
-	    			query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  exchanges.getSFSObject(i).getInt("expired_at") + "', '" +  exchanges.getSFSObject(i).getInt("outcome") + "')" ;
-	    			query += i<exchanges.size()-1 ? ", " : ";";
-	    		}
-	    		dbManager.executeInsert(query, new Object[] {});
+					query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  exchanges.getSFSObject(i).getInt("expired_at") + "', '" +  exchanges.getSFSObject(i).getInt("outcome") + "')" ;
+					query += i<exchanges.size()-1 ? ", " : ";";
+				}
+				dbManager.executeInsert(query, new Object[] {});
 
-	    		// send data to user
-	    		outData.putInt("id", playerId);
-	    		outData.putText("name", "guest");
+				// send data to user
+				outData.putInt("id", playerId);
+				outData.putText("name", "guest");
 				outData.putText("password", password);
-	    		outData.putSFSArray("resources", resources);
-	    		outData.putSFSArray("quests", new SFSArray());
-	    		outData.putSFSArray("exchanges", exchanges);
-	    		initiateCore(session, outData, loginData);
+				outData.putSFSArray("resources", resources);
+				outData.putSFSArray("quests", new SFSArray());
+				outData.putSFSArray("exchanges", exchanges);
+				initiateCore(session, outData, loginData);
 
 				// add udid and device as account id for restore players
-				if( deviceUDID != null )
+				if( deviceUDID != null ) {
 					dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
-	        }
+				}
+			}
 	        catch (SQLException e)
 	        {
 				e.printStackTrace();
-	        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
-	        }
+				Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+			}
 			return;
-		} 
-		
-		
+		}
+
+
 		// Find player in DB ===========================================================
 		try
         {
 			int id = Integer.parseInt(name);
-	        ISFSArray res = dbManager.executeQuery("SELECT * FROM players WHERE id="+id+"", new Object[] {});
+			ISFSArray res = dbManager.executeQuery("SELECT * FROM players WHERE id="+id+"", new Object[] {});
 
-	        if(res.size() != 1)
+			if(res.size() != 1)
 	        {
-	        	//trace("name", name, "id", id, "password", password);
-	        	Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
-	        	return;
-	        }
-	        
-	        ISFSObject userData = res.getSFSObject(0);
-        	if(!getApi().checkSecurePassword(session, userData.getText("password"), password))
-        	{
-        		Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
-	        	return;
-        	}
+				//trace("name", name, "id", id, "password", password);
+				Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
+				return;
+			}
 
-        	// Retrieve player data from db
-        	outData.putInt("id", id);
-        	outData.putText("name", userData.getText("name"));
-    		outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
-    		outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
+			ISFSObject userData = res.getSFSObject(0);
+			if(!getApi().checkSecurePassword(session, userData.getText("password"), password))
+        	{
+				Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
+				return;
+			}
+
+			// Retrieve player data from db
+			outData.putInt("id", id);
+			outData.putText("name", userData.getText("name"));
+			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
+			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
 			outData.putSFSArray("friends", UserManager.getFriends(getParentExtension(), id));
 
+			OneSignalUtils.addPlayerId(getParentExtension(), id, inData.getText("pushToken"));
     		// Find active battle room
 			int joinedRoomId = findActiveBattleRoom(id);
 			session.setProperty("joinedRoomId", joinedRoomId);

@@ -35,6 +35,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
 
         String invitationCode = params.getText("invitationCode");
         int inviteeId = game.player.id;
+        trace("Invitation Code", invitationCode);
         int inviterId = PasswordGenerator.recoverPlayerId(invitationCode);
         trace("inviteeId", inviteeId, "inviterId", inviterId);
 
