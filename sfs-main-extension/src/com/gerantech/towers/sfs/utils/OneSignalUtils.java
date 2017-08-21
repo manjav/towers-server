@@ -23,26 +23,26 @@ public class OneSignalUtils
     {
         IDBManager dbManager = extension.getParentZone().getDBManager();
         try{
-            String str = "INSERT INTO pushtokens (player_id, token) VALUES ("+playerId+", '"+oneSignalId+"') ON DUPLICATE KEY UPDATE token = VALUES(token)";
+            String str = "INSERT INTO pushtokens (player_id, push_id) VALUES ("+playerId+", '"+oneSignalId+"') ON DUPLICATE KEY UPDATE push_id = VALUES(push_id)";
             dbManager.executeInsert(str, new Object[]{});
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static String getToken(ISFSExtension extension, int playerId)
+    public static String getPushId(ISFSExtension extension, int playerId)
     {
         int [] players = {playerId};
-        return getTokens(extension, players).get(0);
+        return getPushIds(extension, players).get(0);
     }
-    public static List<String> getTokens(ISFSExtension extension, int[] playerIds)
+    public static List<String> getPushIds(ISFSExtension extension, int[] playerIds)
     {
         List<String> ret = new ArrayList<>();
         IDBManager dbManager = extension.getParentZone().getDBManager();
         try{
 
             int len = playerIds.length;
-            String queryStr= "SELECT token FROM pushtokens WHERE ";
+            String queryStr= "SELECT push_id FROM pushtokens WHERE ";
             for ( int i=0; i < len; i++ )
             {
                 queryStr += "player_id=" + playerIds[i];
@@ -50,7 +50,7 @@ public class OneSignalUtils
             }
             ISFSArray sfsArray = dbManager.executeQuery(queryStr, new Object[]{});
             for ( int i=0; i<sfsArray.size(); i++ )
-                ret.add(i, sfsArray.getSFSObject(i).getText("token"));
+                ret.add(i, sfsArray.getSFSObject(i).getText("push_id"));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -66,8 +66,8 @@ public class OneSignalUtils
 
     public static void send(ISFSExtension extension, String message, String data, int[] players )
     {
-        List<String> tokens = getTokens(extension, players);//["6392d91a-b206-4b7b-a620-cd68e32c3a76","76ece62b-bcfe-468c-8a78-839aeaa8c5fa","8e0f21fa-9a5a-4ae7-a9a6-ca1f24294b86"]
-        String tokensStr = "[\"" + String.join("\", \"", tokens) + "\"]";
+        List<String> pushIds = getPushIds(extension, players);//["6392d91a-b206-4b7b-a620-cd68e32c3a76","76ece62b-bcfe-468c-8a78-839aeaa8c5fa","8e0f21fa-9a5a-4ae7-a9a6-ca1f24294b86"]
+        String pushIdsStr = "[\"" + String.join("\", \"", pushIds) + "\"]";
 
         try
         {
@@ -88,7 +88,7 @@ public class OneSignalUtils
 
             String strJsonBody = "{"
                     +   "\"app_id\": \"83cdb330-900e-4494-82a8-068b5a358c18\","
-                    +   "\"include_player_ids\": " + tokensStr
+                    +   "\"include_player_ids\": " + pushIdsStr
                     +   "\"data\": ," + data
                     +   "\"contents\": {\"en\": \"" + message + "\"}"
                     + "}";

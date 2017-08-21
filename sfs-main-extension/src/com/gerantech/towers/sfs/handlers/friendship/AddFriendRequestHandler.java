@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers.friendship;
 
+import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
@@ -92,6 +93,8 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             trace(e.getMessage());
         }
         sendResult(sender, params, OK);
+        String msg = game.player.nickName + "باهات رفیق شد.";
+        OneSignalUtils.send(getParentExtension(), msg, null, inviterId);
     }
 
     private boolean check ( User sender, ISFSObject params, int responseCode, String queryStr )
