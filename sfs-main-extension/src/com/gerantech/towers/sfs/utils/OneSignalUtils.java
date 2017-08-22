@@ -19,17 +19,6 @@ import java.sql.SQLException;
  */
 public class OneSignalUtils
 {
-    public static void addPlayerId(ISFSExtension extension, int playerId, String oneSignalId)
-    {
-        IDBManager dbManager = extension.getParentZone().getDBManager();
-        try{
-            String str = "INSERT INTO pushtokens (player_id, push_id) VALUES ("+playerId+", '"+oneSignalId+"') ON DUPLICATE KEY UPDATE push_id = VALUES(push_id)";
-            dbManager.executeInsert(str, new Object[]{});
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static String getPushId(ISFSExtension extension, int playerId)
     {
         int [] players = {playerId};
@@ -42,7 +31,7 @@ public class OneSignalUtils
         try{
 
             int len = playerIds.length;
-            String queryStr= "SELECT push_id FROM pushtokens WHERE ";
+            String queryStr= "SELECT os_pid FROM pushtokens WHERE ";
             for ( int i=0; i < len; i++ )
             {
                 queryStr += "player_id=" + playerIds[i];
@@ -50,7 +39,7 @@ public class OneSignalUtils
             }
             ISFSArray sfsArray = dbManager.executeQuery(queryStr, new Object[]{});
             for ( int i=0; i<sfsArray.size(); i++ )
-                ret.add(i, sfsArray.getSFSObject(i).getText("push_id"));
+                ret.add(i, sfsArray.getSFSObject(i).getText("os_pid"));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -64,9 +53,15 @@ public class OneSignalUtils
         send( extension, message, data, players );
     }
 
-    public static void send(ISFSExtension extension, String message, String data, int[] players )
+    public static int send(ISFSExtension extension, String message, String data, int[] players )
     {
         List<String> pushIds = getPushIds(extension, players);//["6392d91a-b206-4b7b-a620-cd68e32c3a76","76ece62b-bcfe-468c-8a78-839aeaa8c5fa","8e0f21fa-9a5a-4ae7-a9a6-ca1f24294b86"]
+        if( pushIds.size() == 0 )
+        {
+            System.out.println( "receivers id not found." );
+            return -1;
+        }
+
         String pushIdsStr = "[\"" + String.join("\", \"", pushIds) + "\"]";
 
         try
@@ -123,5 +118,6 @@ public class OneSignalUtils
         {
             t.printStackTrace();
         }
+        return 0;
     }
 }

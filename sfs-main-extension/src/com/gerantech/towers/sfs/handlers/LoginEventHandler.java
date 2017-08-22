@@ -55,19 +55,21 @@ public class LoginEventHandler extends BaseServerEventHandler
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
 		// Create new user ============================================================
-		if ( inData.containsKey("udid") )
+		if ( inData.getInt("id") < 0 )
 		{
 			try
 			{
 				String deviceUDID = inData.getText("udid");
 				String deviceModel = inData.getText("device");
-				if( deviceUDID != null )
+				if( inData.getInt("id") == -1 )
 				{
 					// retrieve user that saved account before
 					ISFSArray res = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + "'", new Object[]{});
-					if (res.size() > 0) {
+					if ( res.size() > 0 )
+					{
 						ISFSArray res2 = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + res.getSFSObject(0).getInt("player_id"), new Object[]{});
-						if (res2.size() > 0) {
+						if ( res2.size() > 0 )
+						{
 							outData.putBool("exists", true);
 							outData.putInt("id", res2.getSFSObject(0).getInt("id"));
 							outData.putText("name", res2.getSFSObject(0).getText("name"));
@@ -191,7 +193,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
 			outData.putSFSArray("friends", UserManager.getFriends(getParentExtension(), id));
 
-			OneSignalUtils.addPlayerId(getParentExtension(), id, inData.getText("pushId"));
     		// Find active battle room
 			int joinedRoomId = findActiveBattleRoom(id);
 			session.setProperty("joinedRoomId", joinedRoomId);
