@@ -51,6 +51,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
+		trace("In data", inData.getDump()) ;
+		
 		LoginData loginData = new LoginData();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
@@ -74,6 +76,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 							outData.putInt("id", res2.getSFSObject(0).getInt("id"));
 							outData.putText("name", res2.getSFSObject(0).getText("name"));
 							outData.putText("password", res2.getSFSObject(0).getText("password"));
+							trace("OutData:", outData.getDump());
 							return;
 						}
 					}
