@@ -67,7 +67,8 @@ public class OneSignalUtils
         try
         {
             if(data == null)
-                data = "";//{"foo": "bar"}
+                data = "{}" +
+                        "";//{"foo": "bar"}
 
             String jsonResponse;
 
@@ -82,9 +83,9 @@ public class OneSignalUtils
             con.setRequestMethod("POST");
 
             String strJsonBody = "{"
-                    +   "\"app_id\": \"83cdb330-900e-4494-82a8-068b5a358c18\","
-                    +   "\"include_player_ids\": " + pushIdsStr
-                    +   "\"data\": ," + data
+                    +   "\"app_id\": \"83cdb330-900e-4494-82a8-068b5a358c18\", "
+                    +   "\"include_player_ids\": " + pushIdsStr + ", "
+                    +   "\"data\": " + data + ", "
                     +   "\"contents\": {\"en\": \"" + message + "\"}"
                     + "}";
 

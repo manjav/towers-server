@@ -52,7 +52,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
         // Invalid invitation code
         if( !check(sender, params, INVALID_INVITATION_CODE, "SELECT name FROM players WHERE id="+ inviterId, true) )
             return;
-        String inviterName = sfsArray.getSFSObject(0).getText("name");
+        params.putText("inviter", sfsArray.getSFSObject(0).getText("name"));
 
         // Case 3:
         // Invitee player has been already added to inviter's friend list
@@ -85,7 +85,6 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
             trace("INPUT string to DB:", queryStr);
             dbManager.executeInsert(queryStr, new Object[] {});
-            params.putText("inviter", inviterName);
         }
         catch (SQLException e)
         {
@@ -93,7 +92,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             trace(e.getMessage());
         }
         sendResult(sender, params, OK);
-        String msg = game.player.nickName + "باهات رفیق شد.";
+        String msg = game.player.nickName + "باهات رفیق شد. ";
         OneSignalUtils.send(getParentExtension(), msg, null, inviterId);
     }
 
