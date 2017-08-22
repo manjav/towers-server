@@ -45,6 +45,8 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("registerPush", RegisterPushHandler.class);
 
 		addRequestHandler("addFriend", AddFriendRequestHandler.class);
+
+		addRequestHandler("profile", ProfileRequestHandler.class);
 	}
 	
 //	public HazelcastInstance getHazelCast()
