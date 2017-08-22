@@ -79,6 +79,11 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
                 dbManager.executeUpdate(queryStr, new Object[] {});
                 params.putInt("rewardType", ResourceType.CURRENCY_HARD);
                 params.putInt("rewardCount", 10);
+
+                // Inviter reward consumption
+                queryStr = "UPDATE resources SET count=count+5 WHERE type=1003 AND player_id=" + inviterId + ";";
+                trace("add reward query:", queryStr);
+                dbManager.executeUpdate(queryStr, new Object[] {});
             }
 
             // If nothing is wrong Insert to friendship
