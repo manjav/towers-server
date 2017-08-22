@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.handlers.*;
 import com.gerantech.towers.sfs.handlers.friendship.AddFriendRequestHandler;
+import com.gerantech.towers.sfs.handlers.friendship.RemoveFriendRequestHandler;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 /**
@@ -45,6 +46,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("registerPush", RegisterPushHandler.class);
 
 		addRequestHandler("addFriend", AddFriendRequestHandler.class);
+		addRequestHandler("removeFriend", RemoveFriendRequestHandler.class);
 
 		addRequestHandler("profile", ProfileRequestHandler.class);
 	}
