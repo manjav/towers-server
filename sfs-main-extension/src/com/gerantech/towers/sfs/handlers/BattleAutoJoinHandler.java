@@ -71,6 +71,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
             theRoom = makeNewRoom(user);
 
         Player player = ((Game)user.getSession().getProperty("core")).player;
+        user.setName( player.id + "" );
         user.setProperty("name", player.nickName);
         user.setProperty("point", player.get_point());
         try

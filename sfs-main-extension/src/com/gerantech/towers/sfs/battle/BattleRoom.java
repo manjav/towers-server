@@ -321,22 +321,19 @@ public class BattleRoom extends SFSExtension
 	private void endBattle(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
-//		if(timer != null)
-//			timer.cancel();
-//		timer = null;
-		
+
 		trace("Battle Ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
 		scores = new int[2];
-	    for (int i=0; i < scores.length; i++)
+	    for ( int i=0; i < scores.length; i++ )
 	    {
         	scores[i] = 0;
 	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
 	        if(wins)
 	        {
-	        	if(battleDuration < battleField.map.times.get(0))
+	        	if( battleDuration < battleField.map.times.get(0) )
 	        		scores[i] = 3;
-	        	else if(battleDuration < battleField.map.times.get(1))
+	        	else if( battleDuration < battleField.map.times.get(1) )
 	        		scores[i] = 2;
 	        	else
 	        		scores[i] = 1;
@@ -354,7 +351,6 @@ public class BattleRoom extends SFSExtension
 	    }
 	    
 	    calculateEndBattleResponse();
-	  //  destroyGame();
 	}
 
 	private void calculateEndBattleResponse()
