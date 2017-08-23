@@ -85,13 +85,13 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
                 queryStr = "UPDATE resources SET count=count+5 WHERE type=1003 AND player_id=" + inviterId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
+                msg = game.player.nickName + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
             }
 
             // If nothing is wrong Insert to friendship
             queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
             trace("INPUT string to DB:", queryStr);
             dbManager.executeInsert(queryStr, new Object[] {});
-            msg = game.player.nickName + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
         }
         catch (SQLException e)
         {
