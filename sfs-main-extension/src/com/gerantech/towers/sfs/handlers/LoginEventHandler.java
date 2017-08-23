@@ -51,8 +51,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
-		trace("In data", inData.getDump()) ;
-		
 		LoginData loginData = new LoginData();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 
@@ -76,7 +74,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 							outData.putInt("id", res2.getSFSObject(0).getInt("id"));
 							outData.putText("name", res2.getSFSObject(0).getText("name"));
 							outData.putText("password", res2.getSFSObject(0).getText("password"));
-							trace("OutData:", outData.getDump());
 							return;
 						}
 					}
@@ -265,7 +262,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					} catch (Exception e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}
-		      		trace("UPDATE `exchanges` SET `expired_at`='" + (now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
+		      		//trace("UPDATE `exchanges` SET `expired_at`='" + (now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
 				}
 			}
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));

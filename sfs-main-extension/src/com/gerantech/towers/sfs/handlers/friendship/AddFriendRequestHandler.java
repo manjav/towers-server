@@ -64,6 +64,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
         if( !check(sender, params, ANOTHER_USER_SAME_PHONE, "SELECT COUNT(*) FROM devices WHERE player_id="+ inviterId +" OR player_id="+ inviteeId +" GROUP BY udid HAVING COUNT(*)>1" ) )
             return;
 
+        String msg = game.player.nickName + " باهات رفیق شد. ";
         try
         {
             // Invitee player already consumed first invitation reward.
@@ -90,6 +91,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
             trace("INPUT string to DB:", queryStr);
             dbManager.executeInsert(queryStr, new Object[] {});
+            msg = game.player.nickName + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
         }
         catch (SQLException e)
         {
@@ -97,7 +99,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
             trace(e.getMessage());
         }
         sendResult(sender, params, OK);
-        String msg = game.player.nickName + "باهات رفیق شد. ";
+
         OneSignalUtils.send(getParentExtension(), msg, null, inviterId);
     }
 
