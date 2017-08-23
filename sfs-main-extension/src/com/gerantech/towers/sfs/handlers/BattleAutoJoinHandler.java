@@ -42,6 +42,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 	 */
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+        trace(params.getDump());
         try
         {
         	index = params.getInt("i");
@@ -51,17 +52,20 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
         catch(Exception err)
         {
-            trace(ExtensionLogLevel.ERROR, err.toString());
+            err.printStackTrace();
         }
     }
  
 	private void joinUser(User user) throws SFSException
     {
-        int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
-        if( joinedRoomId > -1 )
-            theRoom = getParentExtension().getParentZone().getRoomById(joinedRoomId);
-        else if( !isQuest )
-            theRoom = findWaitingBattlsRoom(user);
+        if( !isQuest )
+        {
+            int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
+            if( joinedRoomId > -1 )
+                theRoom = getParentExtension().getParentZone().getRoomById(joinedRoomId);
+            else
+                theRoom = findWaitingBattlsRoom(user);
+        }
 
         if (theRoom == null)
             theRoom = makeNewRoom(user);
@@ -71,6 +75,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         user.setProperty("point", player.get_point());
         try
         {
+            trace("joinRoom");
             getApi().joinRoom(user, theRoom);
         }
         catch (SFSJoinRoomException e)
@@ -90,7 +95,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
 	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
-    	RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
+        trace("makeNewRoom");
+        RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
     	if( !isQuest )
     		index = ((Game)owner.getSession().getProperty("core")).player.get_arena(0)*100+(int)Math.ceil(Math.random()*2);

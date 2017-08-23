@@ -141,6 +141,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					query += i<exchanges.size()-1 ? ", " : ";";
 				}
 				dbManager.executeInsert(query, new Object[] {});
+				session.setProperty("joinedRoomId", -1);
 
 				// send data to user
 				outData.putInt("id", playerId);
