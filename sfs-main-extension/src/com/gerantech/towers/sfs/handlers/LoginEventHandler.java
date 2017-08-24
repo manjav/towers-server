@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
+import com.smartfoxserver.v2.core.SFSConstants;
 import haxe.root.Array;
 
 import java.sql.SQLException;
@@ -53,7 +54,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		LoginData loginData = new LoginData();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
-
 		// Create new user ============================================================
 		if ( inData.getInt("id") < 0 )
 		{
@@ -83,6 +83,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				// Insert to DataBase
 				int playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
+				outData.putUtfString(SFSConstants.NEW_LOGIN_NAME, playerId+"");
 
 				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 				// get initial user resources

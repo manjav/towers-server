@@ -42,7 +42,6 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 	 */
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-        trace(params.getDump());
         try
         {
         	index = params.getInt("i");
@@ -71,7 +70,6 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
             theRoom = makeNewRoom(user);
 
         Player player = ((Game)user.getSession().getProperty("core")).player;
-        user.setName( player.id + "" );
         user.setProperty("name", player.nickName);
         user.setProperty("point", player.get_point());
         try
