@@ -24,7 +24,7 @@ public class BugReportRequestHandler extends BaseClientRequestHandler
 
 		String email = params.getText("email");
 		String description = params.getUtfString("description");
-		trace(game.player.id, email, description);
+		//trace(game.player.id, email, description);
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
   		try {

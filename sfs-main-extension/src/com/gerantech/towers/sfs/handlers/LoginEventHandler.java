@@ -1,5 +1,4 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.smartfoxserver.v2.core.SFSConstants;
 import haxe.root.Array;
 
@@ -200,7 +199,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			session.setProperty("joinedRoomId", joinedRoomId);
 			outData.putBool("inBattle", joinedRoomId > -1 );
 
-    		initiateCore(session, outData, loginData);
+			initiateCore(session, outData, loginData);
 		}
         catch (SQLException e)
         {
@@ -328,5 +327,4 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 		return -1;
 	}
-
 }
