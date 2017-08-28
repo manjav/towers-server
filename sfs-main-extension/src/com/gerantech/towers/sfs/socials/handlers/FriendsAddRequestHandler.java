@@ -1,8 +1,7 @@
-package com.gerantech.towers.sfs.handlers.friendship;
+package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.db.IDBManager;
@@ -16,7 +15,7 @@ import java.sql.SQLException;
 /**
  * Created by Babak on 8/19/2017.
  */
-public class AddFriendRequestHandler extends BaseClientRequestHandler {
+public class FriendsAddRequestHandler extends BaseClientRequestHandler {
 
     private static final int OK = 0;
     private static final int INVALID_INVITATION_CODE = -1;
@@ -27,7 +26,7 @@ public class AddFriendRequestHandler extends BaseClientRequestHandler {
     private IDBManager dbManager;
     private ISFSArray sfsArray;
 
-    public AddFriendRequestHandler() {}
+    public FriendsAddRequestHandler() {}
 
     public void handleClientRequest(User sender, ISFSObject params)
     {

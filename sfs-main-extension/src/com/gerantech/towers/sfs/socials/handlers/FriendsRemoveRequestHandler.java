@@ -1,21 +1,18 @@
-package com.gerantech.towers.sfs.handlers.friendship;
+package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gt.towers.Game;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 
 import java.sql.SQLException;
 
 /**
- * Created by Babak on 8/22/2017.
+ * Created by ManJav on 8/24/2017.
  */
-public class RemoveFriendRequestHandler extends BaseClientRequestHandler
+public class FriendsRemoveRequestHandler extends BaseClientRequestHandler
 {
-    public RemoveFriendRequestHandler() {}
+    public FriendsRemoveRequestHandler() {}
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
