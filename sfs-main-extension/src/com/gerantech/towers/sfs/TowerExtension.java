@@ -10,12 +10,12 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
 public class TowerExtension extends SFSExtension
 {
 	public ExchangeHandler exchangeHandler;
-	//private HazelcastInstance _hazelcast;
 
 	public void init()
     {
 		// Add user login handler
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
+		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
 
         // Add startBattle request handler
 		addRequestHandler("startBattle", BattleAutoJoinHandler.class);
