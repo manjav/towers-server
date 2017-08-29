@@ -47,7 +47,7 @@ public class OneSignalUtils
         return ret;
     }
 
-    public static void send(ISFSExtension extension, String message, String data, int playerId )
+    public static void send(ISFSExtension extension, String message, String data, int playerId)
     {
         int [] players = {playerId};
         send( extension, message, data, players );
@@ -67,8 +67,7 @@ public class OneSignalUtils
         try
         {
             if(data == null)
-                data = "{}" +
-                        "";//{"foo": "bar"}
+                data = "{}";//{"foo": "bar"}
 
             String jsonResponse;
 

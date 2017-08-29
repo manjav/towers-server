@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
@@ -23,6 +24,6 @@ public class LobbyInfoHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        send("lobbyInfo", params, sender);
+        send(Commands.LOBBY_INFO, params, sender);
     }
 }

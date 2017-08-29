@@ -36,15 +36,31 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         int maxUsers = params.getInt("max");
         int minPoint = params.getInt("min");
         int avatar = params.getInt("pic");
-        Room room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar);
-        if( room == null )
-            return;
 
+        if( getParentExtension().getParentZone().getRoomByName(roomName) != null )
+        {
+            params.putInt("response", -1);
+            send("lobbyCreate", params, sender);
+            return;
+        }
+
+        Room room = null;
+        try {
+            room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar);
+        } catch (Exception e) {
+            send("lobbyCreate", params, sender);
+            e.printStackTrace();
+            params.putInt("response", -10);
+            send("lobbyCreate", params, sender);
+            return;
+        }
+
+        params.putInt("response", 0);
         LobbyRoomServerEventsHandler.save(getParentExtension().getParentZone(), room);
         send("lobbyCreate", params, sender);
     }
 
-    private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar)
+    private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar) throws SFSCreateRoomException, SFSJoinRoomException
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
         CreateRoomSettings rs = new CreateRoomSettings();
@@ -64,15 +80,8 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
         rs.setRoomVariables(listOfVars);
 
-        try {
-            Room r = getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
-            getApi().joinRoom(owner, r);
-            return r;
-        } catch (SFSCreateRoomException e) {
-            e.printStackTrace();
-        } catch (SFSJoinRoomException e) {
-            e.printStackTrace();
-        }
-        return null;
+        Room r = getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
+        getApi().joinRoom(owner, r);
+        return r;
     }
 }

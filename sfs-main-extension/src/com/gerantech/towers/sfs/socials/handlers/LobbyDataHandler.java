@@ -82,8 +82,8 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         //params.putInt("max", room.getMaxUsers());
         params.putInt("min", room.getVariable("min").getIntValue());
 
-        params.putSFSArray("all", fillUsersData(getParentExtension(), room, sender));
         params.removeElement("id");
+        params.putSFSArray("all", fillUsersData(getParentExtension(), room, sender));
     }
 
     public static ISFSArray fillUsersData(ISFSExtension parentExtension, Room room, User sender)

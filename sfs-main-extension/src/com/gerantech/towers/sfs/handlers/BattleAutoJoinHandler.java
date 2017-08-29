@@ -74,8 +74,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         user.setProperty("point", player.get_point());
         try
         {
-            trace("joinRoom");
-            getApi().joinRoom(user, theRoom);
+            getApi().joinRoom(user, theRoom, null, false, null);
+           // trace("joined to battle or quest room.");
         }
         catch (SFSJoinRoomException e)
         {
@@ -94,7 +94,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
 	private Room makeNewRoom(User owner) throws SFSCreateRoomException
     {
-        trace("makeNewRoom");
+        //trace("makeNewRoom");
         RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
     	if( !isQuest )

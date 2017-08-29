@@ -17,43 +17,43 @@ public class TowerExtension extends SFSExtension
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
 
         // Add startBattle request handler
-		addRequestHandler("startBattle", BattleAutoJoinHandler.class);
+		addRequestHandler(Commands.START_BATTLE, BattleAutoJoinHandler.class);
 		
         // Add billing upgrade handler
-		addRequestHandler("buildingUpgrade", BuildingUpgradeHandler.class);
+		addRequestHandler(Commands.BUILDING_UPGRADE, BuildingUpgradeHandler.class);
 		
         // Add rank handler
-		addRequestHandler("rank", RankRequestHandler.class);
+		addRequestHandler(Commands.RANK, RankRequestHandler.class);
 
 		// Add select name handler
-		addRequestHandler("selectName", SelectNameRequestHandler.class);
+		addRequestHandler(Commands.SELECT_NAME, SelectNameRequestHandler.class);
 
 		// Add select name handler
-		addRequestHandler("bugReport", BugReportRequestHandler.class);
+		addRequestHandler(Commands.BUG_REPORT, BugReportRequestHandler.class);
 
 		// Add exchange handler
 		exchangeHandler = new ExchangeHandler();
-		addRequestHandler("exchange", exchangeHandler);
+		addRequestHandler(Commands.EXCHANGE, exchangeHandler);
 		
         // Add socials open authentication handler
-		addRequestHandler("oauth", OauthHandler.class);
+		addRequestHandler(Commands.OAUTH, OauthHandler.class);
 
         // Add in app billing verification handler
-		addRequestHandler("verify", CafeBazaarVerificationHandler.class);
+		addRequestHandler(Commands.VERIFY_PURCHASE, CafeBazaarVerificationHandler.class);
 
 		// Register push panels to db
-		addRequestHandler("registerPush", RegisterPushHandler.class);
+		addRequestHandler(Commands.REGISTER_PUSH, RegisterPushHandler.class);
 
 		// Social handlers
-		addRequestHandler("lobbyData", LobbyDataHandler.class);
-		addRequestHandler("lobbyJoin", LobbyJoinHandler.class);
-		addRequestHandler("lobbyLeave", LobbyLeaveHandler.class);
-		addRequestHandler("lobbyCreate", LobbyCreateHandler.class);
+		addRequestHandler(Commands.LOBBY_DATA, LobbyDataHandler.class);
+		addRequestHandler(Commands.LOBBY_JOIN, LobbyJoinHandler.class);
+		addRequestHandler(Commands.LOBBY_LEAVE, LobbyLeaveHandler.class);
+		addRequestHandler(Commands.LOBBY_CREATE, LobbyCreateHandler.class);
 
-		addRequestHandler("addFriend", FriendsAddRequestHandler.class);
-		addRequestHandler("removeFriend", FriendsRemoveRequestHandler.class);
+		addRequestHandler(Commands.ADD_FRIEND, FriendsAddRequestHandler.class);
+		addRequestHandler(Commands.REMOVE_FRIEND, FriendsRemoveRequestHandler.class);
 
-		addRequestHandler("profile", ProfileRequestHandler.class);
+		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 	}
 	
 //	public HazelcastInstance getHazelCast()
