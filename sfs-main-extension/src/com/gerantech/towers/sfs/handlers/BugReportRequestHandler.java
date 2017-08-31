@@ -14,9 +14,6 @@ import java.sql.SQLException;
  */
 public class BugReportRequestHandler extends BaseClientRequestHandler
 {
-
-	public BugReportRequestHandler() {}
-
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		params.putBool("succeed", true);

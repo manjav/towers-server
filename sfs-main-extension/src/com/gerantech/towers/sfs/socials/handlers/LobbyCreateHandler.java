@@ -1,23 +1,16 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
-import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
-import com.smartfoxserver.v2.persistence.room.SFSStorageException;
-import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
 import java.util.ArrayList;
 import java.util.List;

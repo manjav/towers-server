@@ -14,7 +14,6 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.List;
 
