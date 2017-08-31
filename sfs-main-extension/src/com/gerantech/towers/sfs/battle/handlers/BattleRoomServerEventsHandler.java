@@ -41,6 +41,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			List<Room> joinedRooms = (List<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
 		    for(Room r:joinedRooms)
 		    {
+		    	if( r.getGroupId() != "battles" )
+					continue;
 		    	int state = (Integer)r.getProperty("state");
 		    	if(state < BattleRoom.STATE_CREATED || state < BattleRoom.STATE_BATTLE_STARTED && r.getUserManager().getNPCCount() > 0)
 				{

@@ -119,6 +119,7 @@ public class BattleRoom extends SFSExtension
 				for(int i = 0; i<battleField.places.size(); i++)
 				{
 					b = battleField.places.get(i).building;
+					b.calculatePopulation();
 					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || updaterCount == 0 )
 					{
 						reservedPopulations[i] = b.get_population();
@@ -462,8 +463,8 @@ public class BattleRoom extends SFSExtension
 			return;
 		setState( STATE_DESTROYED );
 			
-		if( battleField != null )
-			battleField.dispose();
+		/*if( battleField != null )
+			battleField.dispose();*/
 		battleField = null;
 		trace("destroyGame");
 	}
