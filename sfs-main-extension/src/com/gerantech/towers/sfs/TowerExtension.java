@@ -1,5 +1,7 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.handlers.*;
+import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
+import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
@@ -12,9 +14,12 @@ public class TowerExtension extends SFSExtension
 
 	public void init()
     {
-		// Add user login handler
+		// Add user server handlers
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
+		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleUsersHandler.class);
+		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersHandler.class);
+		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersHandler.class);
 
         // Add startBattle request handler
 		addRequestHandler(Commands.START_BATTLE, BattleAutoJoinHandler.class);
@@ -50,8 +55,8 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.LOBBY_LEAVE, LobbyLeaveHandler.class);
 		addRequestHandler(Commands.LOBBY_CREATE, LobbyCreateHandler.class);
 
-		addRequestHandler(Commands.ADD_FRIEND, FriendsAddRequestHandler.class);
-		addRequestHandler(Commands.REMOVE_FRIEND, FriendsRemoveRequestHandler.class);
+		addRequestHandler(Commands.BUDDY_ADD, BuddyAddRequestHandler.class);
+		addRequestHandler(Commands.BUDDY_REMOVE, BuddyRemoveRequestHandler.class);
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 	}

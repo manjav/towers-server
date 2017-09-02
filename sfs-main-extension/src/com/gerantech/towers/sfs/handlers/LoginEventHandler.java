@@ -192,7 +192,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
 			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
-			outData.putSFSArray("friends", UserManager.getFriends(getParentExtension(), id));
+			//outData.putSFSArray("friends", UserManager.getFriends(getParentExtension(), id));
 
     		// Find active battle room
 			int joinedRoomId = findActiveBattleRoom(id);

@@ -35,22 +35,21 @@ public class BattleRoom extends SFSExtension
 
 	private static final double TIMER_PERIOD = 0.5;
 
-
 	public Timer autoJoinTimer;
+	public boolean enabled = true;
 
 	private int _state = -1;
-	
 	private int[] reservedPopulations;
 	private int[] reservedTypes;
 	private int[] reservedLevels;
 	private int[] reservedTroopTypes;
+
 	private int[] scores;
-	
 	private Room room;
 	private Timer timer;
 	private AIEnemy aiEnemy;
-	private BattleField battleField;
 
+	private BattleField battleField;
 	private boolean isQuest;
 	private boolean singleMode;
 	public int updaterCount = 1;
@@ -62,7 +61,6 @@ public class BattleRoom extends SFSExtension
 		room = getParentRoom();
 		setState( STATE_WAITING );
 		
-		addEventHandler(SFSEventType.ROOM_REMOVED, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		

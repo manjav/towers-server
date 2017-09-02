@@ -1,17 +1,20 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
-import com.smartfoxserver.v2.api.ISFSApi;
+import com.smartfoxserver.v2.buddylist.Buddy;
+import com.smartfoxserver.v2.buddylist.BuddyList;
+import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
+import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
@@ -20,6 +23,8 @@ import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -35,10 +40,13 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		loadSavedLobbies();
 
 		// Find last joined lobby room
-		rejoinToLastLobbyRoom(user);
+		Room room = rejoinToLastLobbyRoom(user);
+
+		// Init buddy data and link invitees to user
+		initBuddy(user, room);
 	}
 
-	private boolean rejoinToLastLobbyRoom(User user)
+	private Room rejoinToLastLobbyRoom(User user)
 	{
 		Player player = ((Game) user.getSession().getProperty("core")).player;
 		int id = Integer.parseInt(user.getName());
@@ -54,24 +62,24 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 				{
 					try {
 						getApi().joinRoom(user, room);
+						return room;
 					} catch (SFSJoinRoomException e) {
 						e.printStackTrace();
-						return false;
+						return null;
 					}
-					return true;
 				}
 			}
 		}
-		return false;
+		return null;
 	}
 
 	// Save room to file for server rstore rooms after resetting
 	public void loadSavedLobbies()
 	{
 		Zone zone = getParentExtension().getParentZone();
-		System.out.print ("lobbies.count: "+ zone.getRoomListFromGroup("lobbies").size() + "\n");
 		if ( zone.getRoomListFromGroup("lobbies").size() > 0 )
 			return;
+		System.out.print ("lobbies.count: "+ zone.getRoomListFromGroup("lobbies").size() + "\n");
 
 		FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
 		zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
@@ -85,6 +93,42 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		} catch (SFSCreateRoomException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initBuddy(User user, Room room) throws SFSBuddyListException {
+		BuddyList bl = null;
+		try {
+			bl = getParentExtension().getBuddyApi().initBuddyList(user, false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		Game game = ((Game)user.getSession().getProperty("core"));
+		user.getBuddyProperties().setNickName(game.player.nickName);
+		user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", game.player.get_point()));
+		getParentExtension().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, true);
+
+		if( room != null )
+			user.getBuddyProperties().setVariable(new SFSBuddyVariable("$room", room.getName()));
+
+		BuddyList buddies = getParentExtension().getParentZone().getBuddyListManager().getBuddyList(user.getName());
+		try {
+			ISFSArray result = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT invitee_id FROM friendship WHERE inviter_id=" + game.player.id + " AND has_reward=" + 0, new Object[]{});
+			for (int i=0; i<result.size(); i++) {
+				String inviteeName = result.getSFSObject(i).getInt("invitee_id").toString();
+				if (!buddies.containsBuddy(inviteeName)) {
+					getParentExtension().getBuddyApi().addBuddy(user, inviteeName, false, true, false);
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (SFSBuddyListException e) {
+			e.printStackTrace();
+		}
+
+		for (Buddy b : bl.getBuddies() )
+			trace(b);
 	}
 
 

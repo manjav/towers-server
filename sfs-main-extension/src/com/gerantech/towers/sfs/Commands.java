@@ -15,8 +15,6 @@ public class Commands
     public static final String SEND_STICKER = "ss";
 
     public static final String PROFILE = "profile";
-    public static final String ADD_FRIEND = "addFriend";
-    public static final String REMOVE_FRIEND = "removeFriend";
 
     public static final String BUILDING_UPGRADE = "buildingUpgrade";
     public static final String EXCHANGE = "exchange";
@@ -39,4 +37,6 @@ public class Commands
     public static final String LOBBY_EDIT = "lobbyEdit";
     public static final String LOBBY_PUBLIC_MESSAGE = "m";
 
+    public static final String BUDDY_ADD = "buddyAdd";
+    public static final String BUDDY_REMOVE = "buddyRemove";
 }

@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class LobbyCreateHandler extends BaseClientRequestHandler
 {
-    public LobbyCreateHandler() {}
-
     public void handleClientRequest(User sender, ISFSObject params)
     {
         String roomName = params.getUtfString("name");
