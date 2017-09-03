@@ -15,6 +15,8 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
+import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
@@ -44,8 +46,21 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         try
         {
-        	index = params.getInt("i");
-        	isQuest = params.getBool("q");
+            index = params.getInt("i");
+            isQuest = params.getBool("q");
+            if( params.containsKey("su") )
+            {
+
+                index -= 100000;
+                List<Room> rList = getParentExtension().getParentZone().getRoomList();
+                for (Room room : rList)
+                    trace(index, isQuest, room.getId());
+                theRoom = getParentExtension().getParentZone().getRoomById(index);
+                if( theRoom != null )
+                    join(sender, theRoom, params.getText("su"));
+                return;
+            }
+
         	//trace(((Game)sender.getSession().getProperty("core")).player.id);
             joinUser(sender);
         }
@@ -69,13 +84,22 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         if (theRoom == null)
             theRoom = makeNewRoom(user);
 
+        join(user, theRoom, "");
+    }
+
+    private void join(User user, Room theRoom, String spectatedUser)
+    {
         Player player = ((Game)user.getSession().getProperty("core")).player;
-        user.setProperty("name", player.nickName);
-        user.setProperty("point", player.get_point());
+        List<UserVariable> vars = new ArrayList<>();
+        vars.add(new SFSUserVariable("name", player.nickName));
+        vars.add(new SFSUserVariable("point", player.get_point()));
+        vars.add(new SFSUserVariable("spectatedUser", spectatedUser));
+        getApi().setUserVariables(user, vars, true, true);
+
         try
         {
-            getApi().joinRoom(user, theRoom, null, false, null);
-           // trace("joined to battle or quest room.");
+            getApi().joinRoom(user, theRoom, null, spectatedUser!="", null);
+            // trace("joined to battle or quest room.");
         }
         catch (SFSJoinRoomException e)
         {
@@ -107,6 +131,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
+        rs.setMaxSpectators(10);
         rs.setDynamic(true);
         rs.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 		rs.setRoomProperties( roomProperties );

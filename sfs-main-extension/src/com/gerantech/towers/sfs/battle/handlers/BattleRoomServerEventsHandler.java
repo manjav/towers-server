@@ -7,15 +7,20 @@ import com.gt.towers.Game;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
+import com.smartfoxserver.v2.entities.variables.UserVariable;
+import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,21 +43,28 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private void userJoined(ISFSEvent arg)
 	{
 		room = (Room) arg.getParameter(SFSEventParam.ROOM);
-		roomClass = (BattleRoom) room.getExtension();
+		roomClass = ((BattleRoom) room.getExtension());
+
+		if( user.isSpectator(room) )
+		{
+			sendBattleData( user );
+			return;
+		}
+
 		// return to previous room
 		if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
 		{
 			boolean singleMode = room.getUserManager().getNPCCount() > 0;
-			List<User> players = roomClass.getPlayers();
+			List<User> players = room.getPlayersList();
 			for (int i=0; i < players.size(); i++)
 			{
-				SFSObject sfsO = new SFSObject();
 				if(players.get(i).equals(user))
 				{
-					sendBattleData(sfsO, players, i, false, singleMode);
+					sendBattleData( players.get(i) );
 				}
 				else if( !players.get(i).isNpc() )
 				{
+					SFSObject sfsO = new SFSObject();
 					sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
 					send("rejoinBattle", sfsO, players.get(i));
 				}
@@ -77,8 +89,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(), 20);
 					try {
 						User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
-						npcUser.setProperty("point", opponent.point);
-						npcUser.setProperty("name", opponent.name);
+						List<UserVariable> vars = new ArrayList<>();
+						vars.add(new SFSUserVariable("name", opponent.name));
+						vars.add(new SFSUserVariable("point", opponent.point));
+						getApi().setUserVariables(npcUser, vars, true, true);
 						getApi().joinRoom(npcUser, room);
 
 						// exclude npc from npc-opponents list
@@ -148,13 +162,14 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	{
 		boolean isQuest = (Boolean)room.getProperty("isQuest");
 		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
+
 		String mapName = getMapName(isQuest);
 
-		List<User> players = roomClass.getPlayers();
-	    for (int i=0; i < players.size(); i++)
-	    	sendBattleData(new SFSObject(), players, i, isQuest, existsNpc||isQuest);
+		roomClass.createGame(((Game)room.getPlayersList().get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
+		List<User> players = roomClass.getRealPlayers();
+		for (int i=0; i < players.size(); i++)
+	    	sendBattleData(players.get(i));
 
-		roomClass.createGame(((Game)players.get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
 	}
 
 	private String getMapName(boolean isQuest)
@@ -162,31 +177,37 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		int index = (Integer)room.getProperty("index");
 		String mapName = "battle_" + index;
 		if(isQuest)
-			mapName = "quest_" + index;//((Game)players.get(0).getSession().getProperty("core")).player.get_questIndex();
+			mapName = "quest_" + index;
 		return mapName;
 	}
 
-
-	private void sendBattleData(SFSObject sfsO, List<User> players, int palyerIndex, boolean isQuest, boolean singleMode)
+	private void sendBattleData(User player)
 	{
-		User player = players.get(palyerIndex);
-		if(player.isNpc())
+		if( player.isNpc() )
 			return;
 
+		boolean isQuest = (Boolean)room.getProperty("isQuest");
+		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
+
+		SFSObject sfsO = new SFSObject();
+		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
 		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
-		sfsO.putInt("troopType", palyerIndex);
-		sfsO.putBool("singleMode", singleMode);
+		sfsO.putBool("singleMode", existsNpc||isQuest);
 		sfsO.putInt("roomId", room.getId());
 		sfsO.putText("mapName", getMapName(isQuest));
-
-		if( players.size() == 2 )
-		{
-			User opponent = players.get(palyerIndex==0?1:0);
-			SFSObject sfsOpp = new SFSObject();
-			sfsOpp.putText("name", (String)opponent.getProperty("name"));
-			sfsOpp.putInt("point", (Integer)opponent.getProperty("point"));
-			sfsO.putSFSObject("opponent", sfsOpp);
-		}
 		send("startBattle", sfsO, player);
+
+		if( !player.isSpectator(room) )
+		{
+			player.getBuddyProperties().setState("Occupied");
+			player.getBuddyProperties().setVariable(new SFSBuddyVariable("br", room.getId()));
+			player.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", player.getVariable("point").getIntValue()));
+
+			try {
+				getParentExtension().getBuddyApi().setBuddyVariables(player, player.getBuddyProperties().getVariables(), true, true);
+			} catch (SFSBuddyListException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

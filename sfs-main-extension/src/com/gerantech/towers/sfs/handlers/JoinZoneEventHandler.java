@@ -98,16 +98,17 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	private void initBuddy(User user, Room room) throws SFSBuddyListException {
 		BuddyList bl = null;
 		try {
-			bl = getParentExtension().getBuddyApi().initBuddyList(user, false);
+			bl = getParentExtension().getBuddyApi().initBuddyList(user, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		Game game = ((Game)user.getSession().getProperty("core"));
 		user.getBuddyProperties().setNickName(game.player.nickName);
 		user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", game.player.get_point()));
 		getParentExtension().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, true);
 
+
+		// add buddy that added user before
 		if( room != null )
 			user.getBuddyProperties().setVariable(new SFSBuddyVariable("$room", room.getName()));
 
@@ -120,16 +121,10 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 					getParentExtension().getBuddyApi().addBuddy(user, inviteeName, false, true, false);
 				}
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (SFSBuddyListException e) {
 			e.printStackTrace();
 		}
-
-		for (Buddy b : bl.getBuddies() )
-			trace(b);
 	}
-
-
 }

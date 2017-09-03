@@ -17,13 +17,12 @@ public class TowerExtension extends SFSExtension
 		// Add user server handlers
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
-		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleUsersHandler.class);
 		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersHandler.class);
 
         // Add startBattle request handler
 		addRequestHandler(Commands.START_BATTLE, BattleAutoJoinHandler.class);
-		
+
         // Add billing upgrade handler
 		addRequestHandler(Commands.BUILDING_UPGRADE, BuildingUpgradeHandler.class);
 		
@@ -60,32 +59,4 @@ public class TowerExtension extends SFSExtension
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 	}
-	
-//	public HazelcastInstance getHazelCast()
-//	{
-//		if(_hazelcast != null)
-//			return _hazelcast;
-//		Config hazelcastCfg = new Config("aaa");
-//		
-////		Map<String, MapConfig> mcs = cfg.getMapConfigs();
-////		MapConfig mc = new MapConfig();
-////		mc.setInMemoryFormat(InMemoryFormat.OBJECT);
-////		mcs.putIfAbsent("mc", mc);
-////		for(String s:mcs.keySet())
-////			trace("MapConfig ", s);
-//				
-//		//NetworkConfig network = config.getNetworkConfig(); 
-//		//JoinConfig join = network.getJoin();
-//		//join.getMulticastConfig().setEnabled(false);
-//
-////		MapConfig mapCfg = new MapConfig();
-////		mapCfg.setAsyncBackupCount(1);
-////		mapCfg.setName("users");
-////		mapCfg.setInMemoryFormat(InMemoryFormat.BINARY);
-////		hazelcastCfg.addMapConfig(mapCfg);
-////		
-//		trace("_______________________ NEW HAZELCAST INSTANCE _____________________");
-//		_hazelcast = Hazelcast.newHazelcastInstance(hazelcastCfg);
-//		return _hazelcast;
-//	}
 }
