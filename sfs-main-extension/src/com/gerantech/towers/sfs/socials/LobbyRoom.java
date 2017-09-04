@@ -38,13 +38,6 @@ public class LobbyRoom extends SFSExtension
         addRequestHandler(Commands.LOBBY_KICK, LobbyKickHandler.class);
     }
 
-    public void handleServerEvent(ISFSEvent event) throws Exception
-    {
-        super.handleServerEvent(event);
-        trace("handleServerEvent", event);
-    }
-
-    @Override
     public void handleClientRequest(String requestId, User sender, ISFSObject params)
     {
         if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )

@@ -31,7 +31,6 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 
 	public void handleServerEvent(ISFSEvent arg) throws SFSException
 	{
-		trace("LOBBY_ROOM_HANDLE_SERVEREVENT______", arg);
 		room = (Room)arg.getParameter(SFSEventParam.ROOM);
 		roomClass = (LobbyRoom) room.getExtension();
 		User user = (User)arg.getParameter(SFSEventParam.USER);

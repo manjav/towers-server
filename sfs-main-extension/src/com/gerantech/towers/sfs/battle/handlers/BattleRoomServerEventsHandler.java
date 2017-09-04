@@ -190,9 +190,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
 		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
+		sfsO.putInt("roomId", room.getId());
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("singleMode", existsNpc||isQuest);
-		sfsO.putInt("roomId", room.getId());
 		sfsO.putText("mapName", getMapName(isQuest));
 		send("startBattle", sfsO, player);
 
