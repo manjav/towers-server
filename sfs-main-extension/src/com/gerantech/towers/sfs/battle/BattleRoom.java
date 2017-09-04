@@ -101,7 +101,7 @@ public class BattleRoom extends SFSExtension
 		for(int i = 0; i<battleField.places.size(); i++)
 		{
 			reservedTypes[i] = battleField.places.get(i).building.type;
-			reservedLevels[i] = battleField.places.get(i).building.level;
+			reservedLevels[i] = battleField.places.get(i).building.get_level();
 		}
 
     	timer = new Timer();
@@ -125,11 +125,11 @@ public class BattleRoom extends SFSExtension
 						//trace(i+","+b.get_population()+","+b.troopType);
 					}
 					
-					if( b.level != reservedLevels[i] || b.type != reservedTypes[i] || updaterCount == 0 )
+					if( b.get_level() != reservedLevels[i] || b.type != reservedTypes[i] || updaterCount == 0 )
 					{
-						sendImproveResponse(i, b.type, b.level);
+						sendImproveResponse(i, b.type, b.get_level());
 						reservedTypes[i] = b.type;
-						reservedLevels[i] = b.level;
+						reservedLevels[i] = b.get_level();
 					}
 				}
 				
