@@ -37,7 +37,6 @@ public class BattleRoom extends SFSExtension
 
 	public Timer autoJoinTimer;
 	public int updaterCount = 1;
-	public boolean enabled = true;
 
 	private int _state = -1;
 	private int[] reservedPopulations;

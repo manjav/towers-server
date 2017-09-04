@@ -1,19 +1,14 @@
 package com.gerantech.towers.sfs.handlers;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
+import com.smartfoxserver.v2.api.ISFSApi;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
@@ -21,27 +16,22 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
- 
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class BattleAutoJoinHandler extends BaseClientRequestHandler
 {
-    private final String version = "1.0.1";
- 
-    private static AtomicInteger roomId = new AtomicInteger();
 
+    private static AtomicInteger roomId = new AtomicInteger();
 	private int index;
 	private Boolean isQuest;
 	private Room theRoom;
 
- 
-    public void init()
-    {
-        trace("Java AutoJoiner: " + version);
-    }
- 
-	/* (non-Javadoc)
-	 * @see com.smartfoxserver.v2.extensions.IClientRequestHandler#handleClientRequest(com.smartfoxserver.v2.entities.User, com.smartfoxserver.v2.entities.data.ISFSObject)
-	 */
 	public void handleClientRequest(User sender, ISFSObject params)
     {
         try
@@ -57,7 +47,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
                     trace(index, isQuest, room.getId());
                 theRoom = getParentExtension().getParentZone().getRoomById(index);
                 if( theRoom != null )
-                    join(sender, theRoom, params.getText("su"));
+                    join(getApi(), sender, theRoom, params.getText("su"));
                 return;
             }
 
@@ -82,43 +72,42 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         }
 
         if (theRoom == null)
-            theRoom = makeNewRoom(user);
+            theRoom = makeNewRoom(getApi(), getParentExtension().getParentZone(), user, isQuest, index);
 
-        join(user, theRoom, "");
+        join(getApi(), user, theRoom, "");
     }
 
-    private void join(User user, Room theRoom, String spectatedUser)
+    private Room findWaitingBattlsRoom(User user)
+    {
+        List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
+        for (Room room : rList)
+            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING )
+                return room;
+        return null;
+    }
+
+    public static void join(ISFSApi api, User user, Room theRoom, String spectatedUser)
     {
         Player player = ((Game)user.getSession().getProperty("core")).player;
         List<UserVariable> vars = new ArrayList<>();
         vars.add(new SFSUserVariable("name", player.nickName));
         vars.add(new SFSUserVariable("point", player.get_point()));
         vars.add(new SFSUserVariable("spectatedUser", spectatedUser));
-        getApi().setUserVariables(user, vars, true, true);
+        api.setUserVariables(user, vars, true, true);
 
         try
         {
-            getApi().joinRoom(user, theRoom, null, spectatedUser!="", null);
+            api.joinRoom(user, theRoom, null, spectatedUser!="", null);
             // trace("joined to battle or quest room.");
         }
         catch (SFSJoinRoomException e)
         {
-            trace(ExtensionLogLevel.ERROR, e.toString());
+            e.printStackTrace();
         }
     }
 
-    private Room findWaitingBattlsRoom(User user)
-	{
-		List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
-        for (Room room : rList)
-            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING )
-              		return room;
-        return null;
-	}
-
-	private Room makeNewRoom(User owner) throws SFSCreateRoomException
+	public static Room makeNewRoom(ISFSApi api, Zone zone, User owner, boolean isQuest, int index)
     {
-        //trace("makeNewRoom");
         RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
     	if( !isQuest )
@@ -140,6 +129,11 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         rs.setGroupId(isQuest?"quests":"battles");
         rs.setExtension(res);
 
-        return getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
+        try {
+            return api.createRoom(zone, rs, owner);
+        } catch (SFSCreateRoomException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

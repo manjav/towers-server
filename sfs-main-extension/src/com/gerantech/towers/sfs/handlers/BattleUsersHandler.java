@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.entities.User;
@@ -14,6 +15,7 @@ public class BattleUsersHandler extends BaseServerEventHandler
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
         User user = (User) arg.getParameter(SFSEventParam.USER);
+        ((Game)user.getSession().getProperty("core")).player.inFriendlyBattle = false;
         if( user.getBuddyProperties().getState() == "Available" )
             return;
 

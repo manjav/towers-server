@@ -51,7 +51,8 @@ public class LobbyRoom extends SFSExtension
         {
             // Add time and user-id to message
             Game game = ((Game) sender.getSession().getProperty("core"));
-            params.putShort("m", (short) MessageTypes.M0_TEXT);
+            if( !params.containsKey("m") )
+                params.putShort("m", (short) MessageTypes.M0_TEXT);
             params.putInt("u", (int) Instant.now().getEpochSecond());
             params.putInt("i", game.player.id);
             params.putText("s", game.player.nickName);
@@ -59,6 +60,27 @@ public class LobbyRoom extends SFSExtension
             // Max 30 len message queue
             while( messages.size() > 30 )
                 messages.removeElementAt(0);
+
+            if( params.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE )
+            {
+                int msgSize = messages.size();
+                for (int i = 0; i < msgSize; i++)
+                {
+                    if( messages.getSFSObject(i).getInt("bid") == params.getInt("bid") ) {
+                        if( messages.getSFSObject(i).getInt("i") == game.player.id ) {
+                            trace(messages.size());
+                            messages.removeElementAt(i);
+                            trace(messages.size());
+                            params.putShort("st", (short) 3);
+                        } else {
+                            messages.getSFSObject(i).putShort("st", (short) 1);
+                            params.putShort("st", (short) 1);
+                        }
+                        super.handleClientRequest(requestId, sender, params);
+                        return;
+                    }
+                }
+            }
 
             // Merge messages from a sender
             ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
@@ -86,6 +108,18 @@ public class LobbyRoom extends SFSExtension
         params.putText("s", subject);
         params.putText("o", object);
         params.putShort("p", permissionId);
+        messages.addSFSObject(params);
+        super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, params);
+    }
+
+    public void sendBattleRequest(String subject, int roomId, short permissionId)
+    {
+        ISFSObject params = new SFSObject();
+        params.putUtfString("t", "");
+        params.putShort("m", (short) MessageTypes.M30_FRIENDLY_BATTLE);
+        params.putText("s", subject);
+        params.putInt("r", roomId);
+       // params.putInt("u", (int) Instant.now().getEpochSecond());
         messages.addSFSObject(params);
         super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, params);
     }

@@ -51,10 +51,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			return;
 		}
 
-		// return to previous room
+		if( !user.isNpc() )
+			((Game) user.getSession().getProperty("core")).player.inFriendlyBattle = room.containsProperty("isFriendly");
+
+		// Rejoin to previous room
 		if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
 		{
-			boolean singleMode = room.getUserManager().getNPCCount() > 0;
 			List<User> players = room.getPlayersList();
 			for (int i=0; i < players.size(); i++)
 			{
@@ -72,19 +74,17 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			return;
 		}
 
-		// wait to match making ( complete battle-room`s players )
+		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
+			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 			roomClass.autoJoinTimer = new Timer();
 			roomClass.autoJoinTimer.scheduleAtFixedRate(new TimerTask()
 			{
 				@Override
 				public void run()
 				{
-
-					Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 					// trace(game.player.id, game.player.nickName, game.player.get_point());
-
 					IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 					RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(), 20);
 					try {
@@ -103,9 +103,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					}
 					cancel();
 					roomClass.autoJoinTimer.cancel();
-					//sendStartBattleResponse();
 				}
-			}, 3333, 3333);
+			}, room.containsProperty("isFriendly")?10000000:6000, 6000);
 		}
 		else
 		{
@@ -118,11 +117,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		List<Room> joinedRooms = (List<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
 		for(Room r:joinedRooms)
 		{
-			roomClass = ((BattleRoom) r.getExtension());
-			if( r.getGroupId() != "battles" || !roomClass.enabled)
+			if( r.getGroupId() != "battles" || r.containsProperty("enabled"))
 				continue;
+			r.setProperty("enabled", false);
 
-			roomClass.enabled = false;
 			int state = (Integer)r.getProperty("state");
 			if(state < BattleRoom.STATE_CREATED || state < BattleRoom.STATE_BATTLE_STARTED && r.getUserManager().getNPCCount() > 0)
 			{
@@ -154,7 +152,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					}
 				}
 			}
-			roomClass.enabled = true;
+			r.removeProperty("enabled");
 		}
 	}
 
@@ -192,6 +190,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
 		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
+		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("singleMode", existsNpc||isQuest);
 		sfsO.putInt("roomId", room.getId());
 		sfsO.putText("mapName", getMapName(isQuest));
