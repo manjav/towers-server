@@ -17,8 +17,9 @@ public class TowerExtension extends SFSExtension
 		// Add user server handlers
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
-		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersHandler.class);
-		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersHandler.class);
+		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersExitHandler.class);
+		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersExitHandler.class);
+		addEventHandler(SFSEventType.ROOM_REMOVED, BattlesRemovedHandler.class);
 
         // Add startBattle request handler
 		addRequestHandler(Commands.START_BATTLE, BattleAutoJoinHandler.class);

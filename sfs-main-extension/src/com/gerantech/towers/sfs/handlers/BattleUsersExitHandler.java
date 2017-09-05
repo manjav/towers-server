@@ -10,11 +10,12 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 /**
  * Created by ManJav on 9/2/2017.
  */
-public class BattleUsersHandler extends BaseServerEventHandler
+public class BattleUsersExitHandler extends BaseServerEventHandler
 {
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
         User user = (User) arg.getParameter(SFSEventParam.USER);
+        if( !user.isNpc() )
         ((Game)user.getSession().getProperty("core")).player.inFriendlyBattle = false;
         if( user.getBuddyProperties().getState() == "Available" )
             return;
@@ -22,6 +23,5 @@ public class BattleUsersHandler extends BaseServerEventHandler
         //user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
         user.getBuddyProperties().setState("Available");
         getParentExtension().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, true);
-
     }
 }
