@@ -94,9 +94,11 @@ public class BattleRoom extends SFSExtension
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
 		
-		if(this.singleMode)
+		if(this.singleMode) {
 			aiEnemy = new AIEnemy(battleField);
-		
+			aiEnemy.difficulty = Math.min(2, game.player.get_arena(0));
+		}
+
 		for(int i = 0; i<battleField.places.size(); i++)
 		{
 			reservedTypes[i] = battleField.places.get(i).building.type;
