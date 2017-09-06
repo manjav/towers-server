@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.battle;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gerantech.towers.sfs.utils.UserManager;
@@ -36,7 +37,7 @@ public class BattleRoom extends SFSExtension
 	private static final double TIMER_PERIOD = 0.5;
 
 	public Timer autoJoinTimer;
-	public int updaterCount = 1;
+	public BattleField battleField;
 
 	private int _state = -1;
 	private int[] reservedPopulations;
@@ -49,7 +50,6 @@ public class BattleRoom extends SFSExtension
 	private Timer timer;
 
 	private AIEnemy aiEnemy;
-	private BattleField battleField;
 	private boolean isQuest;
 	private boolean singleMode;
 	private ISFSObject stickerParams;
@@ -68,7 +68,7 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
 		addRequestHandler("ss", BattleRoomStickerRequestHandler.class);
 		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
-		addRequestHandler("resetAllVars", BattleRoomResetVarsRequestHandler.class);
+		addRequestHandler(Commands.RESET_ALL, BattleRoomResetVarsRequestHandler.class);
 	}
 
 	public void createGame(Game game, String mapName, Boolean isQuest, final boolean singleMode) 
@@ -116,7 +116,7 @@ public class BattleRoom extends SFSExtension
 				{
 					b = battleField.places.get(i).building;
 					b.calculatePopulation();
-					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || updaterCount == 0 )
+					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] )
 					{
 						reservedPopulations[i] = b.get_population();
 						reservedTroopTypes[i] = b.troopType;
@@ -124,7 +124,7 @@ public class BattleRoom extends SFSExtension
 						//trace(i+","+b.get_population()+","+b.troopType);
 					}
 					
-					if( b.get_level() != reservedLevels[i] || b.type != reservedTypes[i] || updaterCount == 0 )
+					if( b.get_level() != reservedLevels[i] || b.type != reservedTypes[i] )
 					{
 						sendImproveResponse(i, b.type, b.get_level());
 						reservedTypes[i] = b.type;
@@ -192,7 +192,6 @@ public class BattleRoom extends SFSExtension
 				else
 					battleField.now += TIMER_PERIOD;
 
-		    	updaterCount ++;
 			}
 
 

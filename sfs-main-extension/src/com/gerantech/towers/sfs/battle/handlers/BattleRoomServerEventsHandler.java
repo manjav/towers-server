@@ -20,6 +20,7 @@ import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -162,6 +163,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
 
 		String mapName = getMapName(isQuest);
+		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
 
 		roomClass.createGame(((Game)room.getPlayersList().get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
 		List<User> players = roomClass.getRealPlayers();

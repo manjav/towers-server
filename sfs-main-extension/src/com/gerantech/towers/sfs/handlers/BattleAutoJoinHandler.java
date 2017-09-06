@@ -17,7 +17,6 @@ import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +115,6 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         Map<Object, Object> roomProperties = new HashMap<Object, Object>();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
-        roomProperties.put("startAt", (int)Instant.now().getEpochSecond());
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
