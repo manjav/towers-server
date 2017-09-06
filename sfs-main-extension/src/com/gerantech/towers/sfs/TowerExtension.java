@@ -57,6 +57,7 @@ public class TowerExtension extends SFSExtension
 
 		addRequestHandler(Commands.BUDDY_ADD, BuddyAddRequestHandler.class);
 		addRequestHandler(Commands.BUDDY_REMOVE, BuddyRemoveRequestHandler.class);
+		addRequestHandler(Commands.BUDDY_BATTLE, BuddyBattleRequestHandler.class);
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 	}

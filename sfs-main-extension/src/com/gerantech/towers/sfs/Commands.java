@@ -39,4 +39,5 @@ public class Commands
 
     public static final String BUDDY_ADD = "buddyAdd";
     public static final String BUDDY_REMOVE = "buddyRemove";
+    public static final String BUDDY_BATTLE = "buddyBattle";
 }
