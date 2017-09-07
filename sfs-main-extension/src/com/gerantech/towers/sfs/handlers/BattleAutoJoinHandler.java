@@ -41,9 +41,6 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
             {
 
                 index -= 100000;
-                List<Room> rList = getParentExtension().getParentZone().getRoomList();
-                for (Room room : rList)
-                    trace(index, isQuest, room.getId());
                 theRoom = getParentExtension().getParentZone().getRoomById(index);
                 if( theRoom != null )
                     join(getApi(), sender, theRoom, params.getText("su"));
@@ -78,9 +75,12 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
     private Room findWaitingBattlsRoom(User user)
     {
+        //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
+        //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
+        int arenaIndex =  Math.min(2, ((Game)user.getSession().getProperty("core")).player.get_arena(0));
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room room : rList)
-            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING )
+            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING && ((int)room.getProperty("arena")) == arenaIndex)
                 return room;
         return null;
     }
@@ -109,12 +109,14 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
+        int arenaIndex =  ((Game)owner.getSession().getProperty("core")).player.get_arena(0);
     	if( !isQuest )
-    		index = ((Game)owner.getSession().getProperty("core")).player.get_arena(0)*100+(int)Math.ceil(Math.random()*2);
+    		index = arenaIndex * 100 + (int)Math.ceil(Math.random()*2);
 
-        Map<Object, Object> roomProperties = new HashMap<Object, Object>();
+        Map<Object, Object> roomProperties = new HashMap<>();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
+        roomProperties.put("arena", Math.min(2, arenaIndex));// ===> is temp
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);

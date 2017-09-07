@@ -353,14 +353,14 @@ public class BattleRoom extends SFSExtension
 	    {
 			Game game = registeredPlayers.get(i);
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
-			trace("isQuest", isQuest, scores[i]);
+			//trace("isQuest", isQuest, scores[i]);
 			if ( isQuest )
 			{
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
 					try {
 						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
-					} catch (Exception e) { trace(e.getMessage()); }
+					} catch (Exception e) { e.printStackTrace(); }
 					game.player.quests.set(battleField.map.index, scores[i]);
 				}
 			}
@@ -376,7 +376,7 @@ public class BattleRoom extends SFSExtension
 					updateMap.set(outk[r], outcomesList[i].get(outk[r]));
 				else
 					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
-				trace(r, outk[r],outcomesList[i].get(outk[r]) );
+				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
 				r ++;
 			}
 
@@ -388,7 +388,6 @@ public class BattleRoom extends SFSExtension
 				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
 			} catch (Exception e) {
 				e.printStackTrace();
-				//trace(e.getMessage());
 			}
 			
 			// send end battle response if player connected
