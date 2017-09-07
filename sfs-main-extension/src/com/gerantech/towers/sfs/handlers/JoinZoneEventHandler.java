@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.buddylist.Buddy;
 import com.smartfoxserver.v2.buddylist.BuddyList;
@@ -96,17 +97,15 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	}
 
 	private void initBuddy(User user, Room room) throws SFSBuddyListException {
-		BuddyList bl = null;
 		try {
-			bl = getParentExtension().getBuddyApi().initBuddyList(user, true);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			SmartFoxServer.getInstance().getAPIManager().getBuddyApi().initBuddyList(user, true);
+			user.setProperty("hasBuddyList", true);
+		} catch (IOException e) { e.printStackTrace(); }
+
 		Game game = ((Game)user.getSession().getProperty("core"));
 		user.getBuddyProperties().setNickName(game.player.nickName);
 		user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", game.player.get_point()));
 		getParentExtension().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, true);
-
 
 		// add buddy that added user before
 		if( room != null )
@@ -117,9 +116,8 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			ISFSArray result = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT invitee_id FROM friendship WHERE inviter_id=" + game.player.id + " AND has_reward=" + 0, new Object[]{});
 			for (int i=0; i<result.size(); i++) {
 				String inviteeName = result.getSFSObject(i).getInt("invitee_id").toString();
-				if (!buddies.containsBuddy(inviteeName)) {
+				if ( !buddies.containsBuddy(inviteeName) )
 					getParentExtension().getBuddyApi().addBuddy(user, inviteeName, false, true, false);
-				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
