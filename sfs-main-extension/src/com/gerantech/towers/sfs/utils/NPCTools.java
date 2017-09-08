@@ -20,6 +20,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -46,10 +47,11 @@ public class NPCTools
             IDBManager dbManager = extension.getParentZone().getDBManager();
             Arena arena;
             int[] arenaKeys = game.arenas.keys();
+            long ss = Instant.now().toEpochMilli();
             for( int a=0; a<arenaKeys.length; a++ )
             {
                 arena = game.arenas.get(arenaKeys[a]);
-                String query = "SELECT  players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count >= " + arena.min + " AND resources.count <= " + arena.max + " ORDER BY resources.count DESC LIMIT 0," + RankRequestHandler.PAGE_SIZE;
+                String query = "SELECT  players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count > 0 ORDER BY resources.count DESC";
                 ISFSArray players = dbManager.executeQuery(query, new Object[] {});
 
                 for( int p=0; p<players.size(); p++ )
@@ -58,6 +60,7 @@ public class NPCTools
                     users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
                 }
             }
+            game.tracer.log("time :  " +(Instant.now().toEpochMilli()-ss));
 
         } catch (SQLException e) {
             e.printStackTrace();
