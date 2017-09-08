@@ -33,7 +33,7 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
 		    } catch (IOException e) { e.printStackTrace(); }
         }
 
-        user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
+       // user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
         user.getBuddyProperties().setState("Available");
         SmartFoxServer.getInstance().getAPIManager().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, false);
     }
