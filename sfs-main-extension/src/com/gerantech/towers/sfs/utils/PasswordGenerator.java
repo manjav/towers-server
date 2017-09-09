@@ -67,9 +67,9 @@ public class PasswordGenerator
 		return Integer.toString( playerId,35) + "z" + Integer.toString((int)Instant.now().getEpochSecond(),35 );
 	}
 
-	public static int validateAndRecoverPId(String restorenCode)
+	public static int validateAndRecoverPId(String restoreCode)
 	{
-		String[] codes = restorenCode.split("z");
+		String[] codes = restoreCode.split("z");
 		try {
 			if (Integer.parseInt(codes[1], 35) + 3600 < Instant.now().getEpochSecond())
 				return -1;
