@@ -2,6 +2,11 @@ package com.gerantech.towers.sfs.handlers;
 import com.smartfoxserver.v2.core.SFSConstants;
 import haxe.root.Array;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -36,14 +41,7 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * com.smartfoxserver.v2.extensions.IServerEventHandler#handleServerEvent
-	 * (com.smartfoxserver.v2.core.ISFSEvent)
-	 */
-	@SuppressWarnings("unchecked")
-	public void handleServerEvent(ISFSEvent event) throws SFSException 
+	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
 		String name = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
 		String password = (String) event.getParameter(SFSEventParam.LOGIN_PASSWORD);
@@ -52,6 +50,18 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
 		LoginData loginData = new LoginData();
+		if( LoginData.coreSize == 0 )
+		{
+			try {
+				LoginData.coreSize = new URL("http://localhost/cores/core-" + loginData.coreVersion + ".swf").openStream().available();
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", LoginData.coreSize);
+		}
+
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		// Create new user ============================================================
 		if ( inData.getInt("id") < 0 )
@@ -216,6 +226,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("noticeVersion", loginData.noticeVersion);
 		outData.putInt("forceVersion", loginData.forceVersion);
 		outData.putText("coreVersion", loginData.coreVersion);
+		outData.putInt("coreSize", LoginData.coreSize);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
 
 		InitData initData = new InitData();
