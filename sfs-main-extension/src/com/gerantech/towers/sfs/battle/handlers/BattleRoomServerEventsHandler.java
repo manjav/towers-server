@@ -165,7 +165,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		String mapName = getMapName(isQuest);
 		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
 
-		roomClass.createGame(((Game)room.getPlayersList().get(0).getSession().getProperty("core")), mapName, isQuest, existsNpc||isQuest);
+		roomClass.createGame(mapName, isQuest, existsNpc||isQuest);
 		List<User> players = roomClass.getRealPlayers();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i));
