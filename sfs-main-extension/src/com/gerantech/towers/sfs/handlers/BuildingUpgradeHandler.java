@@ -27,7 +27,7 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		Player player = ((Game)sender.getSession().getProperty("core")).player;
 		Building building = player.buildings.get(buildingType);
 		
-		trace(building.improveLevel, building.level, building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
+		trace(building.improveLevel, building.get_level(), building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
 		
   		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		player.resources.changeCallback = mapChangeCallback;
@@ -36,16 +36,16 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 
 		if( !success )
 		{
-			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.level);
+			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.get_level());
 			return;
 		}
 		try {
-			trace(UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.level));
+			trace(UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.get_level()));
 			trace(UserManager.updateResources(getParentExtension(), player, mapChangeCallback.updates));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
 		}
-		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.level );
+		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.get_level() );
     }
 }
