@@ -46,6 +46,9 @@ public class TowerExtension extends SFSExtension
         // Add in app billing verification handler
 		addRequestHandler(Commands.VERIFY_PURCHASE, CafeBazaarVerificationHandler.class);
 
+		addRequestHandler(Commands.RESTORE, RestoreRequestHandler.class);
+
+
 		// Register push panels to db
 		addRequestHandler(Commands.REGISTER_PUSH, RegisterPushHandler.class);
 

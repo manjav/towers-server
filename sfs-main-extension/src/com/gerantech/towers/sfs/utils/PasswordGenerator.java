@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.utils;
+import java.time.Instant;
 import java.util.Random;
 
 public class PasswordGenerator
@@ -59,5 +60,25 @@ public class PasswordGenerator
 	public static int recoverPlayerId(String invitationCode)
 	{
 		return Integer.parseInt( invitationCode.split("z")[1] ,35 );
+	}
+
+	public static String getRestoreCode(int playerId)
+	{
+		return Integer.toString( playerId,35) + "z" + Integer.toString((int)Instant.now().getEpochSecond(),35 );
+	}
+
+	public static int validateAndRecoverPId(String restorenCode)
+	{
+		String[] codes = restorenCode.split("z");
+		try {
+			if (Integer.parseInt(codes[1], 35) + 3600 < Instant.now().getEpochSecond())
+				return -1;
+			System.out.print(Integer.parseInt(codes[1], 35) + " " + Instant.now().getEpochSecond() + "\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return  -1;
+		}
+
+		return  Integer.parseInt(codes[0], 35);
 	}
 }

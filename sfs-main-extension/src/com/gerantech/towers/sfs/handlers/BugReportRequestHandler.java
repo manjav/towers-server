@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
@@ -31,6 +32,6 @@ public class BugReportRequestHandler extends BaseClientRequestHandler
 			params.putText("errorCode", e.getErrorCode()+"");
 			trace(e.getMessage());
 		}
-		send("bugReport", params, sender);
+		send(Commands.BUG_REPORT, params, sender);
     }
 }
