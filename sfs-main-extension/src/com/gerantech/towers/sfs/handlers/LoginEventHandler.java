@@ -41,6 +41,8 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 
+	private static int CORE_SIZE = 0;
+
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
 		String name = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
@@ -50,10 +52,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 
 		LoginData loginData = new LoginData();
-		if( LoginData.coreSize == 0 )
+		if( CORE_SIZE == 0 )
 		{
 			try {
-				LoginData.coreSize = new URL("http://localhost/cores/core-" + loginData.coreVersion + ".swf").openStream().available();
+				CORE_SIZE = new URL("http://localhost/cores/core-" + loginData.coreVersion + ".swf").openStream().available();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -226,7 +228,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("noticeVersion", loginData.noticeVersion);
 		outData.putInt("forceVersion", loginData.forceVersion);
 		outData.putText("coreVersion", loginData.coreVersion);
-		outData.putInt("coreSize", LoginData.coreSize);
+		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
 
 		InitData initData = new InitData();

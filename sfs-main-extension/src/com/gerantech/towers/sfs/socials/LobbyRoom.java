@@ -48,35 +48,38 @@ public class LobbyRoom extends SFSExtension
             params.putInt("i", game.player.id);
             params.putText("s", game.player.nickName);
 
+            ISFSArray messages = removeOldBattles();
             // Max 30 len message queue
-            while( messageQueue().size() > 30 )
-                messageQueue().removeElementAt(0);
+            while( messages.size() > 30 )
+                messages.removeElementAt(0);
 
             if( params.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE )
             {
-                int msgSize = messageQueue().size();
-                for (int i = 0; i < msgSize; i++)
+                int msgSize = messages.size();
+                for (int i = msgSize-1; i >=0; i--)
                 {
-                    if( messageQueue().getSFSObject(i).getInt("bid") == params.getInt("bid") )
+                    if( messages.getSFSObject(i).getInt("bid") == params.getInt("bid") )
                     {
                         if( params.getShort("st") == 0 ) {
-                            if( messageQueue().getSFSObject(i).getInt("i") == game.player.id ) {
-                                messageQueue().removeElementAt(i);
+                            if( messages.getSFSObject(i).getInt("i") == game.player.id )
+                            {
+                                messages.removeElementAt(i);
                                 params.putShort("st", (short) 3);
                             }
                             else
                             {
-                                messageQueue().getSFSObject(i).putShort("st", (short) 1);
+                                messages.getSFSObject(i).putShort("st", (short) 1);
                                 params.putText("o", game.player.nickName);
                                 params.putShort("st", (short) 1);
                             }
                         }
-                        else if( params.getShort("st") == 1 ) {
+                        else if( params.getShort("st") == 1 )
+                        {
                             params.putBool("sp", true);
                         }
                         else
                         {
-                            messageQueue().removeElementAt(i);
+                            messages.removeElementAt(i);
                         }
                         super.handleClientRequest(requestId, sender, params);
                         return;
@@ -85,21 +88,39 @@ public class LobbyRoom extends SFSExtension
             }
 
             // Merge messages from a sender
-            ISFSObject last = messageQueue().size() > 0 ? messageQueue().getSFSObject(messageQueue().size() - 1) : null;
+            ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
             if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && params.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
             {
                 params.putUtfString("t", last.getUtfString("t") + "\n" + params.getUtfString("t"));
-                messageQueue().removeElementAt(messageQueue().size() - 1);
+                messages.removeElementAt(messages.size() - 1);
             }
-            messageQueue().addSFSObject(params);
+            messages.addSFSObject(params);
+            //room.setProperty("queue", messages);
         }
         else if( requestId.equals(Commands.LOBBY_INFO) )
         {
             LobbyDataHandler.fillUsersData(getParentZone().getExtension(), room, sender);
-            params.putSFSArray("messages", messageQueue());
+            params.putSFSArray("messages", removeOldBattles());
         }
         //trace(requestId, params.getDump());
         super.handleClientRequest(requestId, sender, params);
+    }
+
+    private ISFSArray removeOldBattles()
+    {
+        ISFSArray messages = messageQueue();
+       /* int msgSize = messages.size();
+        for (int i = msgSize-1; i >= 0; i--)
+        {
+            ISFSObject msg = messages.getSFSObject(i);
+            if( msg.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE )
+            {
+                if( getParentZone().getRoomById(msg.getInt("bid")) == null )
+                    messages.removeElementAt(i);
+            }
+        }*/
+        //room.setProperty("queue", messages);
+        return messages;
     }
 
     public void sendComment(short mode, String subject, String object, short permissionId)

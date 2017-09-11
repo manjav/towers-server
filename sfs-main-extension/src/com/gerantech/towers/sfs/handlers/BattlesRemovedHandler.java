@@ -24,7 +24,7 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
         Room room = (Room) arg.getParameter(SFSEventParam.ROOM);
-        if( room.getGroupId().equals("lobbies") || !room.containsProperty("registeredPlayers") )
+        if( room.getGroupId().equals("lobbies") )//|| !room.containsProperty("registeredPlayers") )
             return;
 
         List<Room> lobbies = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
@@ -33,7 +33,7 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
             Room lobby = lobbies.get(i);
             if ( lobby.containsProperty(room.getName()) )
             {
-                if( lobby.getUserList().size()> 0 ) {
+                if( lobby.getUserList().size() > 0 ) {
                     SFSObject p = new SFSObject();
                     p.putInt("bid", room.getId());
                     p.putShort("m", (short) MessageTypes.M30_FRIENDLY_BATTLE);
@@ -42,9 +42,11 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
                 }
 
                 ISFSArray messageQueue = (ISFSArray) lobby.getProperty("queue");
-                for (int j = 0; j < messageQueue.size(); j++) {
+                int msgSize = messageQueue.size();
+                for (int j = msgSize-1; j >= 0; j--)
+                {
                     ISFSObject msg = messageQueue.getSFSObject(j);
-                    if( msg.containsKey("bid") && msg.getInt("bid") == room.getId() )
+                    if( msg.containsKey("bid") && getParentExtension().getParentZone().getRoomById(msg.getInt("bid")) == null )
                         messageQueue.removeElementAt(j);
                 }
                 trace(room.getName(), lobby.getName());
