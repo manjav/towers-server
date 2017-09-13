@@ -61,7 +61,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", LoginData.coreSize);
+			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
 		}
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
