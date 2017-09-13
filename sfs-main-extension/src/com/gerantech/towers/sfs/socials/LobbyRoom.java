@@ -1,11 +1,11 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.handlers.BattleAutoJoinHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
-import com.smartfoxserver.v2.api.ISFSApi;
-import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -17,16 +17,16 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
 
+
 /**
  * Created by ManJav on 8/25/2017.
  */
 public class LobbyRoom extends SFSExtension
 {
-    private Room room;
-    public void init()
-    {
-        room = getParentRoom();
-        room.setProperty("queue", new SFSArray());
+    private Room lobby;
+    public void init() {
+        lobby = getParentRoom();
+        lobby.setProperty("queue", new SFSArray());
 
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
         addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
@@ -40,87 +40,139 @@ public class LobbyRoom extends SFSExtension
     {
         if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
         {
-            // Add time and user-id to message
-            Game game = ((Game) sender.getSession().getProperty("core"));
-            if( !params.containsKey("m") )
-                params.putShort("m", (short) MessageTypes.M0_TEXT);
-            params.putInt("u", (int) Instant.now().getEpochSecond());
-            params.putInt("i", game.player.id);
-            params.putText("s", game.player.nickName);
-
-            ISFSArray messages = removeOldBattles();
-            // Max 30 len message queue
-            while( messages.size() > 30 )
-                messages.removeElementAt(0);
-
-            if( params.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE )
-            {
-                int msgSize = messages.size();
-                for (int i = msgSize-1; i >=0; i--)
-                {
-                    if( messages.getSFSObject(i).getInt("bid") == params.getInt("bid") )
-                    {
-                        if( params.getShort("st") == 0 ) {
-                            if( messages.getSFSObject(i).getInt("i") == game.player.id )
-                            {
-                                messages.removeElementAt(i);
-                                params.putShort("st", (short) 3);
-                            }
-                            else
-                            {
-                                messages.getSFSObject(i).putShort("st", (short) 1);
-                                params.putText("o", game.player.nickName);
-                                params.putShort("st", (short) 1);
-                            }
-                        }
-                        else if( params.getShort("st") == 1 )
-                        {
-                            params.putBool("sp", true);
-                        }
-                        else
-                        {
-                            messages.removeElementAt(i);
-                        }
-                        super.handleClientRequest(requestId, sender, params);
-                        return;
-                    }
-                }
+            //trace("in", params.getDump());
+            organizeMessage(sender, params);
+            /*ISFSArray messages = messageQueue();
+            int msgSize = messages.size();
+            for (int i = 0; i <msgSize; i++) {
+                ISFSObject msg =  messages.getSFSObject(i);
+                trace(i, msg.containsKey("m")?msg.getShort("m"):"", msg.containsKey("st")?msg.getShort("st"):"", msg.containsKey("i")?msg.getInt("i"):"", msg.containsKey("bid") ? msg.getInt("bid") : "");
             }
+            trace("out", params.getDump());*/
+        }
+        else if( requestId.equals(Commands.LOBBY_INFO) )
+        {
+            LobbyDataHandler.fillUsersData(getParentZone().getExtension(), lobby, sender);
+            params.putSFSArray("messages", messageQueue());
+        }
 
+        super.handleClientRequest(requestId, sender, params);
+    }
+
+    private void organizeMessage(User sender, ISFSObject params)
+    {
+        // Add time and user-id to message
+        Game game = ((Game) sender.getSession().getProperty("core"));
+        if( !params.containsKey("m") )
+            params.putShort("m", (short) MessageTypes.M0_TEXT);
+        params.putInt("u", (int) Instant.now().getEpochSecond());
+        params.putInt("i", game.player.id);
+        params.putText("s", game.player.nickName);
+
+        Short mode = params.getShort("m");
+        ISFSArray messages = messageQueue();
+        // Max 30 len message queue
+        while( messages.size() > 30 )
+            messages.removeElementAt(0);
+
+        if( mode == MessageTypes.M0_TEXT )
+        {
             // Merge messages from a sender
             ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
-            if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && params.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
+            if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
             {
                 params.putUtfString("t", last.getUtfString("t") + "\n" + params.getUtfString("t"));
                 messages.removeElementAt(messages.size() - 1);
             }
-            messages.addSFSObject(params);
-            //room.setProperty("queue", messages);
         }
-        else if( requestId.equals(Commands.LOBBY_INFO) )
-        {
-            LobbyDataHandler.fillUsersData(getParentZone().getExtension(), room, sender);
-            params.putSFSArray("messages", removeOldBattles());
+        else if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
+
+            // cancel requested battle by owner
+            ISFSObject message = getMyRequestedBattle(params, game.player);
+            if (message != null) {
+                params.putShort("st", (short) 3);
+                message.putShort("st", (short) 3);
+                Room room = getParentZone().getRoomById(message.getInt("bid"));
+                if (room != null)
+                    getApi().leaveRoom(sender, room);
+                return;
+            }
+
+            // join to an available battle
+            message = getAvailableBattle(params);
+            if (message != null) {
+                Room room = getParentZone().getRoomById(params.getInt("bid"));
+                if (room != null) {
+                    BattleAutoJoinHandler.join(getApi(), sender, room, "");
+
+                    params.putText("o", game.player.nickName);
+                    message.putText("o", game.player.nickName);
+
+                    params.putInt("i", message.getInt("i"));
+                    params.putText("s", message.getText("s"));
+
+                    params.putShort("st", (short) 1);
+                    message.putShort("st", (short) 1);
+                }
+
+                return;
+            }
+
+            // spectate started battle
+            message = getStartedBattle(params);
+            if (message != null) {
+                Room room = getParentZone().getRoomById(params.getInt("bid"));
+                if (room != null)
+                 BattleAutoJoinHandler.join(getApi(), sender, room, game.player.nickName);
+                return;
+            }
+
+            // request new battle
+            if (params.getShort("st") > 0)
+                return;
+
+            Room room = BattleAutoJoinHandler.makeNewRoom(getApi(), getParentZone(), sender, false, 0);
+            room.setProperty("isFriendly", true);
+            lobby.setProperty(room.getName(), true);
+            BattleAutoJoinHandler.join(getApi(), sender, room, "");
+            params.putInt("bid", room.getId());
+
+            //lobby.setProperty("queue", messages);
         }
-        //trace(requestId, params.getDump());
-        super.handleClientRequest(requestId, sender, params);
+        messages.addSFSObject(params);
     }
 
-    private ISFSArray removeOldBattles()
+    private ISFSObject getMyRequestedBattle(ISFSObject params, Player playere)
     {
         ISFSArray messages = messageQueue();
-       /* int msgSize = messages.size();
-        for (int i = msgSize-1; i >= 0; i--)
+        int msgSize = messages.size();
+        ISFSObject message;
+        for (int i = msgSize-1; i >=0; i--)
         {
-            ISFSObject msg = messages.getSFSObject(i);
-            if( msg.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE )
-            {
-                if( getParentZone().getRoomById(msg.getInt("bid")) == null )
-                    messages.removeElementAt(i);
-            }
-        }*/
-        //room.setProperty("queue", messages);
-        return messages;
+            message = messages.getSFSObject(i);
+            if( message.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && message.getShort("st") == 0 && message.getInt("i") == playere.id )
+                return  message;
+        }
+        return null;
+    }
+    private ISFSObject getAvailableBattle(ISFSObject params)
+    {
+        ISFSArray messages = messageQueue();
+        int msgSize = messages.size();
+        for (int i = msgSize-1; i >=0; i--)
+            if (messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 0 && messages.getSFSObject(i).getShort("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+                return messages.getSFSObject(i);
+
+        return null;
+    }
+    private ISFSObject getStartedBattle(ISFSObject params)
+    {
+        ISFSArray messages = messageQueue();
+        int msgSize = messages.size();
+        for (int i = msgSize-1; i >=0; i--)
+            if( messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 1 && messages.getSFSObject(i).getShort("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+                return messages.getSFSObject(i);
+        return null;
     }
 
     public void sendComment(short mode, String subject, String object, short permissionId)
@@ -137,6 +189,8 @@ public class LobbyRoom extends SFSExtension
 
     private ISFSArray messageQueue ()
     {
-        return (ISFSArray) room.getProperty("queue");
+        return (ISFSArray) lobby.getProperty("queue");
     }
+
+
 }

@@ -33,23 +33,19 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
             Room lobby = lobbies.get(i);
             if ( lobby.containsProperty(room.getName()) )
             {
-                if( lobby.getUserList().size() > 0 ) {
-                    SFSObject p = new SFSObject();
-                    p.putInt("bid", room.getId());
-                    p.putShort("m", (short) MessageTypes.M30_FRIENDLY_BATTLE);
-                    p.putShort("st", (short) 2);
-                    getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, p, lobby.getUserList(), lobby, false);
-                }
-
                 ISFSArray messageQueue = (ISFSArray) lobby.getProperty("queue");
                 int msgSize = messageQueue.size();
                 for (int j = msgSize-1; j >= 0; j--)
                 {
                     ISFSObject msg = messageQueue.getSFSObject(j);
-                    if( msg.containsKey("bid") && getParentExtension().getParentZone().getRoomById(msg.getInt("bid")) == null )
-                        messageQueue.removeElementAt(j);
+                    if( msg.containsKey("bid") && msg.getInt("bid") == room.getId() && msg.getShort("st") < 2 )
+                    {
+                        msg.putShort("st", (short)2);
+                        if( lobby.getUserList().size() > 0 )
+                            getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
+                    }
                 }
-                trace(room.getName(), lobby.getName());
+                //trace(room.getName(), lobby.getName());
             }
         }
 
