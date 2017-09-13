@@ -7,6 +7,7 @@ import com.gt.towers.Game;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -21,10 +22,7 @@ import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -78,6 +76,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
+			int waitingPeak = RandomPicker.getInt(6000, 10000 );
 			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 			roomClass.autoJoinTimer = new Timer();
 			roomClass.autoJoinTimer.scheduleAtFixedRate(new TimerTask()
@@ -105,7 +104,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					cancel();
 					roomClass.autoJoinTimer.cancel();
 				}
-			}, room.containsProperty("isFriendly")?10000000:6000, 6000);
+			}, room.containsProperty("isFriendly")?10000000:waitingPeak, waitingPeak);
 		}
 		else
 		{
