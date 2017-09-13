@@ -48,7 +48,6 @@ public class TowerExtension extends SFSExtension
 
 		addRequestHandler(Commands.RESTORE, RestoreRequestHandler.class);
 
-
 		// Register push panels to db
 		addRequestHandler(Commands.REGISTER_PUSH, RegisterPushHandler.class);
 
@@ -63,5 +62,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.BUDDY_BATTLE, BuddyBattleRequestHandler.class);
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
+
+		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
 	}
 }
