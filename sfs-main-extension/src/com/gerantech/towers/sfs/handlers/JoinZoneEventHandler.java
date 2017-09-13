@@ -39,20 +39,23 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
 		User user = (User) event.getParameter(SFSEventParam.USER);
+		Player player = ((Game) user.getSession().getProperty("core")).player;
+
+		// Update player data
+
 
 		// Reload saved rooms
 		loadSavedLobbies(getParentExtension().getParentZone(), getApi());
 
 		// Find last joined lobby room
-		Room room = rejoinToLastLobbyRoom(user);
+		Room room = rejoinToLastLobbyRoom(user, player);
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
 	}
 
-	private Room rejoinToLastLobbyRoom(User user)
+	private Room rejoinToLastLobbyRoom(User user, Player player)
 	{
-		Player player = ((Game) user.getSession().getProperty("core")).player;
 		int id = Integer.parseInt(user.getName());
 		ISFSObject member;
 		List<Room> lobbies = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
