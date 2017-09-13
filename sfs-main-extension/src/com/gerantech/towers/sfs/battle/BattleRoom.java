@@ -88,7 +88,7 @@ public class BattleRoom extends SFSExtension
         room.setProperty("registeredPlayers", registeredPlayers);
 
         trace(registeredPlayers.get(0), mapName, 0);
-		battleField = new BattleField(registeredPlayers.get(0), mapName, 0);
+		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0);
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
@@ -271,7 +271,7 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		Building b = battleField.places.get(params.getInt("i")).building;
-		//trace("improve", params.getDump(), b.improvable(params.getInt("t")));
+		//trace("improve", b.game.player.nickName, params.getDump(), b.improvable(params.getInt("t")));
 		b.improve(params.getInt("t"));
 	}
 	private void sendImproveResponse(int index, int type, int level)
