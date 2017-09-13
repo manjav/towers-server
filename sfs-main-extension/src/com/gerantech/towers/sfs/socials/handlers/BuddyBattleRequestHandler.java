@@ -41,7 +41,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             }
             else
             {
-                OneSignalUtils.send(getParentExtension(), player.nickName + " تو رو به رقابت دوستانه دعوت می کنه", "", objectUserId);
+                OneSignalUtils.send(getParentExtension(), player.nickName + " تو رو به رقابت دوستانه دعوت می کنه ", null, objectUserId);
                 params.putShort("bs", (short) 4);
                 sendRresponse(params);
             }
