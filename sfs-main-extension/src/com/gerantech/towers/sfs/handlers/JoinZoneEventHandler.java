@@ -12,6 +12,7 @@ import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
+import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
@@ -29,6 +30,8 @@ import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -39,16 +42,21 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
 		User user = (User) event.getParameter(SFSEventParam.USER);
-		Player player = ((Game) user.getSession().getProperty("core")).player;
+		Game game = ((Game) user.getSession().getProperty("core"));
 
 		// Update player data
-
+		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";trace(query);
+		try {
+			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[] {});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 		// Reload saved rooms
 		loadSavedLobbies(getParentExtension().getParentZone(), getApi());
 
 		// Find last joined lobby room
-		Room room = rejoinToLastLobbyRoom(user, player);
+		Room room = rejoinToLastLobbyRoom(user, game.player);
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);

@@ -162,7 +162,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				outData.putSFSArray("resources", resources);
 				outData.putSFSArray("quests", new SFSArray());
 				outData.putSFSArray("exchanges", exchanges);
-				initiateCore(session, outData, loginData);
+				initiateCore(session, inData, outData, loginData);
 
 				// add udid and device as account id for restore players
 				if( deviceUDID != null ) {
@@ -182,7 +182,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		try
         {
 			int id = Integer.parseInt(name);
-			ISFSArray res = dbManager.executeQuery("SELECT * FROM players WHERE id="+id+"", new Object[] {});
+			ISFSArray res = dbManager.executeQuery("SELECT name, password FROM players WHERE id="+id+"", new Object[] {});
 
 			if(res.size() != 1)
 	        {
@@ -211,7 +211,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			session.setProperty("joinedRoomId", joinedRoomId);
 			outData.putBool("inBattle", joinedRoomId > -1 );
 
-			initiateCore(session, outData, loginData);
+			initiateCore(session, inData, outData, loginData);
 		}
         catch (SQLException e)
         {
@@ -221,7 +221,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	}
 
 
-	private void initiateCore(ISession session, ISFSObject outData, LoginData loginData)
+	private void initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
 	{
 		int now = (int)Instant.now().getEpochSecond();
 		outData.putInt("serverTime", now);
@@ -234,7 +234,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
 		initData.id = outData.getInt("id");
-		
+		initData.appVersion = inData.getInt("appver");
+		initData.market = inData.getText("market");
+
 		ISFSObject element;
 		
 		// create resources init data
