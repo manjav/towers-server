@@ -43,6 +43,8 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	{
 		User user = (User) event.getParameter(SFSEventParam.USER);
 		Game game = ((Game) user.getSession().getProperty("core"));
+		if( game == null )
+			return;
 
 		// Update player data
 		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";trace(query);
