@@ -22,7 +22,6 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
         if( user.isNpc() )
             return;
 
-        ((Game)user.getSession().getProperty("core")).player.inFriendlyBattle = false;
         if( user.getBuddyProperties().getState() == "Available" )
             return;
 
