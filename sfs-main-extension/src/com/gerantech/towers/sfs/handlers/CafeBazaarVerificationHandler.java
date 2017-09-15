@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,8 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
     		resObj.putInt("purchaseState", data.json.getInt("purchaseState"));
     		resObj.putText("developerPayload", data.json.getString("developerPayload"));
     		resObj.putLong("purchaseTime", data.json.getLong("purchaseTime"));
+
+    		insertToDB(game, productID, purchaseToken, resObj);
     	    send("verify", resObj, sender);		
     		return;
         }
@@ -92,6 +95,17 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 		
         // unknown error
 	    trace(ExtensionLogLevel.ERROR, "Unknown Error.");
+	}
+
+	private void insertToDB(Game game, String productID, String purchaseToken, ISFSObject result)
+	{
+		String query = "INSERT INTO `purchases`(`product_id`, `player_id`, `market`, `purchase_token`, `consume_state`, `purchase_state`, `purchase_time`, `success`) VALUES (" +
+		productID+", "+game.player.id+", "+game.market+", "+purchaseToken+ ","+result.getInt("consumptionState")+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
+		try {
+				getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
