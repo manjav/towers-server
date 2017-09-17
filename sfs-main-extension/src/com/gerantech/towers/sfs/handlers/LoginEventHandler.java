@@ -157,6 +157,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				// send data to user
 				outData.putInt("id", playerId);
+				outData.putInt("sessionsCount", 0);
 				outData.putText("name", "guest");
 				outData.putText("password", password);
 				outData.putSFSArray("resources", resources);
@@ -182,7 +183,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		try
         {
 			int id = Integer.parseInt(name);
-			ISFSArray res = dbManager.executeQuery("SELECT name, password FROM players WHERE id="+id+"", new Object[] {});
+			ISFSArray res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id="+id+"", new Object[] {});
 
 			if(res.size() != 1)
 	        {
@@ -201,6 +202,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			// Retrieve player data from db
 			outData.putInt("id", id);
 			outData.putText("name", userData.getText("name"));
+			outData.putInt("sessionsCount", userData.getInt("sessions_count"));
 			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
 			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
@@ -236,6 +238,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		initData.id = outData.getInt("id");
 		initData.appVersion = inData.getInt("appver");
 		initData.market = inData.getText("market");
+		initData.sessionsCount = outData.getInt("sessionsCount");
 
 		ISFSObject element;
 		

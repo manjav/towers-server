@@ -47,7 +47,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			return;
 
 		// Update player data
-		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";trace(query);
+		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `sessions_count`='" + (game.sessionsCount+1) + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";
 		try {
 			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[] {});
 		} catch (SQLException e) {
