@@ -27,7 +27,8 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 {
 
     private static AtomicInteger roomId = new AtomicInteger();
-	private int index;
+    private static int arenaDivider = 5;
+    private int index;
 	private Boolean isQuest;
 	private Room theRoom;
 
@@ -77,7 +78,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
-        int arenaIndex =  Math.min(2, ((Game)user.getSession().getProperty("core")).player.get_arena(0));
+        int arenaIndex =  Math.min(arenaDivider, ((Game)user.getSession().getProperty("core")).player.get_arena(0));
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room room : rList)
             if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING && ((int)room.getProperty("arena")) == arenaIndex)
@@ -116,7 +117,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         Map<Object, Object> roomProperties = new HashMap<>();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
-        roomProperties.put("arena", Math.min(2, arenaIndex));// ===> is temp
+        roomProperties.put("arena", Math.min(arenaDivider, arenaIndex));// ===> is temp
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);

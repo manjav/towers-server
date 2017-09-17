@@ -87,7 +87,6 @@ public class BattleRoom extends SFSExtension
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
         room.setProperty("registeredPlayers", registeredPlayers);
 
-        trace(registeredPlayers.get(0), mapName, 0);
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0);
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		reservedTypes = new int[battleField.places.size()];
@@ -98,7 +97,7 @@ public class BattleRoom extends SFSExtension
 		if(this.singleMode)
 		{
 			aiEnemy = new AIEnemy(battleField);
-			aiEnemy.difficulty = Math.max(0,  Math.min(2, registeredPlayers.get(0).player.get_arena(0) - 1) );
+			aiEnemy.difficulty = Math.max(0, registeredPlayers.get(0).player.get_arena(0) - 1);
 		}
 
 		for(int i = 0; i<battleField.places.size(); i++)
