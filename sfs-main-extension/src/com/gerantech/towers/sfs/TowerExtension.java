@@ -47,6 +47,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.VERIFY_PURCHASE, CafeBazaarVerificationHandler.class);
 
 		addRequestHandler(Commands.RESTORE, RestoreRequestHandler.class);
+		addRequestHandler(Commands.PREFS, UserPrefsRequestHandler.class);
 
 		// Register push panels to db
 		addRequestHandler(Commands.REGISTER_PUSH, RegisterPushHandler.class);

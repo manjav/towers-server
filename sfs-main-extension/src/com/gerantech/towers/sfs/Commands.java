@@ -24,6 +24,7 @@ public class Commands
     public static final String REGISTER_PUSH = "registerPush";
     public static final String VERIFY_PURCHASE = "verify";
     public static final String RESTORE = "restore";
+    public static final String PREFS = "prefs";
 
     public static final String FIGHT = "f";
     public static final String BUILDING_IMPROVE = "i";
