@@ -187,7 +187,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 			if(res.size() != 1)
 	        {
-				//trace("name", name, "id", id, "password", password);
 				Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
 				return;
 			}
@@ -206,7 +205,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
 			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
-			//outData.putSFSArray("friends", UserManager.getFriends(getParentExtension(), id));
 
     		// Find active battle room
 			int joinedRoomId = findActiveBattleRoom(id);
@@ -217,7 +215,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
         catch (SQLException e)
         {
-        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+			e.printStackTrace();
+	       	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
         }
 		//trace("initData", outData.getDump());
 	}
