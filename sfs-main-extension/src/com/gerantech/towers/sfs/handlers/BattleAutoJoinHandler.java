@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.CreateRoomSettings.RoomExtensionSettings;
 import com.smartfoxserver.v2.api.ISFSApi;
@@ -81,7 +82,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         int arenaIndex =  Math.min(arenaDivider, ((Game)user.getSession().getProperty("core")).player.get_arena(0));
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room room : rList)
-            if ( !room.isFull() && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING && ((int)room.getProperty("arena")) == arenaIndex)
+            if ( !room.isFull() && !theRoom.containsProperty("isFriendly") && (Integer)room.getProperty("state") == BattleRoom.STATE_WAITING && ((int)room.getProperty("arena")) == arenaIndex)
                 return room;
         return null;
     }
@@ -110,9 +111,11 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         RoomExtensionSettings res = new RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
-        int arenaIndex =  ((Game)owner.getSession().getProperty("core")).player.get_arena(0);
+        Game game = ((Game)owner.getSession().getProperty("core"));
+        int arenaIndex = game.player.get_arena(0);
+        String[] fields = game.arenas.get(arenaIndex).fields.keys();
     	if( !isQuest )
-    		index = arenaIndex * 100 + (int)Math.ceil(Math.random()*2);
+    		index = game.arenas.get(arenaIndex).fields.get(fields[RandomPicker.getInt(0, fields.length)]).index;
 
         Map<Object, Object> roomProperties = new HashMap<>();
         roomProperties.put("isQuest", isQuest);
