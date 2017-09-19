@@ -98,9 +98,13 @@ public class BattleRoom extends SFSExtension
 		if(this.singleMode)
 		{
 			aiEnemy = new AIEnemy(battleField);
-			aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
-			int min = (int)Math.max(1, aiEnemy.difficulty*0.5);
-			int max = (int)Math.max(1, aiEnemy.difficulty*1.5);
+			if( battleField.map.isQuest )
+				aiEnemy.difficulty = battleField.map.index / 4;
+			else
+				aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
+
+			int min = (int) Math.max(1, aiEnemy.difficulty * 0.5);
+			int max = (int) Math.max(1, aiEnemy.difficulty * 1.5);
 			aiEnemy.maxEnemy = min < max ? RandomPicker.getInt(min, max) : max;
 		}
 
