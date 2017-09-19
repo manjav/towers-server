@@ -102,7 +102,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	private List<RankData> getNearMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
 	{
 		pagingPredicate.nextPage();
-		trace(pagingPredicate.getPage(), pagingPredicate.getPageSize());
+		//trace(pagingPredicate.getPage(), pagingPredicate.getPageSize());
 		Collection<RankData> result = users.values(pagingPredicate);
 		allUsers.addAll(result);
 		int index = indexOf(result, playerRD.id);
