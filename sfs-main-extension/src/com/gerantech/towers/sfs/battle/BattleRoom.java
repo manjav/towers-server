@@ -13,6 +13,7 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -97,7 +98,10 @@ public class BattleRoom extends SFSExtension
 		if(this.singleMode)
 		{
 			aiEnemy = new AIEnemy(battleField);
-			aiEnemy.difficulty = Math.max(0, registeredPlayers.get(0).player.get_arena(0) - 1);
+			aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
+			int min = (int)Math.max(1, aiEnemy.difficulty*0.5);
+			int max = (int)Math.max(1, aiEnemy.difficulty*1.5);
+			aiEnemy.maxEnemy = min < max ? RandomPicker.getInt(min, max) : max;
 		}
 
 		for(int i = 0; i<battleField.places.size(); i++)
