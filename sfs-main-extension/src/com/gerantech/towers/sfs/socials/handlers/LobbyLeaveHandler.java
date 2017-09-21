@@ -16,7 +16,8 @@ public class LobbyLeaveHandler extends BaseClientRequestHandler
             trace(sender.getName() + " have not any lobby !");
             return;
         }
-        Room room = getParentExtension().getParentZone().getRoomById(params.getInt("id"));
-        getApi().leaveRoom(sender, room);
+        for ( Room r:sender.getJoinedRooms() )
+            if( r.getGroupId().equals("lobbies") )
+                getApi().leaveRoom(sender, r);
     }
 }
