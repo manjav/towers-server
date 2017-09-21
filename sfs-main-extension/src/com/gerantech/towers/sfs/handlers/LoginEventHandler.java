@@ -235,8 +235,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
 		initData.id = outData.getInt("id");
-		initData.appVersion = inData.getInt("appver");
-		initData.market = inData.getText("market");
+		if( inData.containsKey("appver") )
+		{
+			initData.appVersion = inData.containsKey("appver") ? inData.getInt("appver") : 0;
+			initData.market = inData.containsKey("market") ? inData.getText("market") : "none";
+		}
 		initData.sessionsCount = outData.getInt("sessionsCount");
 
 		ISFSObject element;
