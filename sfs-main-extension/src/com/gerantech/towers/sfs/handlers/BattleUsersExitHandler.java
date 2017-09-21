@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
@@ -19,8 +20,11 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
         User user = (User) arg.getParameter(SFSEventParam.USER);
-        if( user.isNpc() )
+        if( user.isNpc() ) {
+            // return npc to npc-opponents list
+            NPCTools.setXP(Integer.parseInt(user.getName()), -1);
             return;
+        }
 
         if( user.getBuddyProperties().getState() == "Available" )
             return;
