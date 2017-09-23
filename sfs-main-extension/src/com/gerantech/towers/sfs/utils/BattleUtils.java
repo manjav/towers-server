@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.arenas.Arena;
 import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -65,16 +66,21 @@ public class BattleUtils
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
         Game game = ((Game)owner.getSession().getProperty("core"));
-        ext.trace("---------=========<<<<  MAKE owner:"+owner.getName()+" index:"+index+" isQuest:"+isQuest+" >>>>==========---------");
-        int arenaIndex = game.player.get_arena(0);
-        String[] fields = game.arenas.get(arenaIndex).fields.keys();
-        if( !isQuest )
-            index = game.arenas.get(arenaIndex).fields.get(fields[RandomPicker.getInt(0, fields.length)]).index;
+        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isQuest:", isQuest, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         Map<Object, Object> roomProperties = new HashMap<>();
+
+        if( !isQuest )
+        {
+            Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
+            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
+            ext.trace(arena.min, arena.max, fields.size());
+            index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            roomProperties.put("arena", Math.min(arenaDivider, arena.index));// ===> is temp
+        }
+
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
-        roomProperties.put("arena", Math.min(arenaDivider, arenaIndex));// ===> is temp
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
 

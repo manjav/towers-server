@@ -7,6 +7,7 @@ import com.gt.towers.Game;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -77,7 +78,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			int waitingPeak = room.containsProperty("isFriendly")?10000000:500;//RandomPicker.getInt(4000, 8000 );
+			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 : RandomPicker.getInt(4000, 8000 );
 			trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();
