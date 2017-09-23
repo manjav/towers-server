@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.handlers.BattleAutoJoinHandler;
+import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -25,15 +25,16 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
     {
         Player player = ((Game) sender.getSession().getProperty("core")).player;
         short battleState = params.getShort("bs");
+
         if ( battleState == STATE_REQUEST )
         {
             Integer objectUserId = params.getInt("o");
             User objectUser = getParentExtension().getParentZone().getUserManager().getUserByName(objectUserId + "");
             if( objectUser != null )
             {
-                Room room = BattleAutoJoinHandler.makeNewRoom(getApi(), getParentExtension().getParentZone(), sender, false, 0);
-                room.setProperty("isFriendly", true);
-                BattleAutoJoinHandler.join(getApi(), sender, room, "");
+                BattleUtils battleUtils = BattleUtils.getInstance();
+                Room room = battleUtils.make(sender, false, 0, 2);
+                battleUtils.join(sender, room, "");
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);
                 params.putUtfString("sn", player.nickName);
@@ -50,7 +51,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
         {
             User subjectUser = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "");
             Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
-            BattleAutoJoinHandler.join(getApi(), sender, room, "");
+            BattleUtils.getInstance().join(sender, room, "");
             if( subjectUser != null )
                 send(Commands.BUDDY_BATTLE, params, Arrays.asList(sender, subjectUser));
         }

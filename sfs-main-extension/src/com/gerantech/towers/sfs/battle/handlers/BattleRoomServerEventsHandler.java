@@ -7,7 +7,6 @@ import com.gt.towers.Game;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -22,7 +21,10 @@ import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -32,7 +34,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 	public void handleServerEvent(ISFSEvent arg) throws SFSException {
 		user = (User) arg.getParameter(SFSEventParam.USER);
-
 		if (arg.getType().equals(SFSEventType.USER_DISCONNECT))
 			userDisconnected(arg);
 		else if (arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
@@ -76,35 +77,36 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			int waitingPeak = RandomPicker.getInt(6000, 12000 );
-			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
-			roomClass.autoJoinTimer = new Timer();
-			roomClass.autoJoinTimer.scheduleAtFixedRate(new TimerTask()
-			{
-				@Override
-				public void run()
-				{
-					// trace(game.player.id, game.player.nickName, game.player.get_point());
-					IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
-					RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(), 20);
-					try {
-						User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
-						List<UserVariable> vars = new ArrayList<>();
-						vars.add(new SFSUserVariable("name", opponent.name));
-						vars.add(new SFSUserVariable("point", opponent.point));
-						getApi().setUserVariables(npcUser, vars, true, true);
-						getApi().joinRoom(npcUser, room);
+			int waitingPeak = room.containsProperty("isFriendly")?10000000:500;//RandomPicker.getInt(4000, 8000 );
+			trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
-						// exclude npc from npc-opponents list
-						opponent.xp = -2;
-						users.replace(opponent.id, opponent);
-					} catch (Exception e) {
-						trace(e.getMessage());
-					}
-					cancel();
-					roomClass.autoJoinTimer.cancel();
+			roomClass.autoJoinTimer = new Timer();
+			roomClass.autoJoinTimer.schedule(new TimerTask() {
+
+				@Override
+				public void run() {
+
+				Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
+				IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
+
+				RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));
+				try {
+					User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
+					List<UserVariable> vars = new ArrayList<>();
+					vars.add(new SFSUserVariable("name", opponent.name));
+					vars.add(new SFSUserVariable("point", opponent.point));
+					getApi().setUserVariables(npcUser, vars, true, true);
+					getApi().joinRoom(npcUser, room);
+
+					// exclude npc from npc-opponents list
+					opponent.xp = -2;
+					users.replace(opponent.id, opponent);
+				} catch (Exception e) { e.printStackTrace(); }
+				cancel();
+				roomClass.autoJoinTimer.cancel();
+
 				}
-			}, room.containsProperty("isFriendly")?10000000:waitingPeak, waitingPeak);
+			}, waitingPeak);
 		}
 		else
 		{
@@ -205,9 +207,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 			try {
 				getParentExtension().getBuddyApi().setBuddyVariables(player, player.getBuddyProperties().getVariables(), true, true);
-			} catch (SFSBuddyListException e) {
-				e.printStackTrace();
-			}
+			} catch (SFSBuddyListException e) { e.printStackTrace(); }
 		}
 	}
 }

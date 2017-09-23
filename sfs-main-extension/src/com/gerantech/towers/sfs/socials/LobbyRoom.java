@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.handlers.BattleAutoJoinHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
+import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -103,7 +103,7 @@ public class LobbyRoom extends SFSExtension
             if (message != null) {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
                 if (room != null) {
-                    BattleAutoJoinHandler.join(getApi(), sender, room, "");
+                    BattleUtils.getInstance().join(sender, room, "");
 
                     params.putText("o", game.player.nickName);
                     message.putText("o", game.player.nickName);
@@ -123,7 +123,7 @@ public class LobbyRoom extends SFSExtension
             if (message != null) {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
                 if (room != null)
-                 BattleAutoJoinHandler.join(getApi(), sender, room, game.player.nickName);
+                    BattleUtils.getInstance().join(sender, room, game.player.nickName);
                 return;
             }
 
@@ -131,10 +131,10 @@ public class LobbyRoom extends SFSExtension
             if (params.getShort("st") > 0)
                 return;
 
-            Room room = BattleAutoJoinHandler.makeNewRoom(getApi(), getParentZone(), sender, false, 0);
-            room.setProperty("isFriendly", true);
+            BattleUtils battleUtils = BattleUtils.getInstance();
+            Room room =  battleUtils.make(sender, false, 0, 1);
             lobby.setProperty(room.getName(), true);
-            BattleAutoJoinHandler.join(getApi(), sender, room, "");
+            battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
 
             //lobby.setProperty("queue", messages);
@@ -191,6 +191,4 @@ public class LobbyRoom extends SFSExtension
     {
         return (ISFSArray) lobby.getProperty("queue");
     }
-
-
 }

@@ -207,8 +207,8 @@ public class BattleRoom extends SFSExtension
 
 
 		}, 0, Math.round(TIMER_PERIOD*1000));
-		
-		trace("createGame");
+
+		trace(room.getName(), "created.");
 	}
 
 	// bot fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -324,7 +324,7 @@ public class BattleRoom extends SFSExtension
 	{
 		setState( STATE_BATTLE_ENDED );
 
-		trace("Battle Ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
+		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
 		scores = new int[2];
 	    for ( int i=0; i < scores.length; i++ )
@@ -472,7 +472,7 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_DESTROYED );
 
 		battleField = null;
-		trace("destroyGame");
+		trace(room.getName(), "destroyed.");
 	}
 
 	public List<User> getRealPlayers()
@@ -508,19 +508,7 @@ public class BattleRoom extends SFSExtension
 
 		return 0;
 	}
-	/*public List<User> getPlayers()
-	{
-		List<User> players = room.getPlayersList();
-//		for (int i=0; i < players.size(); i++)
-//	    	trace("===>", i, players.get(i).getName());	
-		
-		boolean needForReverse = ( players.size()==2 && Integer.parseInt(players.get(0).getName()) > Integer.parseInt(players.get(1).getName()) );
-		if( needForReverse )
-			Collections.reverse(players);
 
-		return players;
-	}
-	*/
 	private void setState(int value)
 	{
 		if(_state == value)
