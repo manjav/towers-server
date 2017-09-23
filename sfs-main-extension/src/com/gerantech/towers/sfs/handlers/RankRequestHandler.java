@@ -24,9 +24,10 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
  */
 public class RankRequestHandler extends BaseClientRequestHandler 
 {
-	public static int PAGE_SIZE = 10;
+	public static int FIRST_PAGE_SIZE = 10;
+	public static int PAGE_SIZE = 100;
 
-	private ArrayList allUsers;
+	private List<RankData> allUsers;
 
 	public RankRequestHandler() {}
 
@@ -67,28 +68,75 @@ public class RankRequestHandler extends BaseClientRequestHandler
         PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, PAGE_SIZE);
 		Collection<RankData> result = users.values(pagingPredicate);
 
+		int i = 0;
 		for (RankData r : result)
+		{
+			if( i >= FIRST_PAGE_SIZE )
+				break;
 			players.addSFSObject( getRankSFS(r) );
+			i ++;
+		}
+
+		if( game.player.get_arena( playerRD.point ) != arenaIndex )
+		{
+			params.putSFSArray("list", players);
+			send("rank", params, sender);
+			return;
+		}
 
 		// find near me
-		if ( game.player.get_arena( playerRD.point ) == arenaIndex && indexOf(result, playerRD.id) == -1 )
+		allUsers = new ArrayList();
+		allUsers.addAll(result);
+		int index = indexOf(result, playerRD.id, playerRD.point);
+		if( index > FIRST_PAGE_SIZE-1 )
 		{
-			allUsers = new ArrayList<RankData>();
-			allUsers.addAll(result);
-			
 			players.addSFSObject( new SFSObject() );
-			List<RankData> nears = getNearMe(playerRD, users, pagingPredicate);
-
-			for (RankData rd : nears)
-			{
-				ISFSObject p = getRankSFS(rd);
-				p.putInt("s",  allUsers.indexOf(rd));
-				players.addSFSObject(p);
-			}
-			allUsers.clear();
+			addNearsToPlayers(players, index, 0);
 		}
+		else if ( index == -1 )
+		{
+			players.addSFSObject( new SFSObject() );
+			index = findMe(playerRD, users, pagingPredicate);
+			if( index > -1 )
+				addNearsToPlayers(players, index, pagingPredicate.getPage());
+		}
+		allUsers.clear();
 		params.putSFSArray("list", players);
 		send("rank", params, sender);
+	}
+
+	private int findMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
+	{
+		pagingPredicate.nextPage();
+		//trace(pagingPredicate.getPage(), PAGE_SIZE);
+		Collection<RankData> result = users.values(pagingPredicate);
+		if(result.size() < PAGE_SIZE )
+			return -1;
+
+		allUsers.addAll(result);
+		int index = indexOf(result, playerRD.id, playerRD.point);
+		if ( index == -1 )
+			return findMe(playerRD, users, pagingPredicate);
+
+		return index;
+	}
+
+	private void addNearsToPlayers(SFSArray players, int index, int pageIndex)
+	{
+		int playerIndex = pageIndex * PAGE_SIZE + index;
+
+		if( playerIndex > PAGE_SIZE+1 || (pageIndex==0 && playerIndex > FIRST_PAGE_SIZE+1))
+			addToPlayer(playerIndex-2, players );
+
+		if( playerIndex > PAGE_SIZE || (pageIndex==0 && playerIndex > FIRST_PAGE_SIZE))
+			addToPlayer( playerIndex-1, players );
+
+		addToPlayer( playerIndex, players );
+
+		if( playerIndex < allUsers.size()-1 )
+			addToPlayer( playerIndex+1, players );
+		if( playerIndex < allUsers.size()-2 )
+			addToPlayer( playerIndex+2, players );
 	}
 
 	private ISFSObject getRankSFS(RankData r) {
@@ -99,36 +147,23 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		//player.putInt("x", r.xp);
 		return player;
 	}
-	private List<RankData> getNearMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
+	private void addToPlayer(int index, SFSArray players)
 	{
-		pagingPredicate.nextPage();
-		//trace(pagingPredicate.getPage(), pagingPredicate.getPageSize());
-		Collection<RankData> result = users.values(pagingPredicate);
-		allUsers.addAll(result);
-		int index = indexOf(result, playerRD.id);
-		if ( index == -1 && result.size() == pagingPredicate.getPageSize() )
-			return getNearMe(playerRD, users, pagingPredicate);
-
-		int playerIndex = pagingPredicate.getPage() * pagingPredicate.getPageSize() + index;
-		List<RankData> ret = new ArrayList<>() ;
-
-		if( playerIndex > pagingPredicate.getPageSize()+1 )
-			ret.add( (RankData) allUsers.get(playerIndex-2) );
-		if( playerIndex > pagingPredicate.getPageSize() )
-			ret.add( (RankData) allUsers.get(playerIndex-1) );
-
-		ret.add((RankData) allUsers.get(playerIndex));
-
-		if( playerIndex < allUsers.size()-1 )
-			ret.add( (RankData) allUsers.get(playerIndex+1) );
-		if( playerIndex < allUsers.size()-2 )
-			ret.add( (RankData) allUsers.get(playerIndex+2) );
-
-		return ret;
+		ISFSObject p = getRankSFS(allUsers.get(index));
+		p.putInt("s",  index);
+		players.addSFSObject(p);
 	}
 
-	private int indexOf(Collection<RankData> ranks, int id)
+	private int indexOf(Collection<RankData> ranks, int id, int point)
 	{
+		Iterator<RankData> iter = ranks.iterator();
+		RankData lastElement = iter.next();
+		while(iter.hasNext()) {
+			lastElement = iter.next();
+		}
+		if( lastElement.point > point )
+			return -1;
+
 		int i = 0;
 		for (RankData r : ranks) {
 			if (r.id == id)
