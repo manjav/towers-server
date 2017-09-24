@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -20,6 +21,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
     {
 		int playerId = params.getInt("id");
 
+		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
   		try {
 			String query = "SELECT type, count FROM resources WHERE player_id=" + playerId + " AND (type=1001 OR type=1201 OR type=1202) LIMIT 3";
@@ -33,6 +35,13 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			sfsArray.addSFSObject( q );
 
 			params.putSFSArray("features", sfsArray );
+
+			// add buildings
+			query = "SELECT type, level FROM resources WHERE player_id=" + playerId + " AND (type<1000 AND type>0) LIMIT 100";
+			ISFSArray buildingArray = dbManager.executeQuery(query, new Object[]{});
+			params.putSFSArray("buildings", buildingArray );
+
+
 		} catch (SQLException e) {
 			trace(e.getMessage());
 		}
