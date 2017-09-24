@@ -96,9 +96,15 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		else if ( index == -1 )
 		{
 			players.addSFSObject( new SFSObject() );
-			index = findMe(playerRD, users, pagingPredicate);
+			
+			List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, (int)Math.pow(game.player.get_arena(playerRD.point), 2) + 2);
+
+			for (RankData r : fakedRanks)
+				players.addSFSObject(getRankSFS(r));
+			/*index = findMe(playerRD, users, pagingPredicate);
 			if( index > -1 )
-				addNearsToPlayers(players, index, pagingPredicate.getPage());
+				addNearsToPlayers(players, index, pagingPredicate.getPage());*/
+
 		}
 		allUsers.clear();
 		params.putSFSArray("list", players);

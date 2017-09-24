@@ -12,9 +12,11 @@ import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
 import com.hazelcast.util.RandomPicker;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.*;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
+import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -26,6 +28,16 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class NPCTools
 {
+    private final SFSExtension ext;
+    public NPCTools()
+    {
+        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
+    }
+    public static NPCTools getInstance()
+    {
+        return new NPCTools();
+    }
+
 
     public static IMap<Integer, RankData> fill(IMap<Integer, RankData> users, Game game, ISFSExtension extension)
     {
@@ -94,16 +106,13 @@ public class NPCTools
         };
         PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 20);
 
-        //PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, 20);
-
         Collection<RankData> result = users.values(pagingPredicate);
 
-        if(result.size() == 0 && range < 1000)
+        if(result.size() == 0 && range < 500)
             result = getResult(users, point, range * 2);
 
         return result;
     }
-
 
     public static void setXP(int id, int xp)
     {
@@ -112,6 +121,39 @@ public class NPCTools
         opponent.xp = xp;
         users.replace(opponent.id, opponent);
     }
+
+
+
+
+
+    public List<RankData> getFakedNearMeRanking(IMap<Integer, RankData> users, int myId, int range)
+    {
+        List<RankData> ret = new ArrayList();
+        getFakeRankResult(users, myId, range, ret);
+        return ret;
+     }
+
+    private void getFakeRankResult(IMap<Integer, RankData> users, int myId, int range, List<RankData> returnList)
+    {
+        EntryObject eo = new PredicateBuilder().getEntryObject();
+        int point = users.get(myId).point;
+        Predicate sqlQuery = eo.get("point").between(point-range, point+range).and(eo.get("id").notEqual(myId));
+
+        // a comparator which helps to sort in descending order of point field
+        Comparator<Map.Entry> descendingComparator = new Comparator<Map.Entry>() {
+            public int compare(Map.Entry e1, Map.Entry e2) {
+                RankData s1 = (RankData) e1.getValue();
+                RankData s2 = (RankData) e2.getValue();
+                return s2.point - s1.point;
+            }
+        };
+        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 20);
+        returnList.addAll(users.values(pagingPredicate));
+
+        if ( returnList.size() < 4 && range < 100 )
+            getFakeRankResult(users, myId, range*2, returnList);
+    }
+
 
     private static void logRandomBots(Game game)
     {
