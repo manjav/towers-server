@@ -130,6 +130,11 @@ public class NPCTools
     {
         List<RankData> ret = new ArrayList();
         getFakeRankResult(users, myId, range, ret);
+        if(ret.size() > 4)
+        {
+            for ( int i=ret.size()-1 ; i>=4 ; i-- )
+                ret.remove(i);
+        }
         return ret;
      }
 

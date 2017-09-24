@@ -34,9 +34,10 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
-		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 
-		users.putIfAbsent(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
+		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
+		users.put(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
+
 	//	int playerId = params.getInt("pId");
 		RankData playerRD = users.get(game.player.id);
 		int arenaIndex = params.getInt("arena"); //game.player.get_arena( playerRD.point ) ;//params.getInt("arena");
@@ -54,6 +55,8 @@ public class RankRequestHandler extends BaseClientRequestHandler
 
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
+
+		// get arena max and min point
 		Predicate sqlQuery = eo.get("point").between(game.arenas.get(arenaIndex).min, game.arenas.get(arenaIndex).max);//.and(eo.get("xp").equal(12));
 		
         // a comparator which helps to sort in descending order of point field
@@ -73,7 +76,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		{
 			if( i >= FIRST_PAGE_SIZE )
 				break;
-			players.addSFSObject( getRankSFS(r) );
+			players.addSFSObject( toSFS(r) );
 			i ++;
 		}
 
@@ -97,10 +100,27 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		{
 			players.addSFSObject( new SFSObject() );
 			
-			List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, (int)Math.pow(game.player.get_arena(playerRD.point), 2) + 2);
+			List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, 0);
+			float rng = (1 - ( (float)(playerRD.point -  game.arenas.get(arenaIndex).min) / (game.arenas.get(arenaIndex).max - game.arenas.get(arenaIndex).min) ) );
+			int playerFakeRanking = (int)(rng * ( (10 - arenaIndex) * 1000 ));
+			fakedRanks.add(fakedRanks.size()/2, playerRD);
+			trace("rng: ", rng);
+			trace("playerFakeRanking: ",playerFakeRanking);
 
-			for (RankData r : fakedRanks)
-				players.addSFSObject(getRankSFS(r));
+			Collections.sort(fakedRanks, new Comparator<RankData>() {
+				@Override
+				public int compare(RankData rhs, RankData lhs) {
+					// -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+					return rhs.point - lhs.point;
+				}
+			});
+			int c = 0;
+			for (RankData r : fakedRanks) {
+				ISFSObject p = toSFS(r);
+				p.putInt("s", playerFakeRanking + (c - 2));
+				players.addSFSObject(p);
+				c++;
+			}
 			/*index = findMe(playerRD, users, pagingPredicate);
 			if( index > -1 )
 				addNearsToPlayers(players, index, pagingPredicate.getPage());*/
@@ -145,7 +165,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			addToPlayer( playerIndex+2, players );
 	}
 
-	private ISFSObject getRankSFS(RankData r) {
+	private ISFSObject toSFS(RankData r) {
 		SFSObject player = new SFSObject();
 		player.putInt("i", r.id);
 		player.putText("n", r.name);
@@ -155,7 +175,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	}
 	private void addToPlayer(int index, SFSArray players)
 	{
-		ISFSObject p = getRankSFS(allUsers.get(index));
+		ISFSObject p = toSFS(allUsers.get(index));
 		p.putInt("s",  index);
 		players.addSFSObject(p);
 	}
