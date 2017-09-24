@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -60,11 +61,14 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
-        int arenaIndex =  Math.min(BattleUtils.arenaDivider, ((Game)user.getSession().getProperty("core")).player.get_arena(0));
+        Game game = ((Game)user.getSession().getProperty("core"));
+        Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(game.player.get_arena(0)/2)*2);
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
-        for (Room r : rList)
-            if (!r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex)
+        for (Room r : rList) {
+            //trace("arena", r.getProperty("arena"), arenaIndex, ((int) r.getProperty("arena")) == arenaIndex.intValue(), ((int) r.getProperty("appVersion")) == game.appVersion );
+            if (!r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex.intValue() && ((int) r.getProperty("appVersion")) == game.appVersion)
                 return r;
+        }
         return null;
     }
 }

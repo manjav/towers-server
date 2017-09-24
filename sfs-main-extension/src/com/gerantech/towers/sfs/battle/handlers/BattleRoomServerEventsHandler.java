@@ -78,7 +78,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 : RandomPicker.getInt(4000, 8000 );
+			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");trace(game.appVersion);
+			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 : (game.appVersion < 1080 ?  200 : RandomPicker.getInt(4000, 8000 ));
 			trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();
@@ -87,7 +88,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				@Override
 				public void run() {
 
-				Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 				IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 
 				RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));

@@ -74,9 +74,10 @@ public class BattleUtils
         {
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
             List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
-            ext.trace(arena.min, arena.max, fields.size());
             index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
-            roomProperties.put("arena", Math.min(arenaDivider, arena.index));// ===> is temp
+            Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
+            roomProperties.put("arena", arenaIndex.intValue());// ===> is temp
+            roomProperties.put("appVersion", game.appVersion);// ===> is temp
         }
 
         roomProperties.put("isQuest", isQuest);
@@ -106,4 +107,6 @@ public class BattleUtils
         }
         return null;
     }
+
+
 }
