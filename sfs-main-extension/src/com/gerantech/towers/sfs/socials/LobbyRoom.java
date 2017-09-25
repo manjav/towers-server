@@ -3,9 +3,14 @@ package com.gerantech.towers.sfs.socials;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -52,8 +57,7 @@ public class LobbyRoom extends SFSExtension
         }
         else if( requestId.equals(Commands.LOBBY_INFO) )
         {
-            LobbyDataHandler.fillUsersData(getParentZone().getExtension(), lobby, sender);
-            params.putSFSArray("messages", messageQueue());
+             params.putSFSArray("messages", messageQueue());
         }
 
         super.handleClientRequest(requestId, sender, params);

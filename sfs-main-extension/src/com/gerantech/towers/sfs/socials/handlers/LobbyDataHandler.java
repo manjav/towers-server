@@ -82,14 +82,12 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putInt("min", room.getVariable("min").getIntValue());
 
         params.removeElement("id");
-        params.putSFSArray("all", fillUsersData(getParentExtension(), room, sender));
+        IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), (Game) sender.getSession().getProperty("core"), getParentExtension());
+        params.putSFSArray("all", fillUsersData(room, users));
     }
 
-    public static ISFSArray fillUsersData(ISFSExtension parentExtension, Room room, User sender)
+    public ISFSArray fillUsersData(Room room, IMap<Integer, RankData> users)
     {
-        Game game = (Game) sender.getSession().getProperty("core");
-        IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, parentExtension);
-
         ISFSArray all = room.getVariable("all").getSFSArrayValue();
         for ( int i=0; i<all.size(); i++ )
         {
