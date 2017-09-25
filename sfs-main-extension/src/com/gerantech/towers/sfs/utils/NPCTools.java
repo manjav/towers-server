@@ -23,6 +23,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.hazelcast.query.Predicates.and;
+
 /**
  * Created by ManJav on 7/22/2017.
  */
@@ -126,37 +128,26 @@ public class NPCTools
 
 
 
-    public List<RankData> getFakedNearMeRanking(IMap<Integer, RankData> users, int myId, int range)
+    public List<RankData> getFakedNearMeRanking(IMap<Integer, RankData> users, int myId, int from, int to)
     {
         List<RankData> ret = new ArrayList();
-        getFakeRankResult(users, myId, range, ret);
-        if(ret.size() > 4)
-        {
-            for ( int i=ret.size()-1 ; i>=4 ; i-- )
-                ret.remove(i);
-        }
+        getFakeRankResult(users, myId, from, to, ret);
+        while ( ret.size() > 4 )
+            ret.remove(ret.size() - 1);
         return ret;
      }
 
-    private void getFakeRankResult(IMap<Integer, RankData> users, int myId, int range, List<RankData> returnList)
+    private void getFakeRankResult(IMap<Integer, RankData> users, int myId, int from, int to, List<RankData> returnList)
     {
         EntryObject eo = new PredicateBuilder().getEntryObject();
         int point = users.get(myId).point;
-        Predicate sqlQuery = eo.get("point").between(point-range, point+range).and(eo.get("id").notEqual(myId));
+        Predicate sqlQuery = eo.get("id").notEqual(myId).and(eo.get("point").between(point-to, point-from).or(eo.get("point").between(point+from, point+to)));
 
-        // a comparator which helps to sort in descending order of point field
-        Comparator<Map.Entry> descendingComparator = new Comparator<Map.Entry>() {
-            public int compare(Map.Entry e1, Map.Entry e2) {
-                RankData s1 = (RankData) e1.getValue();
-                RankData s2 = (RankData) e2.getValue();
-                return s2.point - s1.point;
-            }
-        };
-        PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, descendingComparator, 20);
-        returnList.addAll(users.values(pagingPredicate));
+        //PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, 20);
+        returnList.addAll(users.values(sqlQuery));
 
-        if ( returnList.size() < 4 && range < 100 )
-            getFakeRankResult(users, myId, range*2, returnList);
+        if ( returnList.size() < 4 && to < 100 )
+            getFakeRankResult(users, myId, to, to==0?1:to*2, returnList);
     }
 
 

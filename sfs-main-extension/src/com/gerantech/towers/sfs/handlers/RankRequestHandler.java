@@ -38,7 +38,6 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
 		users.put(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
 
-	//	int playerId = params.getInt("pId");
 		RankData playerRD = users.get(game.player.id);
 		int arenaIndex = params.getInt("arena"); //game.player.get_arena( playerRD.point ) ;//params.getInt("arena");
 
@@ -49,9 +48,6 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			send("rank", params, sender);
 			return;
 		}
-
-		/*for(RankData u:users.values())
-			trace("user:", u.name, u.id, u.point);*/
 
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
@@ -100,35 +96,45 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		{
 			players.addSFSObject( new SFSObject() );
 			
-			List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, 0);
-			float rng = (1 - ( (float)(playerRD.point -  game.arenas.get(arenaIndex).min) / (game.arenas.get(arenaIndex).max - game.arenas.get(arenaIndex).min) ) );
-			int playerFakeRanking = (int)(rng * ( (10 - arenaIndex) * 1000 ));
-			fakedRanks.add(fakedRanks.size()/2, playerRD);
-			trace("rng: ", rng);
-			trace("playerFakeRanking: ",playerFakeRanking);
-
-			Collections.sort(fakedRanks, new Comparator<RankData>() {
-				@Override
-				public int compare(RankData rhs, RankData lhs) {
-					// -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-					return rhs.point - lhs.point;
-				}
-			});
-			int c = 0;
-			for (RankData r : fakedRanks) {
-				ISFSObject p = toSFS(r);
-				p.putInt("s", playerFakeRanking + (c - 2));
-				players.addSFSObject(p);
-				c++;
+			if( arenaIndex < 3 )
+			{
+				addFakeRankData(players, users, playerRD, game, arenaIndex);
 			}
-			/*index = findMe(playerRD, users, pagingPredicate);
-			if( index > -1 )
-				addNearsToPlayers(players, index, pagingPredicate.getPage());*/
-
+			else
+			{
+				index = findMe(playerRD, users, pagingPredicate);
+				if( index > -1 )
+					addNearsToPlayers(players, index, pagingPredicate.getPage());
+			}
 		}
 		allUsers.clear();
 		params.putSFSArray("list", players);
 		send("rank", params, sender);
+	}
+
+	private void addFakeRankData(SFSArray players, IMap<Integer, RankData> users, RankData playerRD, Game game, int arenaIndex)
+	{
+		List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
+		float rankingRatio = (1 - ( (float)(playerRD.point -  game.arenas.get(arenaIndex).min) / (game.arenas.get(arenaIndex).max - game.arenas.get(arenaIndex).min) ) );
+		int playerFakeRanking = (int)(rankingRatio * ( (10 - arenaIndex) * 1000 ) - playerRD.xp);
+		fakedRanks.add(fakedRanks.size()/2, playerRD);
+
+		Collections.sort(fakedRanks, new Comparator<RankData>() {
+			@Override
+			public int compare(RankData rhs, RankData lhs) {
+				// -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+				return rhs.point - lhs.point;
+			}
+		});
+
+		int c = -2;
+		for (RankData r : fakedRanks)
+		{
+			ISFSObject p = toSFS(r);
+			p.putInt("s", playerFakeRanking + c);
+			players.addSFSObject(p);
+			c ++;
+		}
 	}
 
 	private int findMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
