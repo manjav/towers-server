@@ -10,6 +10,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -95,13 +96,26 @@ public class BattleRoom extends SFSExtension
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
 		
-		if(this.singleMode)
+		if( this.singleMode )
 		{
 			aiEnemy = new AIEnemy(battleField);
+			int winStrike = registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STRIKE);
+			trace("winStike: ", winStrike);
 			if( battleField.map.isQuest )
 				aiEnemy.difficulty = battleField.map.index / 6;
 			else
-				aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
+			{
+				if(winStrike <= 3 && winStrike >= -3) {
+					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
+				}
+				else if (winStrike > 3) {// if player has 3 or more continues wins
+					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0) + (winStrike - 2);
+				}
+				else if (winStrike < -3) {        // if player has 3 or more continues losses
+					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0) + (winStrike + 2);
+				}
+			}
+			//trace("########## Difficulty: ", aiEnemy.difficulty);
 
 			int min = (int) Math.max(1, aiEnemy.difficulty * 0.5);
 			int max = (int) Math.max(2, aiEnemy.difficulty * 2.0);
@@ -411,7 +425,6 @@ public class BattleRoom extends SFSExtension
 				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
 				r ++;
 			}
-
 			game.player.addResources(outcomesList[i]);
 			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
 			try {
