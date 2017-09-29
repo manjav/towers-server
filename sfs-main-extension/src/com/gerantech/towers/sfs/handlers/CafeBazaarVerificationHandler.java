@@ -51,7 +51,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 			Game game = ((Game)sender.getSession().getProperty("core"));
 			ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
 			int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
-			if( !exchangeHandler.exchange(game, item, 0, 0))
+			if( !exchangeHandler.exchange(game, item, 0, 0, false))
 			{
 				resObj.putBool("success", false);
 				resObj.putText("message", data.json.getString("error_exchange"));

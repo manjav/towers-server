@@ -36,7 +36,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		}
 
 		// call exchanger and update database
-		boolean succeed = exchange(game, type, now, hardsConfimed);
+		boolean succeed = exchange(game, type, now, hardsConfimed, params.containsKey("isAd"));
 		params.putBool("succeed", succeed);
 		params.putInt("now", now);
 		if( !succeed )
@@ -64,12 +64,17 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		send("exchange", params, sender);
     }
 
-	public boolean exchange(Game game, int type, int now, int hardsConfimed)
+	public boolean exchange(Game game, int type, int now, int hardsConfimed, boolean isAd)
 	{
 		ExchangeItem item = game.exchanger.items.get(type);
 
 		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
-			item.outcomes = game.exchanger.getChestOutcomes(type);
+		{
+			if( isAd )
+				item.outcomes = game.exchanger.getAdChestOutcomes(type);
+			else
+				item.outcomes = game.exchanger.getChestOutcomes(type);
+		}
 
 		/*String log = "";
 		int[] keys = game.player.resources.keys();
