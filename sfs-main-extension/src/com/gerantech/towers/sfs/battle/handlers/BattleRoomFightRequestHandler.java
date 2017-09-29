@@ -11,6 +11,6 @@ public class BattleRoomFightRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
-		roomClass.fight(params.getIntArray("s").toArray(), params.getInt("d"));
+		roomClass.fight(params.getIntArray("s").toArray(), params.getInt("d"), false);
 	}
 }

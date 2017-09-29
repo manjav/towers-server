@@ -121,6 +121,10 @@ public class BattleRoom extends SFSExtension
 			public void run() {
 				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED)
 					return;
+
+				if( singleMode && aiEnemy.difficulty > 5 )
+					setState(STATE_BATTLE_STARTED);
+
 				Building b = null;
 				SFSArray vars = SFSArray.newInstance();
 				for(int i = 0; i<battleField.places.size(); i++)
@@ -147,16 +151,16 @@ public class BattleRoom extends SFSExtension
 				{
 					// Set variables
 					//trace("vars.size()", vars.size());
-					List<RoomVariable> listOfVars = new ArrayList<RoomVariable>();
+					List<RoomVariable> listOfVars = new ArrayList();
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 					sfsApi.setRoomVariables(null, room, listOfVars);
 				}
 
 				// fight enemy bot
-				if(singleMode && getState()==STATE_BATTLE_STARTED )
+				if( singleMode && getState()==STATE_BATTLE_STARTED )
 				{
 					// send answer of sticker from bot
-					if(stickerParams != null)
+					if( stickerParams != null )
 					{
 						if( stickerParams.getInt("wait") < 4 )
 						{
@@ -171,7 +175,12 @@ public class BattleRoom extends SFSExtension
 					}
 
 					// fight
-					if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
+					if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
+					{
+						botFight();
+						aiEnemy.actionType = AIEnemy.TYPE_FIGHT_DOUBLE;
+					}
+					else if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
 					{
 						botFight();
 						aiEnemy.actionType = AIEnemy.TYPE_FIGHT;
@@ -217,29 +226,43 @@ public class BattleRoom extends SFSExtension
 		for(int j = 0; j<ss.length; j++)
 			ss[j] = aiEnemy.sources.get(j);
 		//trace("botFight", aiEnemy.actionType, aiEnemy.target);
-		fight(ss, aiEnemy.target);
+		fight(ss, aiEnemy.target, true);
 	}
 
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void fight(Object[] objects, int destination)
+	public void fight(Object[] objects, int destination, boolean fighterIsBot)
 	{
 		if(getState() == STATE_CREATED)
 			setState( STATE_BATTLE_STARTED );
 		if ( getState() != STATE_BATTLE_STARTED )
 			return;
 
+		int srcLen = objects.length;
+		if( destination > srcLen -1 )
+			return;
+
+		if( singleMode && !fighterIsBot ) {
+			aiEnemy.numFighters = objects.length;
+			aiEnemy.dangerousPoint = destination;
+		}
+
 		SFSArray srcs = SFSArray.newInstance();
 		//trace("fight to", destination);
 
-		for(int i = 0; i<objects.length; i++)
+		for(int i = 0; i<srcLen; i++)
 		{
 			//trace("fight", (Integer)objects[i], "to", destination);
-			srcs.addInt((Integer)objects[i]);
-			battleField.places.get((Integer)objects[i]).fight(battleField.places.get(destination), battleField.places);
+			if( (Integer)objects[i] < srcLen -1 )
+			{
+				srcs.addInt((Integer) objects[i]);
+				battleField.places.get((Integer) objects[i]).fight(battleField.places.get(destination), battleField.places);
+			}
 		}
+		if( srcs.size() == 0 )
+			return;
 
 		// Set variables
-		List<RoomVariable> listOfVars = new ArrayList<RoomVariable>();
+		List<RoomVariable> listOfVars = new ArrayList();
 		listOfVars.add( new SFSRoomVariable("s", srcs) );
 		listOfVars.add( new SFSRoomVariable("d", destination) );
 		sfsApi.setRoomVariables(null, room, listOfVars);
