@@ -95,37 +95,18 @@ public class BattleRoom extends SFSExtension
 		reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
-		
-		if( this.singleMode )
-		{
-			aiEnemy = new AIEnemy(battleField);
-			int winStrike = registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STRIKE);
-			trace("winStike: ", winStrike);
-			if( battleField.map.isQuest )
-				aiEnemy.difficulty = battleField.map.index / 6;
-			else
-			{
-				if(winStrike <= 3 && winStrike >= -3) {
-					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0);
-				}
-				else if (winStrike > 3) {// if player has 3 or more continues wins
-					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0) + (winStrike - 2);
-				}
-				else if (winStrike < -3) {        // if player has 3 or more continues losses
-					aiEnemy.difficulty = registeredPlayers.get(0).player.get_arena(0) + (winStrike + 2);
-				}
-			}
-			//trace("########## Difficulty: ", aiEnemy.difficulty);
 
-			int min = (int) Math.max(1, aiEnemy.difficulty * 0.5);
-			int max = (int) Math.max(2, aiEnemy.difficulty * 2.0);
-			aiEnemy.maxEnemy = min < max ? RandomPicker.getInt(min, max) : max;
-		}
-
-		for(int i = 0; i<battleField.places.size(); i++)
+		for( int i = 0; i<battleField.places.size(); i++ )
 		{
 			reservedTypes[i] = battleField.places.get(i).building.type;
 			reservedLevels[i] = battleField.places.get(i).building.get_level();
+		}
+
+		if( singleMode )
+		{
+			aiEnemy = new AIEnemy(battleField);
+			if( battleField.difficulty > 5 )
+				setState(STATE_BATTLE_STARTED);
 		}
 
     	timer = new Timer();
@@ -135,9 +116,6 @@ public class BattleRoom extends SFSExtension
 			public void run() {
 				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED)
 					return;
-
-				if( singleMode && aiEnemy.difficulty > 5 )
-					setState(STATE_BATTLE_STARTED);
 
 				Building b = null;
 				SFSArray vars = SFSArray.newInstance();
@@ -252,8 +230,8 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		int srcLen = objects.length;
-		if( destination > srcLen -1 )
-			return;
+		//if( destination > srcLen -1 )
+		//	return;
 
 		if( singleMode && !fighterIsBot ) {
 			aiEnemy.numFighters = objects.length;
@@ -266,14 +244,12 @@ public class BattleRoom extends SFSExtension
 		for(int i = 0; i<srcLen; i++)
 		{
 			//trace("fight", (Integer)objects[i], "to", destination);
-			if( (Integer)objects[i] < srcLen -1 )
-			{
+			//if( (Integer)objects[i] < srcLen -1 )
+			//{
 				srcs.addInt((Integer) objects[i]);
 				battleField.places.get((Integer) objects[i]).fight(battleField.places.get(destination), battleField.places);
-			}
+			//}
 		}
-		if( srcs.size() == 0 )
-			return;
 
 		// Set variables
 		List<RoomVariable> listOfVars = new ArrayList();
