@@ -31,7 +31,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			ISFSArray sfsArray2 = dbManager.executeQuery(query, new Object[]{});
 			SFSObject q = new SFSObject();
 			q.putInt("type", 5000);
-			q.putInt("count", sfsArray2.getSFSObject(0).getInt("index"));
+			q.putInt("count", sfsArray2.getSFSObject(0).getInt("index")+1);
 			sfsArray.addSFSObject( q );
 
 			params.putSFSArray("features", sfsArray );
