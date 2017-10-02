@@ -27,7 +27,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 
 	private static String packageName = "air.com.grantech.towers";
 	private static String accessToken = "riN8RxzQMsC9x05kCz8EWscxwjSu7r";
-	
+
 	public CafeBazaarVerificationHandler() {}
 
 	public void handleClientRequest(User sender, ISFSObject params)
@@ -41,14 +41,21 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	private void sendResult(User sender, String productID, String purchaseToken)
 	{
         // Create a response object
-        ISFSObject resObj = SFSObject.newInstance(); 
-        Data data = verify(productID, purchaseToken);
+        ISFSObject resObj = SFSObject.newInstance();
+		Game game = ((Game)sender.getSession().getProperty("core"));
+
+		if( game.market != "cafebazaar" )
+		{
+			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", 0);
+			return;
+		}
+
+		Data data = verify(productID, purchaseToken);
         
         // send purchase data to client
         // if consumptionState is zero, thats mean product consumed.
-        if(data.statusCode == HttpStatus.SC_OK)
+        if( data.statusCode == HttpStatus.SC_OK )
         {
-			Game game = ((Game)sender.getSession().getProperty("core"));
 			ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
 			int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
 			if( !exchangeHandler.exchange(game, item, 0, 0, false))
@@ -58,19 +65,12 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 				return;
 			}
 
-    		resObj.putBool("success", true);
-    		resObj.putInt("consumptionState", data.json.getInt("consumptionState"));
-    		resObj.putInt("purchaseState", data.json.getInt("purchaseState"));
-    		resObj.putText("developerPayload", data.json.getString("developerPayload"));
-    		resObj.putLong("purchaseTime", data.json.getLong("purchaseTime"));
-
-    		insertToDB(game, productID, purchaseToken, resObj);
-    	    send("verify", resObj, sender);		
+    		sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
     		return;
         }
         
         // when product id or purchase token is wrong
-        if(data.statusCode == HttpStatus.SC_NOT_FOUND)
+        if( data.statusCode == HttpStatus.SC_NOT_FOUND )
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", data.json.getString("error_description"));
@@ -79,7 +79,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	    }
         
         // when access token expired
-		if(data.statusCode == HttpStatus.SC_UNAUTHORIZED)
+		if( data.statusCode == HttpStatus.SC_UNAUTHORIZED )
 		{
 			if(refreshAccessToken())
 		        sendResult(sender, productID, purchaseToken);
@@ -97,12 +97,26 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	    trace(ExtensionLogLevel.ERROR, "Unknown Error.");
 	}
 
+	private void sendSuccessResult(User sender, Game game, String productID, String purchaseToken, int consumptionState, int purchaseState, String developerPayload, long purchaseTime)
+	{
+		ISFSObject resObj = SFSObject.newInstance();
+		resObj.putBool("success", true);
+		resObj.putInt("consumptionState", consumptionState);
+		resObj.putInt("purchaseState", purchaseState);
+		resObj.putText("developerPayload", developerPayload);
+		resObj.putLong("purchaseTime", purchaseTime);
+
+		insertToDB(game, productID, purchaseToken, resObj);
+		send("verify", resObj, sender);
+	}
+
 	private void insertToDB(Game game, String productID, String purchaseToken, ISFSObject result)
 	{
-		String query = "INSERT INTO `purchases`(`product_id`, `player_id`, `market`, `purchase_token`, `consume_state`, `purchase_state`, `purchase_time`, `success`) VALUES (" +
-		productID+", "+game.player.id+", "+game.market+", "+purchaseToken+ ","+result.getInt("consumptionState")+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
+		String query = "INSERT INTO `purchases`(`product_id`, `player_id`, `market`, `purchase_token`, `consume_state`, `purchase_state`, `purchase_time`, `success`) VALUES ('" +
+		productID+"', "+game.player.id+", '"+game.market+"', '"+purchaseToken+ "',"+result.getInt("consumptionState")+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
+		trace(query);
 		try {
-				getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
+			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -119,7 +133,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	 */
 	String requestAccessToken()
 	{
-		List<NameValuePair> argus = new ArrayList<NameValuePair>();
+		List<NameValuePair> argus = new ArrayList();
 		argus.add(new BasicNameValuePair("grant_type", "authorization_code"));
 		argus.add(new BasicNameValuePair("code", "OerQgUmJk5U2ASq8UqiGA98nPyDlHq"));
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
@@ -142,7 +156,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	 */
 	Boolean refreshAccessToken()
 	{
-		List<NameValuePair> argus = new ArrayList<NameValuePair>();
+		List<NameValuePair> argus = new ArrayList();
 		argus.add(new BasicNameValuePair("grant_type", "refresh_token"));
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
 		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
