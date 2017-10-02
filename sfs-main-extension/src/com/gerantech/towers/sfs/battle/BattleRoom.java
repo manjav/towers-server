@@ -103,11 +103,7 @@ public class BattleRoom extends SFSExtension
 		}
 
 		if( singleMode )
-		{
 			aiEnemy = new AIEnemy(battleField);
-			if( battleField.difficulty > 5 )
-				setState(STATE_BATTLE_STARTED);
-		}
 
     	timer = new Timer();
     	timer.schedule(new TimerTask() {
@@ -118,6 +114,7 @@ public class BattleRoom extends SFSExtension
 					return;
 
 				Building b = null;
+				double battleDuration = battleField.getDuration();
 				SFSArray vars = SFSArray.newInstance();
 				for(int i = 0; i<battleField.places.size(); i++)
 				{
@@ -147,6 +144,9 @@ public class BattleRoom extends SFSExtension
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 					sfsApi.setRoomVariables(null, room, listOfVars);
 				}
+				// somtimes auto start battle
+				if( singleMode && (battleField.difficulty > 5 || Math.random()>0.5) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
+					setState(STATE_BATTLE_STARTED);
 
 				// fight enemy bot
 				if( singleMode && getState()==STATE_BATTLE_STARTED )
@@ -199,8 +199,8 @@ public class BattleRoom extends SFSExtension
 						populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-				if( battleField.getDuration() > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
-					endBattle(numBuildings, battleField.getDuration());
+				if( battleDuration > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+					endBattle(numBuildings, battleDuration);
 				else
 					battleField.now += TIMER_PERIOD;
 
