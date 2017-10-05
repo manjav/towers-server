@@ -33,7 +33,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             if( objectUser != null )
             {
                 BattleUtils battleUtils = BattleUtils.getInstance();
-                Room room = battleUtils.make(sender, false, 0, 2);
+                Room room = battleUtils.make(sender, false, 0, 2, false);
                 battleUtils.join(sender, room, "");
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);

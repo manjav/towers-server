@@ -136,7 +136,7 @@ public class LobbyRoom extends SFSExtension
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room =  battleUtils.make(sender, false, 0, 1);
+            Room room =  battleUtils.make(sender, false, 0, 1, false);
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
@@ -146,7 +146,7 @@ public class LobbyRoom extends SFSExtension
         messages.addSFSObject(params);
     }
 
-    private ISFSObject getMyRequestedBattle(ISFSObject params, Player playere)
+    private ISFSObject getMyRequestedBattle(ISFSObject params, Player player)
     {
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
@@ -154,7 +154,7 @@ public class LobbyRoom extends SFSExtension
         for (int i = msgSize-1; i >=0; i--)
         {
             message = messages.getSFSObject(i);
-            if( message.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && message.getShort("st") == 0 && message.getInt("i") == playere.id )
+            if( message.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && message.getShort("st") == 0 && message.getInt("i") == player.id )
                 return  message;
         }
         return null;

@@ -14,7 +14,8 @@ import java.util.List;
 public class BattleAutoJoinHandler extends BaseClientRequestHandler
 {
     private int index;
-	private Boolean isQuest;
+    private Boolean isQuest;
+    private Boolean hasExtraTime;
 	private Room theRoom;
 
 	public void handleClientRequest(User sender, ISFSObject params)
@@ -23,9 +24,9 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         {
             index = params.getInt("i");
             isQuest = params.getBool("q");
+            hasExtraTime = params.containsKey("e");
             if( params.containsKey("su") )
             {
-
                 index -= 100000;
                 theRoom = getParentExtension().getParentZone().getRoomById(index);
                 if( theRoom != null )
@@ -52,7 +53,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
         BattleUtils bu = BattleUtils.getInstance();
         if (theRoom == null)
-            theRoom = bu.make(user, isQuest, index, 0);
+            theRoom = bu.make(user, isQuest, index, 0, hasExtraTime);
 
         bu.join(user, theRoom, "");
     }

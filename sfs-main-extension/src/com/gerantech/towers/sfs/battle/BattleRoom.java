@@ -89,7 +89,7 @@ public class BattleRoom extends SFSExtension
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
         room.setProperty("registeredPlayers", registeredPlayers);
 
-		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0);
+		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
@@ -199,7 +199,7 @@ public class BattleRoom extends SFSExtension
 						populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-				if( battleDuration > battleField.map.times.get(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+				if( battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
 					endBattle(numBuildings, battleDuration);
 				else
 					battleField.now += TIMER_PERIOD;

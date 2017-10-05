@@ -61,7 +61,7 @@ public class BattleUtils
         }
     }
 
-    public Room make(User owner, boolean isQuest, int index, int friendlyMode)
+    public Room make(User owner, boolean isQuest, int index, int friendlyMode, boolean hasExtraTime)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
@@ -82,6 +82,8 @@ public class BattleUtils
 
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
+        if( hasExtraTime )
+            roomProperties.put("hasExtraTime", true);
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
 
