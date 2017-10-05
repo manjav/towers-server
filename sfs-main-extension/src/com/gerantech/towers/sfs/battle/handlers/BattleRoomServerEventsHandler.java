@@ -78,9 +78,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");trace(game.appVersion);
+			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 : (game.appVersion < 1080 ?  200 : RandomPicker.getInt(4000, 8000 ));
-			trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
+			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();
 			roomClass.autoJoinTimer.schedule(new TimerTask() {

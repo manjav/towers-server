@@ -125,7 +125,6 @@ public class BattleRoom extends SFSExtension
 						reservedPopulations[i] = b.get_population();
 						reservedTroopTypes[i] = b.troopType;
 						vars.addText(i+","+b.get_population()+","+b.troopType);
-						//trace(i+","+b.get_population()+","+b.troopType);
 					}
 					
 					if( b.get_level() != reservedLevels[i] || b.type != reservedTypes[i] )
@@ -139,7 +138,6 @@ public class BattleRoom extends SFSExtension
 				if(vars.size() > 0)
 				{
 					// Set variables
-					//trace("vars.size()", vars.size());
 					List<RoomVariable> listOfVars = new ArrayList();
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 					sfsApi.setRoomVariables(null, room, listOfVars);
