@@ -15,6 +15,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
  * @author ManJav
@@ -26,14 +27,15 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+    	trace(params.getDump());
     	// provide init data
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		int type = params.getInt("type");
 		int now = (int)Instant.now().getEpochSecond();
+
 		int hardsConfimed = 0;
-		if(params.containsKey("hards")) {
+		if(params.containsKey("hards"))
 			hardsConfimed = params.getInt("hards");
-		}
 
 		// call exchanger and update database
 		boolean succeed = exchange(game, type, now, hardsConfimed, params.containsKey("isAd"));
@@ -45,10 +47,11 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			return;
 		}
 
-		// return chest rewars as params
-		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
+		// return chest rewards as params
+		ExchangeItem item = game.exchanger.items.get(type);
+		Boolean isReady = item.outcomes != null;
+		if( item.category == ExchangeType.S_30_CHEST || isReady )
 		{
-			ExchangeItem item = game.exchanger.items.get(type);
 			SFSArray sfsRewards = new SFSArray();
 			int[] outKeys = item.outcomes.keys();
     		for (int i : outKeys)
@@ -68,20 +71,13 @@ public class ExchangeHandler extends BaseClientRequestHandler
 	{
 		ExchangeItem item = game.exchanger.items.get(type);
 
-		if(ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST)
-		{
-			if( isAd )
-				item.outcomes = game.exchanger.getAdChestOutcomes(type);
-			else
-				item.outcomes = game.exchanger.getChestOutcomes(type);
-		}
-
 		/*String log = "";
 		int[] keys = game.player.resources.keys();
 		for(int i = 0; i<keys.length; i++)
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
+		trace(type, now);
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
 		Boolean succeed = game.exchanger.exchange(item, now, hardsConfimed);
@@ -96,17 +92,15 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int[] updates = mapChangeCallback.updates.keys();
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
-		trace("type:", type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
-
-		int outcome = ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS ? item.outcomes.keys()[0] : 0;
+		trace("type:", type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
 		// Run db queries
 		try
 		{
 			trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
 			trace(UserManager.insertResources(getParentExtension(), game.player, mapChangeCallback.inserts));
-			if( ExchangeType.getCategory(type) == ExchangeType.S_30_CHEST ||  ExchangeType.getCategory(type) == ExchangeType.S_20_SPECIALS )
-				trace(UserManager.updateExchange(getParentExtension(), type, game.player.id, item.expiredAt, item.numExchanges, outcome));
+			if( item.category == ExchangeType.S_30_CHEST || item.category == ExchangeType.S_20_SPECIALS || item.category == ExchangeType.CHEST_CATE_110_BATTLES || item.category == ExchangeType.CHEST_CATE_120_OFFERS )
+				trace(UserManager.updateExchange(getParentExtension(), type, game.player.id, item.expiredAt, item.numExchanges, item.outcome));
 		}
 		catch (Exception e)
 		{

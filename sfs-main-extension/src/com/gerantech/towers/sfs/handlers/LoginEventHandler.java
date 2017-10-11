@@ -1,10 +1,9 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gt.towers.exchanges.Exchanger;
 import com.smartfoxserver.v2.core.SFSConstants;
 import haxe.root.Array;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -128,20 +127,24 @@ public class LoginEventHandler extends BaseServerEventHandler
 					SFSObject so = new SFSObject();
 					so.putInt("type", t);
 					so.putInt("num_exchanges", 0);
-					so.putInt("outcome", 0);
 
 					int ct = ExchangeType.getCategory(t);
-					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS ) {
+					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
 						so.putInt("expired_at", now + (t== ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
-					}
-					else {
+					else
 						so.putInt("expired_at", 0);
-					}
 
-					// bonus :
-					if( ct == ExchangeType.S_20_SPECIALS ) {
+					// set outcome :
+					if( ct == ExchangeType.S_20_SPECIALS )
 						so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
-					}
+					else if( ct == ExchangeType.CHEST_CATE_100_DAILYS )
+						so.putInt("outcome", Exchanger.getDailyChestType(0));
+					else if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
+						so.putInt("outcome", Exchanger.getBattleChestType(0));
+					else if( ct == ExchangeType.CHEST_CATE_120_OFFERS )
+						so.putInt("outcome", Exchanger.getOfferChestType(t));
+					else
+						so.putInt("outcome", 0);
 
 					exchanges.addSFSObject( so );
 				}
@@ -250,7 +253,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			element = resources.getSFSObject(i);
 			initData.resources.set(element.getInt("type"), element.getInt("count"));
-			if(element.getInt("type") < 1000)
+			if( element.getInt("type") < 1000 )
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
@@ -264,6 +267,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
+		boolean hasNewChests = false;
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
@@ -283,10 +287,32 @@ public class LoginEventHandler extends BaseServerEventHandler
 					} catch (Exception e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}
-		      		//trace("UPDATE `exchanges` SET `expired_at`='" + (now+ExchangeType.getCooldown(t)) + "', `num_exchanges`='" + 0 + "', `outcome`='" + element.getInt("outcome") + "' WHERE `type`=" + t + " AND `player_id`=" + initData.id + ";");
 				}
 			}
+			if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
+				hasNewChests = true;
+
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
+		}
+
+		// add new chests for old players --> backward compatibility
+		if( !hasNewChests )
+		{
+			SFSArray newExchanges = new SFSArray();
+			for (int i = 1; i <= 3 ; i++)
+			{
+				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, exchanges, newExchanges, initData );
+				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, exchanges, newExchanges, initData );
+			}
+			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
+			for(int i=0; i<newExchanges.size(); i++)
+			{
+				query += "('" + newExchanges.getSFSObject(i).getInt("type") + "', '" + initData.id + "', '" + newExchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  newExchanges.getSFSObject(i).getInt("expired_at") + "', '" +  newExchanges.getSFSObject(i).getInt("outcome") + "')" ;
+				query += i<newExchanges.size()-1 ? ", " : ";";
+			}
+			trace(query);
+			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
+
 		}
 
 		Tracer tracer = new Tracer() {
@@ -329,7 +355,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("core", new Game(initData, tracer));
 	}
 
-
+	private void addNewExchangeElement(int t, ISFSArray exchanges, SFSArray newExchanges, InitData initData)
+	{
+		SFSObject element = new SFSObject();
+		element.putInt("type", t);
+		element.putInt("num_exchanges", 0);
+		element.putInt("expired_at", 0);
+		element.putInt("outcome", ExchangeType.getCategory(t) ==  ExchangeType.CHEST_CATE_110_BATTLES ? Exchanger.getBattleChestType(0) :  Exchanger.getOfferChestType(t));
+		newExchanges.addSFSObject( element );
+		exchanges.addSFSObject( element );
+		initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
+	}
 
 	private int findActiveBattleRoom(int id)
 	{
