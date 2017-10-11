@@ -15,6 +15,7 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +79,28 @@ public class BattleUtils
             Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arenaIndex.intValue());// ===> is temp
             roomProperties.put("appVersion", game.appVersion);// ===> is temp
+
         }
+
+
+        // temp solution
+        long now = Instant.now().getEpochSecond();
+        List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
+        for (Room r : rList) {
+            if ( now-(Integer)r.getProperty("startAt") > 300 )
+            {
+                ext.trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
+                for (User u : r.getUserList()){
+                    ext.getApi().leaveRoom(u, r);
+                    if ( u.isNpc() ){
+                        NPCTools.setXP(Integer.parseInt(u.getName()), -1);
+                        ext.getApi().disconnect(u.getSession());
+                    }
+                }
+                ext.trace("battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
+            }
+        }
+
 
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
