@@ -87,7 +87,7 @@ public class BattleUtils
         long now = Instant.now().getEpochSecond();
         List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList) {
-            if ( now-(Integer)r.getProperty("startAt") > 300 )
+            if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 300 )
             {
                 ext.trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
                 for (User u : r.getUserList()){

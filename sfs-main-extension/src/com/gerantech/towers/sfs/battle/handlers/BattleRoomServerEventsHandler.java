@@ -171,7 +171,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		List<User> players = roomClass.getRealPlayers();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i));
-
 	}
 
 	private String getMapName(boolean isQuest)
