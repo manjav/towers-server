@@ -27,7 +27,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-    	trace(params.getDump());
+    	trace("exchange:", params.getDump());
     	// provide init data
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		int type = params.getInt("type");
@@ -38,7 +38,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			hardsConfimed = params.getInt("hards");
 
 		// call exchanger and update database
-		boolean succeed = exchange(game, type, now, hardsConfimed, params.containsKey("isAd"));
+		boolean succeed = exchange(game, type, now, hardsConfimed);
 		params.putBool("succeed", succeed);
 		params.putInt("now", now);
 		if( !succeed )
@@ -49,8 +49,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 		// return chest rewards as params
 		ExchangeItem item = game.exchanger.items.get(type);
-		Boolean isReady = item.outcomes != null;
-		if( item.category == ExchangeType.S_30_CHEST || isReady )
+		if( item.outcomes != null )
 		{
 			SFSArray sfsRewards = new SFSArray();
 			int[] outKeys = item.outcomes.keys();
@@ -67,7 +66,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		send("exchange", params, sender);
     }
 
-	public boolean exchange(Game game, int type, int now, int hardsConfimed, boolean isAd)
+	public boolean exchange(Game game, int type, int now, int hardsConfimed)
 	{
 		ExchangeItem item = game.exchanger.items.get(type);
 
@@ -104,7 +103,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		}
 		catch (Exception e)
 		{
-			trace(e.getMessage());
+			e.printStackTrace();
 			return false;
 		}
 		return true;
