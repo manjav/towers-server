@@ -314,7 +314,7 @@ public class BattleRoom extends SFSExtension
 	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void leaveGame(User user) 
+	public void leaveGame(User user, boolean retryMode)
 	{
 		if( user.isSpectator(room) )
 		{
@@ -325,6 +325,11 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_BATTLE_ENDED );
 		if( isQuest )
 		{
+			if( retryMode )
+			{
+				removeAllUsers();
+				return;
+			}
 			scores = new int[1];
 			scores[0] = 0;
 			calculateEndBattleResponse();
@@ -424,7 +429,17 @@ public class BattleRoom extends SFSExtension
 				int group = getPlayerGroup(user);
 				sendEndBattleResponse(user, outcomesList[group], scores[group]);
 			}
+		}
 
+		removeAllUsers();
+	}
+
+	private void removeAllUsers()
+	{
+		List<User> users = room.getUserList();
+		for (int i=0; i < users.size(); i++)
+		{
+			User user = users.get(i);
 			getApi().leaveRoom(user, room);
 			if ( user.isNpc() )
 			{
