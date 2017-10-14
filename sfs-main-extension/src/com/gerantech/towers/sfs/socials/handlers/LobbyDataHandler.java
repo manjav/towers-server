@@ -15,6 +15,9 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -57,14 +60,58 @@ public class LobbyDataHandler extends BaseClientRequestHandler
                 r.putInt("num", all.size());
                 for ( int i=0; i<r.getInt("num"); i++ )
                     sum += users.get(all.getSFSObject(i).getInt("id")).point;
-                r.putInt("sum", sum);
-
+                r.putInt("sum", getLobbyPoint(users, all));
                 rooms.addSFSObject(r);
             }
         }
         params.putSFSArray("rooms", rooms);
         params.removeElement("name");
     }
+
+
+    /**
+     *  |      rank         | point-coef |
+     *  ==================== ============
+     *  |   0.00 ~ 0.20     |    0.50    |
+     *  |   0.21 ~ 0.40     |    0.25    |
+     *  |   0.41 ~ 0.60     |    0.12    |
+     *  |   0.61 ~ 0.80     |    0.10    |
+     *  |   0.81 ~ 1.00     |    0.03    |
+     *
+     * @param users
+     * @param all
+     * @return
+     */
+    private static float[] RANK_COEFS = {0.50f, 0.25f, 0.12f, 0.10f, 0.03f};
+    private int getLobbyPoint(IMap<Integer, RankData> users, ISFSArray all)
+    {
+        int index = 0;
+        int size = all.size();
+        List<RankData> members = new ArrayList();
+        while( index < size ) {
+            members.add(users.get(all.getSFSObject(index).getInt("id")));
+            index ++;
+        }
+
+        // sort on point ascending
+        Collections.sort(members, new Comparator<RankData>() {
+            @Override
+            public int compare(RankData rhs, RankData lhs) { return lhs.point - rhs.point; }
+        });
+
+        // calculate point with method commented formula
+        int sum = 0;
+        float rankRatio;
+        index = 0;
+        size = members.size();
+        while( index < size ) {
+            rankRatio = (float)index/(float)size;
+            sum += members.get(index).point * RANK_COEFS[(int)Math.floor(rankRatio*5)];
+            index ++;
+        }
+        return sum;
+    }
+
 
     private void getRoomInfo(User sender, ISFSObject params)
     {
