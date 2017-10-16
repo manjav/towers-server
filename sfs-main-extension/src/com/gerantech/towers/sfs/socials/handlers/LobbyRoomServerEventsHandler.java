@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyRoom;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -22,6 +23,8 @@ import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
+
+import static sun.audio.AudioPlayer.player;
 
 public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -45,25 +48,11 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 	private void joinRoom(User user)
 	{
 		Player player = ((Game) user.getSession().getProperty("core")).player;
-		ISFSArray all = room.getVariable("all").getSFSArrayValue();
-		int allSize = all.size();
-		for(int i=0; i<allSize; i++)
-            if ( all.getSFSObject(i).getInt("id").equals(player.id) )
-				return;
-
-		SFSObject member = new SFSObject();
-		member.putInt("id", player.id);
-		member.putShort("pr", (allSize==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.STANDARD).getId());
-		all.addSFSObject(member);
-		try {
-			room.setVariable(new SFSRoomVariable("all", all,  false, true, false) );
-		} catch (SFSVariableException e) {
-			e.printStackTrace();
-		}
-		save(getParentExtension().getParentZone(), room);
+		if( !LobbyUtils.getInstance().addUser(room, player.id) )
+			return;
 
 		// broadcast join message
-		if( all.size() > 1 )
+		if( room.getVariable("all").getSFSArrayValue().size() > 1 )
 			roomClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player.nickName, "", (short)-1);// mode = join
 	}
 
@@ -73,64 +62,6 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 
 		// broadcast leave message
 		roomClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player.nickName, "", (short)-1);// mode = leave
-		removeUserFromRoomVar(getParentExtension(), room, player.id);
+		LobbyUtils.getInstance().removeUser(room, player.id);
 	}
-
-
-	public static void removeUserFromRoomVar(SFSExtension extension, Room room, int userId)
-	{
-		int memberIndex = -1;
-		ISFSArray all = room.getVariable("all").getSFSArrayValue();
-		int allSize = all.size();
-		for (int i = 0; i < allSize; i++) {
-			if (all.getSFSObject(i).getInt("id").equals(userId)) {
-				memberIndex = i;
-				break;
-			}
-		}
-		if (memberIndex < 0)
-			return;
-
-		all.removeElementAt(memberIndex);
-
-		try {
-			room.setVariable(new SFSRoomVariable("all", all, false, true, false));
-		} catch (SFSVariableException e) {
-			e.printStackTrace();
-		}
-		save(extension.getParentZone(), room);
-
-		if (all.size() == 0)
-		{
-			room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
-			remove(extension.getParentZone(), room);
-			extension.getApi().removeRoom(room);
-		}
-	}
-
-	// Save room to file for server rstore rooms after resetting
-	public static void save(Zone zone, Room room)
-	{
-		FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-		zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
-		try {
-			zone.getRoomPersistenceApi(). saveRoom(room);
-		} catch (SFSStorageException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// remove room from db
-	public static void remove(Zone zone, Room room)
-	{
-		FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-		zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
-		try {
-			zone.getRoomPersistenceApi().removeRoom(room.getName());
-		} catch (SFSStorageException e) {
-			e.printStackTrace();
-		}
-		System.out.print("remove " + room.getName());
-	}
-
 }

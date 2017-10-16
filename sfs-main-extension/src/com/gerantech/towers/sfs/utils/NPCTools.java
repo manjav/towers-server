@@ -40,6 +40,29 @@ public class NPCTools
         return new NPCTools();
     }
 
+    public void fillByIds(IMap<Integer, RankData> users, ISFSArray members)
+    {
+        List<Integer> ids = new ArrayList();
+        for (int i = members.size()-1; i >= 0 ; i--)
+            if( !users.containsKey(members.getSFSObject(i).getInt("id")) )
+                ids.add (members.getSFSObject(i).getInt("id"));
+
+        if( ids.size() == 0 )
+            return;
+
+        String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = 1001 AND (";
+        for (int i = ids.size()-1; i >=0 ; i--)
+            query += " players.id = " + ids.get(i) + ( i==0 ? " );" : " OR ");
+
+        try {
+            ISFSArray players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
+            for( int p=0; p<players.size(); p++ )
+            {
+                ISFSObject pp = players.getSFSObject(p);
+                users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
 
     public static IMap<Integer, RankData> fill(IMap<Integer, RankData> users, Game game, ISFSExtension extension)
     {
@@ -57,7 +80,6 @@ public class NPCTools
                 arena = game.arenas.get(arenaKeys[a]);
                 String query = "SELECT  players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count BETWEEN " + arena.min + " AND " + arena.max + " ORDER BY resources.count DESC";
                 ISFSArray players = dbManager.executeQuery(query, new Object[] {});
-
                 for( int p=0; p<players.size(); p++ )
                 {
                     ISFSObject pp = players.getSFSObject(p);

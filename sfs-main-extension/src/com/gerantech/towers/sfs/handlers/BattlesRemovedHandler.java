@@ -33,7 +33,7 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
             Room lobby = lobbies.get(i);
             if ( lobby.containsProperty(room.getName()) )
             {
-                ISFSArray messageQueue = (ISFSArray) lobby.getProperty("queue");
+                ISFSArray messageQueue = lobby.getVariable("msg").getSFSArrayValue();
                 int msgSize = messageQueue.size();
                 for (int j = msgSize-1; j >= 0; j--)
                 {

@@ -1,23 +1,22 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.handlers.*;
+import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyKickHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
+import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gerantech.towers.sfs.utils.BattleUtils;
-import com.gerantech.towers.sfs.utils.NPCTools;
-import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
+import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
@@ -31,7 +30,6 @@ public class LobbyRoom extends SFSExtension
     private Room lobby;
     public void init() {
         lobby = getParentRoom();
-        lobby.setProperty("queue", new SFSArray());
 
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
         addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
@@ -44,23 +42,12 @@ public class LobbyRoom extends SFSExtension
     public void handleClientRequest(String requestId, User sender, ISFSObject params)
     {
         if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
-        {
-            //trace("in", params.getDump());
             organizeMessage(sender, params);
-            /*ISFSArray messages = messageQueue();
-            int msgSize = messages.size();
-            for (int i = 0; i <msgSize; i++) {
-                ISFSObject msg =  messages.getSFSObject(i);
-                trace(i, msg.containsKey("m")?msg.getShort("m"):"", msg.containsKey("st")?msg.getShort("st"):"", msg.containsKey("i")?msg.getInt("i"):"", msg.containsKey("bid") ? msg.getInt("bid") : "");
-            }
-            trace("out", params.getDump());*/
-        }
         else if( requestId.equals(Commands.LOBBY_INFO) )
-        {
              params.putSFSArray("messages", messageQueue());
-        }
 
         super.handleClientRequest(requestId, sender, params);
+        setActiveness(getActiveness() + 1);
     }
 
     private void organizeMessage(User sender, ISFSObject params)
@@ -140,8 +127,6 @@ public class LobbyRoom extends SFSExtension
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
-
-            //lobby.setProperty("queue", messages);
         }
         messages.addSFSObject(params);
     }
@@ -181,18 +166,33 @@ public class LobbyRoom extends SFSExtension
 
     public void sendComment(short mode, String subject, String object, short permissionId)
     {
-        ISFSObject params = new SFSObject();
-        params.putUtfString("t", "");
-        params.putShort("m", mode);
-        params.putText("s", subject);
-        params.putText("o", object);
-        params.putShort("p", permissionId);
-        messageQueue().addSFSObject(params);
-        super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, params);
+        ISFSObject msg = new SFSObject();
+        msg.putUtfString("t", "");
+        msg.putShort("m", mode);
+        msg.putText("s", subject);
+        msg.putText("o", object);
+        msg.putShort("p", permissionId);
+        messageQueue().addSFSObject(msg);
+        super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
 
     private ISFSArray messageQueue ()
     {
-        return (ISFSArray) lobby.getProperty("queue");
+        return lobby.getVariable("msg").getSFSArrayValue();
+    }
+
+    private int getActiveness ()
+    {
+        return lobby.getVariable("act").getIntValue();
+    }
+    private void setActiveness (int value)
+    {
+        try {
+            SFSRoomVariable var = new SFSRoomVariable("act", value,  true, true, false);
+            var.setHidden(true);
+            lobby.setVariable( var );
+        } catch (SFSVariableException e) {
+            e.printStackTrace();
+        }
     }
 }

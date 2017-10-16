@@ -1,11 +1,14 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
@@ -47,7 +50,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         }
 
         params.putInt("response", 0);
-        LobbyRoomServerEventsHandler.save(getParentExtension().getParentZone(), room);
+        LobbyUtils.getInstance().save(room);
         send("lobbyCreate", params, sender);
     }
 
@@ -62,13 +65,18 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         rs.setName(roomName);
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         rs.setExtension(res);
+        rs.setMaxVariablesAllowed(6);
         rs.setMaxUsers(maxUsers);
 
         List<RoomVariable> listOfVars = new ArrayList<>();
+        listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
         listOfVars.add( new SFSRoomVariable("bio", bio,             false, true, false) );
         listOfVars.add( new SFSRoomVariable("pic", avatar,          false, true, false) );
         listOfVars.add( new SFSRoomVariable("min", minPoints,       false, true, false) );
         listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
+        listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
+        for (RoomVariable rv : listOfVars )
+            rv.setHidden(true);
         rs.setRoomVariables(listOfVars);
 
         Room r = getApi().createRoom(getParentExtension().getParentZone(), rs, owner);

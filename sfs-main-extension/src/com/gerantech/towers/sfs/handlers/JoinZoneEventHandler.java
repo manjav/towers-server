@@ -91,7 +91,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	}
 
 	// Save room to file for server rstore rooms after resetting
-	public static void loadSavedLobbies(Zone zone, ISFSApi api)
+	private void loadSavedLobbies(Zone zone, ISFSApi api)
 	{
 		if ( zone.getRoomListFromGroup("lobbies").size() > 0 )
 			return;
@@ -115,7 +115,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	private static boolean hasUser(List<RoomVariable> vars)
 	{
 		for (int i = 0; i < vars.size(); i++)
-			if( vars.get(i).getName().equals("all") && vars.get(i).getSFSArrayValue().size() > 0)
+			if( vars.get(i).getName().equals("all") && vars.get(i).getSFSArrayValue().size() > 0 )
 				return true;
 		return false;
 	}
