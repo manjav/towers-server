@@ -1,19 +1,21 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gt.towers.constants.MessageTypes;
+import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
+import com.gerantech.towers.sfs.utils.UserManager;
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +25,26 @@ import java.util.List;
  */
 public class LobbyCreateHandler extends BaseClientRequestHandler
 {
+    public static final int RESPONSE_OK = 0;
+    public static final int RESPONSE_ROOM_EXISTS = -1;
+    public static final int RESPONSE_INTERNAL_ERROR = -2;
+    public static final int RESPONSE_UNKOWN_ERROR = -10;
+
     public void handleClientRequest(User sender, ISFSObject params)
     {
+        Game game = (Game)(sender.getSession().getProperty("core"));
+
+        MapChangeCallback mapChangeCallback = new MapChangeCallback();
+        game.player.resources.changeCallback = mapChangeCallback;
+        Boolean succeed = game.lobby.create();
+        game.player.resources.changeCallback = null;
+
+        if(!succeed)
+        {
+            game.tracer.log("lobby create failed: RESPONSE_INTERNAL_ERROR");
+            params.putInt("response", RESPONSE_INTERNAL_ERROR);
+            return;
+        }
         String roomName = params.getUtfString("name");
         String bio = params.getUtfString("bio");
         int maxUsers = params.getInt("max");
@@ -33,18 +53,19 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         if( getParentExtension().getParentZone().getRoomByName(roomName) != null )
         {
-            params.putInt("response", -1);
+            params.putInt("response", RESPONSE_ROOM_EXISTS);
             send("lobbyCreate", params, sender);
             return;
         }
 
         Room room = null;
         try {
+            trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
             room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar);
         } catch (Exception e) {
             send("lobbyCreate", params, sender);
             e.printStackTrace();
-            params.putInt("response", -10);
+            params.putInt("response", RESPONSE_UNKOWN_ERROR);
             send("lobbyCreate", params, sender);
             return;
         }
