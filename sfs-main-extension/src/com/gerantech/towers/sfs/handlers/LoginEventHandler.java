@@ -282,7 +282,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int t = element.getInt("type");
 			// bonus items :
 			int ct = ExchangeType.getCategory(t);
-			if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_40_OTHERS )
+			if( ct == ExchangeType.S_20_SPECIALS )
 			{
 				if( element.getInt("expired_at") < now )
 				{

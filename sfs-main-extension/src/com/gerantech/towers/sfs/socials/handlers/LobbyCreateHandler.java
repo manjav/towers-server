@@ -70,7 +70,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
             return;
         }
 
-        params.putInt("response", 0);
+        params.putInt("response", RESPONSE_OK);
         LobbyUtils.getInstance().save(room);
         send("lobbyCreate", params, sender);
     }
