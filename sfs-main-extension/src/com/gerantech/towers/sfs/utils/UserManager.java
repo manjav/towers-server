@@ -173,13 +173,13 @@ public class UserManager {
 	{
 		try {
 			IDBManager dbManager = extension.getParentZone().getDBManager();
-			dbManager.executeUpdate("UPDATE `exchanges` SET `num_exchanges`=0 WHERE `type`=41 AND `num_exchanges` != 0", new Object[] {});
-			return "Query succeeded";
+			dbManager.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=41 AND `num_exchanges` != 0;", new Object[] {});
 		}
 		catch (SQLException e)
 		{
-			e.printStackTrace();
+			//e.printStackTrace();
 			return "Query failed";
 		}
-    }
+		return "Query succeeded";
+	}
 }
