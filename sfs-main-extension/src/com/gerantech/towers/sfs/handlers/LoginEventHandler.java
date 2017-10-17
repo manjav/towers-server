@@ -40,6 +40,7 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 
+	public static int UNTIL_MAINTENANCE = 0;
 	private static int CORE_SIZE = 0;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
@@ -49,6 +50,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject inData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_IN_DATA);
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
+		int now = (int)Instant.now().getEpochSecond();
+
+		if( now < UNTIL_MAINTENANCE )
+		{
+			outData.putInt("umt", UNTIL_MAINTENANCE - now);
+			return;
+		}
 
 		LoginData loginData = new LoginData();
 		if( CORE_SIZE == 0 )
@@ -120,7 +128,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 				SFSArray exchanges = new SFSArray();
-				int now = (int)Instant.now().getEpochSecond();
 				for (int i=0; i<loginData.exchanges.size(); i++)
 	    		{
 					int t = loginData.exchanges.get(i);

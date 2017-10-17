@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
@@ -9,6 +10,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
+import java.time.Instant;
 import java.util.List;
 
 public class BattleAutoJoinHandler extends BaseClientRequestHandler
@@ -20,26 +22,30 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-        try
+        int now = (int)Instant.now().getEpochSecond();
+        trace(now, LoginEventHandler.UNTIL_MAINTENANCE);
+        if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
-            index = params.getInt("i");
-            isQuest = params.getBool("q");
-            hasExtraTime = params.containsKey("e");
-            if( params.containsKey("su") )
-            {
-                index -= 100000;
-                theRoom = getParentExtension().getParentZone().getRoomById(index);
-                if( theRoom != null )
-                    BattleUtils.getInstance().join (sender, theRoom, params.getText("su"));
-                return;
-            }
-
-            joinUser(sender);
+            params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
+            send(Commands.START_BATTLE, params, sender);
+            return;
         }
-        catch(Exception err) {  err.printStackTrace(); }
+
+        index = params.getInt("i");
+        isQuest = params.getBool("q");
+        hasExtraTime = params.containsKey("e");
+        if( params.containsKey("su") )
+        {
+            index -= 100000;
+            theRoom = getParentExtension().getParentZone().getRoomById(index);
+            if( theRoom != null )
+                BattleUtils.getInstance().join (sender, theRoom, params.getText("su"));
+            return;
+        }
+        joinUser(sender);
     }
  
-	private void joinUser(User user) throws SFSException
+	private void joinUser(User user)
     {
         if( !isQuest )
         {

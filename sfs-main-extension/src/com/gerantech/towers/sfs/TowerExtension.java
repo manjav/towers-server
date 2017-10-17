@@ -6,6 +6,9 @@ import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+
+import java.time.Instant;
+
 /**
  * @author ManJav
  */
@@ -72,7 +75,10 @@ public class TowerExtension extends SFSExtension
 	@Override
 	public Object handleInternalMessage(String cmdName, Object params)
 	{
-		if ( cmdName.equals("resetlobbiesactiveness") )
+		//trace(params, Integer.parseInt((String) params));
+		if ( cmdName.equals("setumtime") )
+			return LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params);
+		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
 		else if( cmdName.equals("cleanlobbyvars") )
 			return LobbyUtils.getInstance().cleanLobbyVars();
