@@ -47,7 +47,7 @@ public class LobbyRoom extends SFSExtension
              params.putSFSArray("messages", messageQueue());
 
         super.handleClientRequest(requestId, sender, params);
-        setActiveness(getActiveness() + 1);
+        LobbyUtils.getInstance().setActivenessVariable (lobby, getActiveness() + 1);
     }
 
     private void organizeMessage(User sender, ISFSObject params)
@@ -185,14 +185,4 @@ public class LobbyRoom extends SFSExtension
     {
         return lobby.getVariable("act").getIntValue();
     }
-    private void setActiveness (int value)
-    {
-        try {
-            SFSRoomVariable var = new SFSRoomVariable("act", value,  true, true, false);
-            var.setHidden(true);
-            lobby.setVariable( var );
-        } catch (SFSVariableException e) {
-            e.printStackTrace();
-        }
     }
-}

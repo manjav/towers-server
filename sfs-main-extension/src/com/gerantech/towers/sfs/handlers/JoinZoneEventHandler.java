@@ -5,14 +5,10 @@ import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.api.ISFSApi;
-import com.smartfoxserver.v2.api.SFSApi;
-import com.smartfoxserver.v2.buddylist.Buddy;
 import com.smartfoxserver.v2.buddylist.BuddyList;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
-import com.smartfoxserver.v2.core.SFSEventType;
-import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
@@ -24,7 +20,7 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
+import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 
@@ -97,8 +93,14 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			return;
 		System.out.print ("lobbies.count: "+ zone.getRoomListFromGroup("lobbies").size() + "\n");
 
-		FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-		zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
+        /*FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
+        zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);*/
+
+        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
+		dbRoomStorageConfig.storeInactiveRooms = true;
+		dbRoomStorageConfig.tableName = "rooms";
+		zone.initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
+
 		try {
 			List<CreateRoomSettings> lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
 			for ( CreateRoomSettings crs : lobbies )

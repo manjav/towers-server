@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.socials;
 
-import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -18,7 +17,13 @@ import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
+import com.smartfoxserver.v2.util.CryptoUtils;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -128,5 +133,143 @@ public class LobbyUtils
             e.printStackTrace();
         }
     }
+
+    public void setActivenessVariable (Room lobby, int value)
+    {
+        try {
+            SFSRoomVariable var = new SFSRoomVariable("act", value,  true, true, false);
+            var.setHidden(true);
+            lobby.setVariable( var );
+        } catch (SFSVariableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String resetActivenessOfLobbies()
+    {
+        String result = "Reset Activeness:";
+        Zone zone = ext.getParentZone();
+        List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
+        int lobbiesLen = lobbies.size()-1;
+        while ( lobbiesLen >= 0 )
+        {
+            setActivenessVariable(lobbies.get(lobbiesLen), 0);
+            result += "\n Lobby " + lobbies.get(lobbiesLen).getName() + " activeness set to '0'";
+            lobbiesLen --;
+        }
+
+        try {
+            zone.getRoomPersistenceApi().saveAllRooms("lobbies");
+        } catch (SFSStorageException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+
+    public String cleanLobbyVars()
+    {
+        Zone zone = ext.getParentZone();
+        String result = "Start lobby cleaning:";
+
+        try {
+            FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
+            zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
+            List<CreateRoomSettings> lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
+            for ( CreateRoomSettings crs : lobbies )
+            {
+                crs.setMaxVariablesAllowed(6);
+                List<RoomVariable> listOfVars = crs.getRoomVariables();
+
+                listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
+                listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
+                crs.setRoomVariables(listOfVars);
+
+                Room lobby = ext.getApi().createRoom(zone, crs, null);
+                save(zone, lobby);
+                ext.getApi().removeRoom(lobby);
+                result += "\n vars of " + crs.getName() + " cleaned.";
+            }
+
+        }
+        catch (SFSStorageException e) {
+            e.printStackTrace();
+        } catch (SFSCreateRoomException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public String migrateToDB()
+    {
+        String result = "Start migrating lobbies:";
+        Zone zone = ext.getParentZone();
+
+        try {
+            List<CreateRoomSettings> lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
+            List<CreateRoomSettings> activeLobbies = new ArrayList();
+            String query = "INSERT INTO `rooms`(`name`, `groupId`, `roomdata`) VALUES ";
+            for ( CreateRoomSettings crs : lobbies )
+            {
+                List<RoomVariable> listOfVars = crs.getRoomVariables();
+                boolean target = false;
+                for (RoomVariable var : listOfVars )
+                    if( var.getName().equals("all") && var.getSFSArrayValue().size() > 1 )
+                        target = true;
+
+                if( target )
+                    activeLobbies.add(crs);
+            }
+            for (int i = 0; i < activeLobbies.size(); i++)
+                query += "\n('" + activeLobbies.get(i).getName() + "', 'lobbies', '" + (i==activeLobbies.size()-1?"');":"'), ");
+
+            result += "\n\n" + query;
+            zone.getDBManager().executeInsert(query, new Object[]{});
+
+
+            for (int i = 0; i < activeLobbies.size(); i++) {
+                Path path = Paths.get("data/roomData/746f77657273/" + getRoomFileName(activeLobbies.get(i)));
+                String fileStr = "0x" + new HexBinaryAdapter().marshal(Files.readAllBytes(path));
+
+                query = "UPDATE rooms SET `roomdata` = " + fileStr + " WHERE `name` = '" + activeLobbies.get(i).getName() + "';";
+                result += "\n\n" + query;
+                zone.getDBManager().executeUpdate(query, new Object[]{});
+            }
+
+            } catch (Exception e) {
+            e.printStackTrace();
+        }
+        result += "\n\n ==> Lobbies migrated completely.";
+        return result;
+    }
+    private String getRoomFileName(CreateRoomSettings theRoom)
+    {
+        return CryptoUtils.getHexFileName(new StringBuilder(String.valueOf(theRoom.getGroupId())).append(theRoom.getName()).toString()) + ".room";
+    }
+
+
+    /*public String saveLobbies()
+    {
+        Zone zone = ext.getParentZone();
+        List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
+*/
+        /*try {
+            zone.getRoomPersistenceApi().saveAllRooms("lobbies");
+        } catch (SFSStorageException e) {
+            e.printStackTrace();
+        }*/
+
+        /*int lobbiesLen = lobbies.size()-1;
+        Room lobby;
+        while ( lobbiesLen >= 0 )
+        {
+            lobby = lobbies.get(lobbiesLen);
+            save(zone, lobby);
+            lobbiesLen --;
+        }
+        return "Variables of " + lobbies.size() + " lobbies have been saved.";
+    }
+*/
 
 }
