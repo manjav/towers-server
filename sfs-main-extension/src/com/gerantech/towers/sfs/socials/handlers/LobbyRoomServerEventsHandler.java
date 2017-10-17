@@ -9,22 +9,9 @@ import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.Zone;
-import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import com.smartfoxserver.v2.extensions.SFSExtension;
-import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
-import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
-import com.smartfoxserver.v2.persistence.room.SFSStorageException;
-import com.smartfoxserver.v2.security.DefaultPermissionProfile;
-
-import static sun.audio.AudioPlayer.player;
 
 public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 {

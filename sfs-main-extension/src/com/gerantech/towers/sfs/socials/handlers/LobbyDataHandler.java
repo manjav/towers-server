@@ -54,7 +54,6 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             roomIndex ++;
             if( roomName != null && room.getName().indexOf( roomName ) == -1 )
                 continue;
-            trace(room.getName());
             r = new SFSObject();
             fillRoomData(room, r, users, false);
             if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )

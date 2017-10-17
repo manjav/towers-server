@@ -45,8 +45,6 @@ public class LobbyUtils
     }
     private void save(Zone zone, Room room)
     {
-        FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-        zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
         try {
             zone.getRoomPersistenceApi().saveRoom(room);
         } catch (SFSStorageException e) {
@@ -57,8 +55,6 @@ public class LobbyUtils
     // remove room from db
     private void remove(Zone zone, Room room)
     {
-        FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-        zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
         try {
             zone.getRoomPersistenceApi().removeRoom(room.getName());
             ext.getApi().removeRoom(room);
@@ -104,6 +100,7 @@ public class LobbyUtils
         if( memberIndex < 0 )
             return;
 
+        Short permission = all.getSFSObject(memberIndex).getShort("pr");
         all.removeElementAt(memberIndex);
 
         if( all.size() == 0 )
@@ -112,6 +109,10 @@ public class LobbyUtils
             remove(ext.getParentZone(), lobby);
             return;
         }
+
+        // move permission to oldest member
+        if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
+            all.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
 
         setMembersVariable(lobby, all);
         save(lobby);
