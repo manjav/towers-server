@@ -169,4 +169,17 @@ public class UserManager {
 	}
 
 
+    public static String resetKeyExchanges(SFSExtension extension)
+	{
+		try {
+			IDBManager dbManager = extension.getParentZone().getDBManager();
+			dbManager.executeUpdate("UPDATE `exchanges` SET `num_exchanges`=0 WHERE `type`=41 AND `num_exchanges` != 0", new Object[] {});
+			return "Query succeeded";
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return "Query failed";
+		}
+    }
 }

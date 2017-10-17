@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
+import com.gerantech.towers.sfs.utils.UserManager;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -78,6 +79,8 @@ public class TowerExtension extends SFSExtension
 		//trace(params, Integer.parseInt((String) params));
 		if ( cmdName.equals("setumtime") )
 			return LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params);
+		else if ( cmdName.equals("resetkeylimit") )
+			return UserManager.resetKeyExchanges((SFSExtension) getParentZone().getExtension());
 		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
 		else if( cmdName.equals("cleanlobbyvars") )
@@ -89,4 +92,6 @@ public class TowerExtension extends SFSExtension
 
 		return null;
 	}
+
+
 }
