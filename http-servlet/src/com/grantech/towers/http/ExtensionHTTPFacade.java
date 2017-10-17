@@ -16,7 +16,7 @@ public class ExtensionHTTPFacade extends HttpServlet
 {
     private final static String CMD_SAVE_LOBBIES = "savelobbies";
     private final static String CMD_CLEAN_LOBBY_VARS = "cleanlobbyvars";
-    private final static String REMOVE_LOBBIES_LESS_THAN = "removelobbieslessthan";
+    private final static String CMD_MIGRATE_TO_DB = "migratetodb";
     private final static String CMD_RESET_LOBBIES_ACTIVENESS = "resetlobbiesactiveness";
 
     private ISFSExtension myExtension;
@@ -38,7 +38,7 @@ public class ExtensionHTTPFacade extends HttpServlet
             {
                 case CMD_SAVE_LOBBIES:
                 case CMD_CLEAN_LOBBY_VARS:
-                case REMOVE_LOBBIES_LESS_THAN:
+                case CMD_MIGRATE_TO_DB:
                 case CMD_RESET_LOBBIES_ACTIVENESS:
                     result = myExtension.handleInternalMessage(key, req.getParameter(key));
                     break;

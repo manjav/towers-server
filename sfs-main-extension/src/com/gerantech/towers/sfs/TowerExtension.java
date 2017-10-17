@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.handlers.*;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
@@ -65,5 +66,21 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 
 		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
+	}
+
+
+	@Override
+	public Object handleInternalMessage(String cmdName, Object params)
+	{
+		if ( cmdName.equals("resetlobbiesactiveness") )
+			return LobbyUtils.getInstance().resetActivenessOfLobbies();
+		else if( cmdName.equals("cleanlobbyvars") )
+			return LobbyUtils.getInstance().cleanLobbyVars();
+		//else if( cmdName.equals("savelobbies") )
+		//	return LobbyUtils.getInstance().saveLobbies();
+		else if( cmdName.equals("migratetodb") )
+			return LobbyUtils.getInstance().migrateToDB();
+
+		return null;
 	}
 }
