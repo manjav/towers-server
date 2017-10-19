@@ -93,9 +93,6 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			return;
 		System.out.print ("lobbies.count: "+ zone.getRoomListFromGroup("lobbies").size() + "\n");
 
-        /*FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-        zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);*/
-
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
 		dbRoomStorageConfig.storeInactiveRooms = true;
 		dbRoomStorageConfig.tableName = "rooms";

@@ -189,6 +189,7 @@ public class LobbyUtils
                 Room lobby = ext.getApi().createRoom(zone, crs, null);
                 save(zone, lobby);
                 ext.getApi().removeRoom(lobby);
+                ext.trace("vars of " + crs.getName() + " cleaned.");
                 result += "\n vars of " + crs.getName() + " cleaned.";
             }
 
