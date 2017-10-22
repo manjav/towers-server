@@ -1,13 +1,16 @@
 package com.gerantech.towers.sfs.utils;
 
 import com.gt.hazel.RankData;
+import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -17,6 +20,7 @@ import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 public class UserManager {
 
@@ -171,6 +175,7 @@ public class UserManager {
 
     public static String resetKeyExchanges(SFSExtension extension)
 	{
+		String result = "";
 		try {
 			IDBManager dbManager = extension.getParentZone().getDBManager();
 			dbManager.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=41 AND `num_exchanges` != 0;", new Object[] {});
@@ -180,6 +185,14 @@ public class UserManager {
 			//e.printStackTrace();
 			return "Query failed";
 		}
-		return "Query succeeded";
+
+		Collection<User> users = extension.getParentZone().getUserList();
+		for (User u : users)
+		{
+			((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.S_41_KEYS).numExchanges = 0;
+			result += u.getName() + " key limit reset to '0'.\n";
+		}
+
+		return "Query succeeded.\n" + result;
 	}
 }

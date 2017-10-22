@@ -79,16 +79,16 @@ public class TowerExtension extends SFSExtension
 		//trace(params, Integer.parseInt((String) params));
 		if ( cmdName.equals("setumtime") )
 			return LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params);
+		else if ( cmdName.equals("servercheck") )
+			return "OK HAHAHA.";
 		else if ( cmdName.equals("resetkeylimit") )
 			return UserManager.resetKeyExchanges((SFSExtension) getParentZone().getExtension());
-		else if ( cmdName.equals("resetlobbiesactiveness") )
+/*		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
 		else if( cmdName.equals("cleanlobbyvars") )
 			return LobbyUtils.getInstance().cleanLobbyVars();
-		//else if( cmdName.equals("savelobbies") )
-		//	return LobbyUtils.getInstance().saveLobbies();
 		else if( cmdName.equals("migratetodb") )
-			return LobbyUtils.getInstance().migrateToDB();
+			return LobbyUtils.getInstance().migrateToDB();*/
 
 		return null;
 	}

@@ -15,10 +15,11 @@ import com.smartfoxserver.v2.extensions.ISFSExtension;
 public class ExtensionHTTPFacade extends HttpServlet
 {
     private final static String CMD_SET_UM_TIME = "setumtime";
+    private final static String CMD_SERVER_CHECK = "servercheck";
     private final static String CMD_RESET_KEY_LIMIT = "resetkeylimit";
-    private final static String CMD_SAVE_LOBBIES = "savelobbies";
-    private final static String CMD_CLEAN_LOBBY_VARS = "cleanlobbyvars";
-    private final static String CMD_MIGRATE_TO_DB = "migratetodb";
+   // private final static String CMD_SAVE_LOBBIES = "savelobbies";
+   // private final static String CMD_CLEAN_LOBBY_VARS = "cleanlobbyvars";
+   // private final static String CMD_MIGRATE_TO_DB = "migratetodb";
     private final static String CMD_RESET_LOBBIES_ACTIVENESS = "resetlobbiesactiveness";
 
     private ISFSExtension myExtension;
@@ -41,9 +42,7 @@ public class ExtensionHTTPFacade extends HttpServlet
                 case CMD_SET_UM_TIME:
                 case CMD_RESET_KEY_LIMIT:
                 case CMD_RESET_LOBBIES_ACTIVENESS:
-                case CMD_CLEAN_LOBBY_VARS:
-                case CMD_MIGRATE_TO_DB:
-                case CMD_SAVE_LOBBIES:
+                case CMD_SERVER_CHECK:
                     result = myExtension.handleInternalMessage(key, req.getParameter(key));
                     break;
                 default:
