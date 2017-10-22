@@ -143,6 +143,9 @@ public class LobbyUtils
         } catch (SFSVariableException e) {
             e.printStackTrace();
         }
+
+        if( value % 5 == 0 )
+            save(lobby);
     }
 
     public String resetActivenessOfLobbies()
