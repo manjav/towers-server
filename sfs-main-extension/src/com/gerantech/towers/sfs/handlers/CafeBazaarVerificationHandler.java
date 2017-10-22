@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.gerantech.towers.sfs.TowerExtension;
 import com.gt.towers.Game;
+import com.gt.towers.constants.ResourceType;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -17,6 +18,8 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
+
+import javax.annotation.Resources;
 
 /**
  * @author ManJav
@@ -49,7 +52,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", 0);
 			return;
 		}
-
+		trace("Player Purchase --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
 		Data data = verify(productID, purchaseToken);
         
         // send purchase data to client
@@ -62,11 +65,13 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 			{
 				resObj.putBool("success", false);
 				resObj.putText("message", data.json.getString("error_exchange"));
+				trace("Purchase FAIL --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD), "Error Message:", data.json.getString("error_exchange") );
 				return;
 			}
 
     		sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
-    		return;
+			trace("Purchase SUCCESS --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
+			return;
         }
         
         // when product id or purchase token is wrong
