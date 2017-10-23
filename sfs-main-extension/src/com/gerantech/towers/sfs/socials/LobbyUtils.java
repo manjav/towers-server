@@ -123,7 +123,7 @@ public class LobbyUtils
         save(lobby);
     }
 
-    private void setMembersVariable (Room lobby, ISFSArray value)
+    public void setMembersVariable (Room lobby, ISFSArray value)
     {
         try {
             SFSRoomVariable var = new SFSRoomVariable("all", value,  true, true, false);

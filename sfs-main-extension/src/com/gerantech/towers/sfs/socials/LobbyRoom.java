@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
-import com.gerantech.towers.sfs.socials.handlers.LobbyKickHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyModerationHandler;
 import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gerantech.towers.sfs.utils.BattleUtils;
@@ -15,8 +15,6 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
-import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
@@ -36,7 +34,7 @@ public class LobbyRoom extends SFSExtension
 
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
-        addRequestHandler(Commands.LOBBY_KICK, LobbyKickHandler.class);
+        addRequestHandler(Commands.LOBBY_MODERATION, LobbyModerationHandler.class);
     }
 
     public void handleClientRequest(String requestId, User sender, ISFSObject params)

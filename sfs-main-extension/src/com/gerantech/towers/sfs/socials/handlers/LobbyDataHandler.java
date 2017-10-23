@@ -40,7 +40,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         String roomName = params.containsKey("name") ? params.getUtfString("name") : null;
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
-        boolean rankMode = params.containsKey("rank");
+        //boolean rankMode = params.containsKey("rank");
 
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
         int roomIndex = 0;
@@ -56,7 +56,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
                 continue;
             r = new SFSObject();
             fillRoomData(room, r, users, false);
-            if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )
+            // if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )
                 roomsList.add(r);
         }
 
