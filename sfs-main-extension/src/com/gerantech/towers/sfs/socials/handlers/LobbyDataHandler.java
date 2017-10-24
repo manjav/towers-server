@@ -86,6 +86,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putInt("max", room.getMaxUsers());
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
+        params.putInt("pic", room.getVariable("pic").getIntValue());
         params.putInt("act", room.getVariable("act").getIntValue());
         if( includeMembers )
             params.putSFSArray("all", all);
@@ -93,7 +94,6 @@ public class LobbyDataHandler extends BaseClientRequestHandler
 
     private void fillRoomInfo(Room room, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
     {
-        //params.putInt("pic", room.getVariable("pic").getIntValue());
         params.putText("bio", room.getVariable("bio").getStringValue());
         params.putInt("min", room.getVariable("min").getIntValue());
         if( includeMembers )

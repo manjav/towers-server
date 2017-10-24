@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
@@ -72,7 +73,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         params.putInt("response", RESPONSE_OK);
         LobbyUtils.getInstance().save(room);
-        send("lobbyCreate", params, sender);
+        send(Commands.LOBBY_CREATE, params, sender);
     }
 
     private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar) throws SFSCreateRoomException, SFSJoinRoomException

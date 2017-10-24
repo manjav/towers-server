@@ -1,10 +1,7 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
-import com.gerantech.towers.sfs.socials.handlers.LobbyModerationHandler;
-import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
-import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
+import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -34,6 +31,7 @@ public class LobbyRoom extends SFSExtension
 
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
+        addRequestHandler(Commands.LOBBY_EDIT, LobbyEditHandler.class);
         addRequestHandler(Commands.LOBBY_MODERATION, LobbyModerationHandler.class);
     }
 
