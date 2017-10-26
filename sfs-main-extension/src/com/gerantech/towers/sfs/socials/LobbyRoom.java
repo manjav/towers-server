@@ -39,7 +39,7 @@ public class LobbyRoom extends SFSExtension
     {
         if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
             organizeMessage(sender, params);
-        else if( requestId.equals(Commands.LOBBY_INFO) )
+        else if( requestId.equals(Commands.LOBBY_INFO) && !params.containsKey("nomsg"))
              params.putSFSArray("messages", messageQueue());
 
         super.handleClientRequest(requestId, sender, params);

@@ -36,7 +36,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
         } catch (SFSVariableException e) { e.printStackTrace(); }
 
         LobbyUtils.getInstance().save(lobby);
-        roomClass.sendComment((short) 15, game.player.nickName, "", (short)0);
+        roomClass.sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
 
         //params.putInt("response", RESPONSE_OK);
         //send(Commands.LOBBY_EDIT, params, sender);

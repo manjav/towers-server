@@ -18,8 +18,11 @@ public class LobbyInfoHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), (Game) sender.getSession().getProperty("core"), getParentExtension());
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         new LobbyDataHandler().fillRoomData(getParentExtension().getParentRoom(), params, users, true);
-        send(Commands.LOBBY_INFO, params, sender);
+        if( params.containsKey("broadcast"))
+            send(Commands.LOBBY_INFO, params, getParentExtension().getParentRoom().getUserList());
+        else
+            send(Commands.LOBBY_INFO, params, sender);
     }
 }
