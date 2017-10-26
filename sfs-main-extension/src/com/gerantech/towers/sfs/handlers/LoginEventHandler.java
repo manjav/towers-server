@@ -1,5 +1,11 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gt.hazel.RankData;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchanger;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.core.SFSConstants;
 import haxe.root.Array;
 
@@ -271,7 +277,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			element = quests.getSFSObject(i);
 			initData.quests.set(element.getInt("index"), element.getInt("score"));
 		}
-		
+
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
 		boolean hasNewChests = false;
@@ -358,8 +364,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 				trace(arg0);
 			}
 		};
-		
-		session.setProperty("core", new Game(initData, tracer));
+
+		Game game = new Game(initData, tracer);
+		session.setProperty("core", game);
+
+		// init and update hazel data
+		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY));
+		if( users.containsKey(game.player.id))
+			users.replace(game.player.id, rd);
+		else
+			users.put(game.player.id, rd);
 	}
 
 	private void addNewExchangeElement(int t, ISFSArray exchanges, SFSArray newExchanges, InitData initData)

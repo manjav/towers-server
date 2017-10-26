@@ -26,8 +26,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        Game game = (Game) sender.getSession().getProperty("core");
-        IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
             fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
         else
@@ -147,6 +146,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             member.putShort("permission", all.getSFSObject(index).getShort("pr"));
             member.putText("name", users.get(member.getInt("id")).name);
             member.putInt("point", users.get(member.getInt("id")).point);
+            member.putInt("activity", users.get(member.getInt("id")).xp);
             members.add(member);
             index ++;
         }

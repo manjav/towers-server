@@ -5,6 +5,7 @@ import java.util.*;
 import com.gerantech.towers.sfs.utils.NPCTools;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
+import com.gt.towers.constants.ResourceType;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -35,9 +36,13 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
-		users.put(game.player.id, new RankData(game.player.id, game.player.nickName, game.player.get_point(), game.player.get_xp()));
-
+		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY));
+		if( users.containsKey(game.player.id))
+			users.replace(game.player.id, rd);
+		else
+			users.put(game.player.id, rd);
+		
 		RankData playerRD = users.get(game.player.id);
 		int arenaIndex = params.getInt("arena"); //game.player.get_arena( playerRD.point ) ;//params.getInt("arena");
 

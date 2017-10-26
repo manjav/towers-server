@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials;
 
+import com.gerantech.towers.sfs.utils.UserManager;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -166,6 +167,8 @@ public class LobbyUtils
         } catch (SFSStorageException e) {
             e.printStackTrace();
         }
+
+        result += UserManager.resetWeeklyBattles(ext);
         return result;
     }
 

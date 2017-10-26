@@ -9,10 +9,10 @@ import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.hazelcast.map.EntryProcessor;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
@@ -109,7 +109,7 @@ public class UserManager {
 		for (int i = 0; i < keyLen; i++)
         {
         	if( !hasRankFields )
-        		hasRankFields = keys[i]==ResourceType.XP || keys[i]==ResourceType.POINT;
+        		hasRankFields = keys[i]==ResourceType.POINT || keys[i]==ResourceType.BATTLES_COUNT_WEEKLY;
 
         	query += "WHEN type = " + keys[i] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[i]) + " ";
         }
@@ -131,8 +131,8 @@ public class UserManager {
 		if( hasRankFields )
         {
 			IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-        	RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.get_xp());
-        	query += "\rid:"+player.id+", nickName:"+player.nickName+", point:"+ player.get_point()+", xp:"+player.get_xp();
+        	RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY));
+        	query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY);
 
         	if( users.containsKey(player.id))
         		users.replace(player.id, rd);
@@ -192,6 +192,35 @@ public class UserManager {
 			((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.S_41_KEYS).numExchanges = 0;
 			result += u.getName() + " key limit reset to '0'.\n";
 		}
+
+		return "Query succeeded.\n" + result;
+	}
+
+	public static String resetWeeklyBattles(SFSExtension extension)
+	{
+		String result = "\n";
+		try {
+			IDBManager dbManager = extension.getParentZone().getDBManager();
+			dbManager.executeUpdate("UPDATE `resources` SET `count`= 0 WHERE `type`=1204 AND `count` != 0;", new Object[] {});
+		}
+		catch (SQLException e)
+		{
+			//e.printStackTrace();
+			return "Query failed";
+		}
+
+		// update online users
+		Collection<User> users = extension.getParentZone().getUserList();
+		for (User u : users)
+		{
+			((Game)u.getSession().getProperty("core")).player.resources.set(ResourceType.BATTLES_COUNT_WEEKLY, 0);
+			result += u.getName() + " weeky battle reset to '0'.\n";
+		}
+
+		// update hazelcast
+		IMap<Integer, RankData> usersMap = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+		ResetWeeklyEntryProcessor entryProcessor = new ResetWeeklyEntryProcessor();
+		usersMap.executeOnEntries( entryProcessor );
 
 		return "Query succeeded.\n" + result;
 	}

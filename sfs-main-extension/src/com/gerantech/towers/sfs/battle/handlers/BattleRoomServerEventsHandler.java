@@ -88,8 +88,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				@Override
 				public void run() {
 
-				IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
-
+				IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
 				RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));
 				try {
 					User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
