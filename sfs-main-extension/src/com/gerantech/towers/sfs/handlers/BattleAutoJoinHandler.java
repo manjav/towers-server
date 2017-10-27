@@ -73,7 +73,7 @@ public class BattleAutoJoinHandler extends BaseClientRequestHandler
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList) {
             //trace("arena", r.getProperty("arena"), arenaIndex, ((int) r.getProperty("arena")) == arenaIndex.intValue(), ((int) r.getProperty("appVersion")) == game.appVersion );
-            if (!r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex.intValue() && ((int) r.getProperty("appVersion")) == game.appVersion)
+            if ( !r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex.intValue() )
                 return r;
         }
         return null;

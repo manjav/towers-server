@@ -79,7 +79,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( !room.isFull() )
 		{
 			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
-			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 : (game.appVersion < 1080 ?  200 : RandomPicker.getInt(4000, 8000 ));
+			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 :  RandomPicker.getInt(4000, 8000 );
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();

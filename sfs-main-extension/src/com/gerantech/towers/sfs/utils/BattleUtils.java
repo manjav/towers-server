@@ -78,8 +78,6 @@ public class BattleUtils
             index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
             Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arenaIndex.intValue());// ===> is temp
-            roomProperties.put("appVersion", game.appVersion);// ===> is temp
-
         }
 
 
