@@ -46,7 +46,7 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 
-	public static int UNTIL_MAINTENANCE = 0;
+	public static int UNTIL_MAINTENANCE = 1509130424;
 	private static int CORE_SIZE = 0;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
@@ -58,7 +58,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 		int now = (int)Instant.now().getEpochSecond();
 
-		if( now < UNTIL_MAINTENANCE )
+		if( now < UNTIL_MAINTENANCE && inData.getInt("id")!=10412 )
 		{
 			outData.putInt("umt", UNTIL_MAINTENANCE - now);
 			return;
@@ -370,7 +370,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// init and update hazel data
 		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
-		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY));
+		int wb = game.player.resources.exists(ResourceType.BATTLES_COUNT_WEEKLY) ? game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY) : 0;
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), wb);
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

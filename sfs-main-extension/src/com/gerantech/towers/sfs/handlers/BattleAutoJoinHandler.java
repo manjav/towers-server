@@ -3,11 +3,9 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.time.Instant;
