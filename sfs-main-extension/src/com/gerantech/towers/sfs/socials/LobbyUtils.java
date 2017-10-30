@@ -7,24 +7,17 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-import com.smartfoxserver.v2.persistence.room.FileRoomStorageConfig;
+import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
-import com.smartfoxserver.v2.util.CryptoUtils;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -180,16 +173,18 @@ public class LobbyUtils
         String result = "Start lobby cleaning:";
 
         try {
-            FileRoomStorageConfig fileRoomStorageConfig = new FileRoomStorageConfig();
-            zone.initRoomPersistence(RoomStorageMode.FILE_STORAGE, fileRoomStorageConfig);
+            DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
+            dbRoomStorageConfig.storeInactiveRooms = true;
+            dbRoomStorageConfig.tableName = "rooms";
+            zone.initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
             List<CreateRoomSettings> lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
             for ( CreateRoomSettings crs : lobbies )
             {
-                crs.setMaxVariablesAllowed(6);
+                crs.setMaxVariablesAllowed(7);
                 List<RoomVariable> listOfVars = crs.getRoomVariables();
-
-                listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
-                listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
+                SFSRoomVariable var = new SFSRoomVariable("pri", 0, false, true, false);
+                var.setHidden(true);
+                listOfVars.add(var);                
                 crs.setRoomVariables(listOfVars);
 
                 Room lobby = ext.getApi().createRoom(zone, crs, null);
@@ -198,7 +193,6 @@ public class LobbyUtils
                 ext.trace("vars of " + crs.getName() + " cleaned.");
                 result += "\n vars of " + crs.getName() + " cleaned.";
             }
-
         }
         catch (SFSStorageException e) {
             e.printStackTrace();
@@ -208,7 +202,7 @@ public class LobbyUtils
         return result;
     }
 
-    public String migrateToDB()
+    /*public String migrateToDB()
     {
         String result = "Start migrating lobbies:";
         Zone zone = ext.getParentZone();
@@ -253,30 +247,5 @@ public class LobbyUtils
     private String getRoomFileName(CreateRoomSettings theRoom)
     {
         return CryptoUtils.getHexFileName(new StringBuilder(String.valueOf(theRoom.getGroupId())).append(theRoom.getName()).toString()) + ".room";
-    }
-
-
-    /*public String saveLobbies()
-    {
-        Zone zone = ext.getParentZone();
-        List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
-*/
-        /*try {
-            zone.getRoomPersistenceApi().saveAllRooms("lobbies");
-        } catch (SFSStorageException e) {
-            e.printStackTrace();
-        }*/
-
-        /*int lobbiesLen = lobbies.size()-1;
-        Room lobby;
-        while ( lobbiesLen >= 0 )
-        {
-            lobby = lobbies.get(lobbiesLen);
-            save(zone, lobby);
-            lobbiesLen --;
-        }
-        return "Variables of " + lobbies.size() + " lobbies have been saved.";
-    }
-*/
-
+    }*/
 }
