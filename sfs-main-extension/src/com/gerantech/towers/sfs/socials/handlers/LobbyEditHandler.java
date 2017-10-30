@@ -20,8 +20,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
         Room lobby = getParentExtension().getParentRoom();
-        LobbyRoom roomClass = (LobbyRoom) lobby.getExtension();
-
+        int privacyMode = params.containsKey("pri") ? params.getInt("pri") : 0;
         try {
             SFSRoomVariable var = null;
             var = new SFSRoomVariable("bio", params.getUtfString("bio"), false, true, false);
@@ -33,9 +32,13 @@ public class LobbyEditHandler extends BaseClientRequestHandler
             var = new SFSRoomVariable("min", params.getInt("min"),       false, true, false);
             var.setHidden(true);
             lobby.setVariable(var);
+            var = new SFSRoomVariable("pri", privacyMode,       false, true, false);
+            var.setHidden(true);
+            lobby.setVariable(var);
         } catch (SFSVariableException e) { e.printStackTrace(); }
 
         LobbyUtils.getInstance().save(lobby);
+        LobbyRoom roomClass = (LobbyRoom) lobby.getExtension();
         roomClass.sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
 
         //params.putInt("response", RESPONSE_OK);

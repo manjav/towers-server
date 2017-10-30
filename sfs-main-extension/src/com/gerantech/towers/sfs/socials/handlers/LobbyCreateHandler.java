@@ -51,6 +51,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         int maxUsers = params.getInt("max");
         int minPoint = params.getInt("min");
         int avatar = params.getInt("pic");
+        int privacyMode = params.getInt("pri");
 
         if( getParentExtension().getParentZone().getRoomByName(roomName) != null )
         {
@@ -62,7 +63,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         Room room = null;
         try {
             trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
-            room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar);
+            room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar, privacyMode);
         } catch (Exception e) {
             send("lobbyCreate", params, sender);
             e.printStackTrace();
@@ -76,7 +77,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         send(Commands.LOBBY_CREATE, params, sender);
     }
 
-    private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar) throws SFSCreateRoomException, SFSJoinRoomException
+    private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode) throws SFSCreateRoomException, SFSJoinRoomException
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
         CreateRoomSettings rs = new CreateRoomSettings();
@@ -87,7 +88,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         rs.setName(roomName);
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         rs.setExtension(res);
-        rs.setMaxVariablesAllowed(6);
+        rs.setMaxVariablesAllowed(7);
         rs.setMaxUsers(maxUsers);
 
         List<RoomVariable> listOfVars = new ArrayList<>();
@@ -95,6 +96,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         listOfVars.add( new SFSRoomVariable("bio", bio,             false, true, false) );
         listOfVars.add( new SFSRoomVariable("pic", avatar,          false, true, false) );
         listOfVars.add( new SFSRoomVariable("min", minPoints,       false, true, false) );
+        listOfVars.add( new SFSRoomVariable("pri", privacyMode,     false, true, false) );
         listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
         listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
         for (RoomVariable rv : listOfVars )

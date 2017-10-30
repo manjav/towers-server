@@ -38,7 +38,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     private void searchRooms(ISFSObject params, IMap<Integer, RankData>users)
     {
         String roomName = params.containsKey("name") ? params.getUtfString("name").toLowerCase() : null;
-        if( roomName.equals("!@#$") )
+        if( roomName != null && roomName.equals("!@#$") )
             roomName = null;
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
         //boolean rankMode = params.containsKey("rank");
@@ -97,6 +97,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         params.putText("bio", room.getVariable("bio").getStringValue());
         params.putInt("min", room.getVariable("min").getIntValue());
+        params.putInt("pri", room.getVariable("pri").getIntValue());
         if( includeMembers )
             params.putSFSArray("all", getMembers(room, users));
         params.removeElement("id");
