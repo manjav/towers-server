@@ -87,10 +87,8 @@ public class TowerExtension extends SFSExtension
 			return UserManager.resetKeyExchanges((SFSExtension) getParentZone().getExtension());
 		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
-/*		else if( cmdName.equals("cleanlobbyvars") )
+		else if( cmdName.equals("custom") )
 			return LobbyUtils.getInstance().cleanLobbyVars();
-		else if( cmdName.equals("migratetodb") )
-			return LobbyUtils.getInstance().migrateToDB();*/
 
 		return null;
 	}
