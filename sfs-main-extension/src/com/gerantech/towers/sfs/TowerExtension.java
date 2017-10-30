@@ -1,6 +1,9 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
 import com.gerantech.towers.sfs.handlers.*;
+import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
+import com.gerantech.towers.sfs.inbox.InboxGetHandler;
+import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
@@ -69,6 +72,10 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.BUDDY_BATTLE, BuddyBattleRequestHandler.class);
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
+
+		addRequestHandler(Commands.INBOX_GET, InboxGetHandler.class);
+		addRequestHandler(Commands.INBOX_OPEN, InboxOpenHandler.class);
+		addRequestHandler(Commands.INBOX_CONFIRM, InboxConfirmHandler.class);
 
 		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
 		addRequestHandler("spectateBattles", JoinSpectatorHandler.class);

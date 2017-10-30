@@ -39,7 +39,15 @@ public class Commands
     public static final String LOBBY_EDIT = "lobbyEdit";
     public static final String LOBBY_PUBLIC_MESSAGE = "m";
 
+
     public static final String BUDDY_ADD = "buddyAdd";
     public static final String BUDDY_REMOVE = "buddyRemove";
     public static final String BUDDY_BATTLE = "buddyBattle";
+
+    public static final String INBOX_GET = "inboxGet";
+    public static final String INBOX_OPEN = "inboxOpen";
+    public static final String INBOX_CONFIRM = "inboxConfirm";
+    public static final String INBOX_SEND = "inboxSend";
+    public static final String INBOX_REMOVE = "inboxRemove";
+
 }
