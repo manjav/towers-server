@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
@@ -12,6 +13,7 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
@@ -119,12 +121,33 @@ public class LobbyRoom extends SFSExtension
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room =  battleUtils.make(sender, false, 0, 1, false);
+            Room room = battleUtils.make(sender, false, 0, 1, false);
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
         }
+        else if (MessageTypes.isConfirm(mode))
+        {
+            int confirmIndex = getRelatedConfirm(messages, params);
+            if (confirmIndex > -1 || params.containsKey("pr")) {
+                if (confirmIndex > -1) {
+                    trace("==>>", params.getDump());
+                    replyRequest(game, params);
+                    messages.getSFSObject(confirmIndex).putShort("pr", params.getShort("pr"));
+                }
+                return;
+            }
+        }
         messages.addSFSObject(params);
+    }
+
+    private int getRelatedConfirm(ISFSArray messages, ISFSObject params)
+    {
+        int msgSize = messages.size();
+        for (int i = msgSize - 1; i >= 0; i--)
+            if( MessageTypes.isConfirm(messages.getSFSObject(i).getShort("m")) && messages.getSFSObject(i).getInt("o").equals(params.getInt("o")) )
+                return i;
+        return -1;
     }
 
     private ISFSObject getMyRequestedBattle(ISFSObject params, Player player)
@@ -181,4 +204,28 @@ public class LobbyRoom extends SFSExtension
     {
         return lobby.getVariable("act").getIntValue();
     }
+
+
+    private boolean replyRequest(Game game, ISFSObject params)
+    {
+        if ( params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT )
+        {
+            if ( !LobbyUtils.getInstance().addUser(lobby, params.getInt("o")) )
+                return false;
+
+            // join online users
+            User targetUser = getParentZone().getUserByName(params.getInt("o").toString());
+            if ( targetUser != null )
+            {
+                try {
+                    getApi().joinRoom(targetUser, lobby);
+                } catch (SFSJoinRoomException e) { e.printStackTrace(); }
+            }
+        }
+
+        String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT ? " پذیرفته شد. " : " رد شد. ");
+        InboxUtils.getInstance().send(MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), null);
+        sendComment(params.getShort("pr"), game.player.nickName, params.getText("on"), (short)-1);// mode = join
+        return true;
     }
+}

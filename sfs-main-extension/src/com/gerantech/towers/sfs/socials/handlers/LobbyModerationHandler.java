@@ -1,11 +1,11 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -13,8 +13,6 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
-
-import static sun.audio.AudioPlayer.player;
 
 /**
  * Created by ManJav on 8/28/2017.
@@ -33,10 +31,10 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         game = ((Game) sender.getSession().getProperty("core"));
         lobby = getParentExtension().getParentRoom();
         roomClass = (LobbyRoom) lobby.getExtension();
-
         all = lobby.getVariable("all").getSFSArrayValue();
         targetMember = null;
         modMember = null;
+        Short action = params.getShort("pr");
         int allSize = all.size();
         for (int i = 0; i < allSize; i++) {
             if( all.getSFSObject(i).getInt("id").equals(params.getInt("id")) )
@@ -52,11 +50,11 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
             return;
         }
 
-        if( params.getShort("pr") == MessageTypes.M12_COMMENT_KICK )
+        if( action == MessageTypes.M12_COMMENT_KICK )
             succeed = kick(params.getInt("id"), params.getUtfString("name"));
-        else if( params.getShort("pr") == MessageTypes.M13_COMMENT_PROMOTE )
+        else if( action == MessageTypes.M13_COMMENT_PROMOTE )
             succeed = promote(params.getInt("id"), params.getUtfString("name"));
-        else if( params.getShort("pr") == MessageTypes.M14_COMMENT_DEMOTE )
+        else if( action == MessageTypes.M14_COMMENT_DEMOTE )
             succeed = demote(params.getInt("id"), params.getUtfString("name"));
 
         params.putBool("succeed", succeed);
@@ -74,6 +72,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 
         roomClass.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
         LobbyUtils.getInstance().removeUser(lobby, targetId);
+        InboxUtils.getInstance().send(MessageTypes.M0_TEXT, " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", game.player.nickName, game.player.id, targetId, null);
         OneSignalUtils.send(getParentExtension(), targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
         return true;
     }
