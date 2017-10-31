@@ -208,7 +208,8 @@ public class LobbyRoom extends SFSExtension
 
     private boolean replyRequest(Game game, ISFSObject params)
     {
-        if ( params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT )
+        boolean accepted = params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT;
+        if ( accepted )
         {
             if ( !LobbyUtils.getInstance().addUser(lobby, params.getInt("o")) )
                 return false;
@@ -223,8 +224,8 @@ public class LobbyRoom extends SFSExtension
             }
         }
 
-        String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT ? " پذیرفته شد. " : " رد شد. ");
-        InboxUtils.getInstance().send(MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), null);
+        String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
+        InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), "towers://open?controls=screen&type=socialScreen");
         sendComment(params.getShort("pr"), game.player.nickName, params.getText("on"), (short)-1);// mode = join
         return true;
     }
