@@ -81,7 +81,6 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("spectateBattles", JoinSpectatorHandler.class);
 	}
 
-
 	@Override
 	public Object handleInternalMessage(String cmdName, Object params)
 	{
@@ -99,6 +98,4 @@ public class TowerExtension extends SFSExtension
 
 		return null;
 	}
-
-
 }

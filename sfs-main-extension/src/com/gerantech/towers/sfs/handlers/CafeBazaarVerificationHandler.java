@@ -36,10 +36,16 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
         // Get the client parameters
-        String productID = params.getText("productID");//"coin_pack_03";//
-        String purchaseToken = params.getText("purchaseToken");//"SDu10PZdud5JoToeZs";//
+		String productID = params.getText("productID");//"coin_pack_03";//
+		String purchaseToken = params.getText("purchaseToken");//"SDu10PZdud5JoToeZs";//
+		if( params.containsKey("consume") )
+		{
+			consume(purchaseToken);
+			return;
+		}
+
         sendResult(sender, productID, purchaseToken);
-   }
+    }
 
 	private void sendResult(User sender, String productID, String purchaseToken)
 	{
@@ -47,7 +53,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
         ISFSObject resObj = SFSObject.newInstance();
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		if( game.market != "cafebazaar" )
+		if( !game.market.equals("cafebazaar") )
 		{
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", 0);
 			return;
@@ -59,18 +65,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
         // if consumptionState is zero, thats mean product consumed.
         if( data.statusCode == HttpStatus.SC_OK )
         {
-			ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
-			int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
-			if( !exchangeHandler.exchange(game, item, 0, 0) )
-			{
-				resObj.putBool("success", false);
-				resObj.putText("message", data.json.getString("error_exchange"));
-				trace("Purchase FAIL --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD), "Error Message:", data.json.getString("error_exchange") );
-				return;
-			}
-
-    		sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
-			trace("Purchase SUCCESS --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
+			sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
 			return;
         }
         
@@ -105,20 +100,31 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 	private void sendSuccessResult(User sender, Game game, String productID, String purchaseToken, int consumptionState, int purchaseState, String developerPayload, long purchaseTime)
 	{
 		ISFSObject resObj = SFSObject.newInstance();
+		ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
+		int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
+		if( !exchangeHandler.exchange(game, item, 0, 0) )
+		{
+			resObj.putBool("success", false);
+			resObj.putText("message", "error in exchange");
+			trace("Purchase FAIL --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD), "Error Message: In exchange");
+			return;
+		}
+
+
 		resObj.putBool("success", true);
 		resObj.putInt("consumptionState", consumptionState);
 		resObj.putInt("purchaseState", purchaseState);
 		resObj.putText("developerPayload", developerPayload);
 		resObj.putLong("purchaseTime", purchaseTime);
-
 		insertToDB(game, productID, purchaseToken, resObj);
 		send("verify", resObj, sender);
+		trace("Purchase SUCCESS --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
 	}
 
 	private void insertToDB(Game game, String productID, String purchaseToken, ISFSObject result)
 	{
 		String query = "INSERT INTO `purchases`(`product_id`, `player_id`, `market`, `purchase_token`, `consume_state`, `purchase_state`, `purchase_time`, `success`) VALUES ('" +
-		productID+"', "+game.player.id+", '"+game.market+"', '"+purchaseToken+ "',"+result.getInt("consumptionState")+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
+		productID+"', "+game.player.id+", '"+game.market+"', '"+purchaseToken+ "',"+1+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
@@ -126,6 +132,18 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 			e.printStackTrace();
 		}
 	}
+
+	private void consume(String purchaseToken)
+	{
+		String query = "UPDATE `purchases` SET `consume_state`=0 WHERE `purchase_token`='" + purchaseToken + "'";
+		trace(query);
+		try {
+			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[]{});
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	/**
 	 * This method only called in initial setup
