@@ -131,7 +131,6 @@ public class LobbyRoom extends SFSExtension
             int confirmIndex = getRelatedConfirm(messages, params);
             if (confirmIndex > -1 || params.containsKey("pr")) {
                 if (confirmIndex > -1) {
-                    trace("==>>", params.getDump());
                     replyRequest(game, params);
                     messages.getSFSObject(confirmIndex).putShort("pr", params.getShort("pr"));
                 }
