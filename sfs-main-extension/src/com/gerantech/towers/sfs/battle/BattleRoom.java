@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
-import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.battle.AIEnemy;
@@ -10,11 +10,9 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
-import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -444,7 +442,7 @@ public class BattleRoom extends SFSExtension
 			if ( user.isNpc() )
 			{
 				// return npc to npc-opponents list
-				NPCTools.setXP(Integer.parseInt(user.getName()), -1);
+				RankingUtils.getInstance().setXP(Integer.parseInt(user.getName()), -1);
 
 				// remove npc
 				getApi().disconnect(user.getSession());

@@ -91,7 +91,7 @@ public class BattleUtils
                 for (User u : r.getUserList()){
                     ext.getApi().leaveRoom(u, r);
                     if ( u.isNpc() ){
-                        NPCTools.setXP(Integer.parseInt(u.getName()), -1);
+                        RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
                         ext.getApi().disconnect(u.getSession());
                     }
                 }

@@ -1,9 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.NPCTools;
-import com.gt.towers.Game;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
-import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.entities.User;
@@ -22,7 +20,7 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
         User user = (User) arg.getParameter(SFSEventParam.USER);
         if( user.isNpc() ) {
             // return npc to npc-opponents list
-            NPCTools.setXP(Integer.parseInt(user.getName()), -1);
+            RankingUtils.getInstance().setXP(Integer.parseInt(user.getName()), -1);
             return;
         }
 

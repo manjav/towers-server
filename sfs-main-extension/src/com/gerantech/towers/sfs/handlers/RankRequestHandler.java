@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 
 import java.util.*;
 
-import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
@@ -119,7 +119,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 
 	private void addFakeRankData(SFSArray players, IMap<Integer, RankData> users, RankData playerRD, Game game, int arenaIndex)
 	{
-		List<RankData> fakedRanks = NPCTools.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
+		List<RankData> fakedRanks = RankingUtils.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
 		float rankingRatio = (1 - ( (float)(playerRD.point -  game.arenas.get(arenaIndex).min) / (game.arenas.get(arenaIndex).max - game.arenas.get(arenaIndex).min) ) );
 		int playerFakeRanking = (int)(rankingRatio * ( (10 - arenaIndex) * 1000 ) - playerRD.xp);
 		fakedRanks.add(fakedRanks.size()/2, playerRD);

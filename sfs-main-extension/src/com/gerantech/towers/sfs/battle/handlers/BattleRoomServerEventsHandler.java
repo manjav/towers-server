@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.hazelcast.config.Config;
@@ -89,7 +89,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				public void run() {
 
 				IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-				RankData opponent = NPCTools.getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));
+				RankData opponent = RankingUtils.getInstance().getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));
 				try {
 					User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
 					List<UserVariable> vars = new ArrayList<>();
@@ -133,7 +133,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					if ( u.isNpc() )
 					{
 						// return npc to npc-opponents list
-						NPCTools.setXP(Integer.parseInt(u.getName()), -1);
+						RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
 
 						// remove npc
 						getApi().disconnect(u.getSession());

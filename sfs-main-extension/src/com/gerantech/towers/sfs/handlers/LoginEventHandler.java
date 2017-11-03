@@ -1,5 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.utils.NPCTools;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchanger;
@@ -369,7 +369,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("core", game);
 
 		// init and update hazel data
-		IMap<Integer, RankData> users = NPCTools.fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game, getParentExtension());
+		IMap<Integer, RankData> users = RankingUtils.getInstance().fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
 		int wb = game.player.resources.exists(ResourceType.BATTLES_COUNT_WEEKLY) ? game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY) : 0;
 		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), wb);
 		if( users.containsKey(game.player.id))
