@@ -17,6 +17,7 @@ import java.util.TimerTask;
 
 public class SpectateRoom extends SFSExtension
 {
+	private int numUsers = 0;
 	private Room room;
 	private Timer timer;
 
@@ -66,6 +67,12 @@ public class SpectateRoom extends SFSExtension
 	}
 
 	private boolean isChanged(ISFSArray reservedRooms, SFSArray newRooms) {
+		int nu = room.getUserList().size();
+		if( numUsers != nu )
+		{
+			numUsers = nu;
+			return true;
+		}
 		if( reservedRooms.size() != newRooms.size() )
 			return true;
 		trace(reservedRooms.size(), newRooms.size());
