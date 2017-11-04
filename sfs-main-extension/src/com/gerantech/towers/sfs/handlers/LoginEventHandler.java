@@ -134,6 +134,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 				SFSArray exchanges = new SFSArray();
+				int battleChestIndex = 0;
 				for (int i=0; i<loginData.exchanges.size(); i++)
 	    		{
 					int t = loginData.exchanges.get(i);
@@ -148,14 +149,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 						so.putInt("expired_at", 0);
 
 					// set outcome :
-					if( ct == ExchangeType.S_20_SPECIALS )
-						so.putInt("outcome", loginData.buildingsLevel.getRandomKey());
-					else if( ct == ExchangeType.CHEST_CATE_100_DAILYS )
-						so.putInt("outcome", Exchanger.getDailyChestType(0));
-					else if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
-						so.putInt("outcome", Exchanger.getBattleChestType(0));
+					if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
+					{
+						so.putInt("outcome", Exchanger.getBattleChestType(battleChestIndex));
+						if( battleChestIndex == 0 )
+							so.putInt("expired_at", now);
+						battleChestIndex ++;
+					}
 					else if( ct == ExchangeType.CHEST_CATE_120_OFFERS )
+					{
 						so.putInt("outcome", Exchanger.getOfferChestType(t));
+					}
 					else
 						so.putInt("outcome", 0);
 
