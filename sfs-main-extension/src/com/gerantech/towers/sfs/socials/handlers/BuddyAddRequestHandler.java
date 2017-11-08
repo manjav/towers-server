@@ -127,7 +127,7 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         } catch (SFSBuddyListException e) {
             e.printStackTrace();
         }
-        OneSignalUtils.send(getParentExtension(), msg, null, inviterId);
+        OneSignalUtils.getInstance().getInstance().send(msg, null, inviterId);
     }
 
     private boolean check ( User sender, ISFSObject params, int responseCode, String queryStr )
