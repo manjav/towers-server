@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gt.towers.Game;
@@ -63,6 +64,10 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
                 getApi().removeRoom(room);
             }
             sendRresponse(params);
+
+            // Send requested battle to subjectUser's inbox
+            int subjectUserId = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "").getId();
+            InboxUtils.getInstance().send(0, player.nickName + "تو رو به مبارزه دعوت کرد و تو نبودی!", player.nickName, player.id, subjectUserId,"");
         }
     }
 
