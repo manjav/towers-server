@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.Commands;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -33,16 +34,21 @@ public class InboxUtils
             ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
 
+        // send message to online users
         User receiver = ext.getParentZone().getUserManager().getUserByName(receiverId+"");
         if( receiver != null ) {
             SFSObject params = new SFSObject();
-            params.putShort("type", (short)type);
-            params.putUtfString("text", (text);
-            params.putUtfString("sender", sender);
-            params.putInt("senderId", senderId);
-            params.putInt("receiverId", receiverId);
-            params.putText("data", data);
-            params.putInt("utc", (int)Instant.now().getEpochSecond());
+            SFSArray mssages = new SFSArray();
+            SFSObject msg = new SFSObject();
+            msg.putShort("type", (short)type);
+            msg.putUtfString("text", text);
+            msg.putUtfString("sender", sender);
+            msg.putInt("senderId", senderId);
+            msg.putInt("receiverId", receiverId);
+            msg.putText("data", data);
+            msg.putInt("utc", (int)Instant.now().getEpochSecond());
+            mssages.addSFSObject(msg);
+            params.putSFSArray("data", mssages);
             ext.send(Commands.INBOX_GET, params, receiver);
         }
     }
