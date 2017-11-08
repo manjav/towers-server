@@ -28,10 +28,12 @@ public class InboxUtils
 
     public void send(int type, String text, String sender, int senderId, int receiverId, String data)
     {
+
         String query = "INSERT INTO `inbox`(`type`, `text`, `sender`, `senderId`, `receiverId`, `data`, `utc`) VALUES " +
                 "(" + type + ",'" + text + "','" + sender + "'," + senderId + "," + receiverId + ",'" + data + "'," + Instant.now().getEpochSecond() + ")";
+        int messageId = 0;
         try {
-            ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
+            messageId = Math.toIntExact((Long)ext.getParentZone().getDBManager().executeInsert(query, new Object[]{}));
         } catch (SQLException e) {  e.printStackTrace(); }
 
         // send message to online users
@@ -40,6 +42,8 @@ public class InboxUtils
             SFSObject params = new SFSObject();
             SFSArray mssages = new SFSArray();
             SFSObject msg = new SFSObject();
+            msg.putInt("id", messageId);
+            msg.putShort("read", (short)0);
             msg.putShort("type", (short)type);
             msg.putUtfString("text", text);
             msg.putUtfString("sender", sender);
