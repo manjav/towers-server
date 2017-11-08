@@ -1,5 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchanger;
@@ -17,9 +17,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gerantech.towers.sfs.utils.Logger;
-import com.gerantech.towers.sfs.utils.PasswordGenerator;
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
@@ -227,7 +224,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
 
     		// Find active battle room
-			int joinedRoomId = findActiveBattleRoom(id);
+			Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
+			int joinedRoomId = room == null ? -1 : room.getId();
 			session.setProperty("joinedRoomId", joinedRoomId);
 			outData.putBool("inBattle", joinedRoomId > -1 );
 
@@ -392,22 +390,5 @@ public class LoginEventHandler extends BaseServerEventHandler
 		newExchanges.addSFSObject( element );
 		exchanges.addSFSObject( element );
 		initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
-	}
-
-	private int findActiveBattleRoom(int id)
-	{
-		List<Room> rList = getParentExtension().getParentZone().getRoomList();
-		for (Room room : rList)
-		{
-			if ( !room.isFull() || room.getGroupId() != "quests" )
-			{
-				ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
-				if( registeredPlayers != null )
-					for (Game g : registeredPlayers)
-						if (g.player.id == id)
-							return room.getId();
-			}
-		}
-		return -1;
 	}
 }

@@ -131,4 +131,22 @@ public class BattleUtils
     }
 
 
+
+    public Room findActiveBattleRoom(int playerId)
+    {
+        List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
+        for (Room room : battles)
+        {
+            if ( !room.isFull() || room.getGroupId() != "quests" )
+            {
+                ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+                if( registeredPlayers != null )
+                    for (Game g : registeredPlayers)
+                        if ( g.player.id == playerId )
+                            return room;
+            }
+        }
+        return null;
+    }
+
 }

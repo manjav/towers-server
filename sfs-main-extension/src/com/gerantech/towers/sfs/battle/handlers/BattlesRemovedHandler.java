@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.handlers;
+package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;

@@ -1,5 +1,8 @@
 package com.gerantech.towers.sfs;
 import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
 import com.gerantech.towers.sfs.handlers.*;
 import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
 import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
@@ -32,7 +35,8 @@ public class TowerExtension extends SFSExtension
 		addEventHandler(SFSEventType.ROOM_REMOVED, BattlesRemovedHandler.class);
 
         // Add startBattle request handler
-		addRequestHandler(Commands.START_BATTLE, BattleAutoJoinHandler.class);
+		addRequestHandler(Commands.START_BATTLE, BattleRequestStartHandler.class);
+		addRequestHandler(Commands.CANCEL_BATTLE, BattleRequestCancelHandler.class);
 
         // Add billing upgrade handler
 		addRequestHandler(Commands.BUILDING_UPGRADE, BuildingUpgradeHandler.class);

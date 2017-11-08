@@ -1,6 +1,7 @@
-package com.gerantech.towers.sfs.handlers;
+package com.gerantech.towers.sfs.battle.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.Room;
@@ -11,7 +12,7 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import java.time.Instant;
 import java.util.List;
 
-public class BattleAutoJoinHandler extends BaseClientRequestHandler
+public class BattleRequestStartHandler extends BaseClientRequestHandler
 {
     private int index;
     private Boolean isQuest;

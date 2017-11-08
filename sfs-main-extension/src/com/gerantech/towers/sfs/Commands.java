@@ -7,6 +7,7 @@ public class Commands
 {
     public static final String START_BATTLE = "startBattle";
     public static final String END_BATTLE = "endBattle";
+    public static final String CANCEL_BATTLE = "cancelBattle" ;
     public static final String LEFT_BATTLE = "leftBattle";
     public static final String REJOIN_BATTLE = "rejoinBattle";
     public static final String RANK = "rank";
