@@ -57,7 +57,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
                 send(Commands.BUDDY_BATTLE, params, Arrays.asList(sender, subjectUser));
         }
         else
-        {trace(params.getDump());
+        {
             Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
             if( room != null ) {
                 params.putInt("c", player.id);
@@ -66,8 +66,8 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             sendRresponse(params);
 
             // Send requested battle to subjectUser's inbox
-            int subjectUserId = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "").getId();
-            InboxUtils.getInstance().send(0, player.nickName + "تو رو به مبارزه دعوت کرد و تو نبودی!", player.nickName, player.id, subjectUserId,"");
+            if( player.id != params.getInt("o") )
+                InboxUtils.getInstance().send(0, player.nickName + " تو رو به مبارزه دعوت کرد. ", player.nickName, player.id, params.getInt("o"),"");
         }
     }
 

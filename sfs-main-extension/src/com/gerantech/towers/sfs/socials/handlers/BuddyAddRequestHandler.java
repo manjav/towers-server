@@ -118,7 +118,7 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             dbManager.executeInsert(queryStr, new Object[] {});
 
             // Send friendship notification to sender and receiver inbox
-            InboxUtils.getInstance().send(50, msg, game.player.nickName, inviteeId, inviterId, "" );
+            InboxUtils.getInstance().send(0, msg, game.player.nickName, inviteeId, inviterId, "" );
 
             buddyApi.addBuddy(sender, inviterName, false, true, false);
             User inviterUser = getParentExtension().getParentZone().getUserManager().getUserByName(inviterName);
