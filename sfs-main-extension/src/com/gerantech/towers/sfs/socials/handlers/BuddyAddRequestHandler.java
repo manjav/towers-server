@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.towers.Game;
@@ -115,6 +116,9 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
             trace("INPUT string to DB:", queryStr);
             dbManager.executeInsert(queryStr, new Object[] {});
+
+            // Send friendship notification to sender and receiver inbox
+            InboxUtils.getInstance().send(50, msg, game.player.nickName, inviteeId, inviterId, "" );
 
             buddyApi.addBuddy(sender, inviterName, false, true, false);
             User inviterUser = getParentExtension().getParentZone().getUserManager().getUserByName(inviterName);
