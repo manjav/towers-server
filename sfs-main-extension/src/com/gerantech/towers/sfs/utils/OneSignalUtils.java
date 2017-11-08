@@ -1,5 +1,7 @@
 package com.gerantech.towers.sfs.utils;
 
+import com.gerantech.towers.sfs.inbox.InboxUtils;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 
 import java.io.OutputStream;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
+import com.smartfoxserver.v2.extensions.SFSExtension;
 import org.apache.http.util.TextUtils;
 
 import java.sql.SQLException;
@@ -19,15 +22,23 @@ import java.sql.SQLException;
  */
 public class OneSignalUtils
 {
-    public static String getPushId(ISFSExtension extension, int playerId)
+    public OneSignalUtils()
     {
-        int [] players = {playerId};
-        return getPushIds(extension, players).get(0);
     }
-    public static List<String> getPushIds(ISFSExtension extension, int[] playerIds)
+    public static OneSignalUtils getInstance()
+    {
+        return new OneSignalUtils();
+    }
+
+    public String getPushId(int playerId)
+    {
+        Integer [] players = {playerId};
+        return getPushIds(players).get(0);
+    }
+    public List<String> getPushIds(Integer[] playerIds)
     {
         List<String> ret = new ArrayList<>();
-        IDBManager dbManager = extension.getParentZone().getDBManager();
+        IDBManager dbManager = SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension().getParentZone().getDBManager();
         try{
 
             int len = playerIds.length;
@@ -47,15 +58,15 @@ public class OneSignalUtils
         return ret;
     }
 
-    public static void send(ISFSExtension extension, String message, String data, int playerId)
+    public void send(String message, String data, int playerId)
     {
-        int [] players = {playerId};
-        send( extension, message, data, players );
+        Integer [] players = {playerId};
+        send(message, data, players );
     }
 
-    public static int send(ISFSExtension extension, String message, String data, int[] players )
+    public int send(String message, String data, Integer[] players )
     {
-        List<String> pushIds = getPushIds(extension, players);//["6392d91a-b206-4b7b-a620-cd68e32c3a76","76ece62b-bcfe-468c-8a78-839aeaa8c5fa","8e0f21fa-9a5a-4ae7-a9a6-ca1f24294b86"]
+        List<String> pushIds = getPushIds(players);//["6392d91a-b206-4b7b-a620-cd68e32c3a76","76ece62b-bcfe-468c-8a78-839aeaa8c5fa","8e0f21fa-9a5a-4ae7-a9a6-ca1f24294b86"]
         if( pushIds.size() == 0 )
         {
             System.out.println( "receivers id not found." );

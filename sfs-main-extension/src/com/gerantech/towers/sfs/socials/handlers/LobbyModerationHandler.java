@@ -73,7 +73,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         roomClass.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
         LobbyUtils.getInstance().removeUser(lobby, targetId);
         InboxUtils.getInstance().send(MessageTypes.M0_TEXT, " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", game.player.nickName, game.player.id, targetId, null);
-        OneSignalUtils.send(getParentExtension(), targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
+        OneSignalUtils.getInstance().send(targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
         return true;
     }
 
@@ -86,7 +86,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         LobbyUtils.getInstance().setMembersVariable(lobby, all);
         roomClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobby);
-        OneSignalUtils.send(getParentExtension(), "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
+        OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
         return true;
     }
 
@@ -99,7 +99,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         LobbyUtils.getInstance().setMembersVariable(lobby, all);
         roomClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobby);
-        OneSignalUtils.send(getParentExtension(), targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
+        OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
         return true;
     }
 }
