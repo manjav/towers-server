@@ -1,7 +1,10 @@
 package com.gerantech.towers.sfs.inbox;
 
+import com.gerantech.towers.sfs.Commands;
 import com.smartfoxserver.v2.SmartFoxServer;
+import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
@@ -29,6 +32,19 @@ public class InboxUtils
         try {
             ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
+
+        User receiver = ext.getParentZone().getUserManager().getUserByName(receiverId+"");
+        if( receiver != null ) {
+            SFSObject params = new SFSObject();
+            params.putShort("type", (short)type);
+            params.putUtfString("text", (text);
+            params.putUtfString("sender", sender);
+            params.putInt("senderId", senderId);
+            params.putInt("receiverId", receiverId);
+            params.putText("data", data);
+            params.putInt("utc", (int)Instant.now().getEpochSecond());
+            ext.send(Commands.INBOX_GET, params, receiver);
+        }
     }
 
     public ISFSArray getAll(int receiverId)

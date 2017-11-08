@@ -75,7 +75,7 @@ public class SpectateRoom extends SFSExtension
 		}
 		if( reservedRooms.size() != newRooms.size() )
 			return true;
-		trace(reservedRooms.size(), newRooms.size());
+		//trace(reservedRooms.size(), newRooms.size());
 
 		for (int i = 0; i < reservedRooms.size(); i++)
 			if( !reservedRooms.getSFSObject(i).getText("users").equals(newRooms.getSFSObject(i).getText("users")) )
