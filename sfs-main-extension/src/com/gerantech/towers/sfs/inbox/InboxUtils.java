@@ -26,9 +26,9 @@ public class InboxUtils
         return new InboxUtils();
     }
 
-    public void send(int type, String text, String sender, int senderId, int receiverId, String data)
+    public int send(int type, String text, String sender, int senderId, int receiverId, String data)
     {
-
+        int ret = 0;
         String query = "INSERT INTO `inbox`(`type`, `text`, `sender`, `senderId`, `receiverId`, `data`, `utc`) VALUES " +
                 "(" + type + ",'" + text + "','" + sender + "'," + senderId + "," + receiverId + ",'" + data + "'," + Instant.now().getEpochSecond() + ")";
         int messageId = 0;
@@ -54,7 +54,9 @@ public class InboxUtils
             mssages.addSFSObject(msg);
             params.putSFSArray("data", mssages);
             ext.send(Commands.INBOX_GET, params, receiver);
+            ret = 1;
         }
+        return ret;
     }
 
     public ISFSArray getAll(int receiverId)

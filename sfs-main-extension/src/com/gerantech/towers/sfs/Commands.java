@@ -49,5 +49,5 @@ public class Commands
     public static final String INBOX_CONFIRM = "inboxConfirm";
     public static final String INBOX_SEND = "inboxSend";
     public static final String INBOX_REMOVE = "inboxRemove";
-
+    public static final String INBOX_BROADCAST = "inboxBroadcast";
 }
