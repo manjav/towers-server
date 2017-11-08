@@ -46,7 +46,7 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 
-	public static int UNTIL_MAINTENANCE = 1509130424;
+	public static int UNTIL_MAINTENANCE = 1510006666;
 	private static int CORE_SIZE = 0;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
@@ -58,7 +58,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 		int now = (int)Instant.now().getEpochSecond();
 
-		if( now < UNTIL_MAINTENANCE && inData.getInt("id")!=10412 )
+		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10412 )
 		{
 			outData.putInt("umt", UNTIL_MAINTENANCE - now);
 			return;
@@ -68,7 +68,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( CORE_SIZE == 0 )
 		{
 			try {
-				CORE_SIZE = new URL("http://localhost/cores/core-" + loginData.coreVersion + ".swf").openStream().available();
+				CORE_SIZE = new URL("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf").openStream().available();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -263,7 +263,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		initData.sessionsCount = outData.getInt("sessionsCount");
 
 		ISFSObject element;
-		
+
 		// create resources init data
 		ISFSArray resources = outData.getSFSArray("resources");
 		for(int i=0; i<resources.size(); i++)
@@ -288,7 +288,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
-			
+
 			int t = element.getInt("type");
 			// bonus items :
 			int ct = ExchangeType.getCategory(t);
