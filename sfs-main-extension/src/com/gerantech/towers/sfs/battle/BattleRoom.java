@@ -235,16 +235,16 @@ public class BattleRoom extends SFSExtension
 		}
 
 		SFSArray srcs = SFSArray.newInstance();
-		//trace("fight to", destination);
+		Integer src = -1;
 
 		for(int i = 0; i<srcLen; i++)
 		{
-			//trace("fight", (Integer)objects[i], "to", destination);
-			//if( (Integer)objects[i] < srcLen -1 )
-			//{
-				srcs.addInt((Integer) objects[i]);
-				battleField.places.get((Integer) objects[i]).fight(battleField.places.get(destination), battleField.places);
-			//}
+			src = (Integer) objects[i];
+			if( singleMode && fighterIsBot && battleField.places.get(src).building.troopType != 1 )
+				continue;
+
+			srcs.addInt(src);
+			battleField.places.get(src).fight(battleField.places.get(destination), battleField.places);
 		}
 
 		// Set variables
