@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.handlers;
+package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
@@ -15,7 +15,7 @@ import java.sql.SQLException;
  * @author ManJav
  *
  */
-public class RestoreRequestHandler extends BaseClientRequestHandler
+public class RestoreHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {

@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.handlers;
+package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gt.towers.Game;
@@ -13,7 +13,7 @@ import java.sql.SQLException;
  * @author ManJav
  *
  */
-public class BugReportRequestHandler extends BaseClientRequestHandler
+public class IssueReportHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -32,6 +32,9 @@ public class BugReportRequestHandler extends BaseClientRequestHandler
 			params.putText("errorCode", e.getErrorCode()+"");
 			trace(e.getMessage());
 		}
-		send(Commands.BUG_REPORT, params, sender);
+		if( game.appVersion >= 2025 )
+			send(Commands.ISSUE_REPORT, params, sender);
+  		else
+			send("bugReport", params, sender);
     }
 }

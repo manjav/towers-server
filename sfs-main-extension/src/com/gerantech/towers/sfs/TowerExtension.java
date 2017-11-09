@@ -1,5 +1,5 @@
 package com.gerantech.towers.sfs;
-import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
+import com.gerantech.towers.sfs.administration.*;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
