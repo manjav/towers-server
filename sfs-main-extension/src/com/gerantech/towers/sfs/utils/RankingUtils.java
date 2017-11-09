@@ -77,7 +77,7 @@ public class RankingUtils
             for( int a=0; a<arenaKeys.length; a++ )
             {
                 arena = game.arenas.get(arenaKeys[a]);
-                String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count BETWEEN " + arena.min + " AND " + arena.max + " ORDER BY resources.count DESC";
+                String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count BETWEEN " + (arena.min==0?1:arena.min) + " AND " + arena.max + " ORDER BY resources.count DESC";
                 ISFSArray players = dbManager.executeQuery(query, new Object[] {});
 
                 query = "SELECT player_id, count FROM resources WHERE type=1204 AND ( ";
