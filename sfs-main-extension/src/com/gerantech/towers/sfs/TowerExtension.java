@@ -47,9 +47,6 @@ public class TowerExtension extends SFSExtension
 		// Add select name handler
 		addRequestHandler(Commands.SELECT_NAME, SelectNameRequestHandler.class);
 
-		// Add select name handler
-		addRequestHandler(Commands.BUG_REPORT, BugReportRequestHandler.class);
-
 		// Add exchange handler
 		exchangeHandler = new ExchangeHandler();
 		addRequestHandler(Commands.EXCHANGE, exchangeHandler);
@@ -60,7 +57,6 @@ public class TowerExtension extends SFSExtension
         // Add in app billing verification handler
 		addRequestHandler(Commands.VERIFY_PURCHASE, CafeBazaarVerificationHandler.class);
 
-		addRequestHandler(Commands.RESTORE, RestoreRequestHandler.class);
 		addRequestHandler(Commands.PREFS, UserPrefsRequestHandler.class);
 
 		// Register push panels to db
@@ -83,6 +79,12 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.INBOX_CONFIRM, InboxConfirmHandler.class);
 		addRequestHandler(Commands.INBOX_BROADCAST, InboxBroadcastMessageHandler.class);
 
+		// administration handlers
+		addRequestHandler("bugReport", IssueReportHandler.class);// must be removed on force-update
+		addRequestHandler(Commands.ISSUE_REPORT, IssueReportHandler.class);
+		addRequestHandler(Commands.ISSUE_GET, IssueGetHandler.class);
+		addRequestHandler(Commands.ISSUE_TRACK, IssueTrackHandler.class);
+		addRequestHandler(Commands.RESTORE, RestoreHandler.class);
 		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
 		addRequestHandler("spectateBattles", JoinSpectatorHandler.class);
 	}
