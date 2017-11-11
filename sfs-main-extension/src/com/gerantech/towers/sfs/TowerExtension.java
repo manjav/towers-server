@@ -85,6 +85,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.ISSUE_GET, IssueGetHandler.class);
 		addRequestHandler(Commands.ISSUE_TRACK, IssueTrackHandler.class);
 		addRequestHandler(Commands.RESTORE, RestoreHandler.class);
+		addRequestHandler(Commands.PLAYERS_GET, PlayersGetHandler.class);
 		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
 		addRequestHandler("spectateBattles", JoinSpectatorHandler.class);
 	}
