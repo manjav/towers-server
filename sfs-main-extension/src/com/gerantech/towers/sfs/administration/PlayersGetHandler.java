@@ -23,7 +23,7 @@ public class PlayersGetHandler extends BaseClientRequestHandler
     	else
     		return;
 
-		query += " ORDER BY id DESC LIMIT 100;";
+		query += " ORDER BY id DESC LIMIT 500;";
 		trace(query);
 			try {
 			params.putSFSArray("players", getParentExtension().getParentZone().getDBManager().executeQuery(query , new Object[] {}));
