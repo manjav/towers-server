@@ -41,11 +41,14 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         BuddyList buddies = null;
 
         String invitationCode = params.getText("invitationCode");
+        String inviteeUDID = params.containsKey("udid") ? params.getText("udid") : null;
+
         int inviteeId = game.player.id;
         String inviteeName = inviteeId + "";
         trace("Invitation Code", invitationCode);
         int inviterId = PasswordGenerator.recoverPlayerId(invitationCode);
         String inviterName = inviterId + "";
+        boolean existsUDID = false;
         trace("inviteeId", inviteeId, "inviterId", inviterId);
 
         // Case 1:
@@ -72,13 +75,18 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         }
 
         // Case 4:
-        // Users can't get rewards and be friends with another user with the same UDID
-        if( !check(sender, params, ANOTHER_USER_SAME_PHONE, "SELECT COUNT(*) FROM devices WHERE player_id="+ inviterId +" OR player_id="+ inviteeId +" GROUP BY udid HAVING COUNT(*)>1" ) )
-            return;
+        // Users can't get rewards when was friends with another user with the same UDID
+        if( inviteeUDID != null )
+        {
+            try {
+                existsUDID = dbManager.executeQuery("SELECT COUNT(*) FROM devices WHERE udid='" + inviteeUDID + "'", new Object[]{}).size() > 0;
+                trace("existsUDID", existsUDID);
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+       // if( !check(sender, params, ANOTHER_USER_SAME_PHONE, "SELECT COUNT(*) FROM devices WHERE player_id="+ inviteeId +" GROUP BY udid HAVING COUNT(*)>1" ) )
+            //return;
 
-        String msg = game.player.nickName + " باهات رفیق شد. ";
-        sendResult(sender, params, OK);
-
+        String msg = (game.player.nickName.equals("guest")?"یه نفر":game.player.nickName) + " باهات رفیق شد. ";
         for (Buddy b : buddies.getBuddies() )
             trace("b  :  ", b.getName());
 
@@ -103,27 +111,32 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             queryStr = "SELECT inviter_id FROM friendship WHERE invitee_id="+ inviteeId + " AND inviter_id="+ inviterId + " OR invitee_id="+ inviterId + " AND inviter_id="+ inviteeId;
             trace("QUERY: ", queryStr);
             sfsArray = dbManager.executeQuery(queryStr, new Object[]{});
-            if( sfsArray.size() == 0 )
+
+            // Inviter reward consumption if invitee is new player
+            if( !existsUDID && sfsArray.size() == 0 )
             {
-                // Inviter reward consumption
                 queryStr = "UPDATE resources SET count=count+5 WHERE type=1003 AND player_id=" + inviterId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
-                msg = game.player.nickName + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
+                msg = (game.player.nickName.equals("guest")?"یه نفر":game.player.nickName) + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
             }
 
-            // If nothing is wrong Insert to friendship
-            queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
-            trace("INPUT string to DB:", queryStr);
-            dbManager.executeInsert(queryStr, new Object[] {});
-
-            // Send friendship notification to sender and receiver inbox
-            InboxUtils.getInstance().send(0, msg, game.player.nickName, inviteeId, inviterId, "" );
+            // create friendship if not exists
+            queryStr = "SELECT invitee_id FROM friendship WHERE invitee_id=" + inviteeId + " AND inviter_id=" + inviterId;
+            trace("QUERY: ", queryStr);
+            sfsArray = dbManager.executeQuery(queryStr, new Object[]{});
+            if( sfsArray.size() == 0 )
+            {
+                queryStr = "INSERT INTO friendship (inviter_id, invitee_id, invitation_code, has_reward) VALUES (" + inviterId + ", " + inviteeId + ", '" + invitationCode + "', 0)";
+                trace("INSERT to DB:", queryStr);
+                dbManager.executeInsert(queryStr, new Object[]{});
+            }
 
             buddyApi.addBuddy(sender, inviterName, false, true, false);
             User inviterUser = getParentExtension().getParentZone().getUserManager().getUserByName(inviterName);
-            if( inviterUser != null )
+            if( inviterUser != null ) {
                 buddyApi.addBuddy(inviterUser, inviteeName, false, true, false);
+            }
         }
         catch (SQLException e) {
             params.putText("responseCode", e.getErrorCode()+"");
@@ -131,7 +144,11 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         } catch (SFSBuddyListException e) {
             e.printStackTrace();
         }
+
+        // Send friendship notification to inviter inbox
+        InboxUtils.getInstance().send(0, msg, game.player.nickName, inviteeId, inviterId, "" );
         OneSignalUtils.getInstance().getInstance().send(msg, null, inviterId);
+        sendResult(sender, params, OK);
     }
 
     private boolean check ( User sender, ISFSObject params, int responseCode, String queryStr )
