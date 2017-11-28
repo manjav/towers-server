@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
 import com.gt.towers.constants.ResourceType;
@@ -60,6 +61,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putInt("umt", UNTIL_MAINTENANCE - now);
 			return;
 		}
+
+		//if( inData.getInt("id") == 10412 )
+		//	LobbyUtils.getInstance().saveAll();
 
 		LoginData loginData = new LoginData();
 		if( CORE_SIZE == 0 )

@@ -62,7 +62,6 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 
 	private Room rejoinToLastLobbyRoom(User user, Player player)
 	{
-		int id = Integer.parseInt(user.getName());
 		ISFSObject member;
 		List<Room> lobbies = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
 		for (Room room : lobbies)
@@ -91,24 +90,30 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	{
 		if ( zone.getRoomListFromGroup("lobbies").size() > 0 )
 			return;
-		System.out.print ("lobbies.count: "+ zone.getRoomListFromGroup("lobbies").size() + "\n");
+		trace ("lobbies.count:",  zone.getRoomListFromGroup("lobbies").size());
 
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
 		dbRoomStorageConfig.storeInactiveRooms = true;
 		dbRoomStorageConfig.tableName = "rooms";
 		zone.initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
 
+
+		List<CreateRoomSettings> lobbies = null;
 		try {
-			List<CreateRoomSettings> lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
-			for ( CreateRoomSettings crs : lobbies )
+			lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
+		} catch (SFSStorageException e) {
+			e.printStackTrace();
+		}
+
+		for ( CreateRoomSettings crs : lobbies )
+		{
+			try {
 				if( hasUser(crs.getRoomVariables()) )
 					api.createRoom(zone, crs, null);
+			} catch (SFSCreateRoomException e) { e.printStackTrace(); }
+
 		}
-		catch (SFSStorageException e) {
-			e.printStackTrace();
-		} catch (SFSCreateRoomException e) {
-			e.printStackTrace();
-		}
+
 	}
 
 	private static boolean hasUser(List<RoomVariable> vars)
@@ -135,17 +140,16 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			user.getBuddyProperties().setVariable(new SFSBuddyVariable("$room", room.getName()));
 
 		BuddyList buddies = getParentExtension().getParentZone().getBuddyListManager().getBuddyList(user.getName());
+		ISFSArray result = null;
 		try {
-			ISFSArray result = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT invitee_id FROM friendship WHERE inviter_id=" + game.player.id + " AND has_reward=" + 0, new Object[]{});
-			for (int i=0; i<result.size(); i++) {
-				String inviteeName = result.getSFSObject(i).getInt("invitee_id").toString();
-				if ( !buddies.containsBuddy(inviteeName) )
-					getParentExtension().getBuddyApi().addBuddy(user, inviteeName, false, true, false);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (SFSBuddyListException e) {
-			e.printStackTrace();
+			result = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT invitee_id FROM friendship WHERE inviter_id=" + game.player.id + " AND has_reward=" + 0, new Object[]{});
+		} catch (SQLException e) { e.printStackTrace(); }
+
+		for (int i=0; i<result.size(); i++)
+		{
+			String inviteeName = result.getSFSObject(i).getInt("invitee_id").toString();
+			if ( !buddies.containsBuddy(inviteeName) )
+				getParentExtension().getBuddyApi().addBuddy(user, inviteeName, false, true, false);
 		}
 	}
 }

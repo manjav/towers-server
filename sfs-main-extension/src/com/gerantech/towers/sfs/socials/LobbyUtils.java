@@ -145,7 +145,6 @@ public class LobbyUtils
     public String resetActivenessOfLobbies()
     {
         String result = "Reset Activeness:";
-        Zone zone = ext.getParentZone();
         List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
         int lobbiesLen = lobbies.size()-1;
         while ( lobbiesLen >= 0 )
@@ -156,12 +155,28 @@ public class LobbyUtils
         }
 
         try {
-            zone.getRoomPersistenceApi().saveAllRooms("lobbies");
+            ext.getParentZone().getRoomPersistenceApi().saveAllRooms("lobbies");
         } catch (SFSStorageException e) {
             e.printStackTrace();
         }
 
         result += UserManager.resetWeeklyBattles(ext);
+        return result;
+    }
+
+    public String saveAll()
+    {
+        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
+        dbRoomStorageConfig.storeInactiveRooms = true;
+        dbRoomStorageConfig.tableName = "rooms";
+        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
+
+        String result = "Start lobby saving:";
+        List<Room> lobbies = ext.getParentZone().getRoomManager().getRoomListFromGroup("lobbies");
+        for ( Room l:lobbies ) {
+            ext.trace("trying to save", l.getName());
+            save(l);
+        }
         return result;
     }
 
