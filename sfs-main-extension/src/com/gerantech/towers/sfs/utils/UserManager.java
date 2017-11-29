@@ -43,7 +43,11 @@ public class UserManager {
 		}
 		return null;
 	}
-	
+	public static SFSArray getDecks(SFSExtension extension, int playerId) throws SQLException
+	{
+		IDBManager dbManager = extension.getParentZone().getDBManager();
+		return (SFSArray) dbManager.executeQuery("SELECT * FROM decks WHERE player_id="+playerId, new Object[] {});
+	}
 	public static SFSArray getQuests(ISFSExtension extension, int playerId) throws SFSException, SQLException 
 	{
 		IDBManager dbManager = extension.getParentZone().getDBManager();
@@ -224,4 +228,5 @@ public class UserManager {
 
 		return "Query succeeded.\n" + result;
 	}
+
 }

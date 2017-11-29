@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchanger;
+import com.gt.towers.utils.lists.IntList;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -119,7 +120,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 					so.putInt("type", i);
 					so.putInt("count", loginData.resources.get(i));
-					so.putInt("level", i < 1000 ? loginData.buildingsLevel.get(i) : 0);
+					so.putInt("level", ResourceType.isBuilding(i) ? 1 : 0);
 
 					resources.addSFSObject( so );
 				}
@@ -131,6 +132,26 @@ public class LoginEventHandler extends BaseServerEventHandler
 					query += i<resources.size()-1 ? ", " : ";";
 				}
 
+				dbManager.executeInsert(query, new Object[] {});
+
+				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL DECKS -_-_--__-_-_-_-_-_-_-_-_-_-_-_-_
+				SFSArray decks = new SFSArray();
+				for (int di=0; di<loginData.deckSize; di++)
+				for (int i=0; i<loginData.deck.size(); i++)
+				{
+					SFSObject so = new SFSObject();
+					so.putInt("index", i);
+					so.putInt("deck_index", di);
+					so.putInt("type", loginData.deck.get(i));
+					decks.addSFSObject(so);
+				}
+
+				query = "INSERT INTO decks (`player_id`, `deck_index`, `index`, `type`) VALUES ";
+				for(int i=0; i<decks.size(); i++)
+				{
+					query += "(" + playerId + ", " + decks.getSFSObject(i).getInt("deck_index") + ", " + decks.getSFSObject(i).getInt("index") + ",  " + decks.getSFSObject(i).getInt("type") + ")" ;
+					query += i<decks.size()-1 ? ", " : ";";
+				}
 				dbManager.executeInsert(query, new Object[] {});
 
 				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -174,6 +195,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					query += i<exchanges.size()-1 ? ", " : ";";
 				}
 				dbManager.executeInsert(query, new Object[] {});
+
 				session.setProperty("joinedRoomId", -1);
 
 				// send data to user
@@ -183,6 +205,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				outData.putText("password", password);
 				outData.putSFSArray("resources", resources);
 				outData.putSFSArray("quests", new SFSArray());
+				outData.putSFSArray("decks", decks);
 				outData.putSFSArray("exchanges", exchanges);
 				initiateCore(session, inData, outData, loginData);
 
@@ -224,6 +247,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putText("name", userData.getText("name"));
 			outData.putInt("sessionsCount", userData.getInt("sessions_count"));
 			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
+			outData.putSFSArray("decks", UserManager.getDecks(getParentExtension(), id));
 			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
 			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
 
@@ -267,29 +291,40 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject element;
 
 		// create resources init data
-		ISFSArray resources = outData.getSFSArray("resources");
-		for(int i=0; i<resources.size(); i++)
+		ISFSArray elements = outData.getSFSArray("resources");
+		for(int i=0; i<elements.size(); i++)
 		{
-			element = resources.getSFSObject(i);
+			element = elements.getSFSObject(i);
 			initData.resources.set(element.getInt("type"), element.getInt("count"));
 			if( element.getInt("type") < 1000 )
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
-		// create quests init data
-		ISFSArray quests = outData.getSFSArray("quests");
-		for(int i=0; i<quests.size(); i++)
+		// create decks init data
+		/*elements = outData.getSFSArray("decks");
+		for(int i=0; i<elements.size(); i++)
 		{
-			element = quests.getSFSObject(i);
+			element = elements.getSFSObject(i);
+			if( initData.decks.get(element.getInt("deck_index")) == null )
+				initData.decks.set(element.getInt("deck_index"), new IntList());
+
+			initData.decks.get(element.getInt("deck_index")).set(element.getInt("index"), element.getInt("type"));
+		}*/
+
+		// create quests init data
+		elements = outData.getSFSArray("quests");
+		for(int i=0; i<elements.size(); i++)
+		{
+			element = elements.getSFSObject(i);
 			initData.quests.set(element.getInt("index"), element.getInt("score"));
 		}
 
 		// create exchanges init data
-		ISFSArray exchanges = outData.getSFSArray("exchanges");
+		elements = outData.getSFSArray("exchanges");
 		boolean hasNewChests = false;
-		for(int i=0; i<exchanges.size(); i++)
+		for(int i=0; i<elements.size(); i++)
 		{
-			element = exchanges.getSFSObject(i);
+			element = elements.getSFSObject(i);
 
 			int t = element.getInt("type");
 			// bonus items :
@@ -320,8 +355,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			SFSArray newExchanges = new SFSArray();
 			for (int i = 1; i <= 3 ; i++)
 			{
-				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, exchanges, newExchanges, initData );
-				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, exchanges, newExchanges, initData );
+				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, elements, newExchanges, initData );
+				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, elements, newExchanges, initData );
 			}
 			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
 			for(int i=0; i<newExchanges.size(); i++)
