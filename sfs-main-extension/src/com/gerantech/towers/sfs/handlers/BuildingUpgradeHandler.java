@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
@@ -47,5 +48,6 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			return;
 		}
 		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.get_level() );
+		send(Commands.BUILDING_UPGRADE, params, sender);
     }
 }
