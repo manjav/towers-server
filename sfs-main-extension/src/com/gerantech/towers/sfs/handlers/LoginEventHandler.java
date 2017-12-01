@@ -120,7 +120,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 					so.putInt("type", i);
 					so.putInt("count", loginData.resources.get(i));
-					so.putInt("level", ResourceType.isBuilding(i) ? 1 : 0);
+					so.putInt("level", ResourceType.isCard(i) ? 1 : 0);
 
 					resources.addSFSObject( so );
 				}
@@ -292,24 +292,30 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create resources init data
 		ISFSArray elements = outData.getSFSArray("resources");
-		for(int i=0; i<elements.size(); i++)
+		for ( int i=0; i<elements.size(); i++ )
 		{
 			element = elements.getSFSObject(i);
 			initData.resources.set(element.getInt("type"), element.getInt("count"));
-			if( element.getInt("type") < 1000 )
+			if( ResourceType.isCard(element.getInt("type")) )
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
 		// create decks init data
-		/*elements = outData.getSFSArray("decks");
+		IntList deck;
+		for(int di=0; di<loginData.deckSize; di++)
+		{
+			deck = new IntList();
+			for(int d=0; d<4; d++)
+				deck.push(0);
+			initData.decks.push(deck);
+		}
+
+		elements = outData.getSFSArray("decks");
 		for(int i=0; i<elements.size(); i++)
 		{
 			element = elements.getSFSObject(i);
-			if( initData.decks.get(element.getInt("deck_index")) == null )
-				initData.decks.set(element.getInt("deck_index"), new IntList());
-
 			initData.decks.get(element.getInt("deck_index")).set(element.getInt("index"), element.getInt("type"));
-		}*/
+		}
 
 		// create quests init data
 		elements = outData.getSFSArray("quests");
