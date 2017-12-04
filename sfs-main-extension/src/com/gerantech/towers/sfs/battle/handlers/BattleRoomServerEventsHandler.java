@@ -14,6 +14,7 @@ import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
@@ -197,6 +198,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", existsNpc||isQuest);
 		sfsO.putText("mapName", getMapName(isQuest));
+		sfsO.putSFSArray("decks", (SFSArray)room.getProperty("decks"));
 		send("startBattle", sfsO, player);
 
 		if( !player.isSpectator(room) )
