@@ -286,9 +286,12 @@ public class BattleRoom extends SFSExtension
 		if ( getState() != STATE_BATTLE_STARTED )
 			return;
 
-		Building b = battleField.places.get(params.getInt("i")).building;
-		//trace("improve", b.game.player.nickName, params.getDump(), b.improvable(params.getInt("t")));
-		b.transform(params.getInt("t"), b.troopType);
+		Building card = battleField.deckBuildings.get(params.getInt("c")).building;
+		Building building = battleField.places.get(params.getInt("i")).building;
+
+		Player p = ((Game) sender.getSession().getProperty("core")).player;
+		//trace("improve", building.game.player.nickName, params.getDump(), building.transformable(card), building.troopType, p.nickName);
+		building.transform(card);
 	}
 	private void sendImproveResponse(int index, int type, int level)
 	{
