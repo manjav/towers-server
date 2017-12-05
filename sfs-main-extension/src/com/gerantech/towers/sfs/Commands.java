@@ -25,6 +25,7 @@ public class Commands
     public static final String VERIFY_PURCHASE = "verify";
     public static final String RESTORE = "restore";
     public static final String PREFS = "prefs";
+    public static final String CHANGE_DECK = "changeDeck";
 
     public static final String ISSUE_GET = "issueGet";
     public static final String ISSUE_REPORT = "issueReport";
@@ -56,5 +57,4 @@ public class Commands
     public static final String INBOX_REMOVE = "inboxRemove";
     public static final String INBOX_BROADCAST = "inboxBroadcast";
 
-    public static final String CHANGE_DECK = "changeDeck";
 }
