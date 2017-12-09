@@ -24,19 +24,20 @@ public class ChangeDeckHandler extends BaseClientRequestHandler
             response = -2;
 
         if( response >= 0 )
-            response = change(player.id, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")) ? 0 :-1;
+            response = change(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")) ? 0 :-1;
 
         params.putInt("response", response);
         send(Commands.CHANGE_DECK, params, sender);
     }
 
-    public boolean change( int playerId, int deckIndex, int index, int type)
+    public boolean change( Player player, int deckIndex, int index, int type)
     {
+        player.decks.get(deckIndex).set(index, type);
         try {
             String query = "UPDATE towers_db.decks SET decks.`type` = "+ type +" WHERE " +
                     "NOT EXISTS (SELECT 1 FROM (" +
-                    "SELECT 1 FROM towers_db.decks WHERE decks.player_id = "+ playerId +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
-                    "AND decks.player_id = "+playerId+" AND decks.deck_index = "+ deckIndex +" AND decks.`index` = " + index;
+                    "SELECT 1 FROM towers_db.decks WHERE decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
+                    "AND decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`index` = " + index;
 
             trace(query);
             getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[]{});
