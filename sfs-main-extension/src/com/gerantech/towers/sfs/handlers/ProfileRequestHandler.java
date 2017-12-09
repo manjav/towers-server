@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gerantech.towers.sfs.utils.UserManager;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -38,19 +39,12 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			q.putInt("type", 5000);
 			q.putInt("count", sfsArray2.getSFSObject(0).getInt("index")+1);
 			sfsArray.addSFSObject( q );
-
 			params.putSFSArray("features", sfsArray );
 
-			// add buildings
-			query = "SELECT type, level FROM resources WHERE player_id=" + playerId + " AND (type<1000 AND type>0) LIMIT 100";
-			ISFSArray buildingArray = dbManager.executeQuery(query, new Object[]{});
-			params.putSFSArray("buildings", buildingArray );
+			query = "SELECT decks.`type`, resources.`level` FROM decks INNER JOIN resources ON decks.player_id = resources.player_id AND decks.`type` = resources.`type` WHERE decks.player_id = "+ playerId +" AND decks.deck_index = 0";
+			params.putSFSArray("decks", dbManager.executeQuery(query, new Object[]{}));
 
-
-		} catch (SQLException e) {
-			trace(e.getMessage());
-		}
-		//trace(params.getDump());
+		} catch (SQLException e) { e.printStackTrace(); }
 		send("profile", params, sender);
     }
 }
