@@ -198,7 +198,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", existsNpc||isQuest);
 		sfsO.putText("mapName", getMapName(isQuest));
-		sfsO.putSFSArray("decks", (SFSArray)room.getProperty("decks"));
+		//sfsO.putSFSArray("decks", (SFSArray)room.getProperty("decks"));
 		send("startBattle", sfsO, player);
 
 		if( !player.isSpectator(room) )
