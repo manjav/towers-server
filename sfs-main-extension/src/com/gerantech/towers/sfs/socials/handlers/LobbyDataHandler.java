@@ -27,7 +27,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
-            fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
+            fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, params.containsKey("all"), params.containsKey("data") );
         else
              searchRooms(params, users );
 
@@ -92,13 +92,16 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             params.putSFSArray("all", all);
     }
 
-    private void fillRoomInfo(Room room, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
+    private void fillRoomInfo(Room room, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers, boolean includeData)
     {
         params.putText("bio", room.getVariable("bio").getStringValue());
         params.putInt("min", room.getVariable("min").getIntValue());
         params.putInt("pri", room.getVariable("pri").getIntValue());
-        if( includeMembers )
+        if( includeData )
+            fillRoomData(room, params, users, includeMembers);
+        else if( includeMembers )
             params.putSFSArray("all", getMembers(room, users));
+
         params.removeElement("id");
     }
 
