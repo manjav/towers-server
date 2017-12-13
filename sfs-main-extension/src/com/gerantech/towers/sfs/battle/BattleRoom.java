@@ -10,6 +10,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -371,10 +372,18 @@ public class BattleRoom extends SFSExtension
 
 	private void calculateEndBattleResponse()
 	{
+		SFSArray outcomesSFSData = new SFSArray();
+
 		IntIntMap[] outcomesList = new IntIntMap[registeredPlayers.size()];
 	    for (int i=0; i < registeredPlayers.size(); i++)
 	    {
 			Game game = registeredPlayers.get(i);
+
+			SFSObject outcomeSFS = new SFSObject();
+			outcomeSFS.putInt("id", game.player.id);
+			outcomeSFS.putText("name", game.player.nickName);
+			outcomeSFS.putInt("score", scores[i]);
+
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
 			//trace("isQuest", isQuest, scores[i]);
 			if ( isQuest )
@@ -400,8 +409,12 @@ public class BattleRoom extends SFSExtension
 				else
 					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
 				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
+
+				outcomeSFS.putInt(outk[r]+"", outcomesList[i].get(outk[r]));
 				r ++;
 			}
+			outcomesSFSData.addSFSObject(outcomeSFS);
+
 			game.player.addResources(outcomesList[i]);
 			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
 			try {
@@ -411,23 +424,23 @@ public class BattleRoom extends SFSExtension
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			// send end battle response if player connected
-			User p = getRealPlayer(game.player.id);
-			if( p != null )
-				sendEndBattleResponse(p, outcomesList[i], scores[i]);
 		}
 
+		if( !isQuest && outcomesSFSData.size() < 2 )
+		{
+			SFSObject outcomeSFS = new SFSObject();
+			outcomeSFS.putInt("id", 0);
+			outcomeSFS.putInt("score", scores[1]);
+			outcomesSFSData.addSFSObject(outcomeSFS);
+		}
+
+
+		// send to all users
+		SFSObject params = new SFSObject();
+		params.putSFSArray("outcomes", outcomesSFSData);
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-		{
-			User user = users.get(i);
-			if( user.isSpectator(room) )
-			{
-				int group = getPlayerGroup(user);
-				sendEndBattleResponse(user, outcomesList[group], scores[group]);
-			}
-		}
+			send( "endBattle", params, users.get(i) );
 
 		removeAllUsers();
 	}
@@ -448,28 +461,6 @@ public class BattleRoom extends SFSExtension
 				getApi().disconnect(user.getSession());
 			}
 		}
-	}
-
-	private void sendEndBattleResponse(User user, IntIntMap outcomes, int score)
-	{
-    	// provide sfs rewards map
-    	SFSObject sfsO = SFSObject.newInstance();
-    	
-    	//sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
-    	SFSObject sfsReward;
-    	SFSArray sfsRewards  = new SFSArray();
-    	for(int r : outcomes.keys())
-    	{
-    		sfsReward = new SFSObject();
-    		sfsReward.putInt("t", r);
-    		sfsReward.putInt("c", outcomes.get(r));
-    		sfsRewards.addSFSObject(sfsReward);
-    	}
-    	sfsO.putSFSArray("rewards", sfsRewards);
-
-        sfsO.putBool( "youWin", score>0 );
-        sfsO.putInt( "score", score );//trace(sfsO.getDump());
-    	send( "endBattle", sfsO, user );		
 	}
 
 	@Override
