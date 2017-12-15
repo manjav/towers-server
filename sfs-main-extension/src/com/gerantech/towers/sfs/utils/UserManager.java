@@ -9,7 +9,6 @@ import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
-import com.hazelcast.map.EntryProcessor;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -33,13 +32,13 @@ public class UserManager {
 	        if(ret.size() == 0)
 	        {
 	        	//trace("name", name, "id", id, "password", password);
-	        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", "user resources nou found.");
+				LoginErrors.dispatch(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", new String[]{"user resources nou found."});
 	        }
 	        return ret;
         }
         catch (SQLException e)
 		{
-        	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
+			LoginErrors.dispatch(SFSErrorCode.GENERIC_ERROR, "SQL Failed", new String[]{e.toString()});
 		}
 		return null;
 	}

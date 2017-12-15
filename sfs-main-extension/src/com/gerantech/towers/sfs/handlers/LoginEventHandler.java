@@ -1,5 +1,4 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
 import com.gt.towers.constants.ResourceType;
@@ -15,8 +14,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -33,7 +30,6 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
@@ -76,6 +72,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 				e.printStackTrace();
 			}
 			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
+		}
+
+		// check force update
+		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion && inData.getInt("appver") > 2045 )
+		{
+			outData.putInt("forceVersion", loginData.forceVersion);
+			LoginErrors.dispatch (LoginErrors.FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
+			return;
 		}
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
@@ -194,7 +198,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	        catch (SQLException e)
 	        {
 				e.printStackTrace();
-				Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+				LoginErrors.dispatch(LoginErrors.SQL_ERROR, "SQL Failed", new String[]{e.getMessage()});
 			}
 			return;
 		}
@@ -206,16 +210,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int id = Integer.parseInt(name);
 			ISFSArray res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id="+id+"", new Object[] {});
 
-			if(res.size() != 1)
+			if( res.size() != 1 )
 	        {
-				Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_USERNAME, "Login error!", "user id nou found.");
+				LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!", new String[]{"user id nou found."});
 				return;
 			}
 
 			ISFSObject userData = res.getSFSObject(0);
-			if(!getApi().checkSecurePassword(session, userData.getText("password"), password))
+			if( !getApi().checkSecurePassword(session, userData.getText("password"), password) )
         	{
-				Logger.throwLoginException(SFSErrorCode.LOGIN_BAD_PASSWORD, "Login error!", name);
+				LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error!", new String[]{name});
 				return;
 			}
 
@@ -238,7 +242,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         catch (SQLException e)
         {
 			e.printStackTrace();
-	       	Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.getMessage());
+			LoginErrors.dispatch(LoginErrors.SQL_ERROR, "SQL Failed", new String[]{e.getMessage()});
         }
 		//trace("initData", outData.getDump());
 	}
