@@ -288,7 +288,7 @@ public class BattleRoom extends SFSExtension
 			return;
 
 		Building b = battleField.places.get(params.getInt("i")).building;
-		//trace("improve", b.game.player.nickName, params.getDump(), b.improvable(params.getInt("t")));
+		//trace("improve", b.game.player.nickName, params.getDump(),"t:", b.type, "_population:", b._population, b.improvable(params.getInt("t")));
 		b.improve(params.getInt("t"));
 	}
 	private void sendImproveResponse(int index, int type, int level)
