@@ -79,7 +79,10 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		trace(type, now);
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
-		Boolean succeed = game.exchanger.exchange(item, now, hardsConfimed);
+		Boolean succeed = false;
+		try {
+			succeed = game.exchanger.exchange(item, now, hardsConfimed);
+		} catch (Exception e) { e.printStackTrace(); }
 		game.player.resources.changeCallback = null;
 		if( !succeed )
 			return false;
