@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.socials;
 
-import com.gerantech.towers.sfs.utils.UserManager;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -160,7 +160,7 @@ public class LobbyUtils
             e.printStackTrace();
         }
 
-        result += UserManager.resetWeeklyBattles(ext);
+        result += DBUtils.getInstance().resetWeeklyBattles();
         return result;
     }
 

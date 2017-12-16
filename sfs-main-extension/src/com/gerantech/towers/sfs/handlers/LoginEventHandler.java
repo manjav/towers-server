@@ -223,13 +223,15 @@ public class LoginEventHandler extends BaseServerEventHandler
 				return;
 			}
 
+
+			DBUtils dbUtils = DBUtils.getInstance();
 			// Retrieve player data from db
 			outData.putInt("id", id);
 			outData.putText("name", userData.getText("name"));
 			outData.putInt("sessionsCount", userData.getInt("sessions_count"));
-			outData.putSFSArray("resources", UserManager.getResources(getParentExtension(), id));
-			outData.putSFSArray("quests", UserManager.getQuests(getParentExtension(), id));
-			outData.putSFSArray("exchanges", UserManager.getExchanges(getParentExtension(), id));
+			outData.putSFSArray("resources", dbUtils.getResources(id));
+			outData.putSFSArray("quests", dbUtils.getQuests(id));
+			outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 
     		// Find active battle room
 			Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
@@ -306,7 +308,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
 					element.putInt("num_exchanges", 0 );
 					try {
-						UserManager.updateExchange(getParentExtension(), t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
+						DBUtils.getInstance().updateExchange(t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
 					} catch (Exception e) {
 						trace(ExtensionLogLevel.ERROR, e.getMessage());
 					}

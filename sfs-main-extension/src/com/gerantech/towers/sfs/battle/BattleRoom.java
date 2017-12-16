@@ -2,15 +2,14 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
-import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -385,13 +384,15 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putInt("score", scores[i]);
 
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
+
+			DBUtils dbUtils = DBUtils.getInstance();
 			//trace("isQuest", isQuest, scores[i]);
 			if ( isQuest )
 			{
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
 					try {
-						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+						dbUtils.setQuestScore(game.player, battleField.map.index, scores[i]);
 					} catch (Exception e) { e.printStackTrace(); }
 					game.player.quests.set(battleField.map.index, scores[i]);
 				}
@@ -418,9 +419,10 @@ public class BattleRoom extends SFSExtension
 			game.player.addResources(outcomesList[i]);
 			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
 			try {
-				trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
-				trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
-				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
+
+				dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
+				dbUtils.updateResources(game.player, updateMap);
+				dbUtils.insertResources(game.player, insertMap);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
