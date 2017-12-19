@@ -163,12 +163,12 @@ public class BattleRoom extends SFSExtension
 					}
 
 					// fight
-					if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
+					if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE )
 					{
 						botFight();
 						aiEnemy.actionType = AIEnemy.TYPE_FIGHT_DOUBLE;
 					}
-					else if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
+					else if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
 					{
 						botFight();
 						aiEnemy.actionType = AIEnemy.TYPE_FIGHT;
@@ -176,10 +176,18 @@ public class BattleRoom extends SFSExtension
 					else
 					{
 						//trace("aiEnemy->actionType", aiEnemy.actionType, aiEnemy.target);
-						if ( aiEnemy.doAction() > 0 )
+						if( aiEnemy.doAction() > 0 )
 						{
-							if ( aiEnemy.actionType ==  AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE )
+							if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
+							{
 								botFight();
+							}
+							else if ( aiEnemy.actionType == AIEnemy.TYPE_START_STICKER )
+							{
+								SFSObject st = new SFSObject();
+								st.putInt("t", StickerType.getRandomStart());
+								sendSticker(null, st);
+							}
 						}
 					}
 				}
@@ -259,9 +267,9 @@ public class BattleRoom extends SFSExtension
 	{
 		for (User u : room.getUserList())
 		{
-			if (u.isNpc())
+			if( u.isNpc() && sender != null )
 			{
-				if(aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5)
+				if( aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5 )
 				{
 					int answer = StickerType.getRandomAnswer( params.getInt("t") );
 					if(answer > -1) {
@@ -271,7 +279,7 @@ public class BattleRoom extends SFSExtension
 					}
 				}
 			}
-			else if (u.getId() != sender.getId())
+			else if( sender == null || u.getId() != sender.getId() )
 			{
 				send("ss", params, u);
 			}
