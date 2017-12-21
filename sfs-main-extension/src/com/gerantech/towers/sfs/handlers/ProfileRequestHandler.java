@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
