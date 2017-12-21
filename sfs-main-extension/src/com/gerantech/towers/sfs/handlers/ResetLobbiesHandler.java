@@ -1,10 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.UserManager;
-import com.gt.towers.Game;
-import com.gt.towers.Player;
-import com.gt.towers.buildings.Building;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -12,7 +7,6 @@ import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 
 import java.util.List;

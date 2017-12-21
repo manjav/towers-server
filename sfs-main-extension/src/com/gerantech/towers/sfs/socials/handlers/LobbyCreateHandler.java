@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.UserManager;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -62,7 +62,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         Room room = null;
         try {
-            trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
+            DBUtils.getInstance().updateResources(game.player, mapChangeCallback.updates);
             room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar, privacyMode);
         } catch (Exception e) {
             send("lobbyCreate", params, sender);

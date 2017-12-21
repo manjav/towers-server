@@ -2,8 +2,8 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.gerantech.towers.sfs.utils.UserManager;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.AIEnemy;
@@ -190,12 +190,12 @@ public class BattleRoom extends SFSExtension
 					}
 
 					// fight
-					if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
+					if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE )
 					{
 						botFight();
 						aiEnemy.actionType = AIEnemy.TYPE_FIGHT_DOUBLE;
 					}
-					else if (aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
+					else if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
 					{
 						botFight();
 						aiEnemy.actionType = AIEnemy.TYPE_FIGHT;
@@ -203,10 +203,18 @@ public class BattleRoom extends SFSExtension
 					else
 					{
 						//trace("aiEnemy->actionType", aiEnemy.actionType, aiEnemy.target);
-						if ( aiEnemy.doAction() > 0 )
+						if( aiEnemy.doAction() > 0 )
 						{
-							if ( aiEnemy.actionType ==  AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE )
+							if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
+							{
 								botFight();
+							}
+							else if ( aiEnemy.actionType == AIEnemy.TYPE_START_STICKER )
+							{
+								SFSObject st = new SFSObject();
+								st.putInt("t", StickerType.getRandomStart());
+								sendSticker(null, st);
+							}
 						}
 					}
 				}
@@ -286,9 +294,9 @@ public class BattleRoom extends SFSExtension
 	{
 		for (User u : room.getUserList())
 		{
-			if (u.isNpc())
+			if( u.isNpc() && sender != null )
 			{
-				if(aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5)
+				if( aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5 )
 				{
 					int answer = StickerType.getRandomAnswer( params.getInt("t") );
 					if(answer > -1) {
@@ -298,7 +306,7 @@ public class BattleRoom extends SFSExtension
 					}
 				}
 			}
-			else if (u.getId() != sender.getId())
+			else if( sender == null || u.getId() != sender.getId() )
 			{
 				send("ss", params, u);
 			}
@@ -402,18 +410,28 @@ public class BattleRoom extends SFSExtension
 
 	private void calculateEndBattleResponse()
 	{
+		SFSArray outcomesSFSData = new SFSArray();
+
 		IntIntMap[] outcomesList = new IntIntMap[registeredPlayers.size()];
 	    for (int i=0; i < registeredPlayers.size(); i++)
 	    {
 			Game game = registeredPlayers.get(i);
+
+			SFSObject outcomeSFS = new SFSObject();
+			outcomeSFS.putInt("id", game.player.id);
+			outcomeSFS.putText("name", game.player.nickName);
+			outcomeSFS.putInt("score", scores[i]);
+
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
+
+			DBUtils dbUtils = DBUtils.getInstance();
 			//trace("isQuest", isQuest, scores[i]);
 			if ( isQuest )
 			{
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
 					try {
-						UserManager.setQuestScore(getParentZone().getExtension(), game.player, battleField.map.index, scores[i]);
+						dbUtils.setQuestScore(game.player, battleField.map.index, scores[i]);
 					} catch (Exception e) { e.printStackTrace(); }
 					game.player.quests.set(battleField.map.index, scores[i]);
 				}
@@ -431,34 +449,39 @@ public class BattleRoom extends SFSExtension
 				else
 					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
 				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
+
+				outcomeSFS.putInt(outk[r]+"", outcomesList[i].get(outk[r]));
 				r ++;
 			}
+			outcomesSFSData.addSFSObject(outcomeSFS);
+
 			game.player.addResources(outcomesList[i]);
 			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
 			try {
-				trace(UserManager.updateExchange(getParentZone().getExtension(), keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome));
-				trace(UserManager.updateResources(getParentZone().getExtension(), game.player, updateMap));
-				trace(UserManager.insertResources(getParentZone().getExtension(), game.player, insertMap));
+
+				dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
+				dbUtils.updateResources(game.player, updateMap);
+				dbUtils.insertResources(game.player, insertMap);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			// send end battle response if player connected
-			User p = getRealPlayer(game.player.id);
-			if( p != null )
-				sendEndBattleResponse(p, outcomesList[i], scores[i]);
 		}
 
+		if( !isQuest && outcomesSFSData.size() < 2 )
+		{
+			SFSObject outcomeSFS = new SFSObject();
+			outcomeSFS.putInt("id", 0);
+			outcomeSFS.putInt("score", scores[1]);
+			outcomesSFSData.addSFSObject(outcomeSFS);
+		}
+
+
+		// send to all users
+		SFSObject params = new SFSObject();
+		params.putSFSArray("outcomes", outcomesSFSData);
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-		{
-			User user = users.get(i);
-			if( user.isSpectator(room) )
-			{
-				int group = getPlayerGroup(user);
-				sendEndBattleResponse(user, outcomesList[group], scores[group]);
-			}
-		}
+			send( "endBattle", params, users.get(i) );
 
 		removeAllUsers();
 	}
@@ -479,28 +502,6 @@ public class BattleRoom extends SFSExtension
 				getApi().disconnect(user.getSession());
 			}
 		}
-	}
-
-	private void sendEndBattleResponse(User user, IntIntMap outcomes, int score)
-	{
-    	// provide sfs rewards map
-    	SFSObject sfsO = SFSObject.newInstance();
-    	
-    	//sfsO.putInt("id", ((Game)user.getSession().getProperty("core")).player.id);
-    	SFSObject sfsReward;
-    	SFSArray sfsRewards  = new SFSArray();
-    	for(int r : outcomes.keys())
-    	{
-    		sfsReward = new SFSObject();
-    		sfsReward.putInt("t", r);
-    		sfsReward.putInt("c", outcomes.get(r));
-    		sfsRewards.addSFSObject(sfsReward);
-    	}
-    	sfsO.putSFSArray("rewards", sfsRewards);
-
-        sfsO.putBool( "youWin", score>0 );
-        sfsO.putInt( "score", score );//trace(sfsO.getDump());
-    	send( "endBattle", sfsO, user );		
 	}
 
 	@Override

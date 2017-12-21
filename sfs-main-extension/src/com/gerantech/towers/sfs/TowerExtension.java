@@ -12,7 +12,7 @@ import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
-import com.gerantech.towers.sfs.utils.UserManager;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -102,7 +102,7 @@ public class TowerExtension extends SFSExtension
 		else if ( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
 		else if ( cmdName.equals("resetkeylimit") )
-			return UserManager.resetKeyExchanges((SFSExtension) getParentZone().getExtension());
+			return DBUtils.getInstance().resetKeyExchanges();
 		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
 		else if( cmdName.equals("custom") )

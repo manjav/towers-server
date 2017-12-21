@@ -3,19 +3,15 @@ package com.gerantech.towers.sfs.handlers;
 import java.time.Instant;
 
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.UserManager;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.ExchangeItem;
-import com.gt.towers.exchanges.Exchanger;
-import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /**
  * @author ManJav
@@ -79,7 +75,10 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		trace(type, now);
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
-		Boolean succeed = game.exchanger.exchange(item, now, hardsConfimed);
+		Boolean succeed = false;
+		try {
+			succeed = game.exchanger.exchange(item, now, hardsConfimed);
+		} catch (Exception e) { e.printStackTrace(); }
 		game.player.resources.changeCallback = null;
 		if( !succeed )
 			return false;
@@ -94,12 +93,13 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		trace("type:", type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
 		// Run db queries
+		DBUtils dbUtils = DBUtils.getInstance();
 		try
 		{
-			trace(UserManager.updateResources(getParentExtension(), game.player, mapChangeCallback.updates));
-			trace(UserManager.insertResources(getParentExtension(), game.player, mapChangeCallback.inserts));
-			if( item.category == ExchangeType.S_30_CHEST || item.category == ExchangeType.S_20_SPECIALS || item.category == ExchangeType.CHEST_CATE_110_BATTLES || item.category == ExchangeType.CHEST_CATE_120_OFFERS )
-				trace(UserManager.updateExchange(getParentExtension(), type, game.player.id, item.expiredAt, item.numExchanges, item.outcome));
+			dbUtils.updateResources(game.player, mapChangeCallback.updates);
+			dbUtils.insertResources(game.player, mapChangeCallback.inserts);
+			if( item.category == ExchangeType.CHEST_CATE_110_BATTLES || item.category == ExchangeType.CHEST_CATE_120_OFFERS )
+				dbUtils.updateExchange(type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
 		}
 		catch (Exception e)
 		{

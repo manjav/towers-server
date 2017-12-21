@@ -2,11 +2,10 @@ package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.UserManager;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.buildings.Building;
-import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -40,9 +39,10 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.get_level());
 			return;
 		}
+		DBUtils dbUtils = DBUtils.getInstance();
 		try {
-			trace(UserManager.upgradeBuilding(getParentExtension(), player, buildingType, building.get_level()));
-			trace(UserManager.updateResources(getParentExtension(), player, mapChangeCallback.updates));
+			dbUtils.upgradeBuilding(player, buildingType, building.get_level());
+			dbUtils.updateResources(player, mapChangeCallback.updates);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
