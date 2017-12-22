@@ -5,9 +5,15 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchange;
+import com.gt.towers.exchanges.Exchanger;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
+import com.smartfoxserver.v2.core.SFSConstants;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
@@ -17,7 +23,12 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.time.Instant;
 
 /**
  * @author ManJav
@@ -115,7 +126,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 					query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
 					query += i<resources.size()-1 ? ", " : ";";
 				}
-
 				dbManager.executeInsert(query, new Object[] {});
 
 				// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -129,22 +139,27 @@ public class LoginEventHandler extends BaseServerEventHandler
 					so.putInt("num_exchanges", 0);
 
 					int ct = ExchangeType.getCategory(t);
-					if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
+					/*if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
 						so.putInt("expired_at", now + (t== ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
-					else
+					else*/
 						so.putInt("expired_at", 0);
 
 					// set outcome :
 					if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
 					{
 						so.putInt("outcome", Exchanger.getBattleChestType(battleChestIndex));
-						if( battleChestIndex == 0 )
-							so.putInt("expired_at", now);
-						battleChestIndex ++;
 					}
-					else if( ct == ExchangeType.CHEST_CATE_120_OFFERS )
+					else if( ct == ExchangeType.CHEST_CATE_120_OFFERS || ct == ExchangeType.CHEST_CATE_100_FREE )
 					{
-						so.putInt("outcome", Exchanger.getOfferChestType(t));
+						so.putInt("outcome", Exchanger.getChestType(t));
+						if( ct == ExchangeType.CHEST_CATE_100_FREE )
+						{
+							if( battleChestIndex == 0 )
+								so.putInt("expired_at", now);
+							else
+								so.putInt("expired_at", now + ExchangeType.getCooldown(so.getInt("outcome")));
+							battleChestIndex ++;
+						}
 					}
 					else
 						so.putInt("outcome", 0);
@@ -203,7 +218,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 				LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error!", new String[]{name});
 				return;
 			}
-
 
 			DBUtils dbUtils = DBUtils.getInstance();
 			// Retrieve player data from db
@@ -274,6 +288,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
 		boolean hasNewChests = false;
+		boolean hasFreeBooks = false;
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
@@ -281,35 +296,32 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int t = element.getInt("type");
 			// bonus items :
 			int ct = ExchangeType.getCategory(t);
-			if( ct == ExchangeType.S_20_SPECIALS )
-			{
-				if( element.getInt("expired_at") < now )
-				{
-					element.putInt("expired_at", now + ExchangeType.getCooldown(t) );
-					element.putInt("outcome", initData.buildingsLevel.getRandomKey() );
-					element.putInt("num_exchanges", 0 );
-					try {
-						DBUtils.getInstance().updateExchange(t, initData.id, now+ExchangeType.getCooldown(t), 1, element.getInt("outcome"));
-					} catch (Exception e) {
-						trace(ExtensionLogLevel.ERROR, e.getMessage());
-					}
-				}
-			}
+			if( ct == ExchangeType.CHEST_CATE_100_FREE )
+				hasFreeBooks = true;
 			if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
 				hasNewChests = true;
 
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 		}
 
+		SFSArray newExchanges = new SFSArray();
 		// add new chests for old players --> backward compatibility
 		if( !hasNewChests )
 		{
-			SFSArray newExchanges = new SFSArray();
 			for (int i = 1; i <= 3 ; i++)
 			{
-				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, exchanges, newExchanges, initData );
-				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, exchanges, newExchanges, initData );
+				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, exchanges, newExchanges, initData, now);
+				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, exchanges, newExchanges, initData, now);
 			}
+		}
+
+		// add new free books for old players --> backward compatibility
+		if( !hasFreeBooks )
+			for (int i = 1; i <= 3 ; i++)
+				addNewExchangeElement(ExchangeType.CHEST_CATE_100_FREE + i, exchanges, newExchanges, initData, now );
+
+		if( newExchanges.size() > 0 )
+		{
 			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
 			for(int i=0; i<newExchanges.size(); i++)
 			{
@@ -318,7 +330,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			}
 			trace(query);
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
-			}
+		}
 
 		// init core
 		Game game = new Game();
@@ -335,13 +347,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.put(game.player.id, rd);
 	}
 
-	private void addNewExchangeElement(int t, ISFSArray exchanges, SFSArray newExchanges, InitData initData)
+	private void addNewExchangeElement(int t, ISFSArray exchanges, SFSArray newExchanges, InitData initData, int now)
 	{
 		SFSObject element = new SFSObject();
 		element.putInt("type", t);
 		element.putInt("num_exchanges", 0);
-		element.putInt("expired_at", 0);
-		element.putInt("outcome", ExchangeType.getCategory(t) ==  ExchangeType.CHEST_CATE_110_BATTLES ? Exchanger.getBattleChestType(0) :  Exchanger.getOfferChestType(t));
+		int ct = ExchangeType.getCategory(t);
+		element.putInt("outcome", ExchangeType.getCategory(t) ==  ExchangeType.CHEST_CATE_110_BATTLES ? Exchanger.getBattleChestType(0) :  Exchanger.getChestType(t));
+		element.putInt("expired_at", ct == ExchangeType.CHEST_CATE_100_FREE ? (now + ExchangeType.getCooldown(element.getInt("outcome"))) : 0);
 		newExchanges.addSFSObject( element );
 		exchanges.addSFSObject( element );
 		initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
