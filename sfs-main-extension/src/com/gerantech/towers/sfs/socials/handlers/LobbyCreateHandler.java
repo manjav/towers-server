@@ -42,7 +42,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         if(!succeed)
         {
-            game.tracer.log("lobby create failed: RESPONSE_INTERNAL_ERROR");
+            trace("lobby create failed: RESPONSE_INTERNAL_ERROR");
             params.putInt("response", RESPONSE_INTERNAL_ERROR);
             return;
         }

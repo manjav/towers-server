@@ -1,26 +1,11 @@
 package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
-import com.gt.towers.constants.ResourceType;
-import com.gt.towers.exchanges.Exchanger;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
-import com.smartfoxserver.v2.core.SFSConstants;
-import haxe.root.Array;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.SQLException;
-import java.time.Instant;
-
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.Exchange;
-import com.gt.towers.utils.Tracer;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -39,7 +24,6 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-
 	public static int UNTIL_MAINTENANCE = 1510006666;
 	private static int CORE_SIZE = 0;
 
@@ -58,9 +42,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			return;
 		}
 
-		//if( inData.getInt("id") == 10412 )
-		//	LobbyUtils.getInstance().saveAll();
-
 		LoginData loginData = new LoginData();
 		if( CORE_SIZE == 0 )
 		{
@@ -75,7 +56,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// check force update
-		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion && inData.getInt("appver") > 2045 )
+		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion )
 		{
 			outData.putInt("forceVersion", loginData.forceVersion);
 			LoginErrors.dispatch (LoginErrors.FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
@@ -337,47 +318,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 			}
 			trace(query);
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
+			}
 
-		}
-
-		Tracer tracer = new Tracer() {
-			public double __hx_setField_f(String arg0, double arg1, boolean arg2) {
-				return 0;
-			}
-			public Object __hx_setField(String arg0, Object arg1, boolean arg2) {
-				return null;
-			}
-			public double __hx_lookupSetField_f(String arg0, double arg1) {
-				return 0;
-			}
-			public Object __hx_lookupSetField(String arg0, Object arg1) {
-				return null;
-			}
-			public double __hx_lookupField_f(String arg0, boolean arg1) {
-				return 0;
-			}
-			public Object __hx_lookupField(String arg0, boolean arg1, boolean arg2) {
-				return null;
-			}
-			public Object __hx_invokeField(String arg0, Array arg1) {
-				return null;
-			}
-			public void __hx_getFields(Array<String> arg0) {}
-			public double __hx_getField_f(String arg0, boolean arg1, boolean arg2) {
-				return 0;
-			}
-			public Object __hx_getField(String arg0, boolean arg1, boolean arg2, boolean arg3) {
-				return null;
-			}
-			public boolean __hx_deleteField(String arg0) {
-				return false;
-			}
-			public void log(String arg0) {
-				trace(arg0);
-			}
-		};
-
-		Game game = new Game(initData, tracer);
+		// init core
+		Game game = new Game();
+		game.init(initData);
 		session.setProperty("core", game);
 
 		// init and update hazel data
