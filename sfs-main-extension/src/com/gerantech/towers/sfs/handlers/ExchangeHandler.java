@@ -98,7 +98,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		{
 			dbUtils.updateResources(game.player, mapChangeCallback.updates);
 			dbUtils.insertResources(game.player, mapChangeCallback.inserts);
-			if( item.category == ExchangeType.CHEST_CATE_110_BATTLES || item.category == ExchangeType.CHEST_CATE_120_OFFERS )
+			if( item.isChest() )
 				dbUtils.updateExchange(type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
 		}
 		catch (Exception e)
