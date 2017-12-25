@@ -288,7 +288,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
 		boolean hasNewChests = false;
-		boolean hasFreeBooks = false;
+		boolean has101 = false;
+		boolean has102 = false;
+		boolean has103 = false;
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
@@ -296,8 +298,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int t = element.getInt("type");
 			// bonus items :
 			int ct = ExchangeType.getCategory(t);
-			if( ct == ExchangeType.CHEST_CATE_100_FREE )
-				hasFreeBooks = true;
+			if( t == ExchangeType.CHEST_CATE_101_FREE )
+				has101 = true;
+			if( t == ExchangeType.CHEST_CATE_102_FREE )
+				has102 = true;
+			if( t == ExchangeType.CHEST_CATE_103_FREE )
+				has103 = true;
 			if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
 				hasNewChests = true;
 
@@ -316,9 +322,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// add new free books for old players --> backward compatibility
-		if( !hasFreeBooks )
-			for (int i = 1; i <= 3 ; i++)
-				addNewExchangeElement(ExchangeType.CHEST_CATE_100_FREE + i, exchanges, newExchanges, initData, now );
+		if( !has101 )
+			addNewExchangeElement(ExchangeType.CHEST_CATE_101_FREE, exchanges, newExchanges, initData, now );
+		if( !has102 )
+			addNewExchangeElement(ExchangeType.CHEST_CATE_102_FREE, exchanges, newExchanges, initData, now );
+		if( !has103 )
+			addNewExchangeElement(ExchangeType.CHEST_CATE_103_FREE, exchanges, newExchanges, initData, now );
 
 		if( newExchanges.size() > 0 )
 		{
