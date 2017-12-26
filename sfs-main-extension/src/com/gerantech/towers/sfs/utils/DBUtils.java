@@ -248,9 +248,9 @@ public class DBUtils
 
     public String getLobbyNameByInvitationCode(String roomId)
     {
-
-        ISFSArray sfsArray;
         Room room = ext.getParentZone().getRoomById(Integer.parseInt(roomId));
-        return room.getName();
+        if(room.getName() != null)
+            return room.getName();
+        return "nothing";
     }
 }

@@ -55,7 +55,7 @@ public class PasswordGenerator
 
 	public static String getInvitationCode(int playerId)
 	{
-		return Integer.toString( playerId,30) + "z" + Integer.toString(playerId,35 );
+		return Integer.toString( playerId,30) + "z" + Integer.toString(playerId,35 ).toLowerCase();
 	}
 	public static int recoverPlayerId(String invitationCode)
 	{
