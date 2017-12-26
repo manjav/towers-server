@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.utils;
 
+import com.gerantech.towers.sfs.socials.handlers.LobbyDataHandler;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -11,6 +12,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -227,5 +229,28 @@ public class DBUtils
         usersMap.executeOnEntries( entryProcessor );
 
         return "Query succeeded.\n" + result;
+    }
+
+    public String getNameByInvitationCode(String invitationCode)
+    {
+        int playerId = PasswordGenerator.recoverPlayerId(invitationCode);
+        ISFSArray sfsArray;
+        try {
+            String querystr = "SELECT name from players WHERE id = "+ playerId +" LIMIT 1";
+            sfsArray = db.executeQuery( querystr, new Object[]{} );
+            String playerName = sfsArray.getSFSObject(0).getUtfString("name");
+            return playerName + "," + playerId;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "nothing";
+    }
+
+    public String getLobbyNameByInvitationCode(String roomId)
+    {
+
+        ISFSArray sfsArray;
+        Room room = ext.getParentZone().getRoomById(Integer.parseInt(roomId));
+        return room.getName();
     }
 }

@@ -18,6 +18,8 @@ public class ExtensionHTTPFacade extends HttpServlet
     private final static String CMD_SERVER_CHECK = "servercheck";
     private final static String CMD_RESET_KEY_LIMIT = "resetkeylimit";
     private final static String CMD_RESET_LOBBIES_ACTIVENESS = "resetlobbiesactiveness";
+    private final static String CMD_GET_PLAYER_NAME_BY_IC = "getplayernamebyic";
+    private final static String CMD_GET_LOBBY_NAME_BY_IC = "getlobbynamebyic";
     private final static String CMD_CUSTOM = "custom";
 
     private ISFSExtension myExtension;
@@ -42,12 +44,15 @@ public class ExtensionHTTPFacade extends HttpServlet
                 case CMD_RESET_LOBBIES_ACTIVENESS:
                 case CMD_SERVER_CHECK:
                 case CMD_CUSTOM:
+                case CMD_GET_PLAYER_NAME_BY_IC:
+                case CMD_GET_LOBBY_NAME_BY_IC:
                     result = myExtension.handleInternalMessage(key, req.getParameter(key));
                     break;
                 default:
                     result = "[" + key + "] not found. Please pass a list of comma separated values called 'numbers'. Example ?numbers=1,2,3,4";
             }
         }
+        resp.setCharacterEncoding("utf-8");
         resp.getWriter().write(result.toString());
     }
 }
