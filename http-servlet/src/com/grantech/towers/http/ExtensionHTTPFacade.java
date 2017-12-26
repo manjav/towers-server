@@ -52,7 +52,7 @@ public class ExtensionHTTPFacade extends HttpServlet
                     result = "[" + key + "] not found. Please pass a list of comma separated values called 'numbers'. Example ?numbers=1,2,3,4";
             }
         }
-        resp.setCharacterEncoding("utf-8");
+        resp.setHeader("Content-Type", "text/plain; charset=utf-8");
         resp.getWriter().write(result.toString());
     }
 }
