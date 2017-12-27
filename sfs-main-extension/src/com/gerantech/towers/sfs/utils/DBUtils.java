@@ -7,6 +7,7 @@ import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.hazelcast.com.eclipsesource.json.JsonObject;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -20,6 +21,7 @@ import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+import net.sf.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -231,26 +233,34 @@ public class DBUtils
         return "Query succeeded.\n" + result;
     }
 
-    public String getNameByInvitationCode(String invitationCode)
+    public JSONObject getIdAndNameByInvitationCode(String invitationCode)
     {
+        JSONObject ret = new JSONObject();
         int playerId = PasswordGenerator.recoverPlayerId(invitationCode);
-        ISFSArray sfsArray;
-        try {
-            String querystr = "SELECT name from players WHERE id = "+ playerId +" LIMIT 1";
-            sfsArray = db.executeQuery( querystr, new Object[]{} );
-            String playerName = sfsArray.getSFSObject(0).getUtfString("name");
-            return playerName + "," + playerId;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "nothing";
+        ret.put("playerIc", invitationCode);
+        ret.put("playerName", getPlayerNameById(playerId));
+        ext.trace(ret, playerId, ret.get("playerName"));
+        return ret;
     }
 
-    public String getLobbyNameByInvitationCode(String roomId)
+    public JSONObject getLobbyNameById(String roomId)
     {
-        Room room = ext.getParentZone().getRoomById(Integer.parseInt(roomId));
-        if(room.getName() != null)
-            return room.getName();
-        return "nothing";
+        JSONObject ret = new JSONObject();
+        String roomName = ext.getParentZone().getRoomById(Integer.parseInt(roomId)).getName();
+        ret.put("lobbyId", roomId);
+        ret.put("lobbyName", roomName);
+        return ret;
+    }
+
+    public String getPlayerNameById(int id)
+    {
+        try {
+            String querystr = "SELECT name from players WHERE id = "+ id +" LIMIT 1";
+            ISFSArray sfsArray = db.executeQuery( querystr, new Object[]{} );
+            return sfsArray.getSFSObject(0).getUtfString("name");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Player";
+        }
     }
 }

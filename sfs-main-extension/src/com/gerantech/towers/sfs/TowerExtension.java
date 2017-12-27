@@ -103,12 +103,13 @@ public class TowerExtension extends SFSExtension
 		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
 		else if ( cmdName.equals("getplayernamebyic") )
-			return DBUtils.getInstance().getNameByInvitationCode((String) params);
-		else if ( cmdName.equals("getlobbynamebyic") )
-			return DBUtils.getInstance().getLobbyNameByInvitationCode((String) params);
+			return DBUtils.getInstance().getIdAndNameByInvitationCode((String) params);
+		else if ( cmdName.equals("getlobbynamebyid") )
+			return DBUtils.getInstance().getLobbyNameById((String) params);
 		else if( cmdName.equals("custom") )
 			return LobbyUtils.getInstance().saveAll();
 
+		trace(DBUtils.getInstance().getIdAndNameByInvitationCode((String) params));
 		return null;
 	}
 }
