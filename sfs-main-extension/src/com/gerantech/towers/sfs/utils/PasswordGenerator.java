@@ -1,4 +1,6 @@
 package com.gerantech.towers.sfs.utils;
+import net.sf.json.JSONObject;
+
 import java.time.Instant;
 import java.util.Random;
 
@@ -53,9 +55,17 @@ public class PasswordGenerator
 		return index;
 	}
 
+    public static JSONObject getIdAndNameByInvitationCode(String invitationCode)
+    {
+        JSONObject ret = new JSONObject();
+        int playerId = PasswordGenerator.recoverPlayerId(invitationCode);
+        ret.put("playerIc", invitationCode);
+        ret.put("playerName", DBUtils.getInstance().getPlayerNameById(playerId));
+        return ret;
+    }
 	public static String getInvitationCode(int playerId)
 	{
-		return Integer.toString( playerId,30) + "z" + Integer.toString(playerId,35 );
+		return Integer.toString( playerId,30) + "z" + Integer.toString(playerId,35 ).toLowerCase();
 	}
 	public static int recoverPlayerId(String invitationCode)
 	{

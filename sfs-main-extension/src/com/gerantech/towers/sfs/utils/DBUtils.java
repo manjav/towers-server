@@ -1,16 +1,19 @@
 package com.gerantech.towers.sfs.utils;
 
+import com.gerantech.towers.sfs.socials.handlers.LobbyDataHandler;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.hazelcast.com.eclipsesource.json.JsonObject;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -18,6 +21,7 @@ import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+import net.sf.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -227,5 +231,17 @@ public class DBUtils
         usersMap.executeOnEntries( entryProcessor );
 
         return "Query succeeded.\n" + result;
+    }
+
+    public String getPlayerNameById(int id)
+    {
+        try {
+            String querystr = "SELECT name from players WHERE id = "+ id +" LIMIT 1";
+            ISFSArray sfsArray = db.executeQuery( querystr, new Object[]{} );
+            return sfsArray.getSFSObject(0).getUtfString("name");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Player";
+        }
     }
 }

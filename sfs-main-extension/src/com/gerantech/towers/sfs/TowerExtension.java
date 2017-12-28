@@ -13,6 +13,7 @@ import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -96,7 +97,7 @@ public class TowerExtension extends SFSExtension
 	@Override
 	public Object handleInternalMessage(String cmdName, Object params)
 	{
-		//trace(params, Integer.parseInt((String) params));
+		trace(cmdName, params);
 		if ( cmdName.equals("setumtime") )
 			return LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params);
 		else if ( cmdName.equals("servercheck") )
@@ -105,9 +106,13 @@ public class TowerExtension extends SFSExtension
 			return DBUtils.getInstance().resetKeyExchanges();
 		else if ( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivenessOfLobbies();
+		else if ( cmdName.equals("getplayernamebyic") )
+			return PasswordGenerator.getIdAndNameByInvitationCode((String) params);
+		else if ( cmdName.equals("getlobbynamebyid") )
+			return LobbyUtils.getInstance().getLobbyNameById((String) params);
 		else if( cmdName.equals("custom") )
 			return LobbyUtils.getInstance().saveAll();
-
+		
 		return null;
 	}
 }
