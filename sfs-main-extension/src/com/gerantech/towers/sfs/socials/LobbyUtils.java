@@ -17,6 +17,7 @@ import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
+import net.sf.json.JSONObject;
 
 import java.util.List;
 
@@ -215,6 +216,15 @@ public class LobbyUtils
             e.printStackTrace();
         }
         return result;
+    }
+
+    public JSONObject getLobbyNameById(String roomId)
+    {
+        JSONObject ret = new JSONObject();
+        String roomName = ext.getParentZone().getRoomById(Integer.parseInt(roomId)).getName();
+        ret.put("lobbyId", roomId);
+        ret.put("lobbyName", roomName);
+        return ret;
     }
 
     /*public String migrateToDB()

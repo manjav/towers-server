@@ -233,25 +233,6 @@ public class DBUtils
         return "Query succeeded.\n" + result;
     }
 
-    public JSONObject getIdAndNameByInvitationCode(String invitationCode)
-    {
-        JSONObject ret = new JSONObject();
-        int playerId = PasswordGenerator.recoverPlayerId(invitationCode);
-        ret.put("playerIc", invitationCode);
-        ret.put("playerName", getPlayerNameById(playerId));
-        ext.trace(ret, playerId, ret.get("playerName"));
-        return ret;
-    }
-
-    public JSONObject getLobbyNameById(String roomId)
-    {
-        JSONObject ret = new JSONObject();
-        String roomName = ext.getParentZone().getRoomById(Integer.parseInt(roomId)).getName();
-        ret.put("lobbyId", roomId);
-        ret.put("lobbyName", roomName);
-        return ret;
-    }
-
     public String getPlayerNameById(int id)
     {
         try {
