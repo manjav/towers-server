@@ -11,11 +11,11 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://C:/SmartFoxServer_2X/SFS2X/extensions/__lib__" />
+          <root url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-        <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X/extensions/__lib__" recursive="false" />
+        <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" recursive="false" />
       </library>
     </orderEntry>
   </component>
