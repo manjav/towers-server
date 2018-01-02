@@ -34,9 +34,9 @@ public class ChangeDeckHandler extends BaseClientRequestHandler
     {
         player.decks.get(deckIndex).set(index, type);
         try {
-            String query = "UPDATE towers_db.decks SET decks.`type` = "+ type +" WHERE " +
+            String query = "UPDATE decks SET decks.`type` = "+ type +" WHERE " +
                     "NOT EXISTS (SELECT 1 FROM (" +
-                    "SELECT 1 FROM towers_db.decks WHERE decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
+                    "SELECT 1 FROM decks WHERE decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
                     "AND decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`index` = " + index;
 
             trace(query);
