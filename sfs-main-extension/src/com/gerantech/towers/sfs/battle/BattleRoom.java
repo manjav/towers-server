@@ -10,6 +10,7 @@ import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
+import com.gt.towers.buildings.Place;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -47,6 +48,7 @@ public class BattleRoom extends SFSExtension
 	private int[] reservedTroopTypes;
 	private int[] reservedHealthes;
 	private int[] scores;
+	private int[] keys;
 
 	private Room room;
 	private Timer timer;
@@ -145,8 +147,9 @@ public class BattleRoom extends SFSExtension
 				// increase population bars
 				if( battleField.now % 1 == 0 )
 				{
-					battleField.populationBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(0) + 1));
-					battleField.populationBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(1) + 1));
+					int increaseCoef = battleDuration > battleField.getTime(1) ? 2 : 1;
+					battleField.populationBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(0) + increaseCoef));
+					battleField.populationBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(1) + increaseCoef));
 					SFSObject bars = new SFSObject();
 					bars.putInt("0", battleField.populationBar.get(0));
 					bars.putInt("1", battleField.populationBar.get(1));
@@ -208,17 +211,18 @@ public class BattleRoom extends SFSExtension
 				}
 		    	// check ending battle
 		    	int[] numBuildings = new int[2];
-		    	int[] populations = new int[2];
+		    	//int[] populations = new int[2];
 				for(int i = 0; i<reservedTroopTypes.length; i++)
 				{
 					if( reservedTroopTypes[i] >= 0 )
 					{
 						//trace(i, reservedTroopTypes[i], reservedPopulations[i]);
 						numBuildings[reservedTroopTypes[i]] ++;
-						populations[reservedTroopTypes[i]] += reservedPopulations[i];
+						//populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
-				if( battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+
+				if( checkEnding(battleDuration, numBuildings) )
 					endBattle(numBuildings, battleDuration);
 				else
 					battleField.now += TIMER_PERIOD;
@@ -226,10 +230,11 @@ public class BattleRoom extends SFSExtension
 			}
 
 
-		}, 0, Math.round(TIMER_PERIOD*1000));
+		}, 0, Math.round(TIMER_PERIOD * 1000));
 
 		trace(room.getName(), "created.");
 	}
+
 
 	// bot fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	private void botFight() {
@@ -361,7 +366,31 @@ public class BattleRoom extends SFSExtension
 			calculateEndBattleResponse();
 		}
 	}
-	
+
+
+	private boolean checkEnding(double battleDuration, int[] numBuildings)
+	{
+		// end battle time
+		if( battleDuration > battleField.getTime(2) )
+			return true;
+
+		// Quest :
+		if( isQuest )
+			return numBuildings[0] == 0 || numBuildings[1] == 0;
+
+		// Battle :
+		int headQuarterTroopType = -2;
+		for (int p = 0; p < battleField.places.size(); p++ )
+		{
+			if( battleField.places.get(p).mode == 2 )
+			{
+				if( headQuarterTroopType == battleField.places.get(p).building.troopType )
+					return true;
+				headQuarterTroopType = battleField.places.get(p).building.troopType;
+			}
+		}
+		return  false;
+	}
 	private void endBattle(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
@@ -369,21 +398,43 @@ public class BattleRoom extends SFSExtension
 		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
 		scores = new int[2];
-	    for ( int i=0; i < scores.length; i++ )
-	    {
-        	scores[i] = 0;
-	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
-	        if(wins)
-	        {
-	        	if( battleDuration < battleField.map.times.get(0) )
-	        		scores[i] = 3;
-	        	else if( battleDuration < battleField.map.times.get(1) )
-	        		scores[i] = 2;
-	        	else
-	        		scores[i] = 1;
-	        }
-	    }
-	    
+
+		if( isQuest )
+		{
+			for ( int i=0; i < scores.length; i++ )
+			{
+				scores[i] = 0;
+				Boolean wins = numBuildings[i] > numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
+				if( wins )
+				{
+					if( battleDuration < battleField.map.times.get(0) )
+						scores[i] = 3;
+					else if( battleDuration < battleField.map.times.get(1) )
+						scores[i] = 2;
+					else
+						scores[i] = 1;
+				}
+			}
+			keys = scores;
+		}
+		// Battle :
+		else
+		{
+			// key calculation
+			keys = new int[]{0,0};
+			for (int p = 0; p < battleField.places.size(); p++ )
+				if( battleField.places.get(p).mode > 0 && battleField.places.get(p).building.troopType > -1 )
+					keys[battleField.places.get(p).building.troopType] += battleField.places.get(p).mode;
+
+			for (int k = 0; k < keys.length; k++ )
+				keys[k] = Math.max(0, Math.min(3, keys[k] - 2));
+
+			// score calculation
+			int diff = keys[0] - keys[1];
+			scores[0] = diff;
+			scores[1] = -diff;
+		}
+
 	    // balance live battle scores
 	    if( !isQuest )
 	    {
@@ -409,9 +460,10 @@ public class BattleRoom extends SFSExtension
 			SFSObject outcomeSFS = new SFSObject();
 			outcomeSFS.putInt("id", game.player.id);
 			outcomeSFS.putText("name", game.player.nickName);
-			outcomeSFS.putInt("score", scores[i]);
+			//outcomeSFS.putInt("score", scores[i]);
+			outcomeSFS.putInt("key", keys[i]);
 
-			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
+			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i], keys[i]);
 
 			DBUtils dbUtils = DBUtils.getInstance();
 			//trace("isQuest", isQuest, scores[i]);
@@ -460,7 +512,7 @@ public class BattleRoom extends SFSExtension
 		{
 			SFSObject outcomeSFS = new SFSObject();
 			outcomeSFS.putInt("id", 0);
-			outcomeSFS.putInt("score", scores[1]);
+			outcomeSFS.putInt("key", scores[1]);
 			outcomesSFSData.addSFSObject(outcomeSFS);
 		}
 
