@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="__lib__">
+    <CLASSES>
+      <root url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" recursive="false" />
+  </library>
+</component>

@@ -8,15 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="libs" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-        <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X-3000/extensions/__lib__" recursive="false" />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="__lib__" level="project" />
   </component>
 </module>
