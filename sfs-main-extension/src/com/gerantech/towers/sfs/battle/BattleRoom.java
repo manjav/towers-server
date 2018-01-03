@@ -91,6 +91,11 @@ public class BattleRoom extends SFSExtension
 
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
+		SFSArray decks = new SFSArray();
+		for (int i = 0; i < battleField.deckBuildings.size() ; i++)
+			decks.addInt(battleField.deckBuildings.get(i).building.type);
+		room.setProperty("decks", decks);
+
 		reservedTypes = new int[battleField.places.size()];
 		//reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
@@ -122,7 +127,7 @@ public class BattleRoom extends SFSExtension
 				for(int i = 0; i<battleField.places.size(); i++)
 				{
 					b = battleField.places.get(i).building;
-					b.heal();
+					b.interval();
 					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || b.get_health() != reservedHealthes[i] )
 					{
 						reservedPopulations[i] = b.get_population();
@@ -144,19 +149,6 @@ public class BattleRoom extends SFSExtension
 				if( vars.size() > 0 )
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 
-				// increase population bars
-				if( battleField.now % 1 == 0 )
-				{
-					int increaseCoef = battleDuration > battleField.getTime(1) ? 2 : 1;
-					battleField.populationBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(0) + increaseCoef));
-					battleField.populationBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(1) + increaseCoef));
-					SFSObject bars = new SFSObject();
-					bars.putInt("0", battleField.populationBar.get(0));
-					bars.putInt("1", battleField.populationBar.get(1));
-					listOfVars.add(new SFSRoomVariable("bars", bars));
-				}
-
-				sfsApi.setRoomVariables(null, room, listOfVars);
 
 				// sometimes auto start battle
 				if( singleMode && ( battleField.difficulty > 5 || Math.random() > 0.5 ) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
@@ -221,6 +213,26 @@ public class BattleRoom extends SFSExtension
 						//populations[reservedTroopTypes[i]] += reservedPopulations[i];
 					}
 				}
+
+
+				// increase population bars
+				if( battleField.now % 1 == 0 )
+				{
+					int increaseCoef = battleDuration > battleField.getTime(1) ? 2 : 1;
+					int placeSize = battleField.places.size() ;
+					int[] powerfulls = new int[]{0, 0};
+					for (int i = 0; i < placeSize ; i++)
+						if( battleField.places.get(i).building.troopType > -1 )
+							powerfulls[battleField.places.get(i).building.troopType] += ( battleField.places.get(i).mode * 2 + 1 );
+
+					battleField.populationBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(0) + increaseCoef + powerfulls[0] / placeSize ));
+					battleField.populationBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(1) + increaseCoef + powerfulls[1] / placeSize ));
+					SFSObject bars = new SFSObject();
+					bars.putInt("0", battleField.populationBar.get(0));
+					bars.putInt("1", battleField.populationBar.get(1));
+					listOfVars.add(new SFSRoomVariable("bars", bars));
+				}
+				sfsApi.setRoomVariables(null, room, listOfVars);
 
 				if( checkEnding(battleDuration, numBuildings) )
 					endBattle(numBuildings, battleDuration);
