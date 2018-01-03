@@ -48,7 +48,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 		int now = (int)Instant.now().getEpochSecond();
 
-		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10412 )
+		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10001 )
 		{
 			outData.putInt("umt", UNTIL_MAINTENANCE - now);
 			return;

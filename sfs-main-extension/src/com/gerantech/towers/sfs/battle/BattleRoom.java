@@ -218,18 +218,13 @@ public class BattleRoom extends SFSExtension
 				// increase population bars
 				if( battleField.now % 1 == 0 )
 				{
-					int increaseCoef = battleDuration > battleField.getTime(1) ? 2 : 1;
-					int placeSize = battleField.places.size() ;
-					int[] powerfulls = new int[]{0, 0};
-					for (int i = 0; i < placeSize ; i++)
-						if( battleField.places.get(i).building.troopType > -1 )
-							powerfulls[battleField.places.get(i).building.troopType] += ( battleField.places.get(i).mode * 2 + 1 );
+					double increaseCoef = battleDuration > battleField.getTime(1) ? 0.5 : 0.25;
+					battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
+					battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
 
-					battleField.populationBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(0) + increaseCoef + powerfulls[0] / placeSize ));
-					battleField.populationBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.populationBar.get(1) + increaseCoef + powerfulls[1] / placeSize ));
 					SFSObject bars = new SFSObject();
-					bars.putInt("0", battleField.populationBar.get(0));
-					bars.putInt("1", battleField.populationBar.get(1));
+					bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
+					bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
 					listOfVars.add(new SFSRoomVariable("bars", bars));
 				}
 				sfsApi.setRoomVariables(null, room, listOfVars);
