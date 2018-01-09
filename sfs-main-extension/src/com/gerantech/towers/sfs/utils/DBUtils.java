@@ -115,7 +115,7 @@ public class DBUtils
         keyLen = keys.length;
         for (int i = 0; i < keyLen; i++)
         {
-            query += "('" + player.id + "', '" + keys[i] + "', '" + player.resources.get(keys[i]) + "', '" + (ResourceType.isCard(keys[i])?1:0) + "')";
+            query += "('" + player.id + "', '" + keys[i] + "', '" + player.resources.get(keys[i]) + "', '" + (ResourceType.isCard(keys[i])?player.buildings.get(keys[i]).get_level():0) + "')";
             query += i < keyLen - 1 ? ", " : ";";
         }
 
