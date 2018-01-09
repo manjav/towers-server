@@ -216,17 +216,16 @@ public class BattleRoom extends SFSExtension
 
 
 				// increase population bars
-				if( battleField.now % 1 == 0 )
-				{
-					double increaseCoef = battleDuration > battleField.getTime(1) ? 0.5 : 0.25;
-					battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
-					battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
-
+				double increaseCoef = battleDuration > battleField.getTime(1) ? 0.1 : 0.05;
+				battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
+				battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
+				//if( battleField.now % 2 == 0 )
+				//{
 					SFSObject bars = new SFSObject();
 					bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
 					bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
 					listOfVars.add(new SFSRoomVariable("bars", bars));
-				}
+				//}
 				sfsApi.setRoomVariables(null, room, listOfVars);
 
 				if( checkEnding(battleDuration, numBuildings) )
