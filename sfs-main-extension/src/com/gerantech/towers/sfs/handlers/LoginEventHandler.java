@@ -24,6 +24,7 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import com.smartfoxserver.v2.util.MD5;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -81,8 +82,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			try
 			{
-				String deviceUDID = inData.getText("udid");
 				String deviceModel = inData.getText("device");
+				String deviceUDID = deviceModel.equals("Adobe Windows") ? MD5.getInstance().getHash(inData.getText("udid")) : inData.getText("udid");
 				if( inData.getInt("id") == -1 )
 				{
 					// retrieve user that saved account before

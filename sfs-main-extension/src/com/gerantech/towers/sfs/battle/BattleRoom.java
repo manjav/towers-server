@@ -1,16 +1,17 @@
 package com.gerantech.towers.sfs.battle;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.battle.bots.BattleBot;
+import com.gerantech.towers.sfs.battle.bots.Bot;
+import com.gerantech.towers.sfs.battle.bots.BotActions;
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
-import com.gt.towers.buildings.Place;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -52,7 +53,7 @@ public class BattleRoom extends SFSExtension
 
 	private Room room;
 	private Timer timer;
-	private AIEnemy aiEnemy;
+	private Bot bot;
 	private boolean isQuest;
 	private boolean singleMode;
 	private ISFSObject stickerParams;
@@ -111,7 +112,7 @@ public class BattleRoom extends SFSExtension
 
 
 		if( singleMode )
-			aiEnemy = new AIEnemy(battleField);
+			bot = new BattleBot(battleField);
 
     	timer = new Timer();
     	timer.schedule(new TimerTask() {
@@ -173,31 +174,18 @@ public class BattleRoom extends SFSExtension
 					}
 
 					// fight
-					if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE )
+					//trace("bot->action", bot.action, bot.target);
+					if( bot.doAction().value > BotActions.NO_CHANCE.value )
 					{
-						botFight();
-						aiEnemy.actionType = AIEnemy.TYPE_FIGHT_DOUBLE;
-					}
-					else if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE)
-					{
-						botFight();
-						aiEnemy.actionType = AIEnemy.TYPE_FIGHT;
-					}
-					else
-					{
-						//trace("aiEnemy->actionType", aiEnemy.actionType, aiEnemy.target);
-						if( aiEnemy.doAction() > 0 )
+						if( bot.action.equals(BotActions.FIGHT) )
 						{
-							if( aiEnemy.actionType == AIEnemy.TYPE_FIGHT || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_DOUBLE || aiEnemy.actionType == AIEnemy.TYPE_FIGHT_TRIPLE)
-							{
-								botFight();
-							}
-							else if ( aiEnemy.actionType == AIEnemy.TYPE_START_STICKER )
-							{
-								SFSObject st = new SFSObject();
-								st.putInt("t", StickerType.getRandomStart());
-								sendSticker(null, st);
-							}
+							botFight();
+						}
+						else if ( bot.action.equals(BotActions.START_STICKER) )
+						{
+							SFSObject st = new SFSObject();
+							st.putInt("t", StickerType.getRandomStart());
+							sendSticker(null, st);
 						}
 					}
 				}
@@ -244,11 +232,11 @@ public class BattleRoom extends SFSExtension
 
 	// bot fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	private void botFight() {
-		Object[] ss = new Object[aiEnemy.sources.size()];
+		Object[] ss = new Object[bot.sources.size()];
 		for(int j = 0; j<ss.length; j++)
-			ss[j] = aiEnemy.sources.get(j);
-		//trace("botFight", aiEnemy.actionType, aiEnemy.target);
-		fight(ss, aiEnemy.target, true);
+			ss[j] = bot.sources.get(j);
+		//trace("botFight", bot.action, bot.target);
+		fight(ss, bot.target, true);
 	}
 
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -265,8 +253,8 @@ public class BattleRoom extends SFSExtension
 
 		if( singleMode && !fighterIsBot )
 		{
-			aiEnemy.numFighters = objects.length;
-			aiEnemy.dangerousPoint = destination;
+			//bot.numFighters = objects.length;
+			bot.dangerousPoint = destination;
 		}
 
 		SFSArray srcs = SFSArray.newInstance();
@@ -296,7 +284,7 @@ public class BattleRoom extends SFSExtension
 		{
 			if( u.isNpc() && sender != null )
 			{
-				if( aiEnemy.actionType != AIEnemy.TYPE_FIGHT_DOUBLE && Math.random()>0.5 )
+				if( Math.random() > 0.5 )
 				{
 					int answer = StickerType.getRandomAnswer( params.getInt("t") );
 					if(answer > -1) {
