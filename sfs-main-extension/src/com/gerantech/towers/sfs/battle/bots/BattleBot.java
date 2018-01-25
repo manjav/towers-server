@@ -14,22 +14,17 @@ public class BattleBot extends Bot
 {
     float accessPoint;
     PlaceList allPlaces;
-    PlaceList allTowers;
-    Place playerCastle;
-    Place robatCastle;
+    Place robotCastle;
 
     public BattleBot(BattleField battleField)
     {
         super(battleField);
         accessPoint = (float)Math.floor(battleField.startAt % 3);
-
         extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
-        allTowers = battleField.getPlacesByMode(1, TroopType.NONE);
-
-        playerCastle = battleField.getPlacesByMode(2, TroopType.T_0).get(0);
-        robatCastle = battleField.getPlacesByMode(2, TroopType.T_1).get(0);
+        PlaceList castles = battleField.getPlacesByMode(2, TroopType.T_0);
+        robotCastle = castles.size() > 0 ? battleField.getPlacesByMode(2, TroopType.T_1).get(0) : null;
     }
 
     @Override
@@ -163,7 +158,7 @@ public class BattleBot extends Bot
     }
     float estimateHealth(Place place)
     {
-        if ( place.getLinks(TroopType.T_1).indexOf(robatCastle) > -1 )
+        if ( robotCastle != null && place.getLinks(TroopType.T_1).indexOf(robotCastle) > -1 )
             return 0.1f;
         return (place.building.get_population() + place.building.get_health()) / (place.mode + 1) ;
     }
