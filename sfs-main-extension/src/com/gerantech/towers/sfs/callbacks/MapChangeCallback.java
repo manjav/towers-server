@@ -1,11 +1,8 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gt.towers.utils.ValueChangeCallback;
+import com.gt.towers.events.ValueChangeCallback;
 import com.gt.towers.utils.maps.IntIntMap;
 import haxe.root.Array;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ManJav on 8/14/2017.
