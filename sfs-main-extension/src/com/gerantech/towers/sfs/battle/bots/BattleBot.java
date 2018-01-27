@@ -28,6 +28,7 @@ public class BattleBot {
     protected final BattleRoom battleRoom;
     protected final BattleField battleField;
 
+    private float seed;
     private float accessPoint;
     private PlaceList allPlaces;
     private Place robotCastle;
@@ -39,7 +40,7 @@ public class BattleBot {
         this.battleField = battleRoom.battleField;
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
         fighters = new HashMap();
-        accessPoint = (float) Math.floor(battleField.startAt % 10);
+        accessPoint = (float) Math.floor(battleField.startAt % 3);
         extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
@@ -48,10 +49,11 @@ public class BattleBot {
     }
 
     public void doAction() {
-        int seed = (int) Math.floor(battleField.now % 10);
-        if (seed == accessPoint)
+        float _seed = (float) Math.floor(battleField.now % 3);
+        if ( _seed == accessPoint && _seed != seed )
             tryAction();
 
+        seed = _seed;
         /*if ( !battleField.map.isQuest && Math.random() < 0.002 && !stickerStarted ) {
             stickerStarted = true;
             return action = BotActions.START_STICKER;
@@ -82,7 +84,6 @@ public class BattleBot {
             }
             step--;
         }
-        //extension.trace("placeTargetIndex", placeTargetIndex, allPlaces.get(placeTargetIndex).index);
         if (placeTargetIndex > -1)
             fightToPlace(allPlaces.get(placeTargetIndex));
     }
@@ -96,36 +97,49 @@ public class BattleBot {
         addFighters(target, fightersCandidates);
 
         extension.trace("target: " + target.index, "size: " + fighters.size(), " sourcesPowers: " + sourcesPowers, " targetHealth: " + targetHealth);
-        if (fighters.size() > 0 && (sourcesPowers >= targetHealth || battleField.getPlacesByTroopType(TroopType.T_1, true).size() <= 1)) {
+        if (fighters.size() > 0 && (sourcesPowers >= targetHealth || battleField.getPlacesByTroopType(TroopType.T_1, true).size() <= 1))
             scheduleFighters(target);
-        }
+        else
+            fighters.clear();
     }
 
     void addFighters(Place place, IntList fightersCandidates) {
-        if (fightersCandidates.indexOf(place.index) > -1 || sourcesPowers >= targetHealth)
+        if (fightersCandidates.indexOf(place.index) > -1 || sourcesPowers >= targetHealth * 1.1)
             return;
         fightersCandidates.push(place.index);
 
-        if (place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index)) {
-            Place selectedCard = battleField.deckBuildings.get(5);
-            if (place.building.get_population() > selectedCard.building.troopsCount || place.building.transform(selectedCard.building)) {
-                sourcesPowers += estimateTroopsPower(selectedCard, true);
-                 extension.trace("sourcesPowers", estimateTroopsPower(selectedCard, true), sourcesPowers);
+        if (place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index))
+        {
+            Place card = battleField.deckBuildings.get(4);
+            double placePower = estimateTroopsPower(place, false);
+            double cardPower = estimateTroopsPower(card, true);
+            extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
+
+            if( placePower >= cardPower )
+            {
+                sourcesPowers += placePower;
                 fighters.put(place.index, new ScheduledPlace(place));
-                //  extension.trace("put", place.index, "fighters.size: " + fighters.size());
+            }
+            else if( place.building.transform(card.building) )
+            {
+                sourcesPowers += cardPower;
+                fighters.put(place.index, new ScheduledPlace(place));
+                extension.trace("fsdfsdfs");
             }
         }
 
         // transform neighbors
         PlaceList placeLinks = place.getLinks(TroopType.T_1);
         int step = placeLinks.size() - 1;
-        while (step >= 0) {
+        while (step >= 0)
+        {
             addFighters(placeLinks.get(step), fightersCandidates);
             step --;
         }
     }
 
-    void scheduleFighters(Place target) {
+    void scheduleFighters(Place target)
+    {
         double maxDelay = 0;
         Set<Map.Entry<Integer, ScheduledPlace>> fightersEntry = fighters.entrySet();
         for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry) {
@@ -135,9 +149,10 @@ public class BattleBot {
                 maxDelay = sPlace.fightTime;
         }
 
-        for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry) {
+        for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry)
+        {
             ScheduledPlace sPlace = entry.getValue();
-            extension.trace("fight", sPlace.place.index + " -> target: " + target.index, "delay:", maxDelay, sPlace.fightTime, maxDelay - sPlace.fightTime + sPlace.place.building.deployTime);
+           // extension.trace("fight", sPlace.place.index + " -> target: " + target.index, "delay:", maxDelay, sPlace.fightTime, maxDelay - sPlace.fightTime + sPlace.place.building.deployTime);
             sPlace.timer = new Timer();
             sPlace.timer.schedule(new TimerTask() {
                 @Override
