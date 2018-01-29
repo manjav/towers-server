@@ -40,8 +40,8 @@ public class BattleBot {
         this.battleField = battleRoom.battleField;
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
         fighters = new HashMap();
-        accessPoint = (float) Math.floor(battleField.startAt % 3);
-        extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty);
+        accessPoint = (float) Math.floor(battleField.startAt % Math.max(2, 8 - battleField.difficulty ));
+        extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty + " refreshTime " + Math.max(2, 8 - battleField.difficulty ));
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
         PlaceList castles = battleField.getPlacesByMode(2, TroopType.T_0);
