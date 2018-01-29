@@ -191,7 +191,7 @@ public class BattleRoom extends SFSExtension
 				}
 
 				// increase population bars
-				double increaseCoef = battleDuration > battleField.getTime(1) ? 0.40 : 0.20;
+				double increaseCoef = battleDuration > battleField.getTime(2) ? 0.45 : 0.20;
 				battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
 				battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
 				//if( battleField.now % 2 == 0 )
