@@ -111,9 +111,9 @@ public class BattleBot {
         if (place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index))
         {
             Place card = battleField.deckBuildings.get(4);
-            double placePower = estimateTroopsPower(place, false);
-            double cardPower = estimateTroopsPower(card, true);
-            extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
+            double placePower = place.building.getPower();
+            double cardPower = estimateCardPower(card);
+            //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
 
             if( placePower >= cardPower )
             {
@@ -177,8 +177,8 @@ public class BattleBot {
         return placeLinks.size() > 0;
     }
 
-    double estimateTroopsPower(Place place, boolean isCard) {
-        return (isCard ? place.building.troopsCount : place.building.get_population()) * place.building.troopPower;
+    double estimateCardPower(Place place) {
+        return place.building.troopsCount * place.building.troopPower;
     }
 
     float estimateHealth(Place place) {
