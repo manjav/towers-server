@@ -204,7 +204,7 @@ public class BattleRoom extends SFSExtension
 				sfsApi.setRoomVariables(null, room, listOfVars);
 
 				if( checkEnding(battleDuration, numBuildings) )
-					endBattle(numBuildings, battleDuration);
+					end(numBuildings, battleDuration);
 				else
 					battleField.now += TIMER_PERIOD;
 
@@ -322,16 +322,11 @@ public class BattleRoom extends SFSExtension
 		}
 	}
 
-
 	private boolean checkEnding(double battleDuration, int[] numBuildings)
 	{
-		// end battle time
-		if( battleDuration > battleField.getTime(2) )
-			return true;
-
 		// Quest :
 		if( isQuest )
-			return numBuildings[0] == 0 || numBuildings[1] == 0;
+			return battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0;
 
 		// Battle :
 		int headQuarterTroopType = -2;
@@ -344,14 +339,26 @@ public class BattleRoom extends SFSExtension
 				headQuarterTroopType = battleField.places.get(p).building.troopType;
 			}
 		}
-		return  false;
+		if( battleDuration > battleField.getTime(2) )
+		{
+			updateScores(numBuildings, battleDuration);
+			if( scores[0] != scores[1] )
+				return true;
+		}
+
+		return battleDuration > battleField.getTime(3);
 	}
-	private void endBattle(int[] numBuildings, double battleDuration)
+	private void end(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
+		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+","+battleField.map.times.get(3)+")");
 
-		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
-		
+		updateScores(numBuildings, battleDuration);
+	    sendEndResponse();
+	}
+
+	private void updateScores(int[] numBuildings, double battleDuration)
+	{
 		scores = new int[2];
 
 		if( isQuest )
@@ -390,19 +397,19 @@ public class BattleRoom extends SFSExtension
 			scores[1] = -diff;
 		}
 
-	    // balance live battle scores
-	    if( !isQuest )
-	    {
-		    for (int i=0; i < scores.length; i++)
-		    {
-		    	if( scores[i] == 0 )
-		    		scores[i] = -scores[i==0?1:0];
-		    }
-	    }
-	    calculateEndBattleResponse();
+		// balance live battle scores
+		if( !isQuest )
+		{
+			for (int i=0; i < scores.length; i++)
+			{
+				if( scores[i] == 0 )
+					scores[i] = -scores[i==0?1:0];
+			}
+		}
+		trace("scores:", scores[0], scores[1], "keys:", keys[0], keys[1]);
 	}
 
-	private void calculateEndBattleResponse()
+	private void sendEndResponse()
 	{
 		SFSArray outcomesSFSData = new SFSArray();
 
