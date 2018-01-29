@@ -157,9 +157,12 @@ public class BattleBot {
             sPlace.timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    SFSArray _fighters = new SFSArray();
-                    _fighters.addInt(sPlace.place.index);
-                    battleRoom.fight(_fighters, target.index, true);
+                    if( sPlace.place.building.troopType == TroopType.T_1 )
+                    {
+                        SFSArray _fighters = new SFSArray();
+                        _fighters.addInt(sPlace.place.index);
+                        battleRoom.fight(_fighters, target.index, true);
+                    }
                     sPlace.dispose();
                     fighters.remove(sPlace.place.index);
                     //extension.trace("remove", sPlace.place.index, "fighters.size: " + fighters.size());
