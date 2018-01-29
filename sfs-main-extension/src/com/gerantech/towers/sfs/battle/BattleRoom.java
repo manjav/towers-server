@@ -6,9 +6,9 @@ import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
+import com.gt.towers.battle.Troop;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.StickerType;
@@ -232,7 +232,14 @@ public class BattleRoom extends SFSExtension
 		{
 			//if( singleMode && fighterIsBot && battleField.places.get(fighters.getInt(i)).building.troopType != TroopType.T_1 )
 			//	continue;
-			vars.addText(fighters.getInt(i) + "," + target + "," + battleField.places.get(fighters.getInt(i)).building.get_population());
+			String troops = "";
+			Iterator<Troop> itr = battleField.places.get(fighters.getInt(i)).building.troops.iterator();
+			while ( itr.hasNext() )
+			{
+				troops += (itr.next().buildingType + (itr.hasNext() ? ":" : "") );
+			}
+			trace(fighters.getInt(i) + "," + target + "," + troops);
+			vars.addText(fighters.getInt(i) + "," + target + "," + troops);
 			battleField.places.get(fighters.getInt(i)).fight(battleField.places.get(target), battleField.places);
 		}
 
