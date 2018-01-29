@@ -66,12 +66,12 @@ public class BattleRoom extends SFSExtension
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		
-		addRequestHandler("h", BattleRoomHitRequestHandler.class);
-		addRequestHandler("f", BattleRoomFightRequestHandler.class);
-		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
-		addRequestHandler("ss", BattleRoomStickerRequestHandler.class);
-		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
-		addRequestHandler(Commands.RESET_ALL, BattleRoomResetVarsRequestHandler.class);
+		addRequestHandler(Commands.HIT,					BattleRoomHitRequestHandler.class);
+		addRequestHandler(Commands.FIGHT,				BattleRoomFightRequestHandler.class);
+		addRequestHandler(Commands.LEAVE,				BattleRoomLeaveRequestHandler.class);
+		addRequestHandler(Commands.BUILDING_IMPROVE,	BattleRoomImproveRequestHandler.class);
+		addRequestHandler(Commands.SEND_STICKER,		BattleRoomStickerRequestHandler.class);
+		addRequestHandler(Commands.RESET_ALL,			BattleRoomResetVarsRequestHandler.class);
 	}
 
 	public void createGame(String mapName, Boolean isQuest, final boolean singleMode)
@@ -103,12 +103,7 @@ public class BattleRoom extends SFSExtension
 		reservedHealthes = new int[battleField.places.size()];
 
 		for( int i = 0; i<battleField.places.size(); i++ )
-		{
 			reservedTypes[i] = battleField.places.get(i).building.type;
-			//reservedLevels[i] = battleField.places.get(i).building.get_level();
-			//reservedHealthes[i] = battleField.places.get(i).building.get_health();
-		}
-
 
 		if( singleMode )
 			bot = new BattleBot(this);
@@ -138,7 +133,14 @@ public class BattleRoom extends SFSExtension
 					
 					if( b.type != reservedTypes[i] )//b.get_level() != reservedLevels[i] ||
 					{
-						sendtransformResponse(b);
+						SFSObject params = SFSObject.newInstance();
+						params.putInt("i", b.index);
+						params.putInt("t", b.type);
+						params.putInt("l", b.get_level());
+						//params.putInt("m", building.improveLevel);
+						//send("i", stickerParams, room.getUserList());  -->new but not test
+						sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
+
 						reservedTypes[i] = b.type;
 						//reservedLevels[i] = b.get_level();
 					}
@@ -259,7 +261,7 @@ public class BattleRoom extends SFSExtension
 			}
 			else if( sender == null || u.getId() != sender.getId() )
 			{
-				send("ss", params, u);
+				send(Commands.SEND_STICKER, params, u);
 			}
 		}
 	}
@@ -275,21 +277,11 @@ public class BattleRoom extends SFSExtension
 		Building card = battleField.deckBuildings.get(params.getInt("c")).building;
 		Building building = battleField.places.get(params.getInt("i")).building;
 
-		Player p = ((Game) sender.getSession().getProperty("core")).player;
+		//Player p = ((Game) sender.getSession().getProperty("core")).player;
 		//trace("improve", building.game.player.nickName, params.getDump(), building.transformable(card), building.troopType, p.nickName);
 		building.transform(card);
 	}
-	private void sendtransformResponse(Building building)
-	{
-		SFSObject params = SFSObject.newInstance();
-		params.putInt("i", building.index);
-		params.putInt("t", building.type);
-		params.putInt("l", building.get_level());
-		//params.putInt("m", building.improveLevel);
-		//send("i", stickerParams, room.getUserList());  -->new but not test
-		sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
 
-	}
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void hit(int troopId, double damage)
 	{
@@ -336,7 +328,7 @@ public class BattleRoom extends SFSExtension
 
 		// Battle :
 		int headQuarterTroopType = -2;
-		for (int p = 0; p < battleField.places.size(); p++ )
+		for ( int p = 0; p < battleField.places.size(); p++ )
 		{
 			if( battleField.places.get(p).mode == 2 )
 			{
@@ -435,7 +427,6 @@ public class BattleRoom extends SFSExtension
 
 			IntIntMap insertMap = new IntIntMap();
 			IntIntMap updateMap = new IntIntMap();
-
 			int[] outk = outcomesList[i].keys();
 			int r = 0;
 			while ( r < outk.length )
@@ -477,7 +468,7 @@ public class BattleRoom extends SFSExtension
 		params.putSFSArray("outcomes", outcomesSFSData);
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-			send( "endBattle", params, users.get(i) );
+			send( Commands.END_BATTLE, params, users.get(i) );
 
 		removeAllUsers();
 	}
