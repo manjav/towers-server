@@ -149,7 +149,6 @@ public class BattleRoom extends SFSExtension
 				if( vars.size() > 0 )
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 
-
 				// sometimes auto start battle
 				if( singleMode && ( battleField.difficulty > 5 || Math.random() > 0.5 ) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
 					setState(STATE_BATTLE_STARTED);
@@ -178,6 +177,7 @@ public class BattleRoom extends SFSExtension
 		    	// check ending battle
 		    	int[] numBuildings = new int[2];
 		    	//int[] populations = new int[2];
+				//int[] populations = new int[2];
 				for(int i = 0; i<reservedTroopTypes.length; i++)
 				{
 					if( reservedTroopTypes[i] >= 0 )
@@ -188,9 +188,8 @@ public class BattleRoom extends SFSExtension
 					}
 				}
 
-
 				// increase population bars
-				double increaseCoef = battleDuration > battleField.getTime(1) ? 0.1 : 0.05;
+				double increaseCoef = battleDuration > battleField.getTime(1) ? 0.40 : 0.20;
 				battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
 				battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
 				//if( battleField.now % 2 == 0 )
@@ -218,9 +217,9 @@ public class BattleRoom extends SFSExtension
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void fight(ISFSArray fighters, int target, boolean fighterIsBot)
 	{
-		if(getState() == STATE_CREATED)
+		if( getState() == STATE_CREATED)
 			setState( STATE_BATTLE_STARTED );
-		if ( getState() != STATE_BATTLE_STARTED )
+		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
 		if( singleMode && !fighterIsBot)
@@ -268,9 +267,9 @@ public class BattleRoom extends SFSExtension
 	// transform =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void transformBuilding(User sender, ISFSObject params)
 	{
-		if(getState() == STATE_CREATED)
+		if( getState() == STATE_CREATED )
 			setState( STATE_BATTLE_STARTED );
-		if ( getState() != STATE_BATTLE_STARTED )
+		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
 		Building card = battleField.deckBuildings.get(params.getInt("c")).building;
