@@ -28,8 +28,8 @@ public class BattleBot {
     protected final BattleRoom battleRoom;
     protected final BattleField battleField;
 
-    private float seed;
-    private float accessPoint;
+    private int sampleTime;
+    private int timeFactor;
     private PlaceList allPlaces;
     private Place robotCastle;
     private final Map<Integer, ScheduledPlace> fighters;
@@ -40,20 +40,24 @@ public class BattleBot {
         this.battleField = battleRoom.battleField;
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
         fighters = new HashMap();
-        accessPoint = (float) Math.floor(battleField.startAt % Math.max(2, 8 - battleField.difficulty ));
-        extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty + " refreshTime " + Math.max(2, 8 - battleField.difficulty ));
+        timeFactor = Math.max(1, 8 - battleField.difficulty );
+        extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty + " timeFactor " + timeFactor);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
         PlaceList castles = battleField.getPlacesByMode(2, TroopType.T_0);
         robotCastle = castles.size() > 0 ? battleField.getPlacesByMode(2, TroopType.T_1).get(0) : null;
     }
 
-    public void doAction() {
-        float _seed = (float) Math.floor(battleField.now % 3);
-        if ( _seed == accessPoint && _seed != seed )
-            tryAction();
+    public void doAction()
+    {
+        int _sampleTime = (int) Math.floor(battleField.now % timeFactor);
 
-        seed = _seed;
+        if( _sampleTime == 0 && _sampleTime != sampleTime )
+            tryAction();
+ //       else
+ //           extension.trace("now", battleField.now, "timeFactor", timeFactor, "_sampleTime", _sampleTime, "sampleTime", sampleTime);
+
+        sampleTime = _sampleTime;
         /*if ( !battleField.map.isQuest && Math.random() < 0.002 && !stickerStarted ) {
             stickerStarted = true;
             return action = BotActions.START_STICKER;
@@ -65,9 +69,10 @@ public class BattleBot {
         /**
          * transform for defence main places
          */
-        if (dangerousPoint > -1) {
+        if( dangerousPoint > -1 )
+        {
             Place dangerousPlace = battleField.places.get(dangerousPoint);
-            if (dangerousPlace.mode > 0 && dangerousPlace.building.get_population() < battleField.deckBuildings.get(4).building.troopsCount)
+            if( dangerousPlace.mode > 0 && dangerousPlace.building.get_population() < battleField.deckBuildings.get(4).building.troopsCount )
                 dangerousPlace.building.transform(battleField.deckBuildings.get(4).building);
             dangerousPoint = -1;
         }
@@ -103,7 +108,8 @@ public class BattleBot {
             fighters.clear();
     }
 
-    void addFighters(Place place, IntList fightersCandidates) {
+    void addFighters(Place place, IntList fightersCandidates)
+    {
         if (fightersCandidates.indexOf(place.index) > -1 || sourcesPowers >= targetHealth * 1.1)
             return;
         fightersCandidates.push(place.index);
@@ -113,7 +119,7 @@ public class BattleBot {
             Place card = battleField.deckBuildings.get(4);
             double placePower = place.building.getPower();
             double cardPower = estimateCardPower(card);
-            //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
+            extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
 
             if( placePower >= cardPower )
             {
