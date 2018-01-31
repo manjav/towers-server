@@ -65,12 +65,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				{
 					sendBattleData( players.get(i) );
 				}
-				else if( !players.get(i).isNpc() )
+				/*else if( !players.get(i).isNpc() )
 				{
 					SFSObject sfsO = new SFSObject();
 					sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
 					send("rejoinBattle", sfsO, players.get(i));
-				}
+				}*/
 			}
 			return;
 		}
@@ -144,7 +144,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			}
 			else
 			{
-				for(User u:r.getPlayersList())
+				/*for(User u:r.getPlayersList())
 				{
 					if(!u.isNpc() && !u.equals(user))
 					{
@@ -152,7 +152,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 						sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
 						send("leftBattle", sfsO, u);
 					}
-				}
+				}*/
 			}
 			r.removeProperty("enabled");
 		}
