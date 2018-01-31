@@ -406,7 +406,7 @@ public class BattleRoom extends SFSExtension
 					scores[i] = -scores[i==0?1:0];
 			}
 		}
-		trace("scores:", scores[0], scores[1], "keys:", keys[0], keys[1]);
+		//trace("scores:", scores[0], scores[1], "keys:", keys[0], keys[1]);
 	}
 
 	private void sendEndResponse()

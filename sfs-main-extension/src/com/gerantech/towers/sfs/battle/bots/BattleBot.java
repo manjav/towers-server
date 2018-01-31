@@ -31,7 +31,6 @@ public class BattleBot {
     private int sampleTime;
     private int timeFactor;
     private PlaceList allPlaces;
-    private Place robotCastle;
     private final Map<Integer, ScheduledPlace> fighters;
 
     public BattleBot(BattleRoom battleRoom)
@@ -44,8 +43,6 @@ public class BattleBot {
         extension.trace("winStreak: " + battleField.places.get(0).game.player.resources.get(ResourceType.WIN_STREAK) + " difficulty " + battleField.difficulty + " timeFactor " + timeFactor);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
-        PlaceList castles = battleField.getPlacesByMode(2, TroopType.T_0);
-        robotCastle = castles.size() > 0 ? battleField.getPlacesByMode(2, TroopType.T_1).get(0) : null;
     }
 
     public void doAction()
@@ -81,16 +78,34 @@ public class BattleBot {
          * transform and fight troops to empty places
          */
         int step = allPlaces.size() - 1;
-        int placeTargetIndex = -1;
-        while (step >= 0) {
-            if (allPlaces.get(step).building.troopType != TroopType.T_1 && isNeighbor(allPlaces.get(step))) {
-                if (placeTargetIndex == -1 || piorarity(allPlaces.get(step)) < piorarity(allPlaces.get(placeTargetIndex)))
-                    placeTargetIndex = step;
+        int weakestPlace = -1;
+        float mostPriority = 1000;
+        List <Integer> samePriorities = new ArrayList();
+        while (step >= 0)
+        {
+            if( isNeighbor(allPlaces.get(step)) )
+            {
+                float pr = priority(allPlaces.get(step));
+                if( mostPriority >= pr )
+                {
+                    if( mostPriority == pr )
+                        samePriorities.add(step);
+                    else
+                        samePriorities.clear();
+
+                    if( samePriorities.size() == 0)
+                        samePriorities.add(step);
+
+                    mostPriority = pr;
+                }
             }
-            step--;
+            step --;
         }
-        if (placeTargetIndex > -1)
-            fightToPlace(allPlaces.get(placeTargetIndex));
+        // random place
+        if( samePriorities.size() > 0 )
+            weakestPlace = samePriorities.get((int) Math.floor(Math.random() * samePriorities.size()));
+        if( weakestPlace > -1 )
+            fightToPlace(allPlaces.get(weakestPlace));
     }
 
     void fightToPlace(Place target)
@@ -110,7 +125,7 @@ public class BattleBot {
 
     void addFighters(Place place, IntList fightersCandidates)
     {
-        if (fightersCandidates.indexOf(place.index) > -1 || sourcesPowers >= targetHealth * 1.1)
+        if( fightersCandidates.indexOf(place.index) > -1 || sourcesPowers >= targetHealth * 1.1 )
             return;
         fightersCandidates.push(place.index);
 
@@ -119,7 +134,7 @@ public class BattleBot {
             Place card = battleField.deckBuildings.get(4);
             double placePower = place.building.getPower();
             double cardPower = estimateCardPower(card);
-            extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
+            //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, sourcesPowers);
 
             if( placePower >= cardPower )
             {
@@ -130,7 +145,6 @@ public class BattleBot {
             {
                 sourcesPowers += cardPower;
                 fighters.put(place.index, new ScheduledPlace(place));
-                extension.trace("fsdfsdfs");
             }
         }
 
@@ -148,10 +162,11 @@ public class BattleBot {
     {
         double maxDelay = 0;
         Set<Map.Entry<Integer, ScheduledPlace>> fightersEntry = fighters.entrySet();
-        for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry) {
+        for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry)
+        {
             ScheduledPlace sPlace = entry.getValue();
             sPlace.fightTime = PathFinder.getDistance(sPlace.place, target) * sPlace.place.building.troopSpeed;
-            if (maxDelay < sPlace.fightTime)
+            if( maxDelay < sPlace.fightTime )
                 maxDelay = sPlace.fightTime;
         }
 
@@ -178,7 +193,10 @@ public class BattleBot {
     }
 
     // tools
-    boolean isNeighbor(Place place) {
+    boolean isNeighbor(Place place)
+    {
+        if( place.building.troopType == TroopType.T_1 )
+            return false;
         PlaceList placeLinks = place.getLinks(TroopType.T_1);
         return placeLinks.size() > 0;
     }
@@ -191,8 +209,11 @@ public class BattleBot {
         return (place.building.get_population() + place.building.get_health());
     }
 
-    float piorarity(Place place) {
-        if (robotCastle != null && place.getLinks(TroopType.T_1).indexOf(robotCastle) > -1)
+    float priority(Place place)
+    {
+        //if (robotCastle != null && place.getLinks(TroopType.T_1).indexOf(robotCastle) > -1)
+        //    return 0.1f;
+        if( battleField.now > battleField.getTime(2) && place.mode > 0 )
             return 0.1f;
         return estimateHealth(place) / (place.mode + 1);
     }
