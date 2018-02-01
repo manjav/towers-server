@@ -42,6 +42,7 @@ public class Commands
     public static final String LOBBY_LEAVE = "lobbyLeave";
     public static final String LOBBY_MODERATION = "lobbyModeration";
     public static final String LOBBY_EDIT = "lobbyEdit";
+    public static final String LOBBY_PUBLIC = "lobbyPublic";
 
 
     public static final String LOBBY_PUBLIC_MESSAGE = "m";
