@@ -71,6 +71,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.LOBBY_JOIN, LobbyJoinHandler.class);
 		addRequestHandler(Commands.LOBBY_LEAVE, LobbyLeaveHandler.class);
 		addRequestHandler(Commands.LOBBY_CREATE, LobbyCreateHandler.class);
+		addRequestHandler(Commands.LOBBY_PUBLIC, LobbyPublicRequestHandler.class);
 
 		addRequestHandler(Commands.BUDDY_ADD, BuddyAddRequestHandler.class);
 		addRequestHandler(Commands.BUDDY_REMOVE, BuddyRemoveRequestHandler.class);

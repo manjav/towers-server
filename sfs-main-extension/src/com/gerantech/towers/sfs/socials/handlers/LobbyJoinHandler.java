@@ -40,7 +40,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         if( privacy == 0 )
         {
             try {
-                getApi().joinRoom(sender, room);
+                getApi().joinRoom(sender, room, null, false, null);
             } catch (SFSJoinRoomException e) {
                 e.printStackTrace();
             }

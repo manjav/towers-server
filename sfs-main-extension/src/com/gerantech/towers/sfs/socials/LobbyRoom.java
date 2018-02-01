@@ -14,67 +14,37 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
-import com.smartfoxserver.v2.extensions.SFSExtension;
-
-import java.time.Instant;
-
 
 /**
  * Created by ManJav on 8/25/2017.
  */
-public class LobbyRoom extends SFSExtension
+public class LobbyRoom extends BaseLobbyRoom
 {
-    private Room lobby;
-    public void init() {
-        lobby = getParentRoom();
-
+   // @Override
+    public void init()
+    {
+        super.init();
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
         addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
-
-        addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
         addRequestHandler(Commands.LOBBY_EDIT, LobbyEditHandler.class);
         addRequestHandler(Commands.LOBBY_MODERATION, LobbyModerationHandler.class);
     }
 
+   // @Override
     public void handleClientRequest(String requestId, User sender, ISFSObject params)
     {
-        if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
-            organizeMessage(sender, params);
-        else if( requestId.equals(Commands.LOBBY_INFO) && !params.containsKey("nomsg"))
-             params.putSFSArray("messages", messageQueue());
-
+        if( requestId.equals(Commands.LOBBY_INFO) && !params.containsKey("nomsg") )
+            params.putSFSArray("messages", messageQueue() );
         super.handleClientRequest(requestId, sender, params);
         LobbyUtils.getInstance().setActivenessVariable (lobby, getActiveness() + 1);
     }
 
-    private void organizeMessage(User sender, ISFSObject params)
+ //   @Override
+    protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
-        // Add time and user-id to message
-        Game game = ((Game) sender.getSession().getProperty("core"));
-        if( !params.containsKey("m") )
-            params.putShort("m", (short) MessageTypes.M0_TEXT);
-        params.putInt("u", (int) Instant.now().getEpochSecond());
-        params.putInt("i", game.player.id);
-        params.putText("s", game.player.nickName);
-
-        Short mode = params.getShort("m");
-        ISFSArray messages = messageQueue();
-        // Max 30 len message queue
-        while( messages.size() > 30 )
-            messages.removeElementAt(0);
-
-        if( mode == MessageTypes.M0_TEXT )
-        {
-            // Merge messages from a sender
-            ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
-            if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
-            {
-                params.putUtfString("t", last.getUtfString("t") + "\n" + params.getUtfString("t"));
-                messages.removeElementAt(messages.size() - 1);
-            }
-        }
-        else if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
+        super.organizeMessage(sender, params, false);
+        if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
             // cancel requested battle by owner
             ISFSObject message = getMyRequestedBattle(params, game.player);
@@ -194,16 +164,10 @@ public class LobbyRoom extends SFSExtension
         super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
 
-    private ISFSArray messageQueue ()
-    {
-        return lobby.getVariable("msg").getSFSArrayValue();
-    }
-
     private int getActiveness ()
     {
         return lobby.getVariable("act").getIntValue();
     }
-
 
     private boolean replyRequest(Game game, ISFSObject params)
     {
