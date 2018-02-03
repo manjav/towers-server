@@ -113,7 +113,7 @@ public class BattleUtils
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
-        rs.setMaxSpectators(10);
+        rs.setMaxSpectators(50);
         rs.setDynamic(true);
         rs.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
         rs.setRoomProperties( roomProperties );

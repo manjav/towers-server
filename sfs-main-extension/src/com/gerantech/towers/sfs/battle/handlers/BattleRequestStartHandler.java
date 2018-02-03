@@ -57,7 +57,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 
 
         BattleUtils bu = BattleUtils.getInstance();
-        if (theRoom == null)
+        if( theRoom == null )
             theRoom = bu.make(user, isQuest, index, 0, hasExtraTime);
 
         bu.join(user, theRoom, "");

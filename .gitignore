@@ -19,3 +19,9 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+http-servlet/lib/sfs2x.jar
+http-servlet/lib/sfs2x-core.jar
+http-servlet/lib/json-lib-2.2.3-jdk15.jar
+http-servlet/lib/javax.servlet.jar
+http-servlet/http-servlet.iml
+http-servlet/.idea/libraries/lib.xml

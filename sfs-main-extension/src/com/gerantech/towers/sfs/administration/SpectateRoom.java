@@ -1,6 +1,8 @@
 package com.gerantech.towers.sfs.administration;
 
+import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -28,41 +30,54 @@ public class SpectateRoom extends SFSExtension
 		List<RoomVariable> listOfVars = new ArrayList();
 		listOfVars.add( new SFSRoomVariable("rooms", SFSArray.newInstance()) );
 		sfsApi.setRoomVariables(null, room, listOfVars);
+		LobbyUtils lobbyUtils = LobbyUtils.getInstance();
 
     	timer = new Timer();
     	timer.schedule(new TimerTask() {
 
-			@Override
+		@Override
 		public void run() {
 			ISFSArray reservedRooms = room.getVariable("rooms").getSFSArrayValue();
 
-			SFSArray vars = SFSArray.newInstance();
-			String uvar = "";
-			SFSObject rvar;
+			SFSArray battles = SFSArray.newInstance();
+			SFSObject battle;
 			List<Room> rooms = getParentZone().getRoomListFromGroup(room.getName());
 			for ( Room r : rooms )
 			{
-				rvar = new SFSObject();
-				rvar.putInt("id", r.getId());
-				rvar.putText("name", r.getName());
-				rvar.putInt("startAt", (Integer)r.getProperty("startAt"));
-				uvar = "";
+				if( (int)r.getProperty("state") != BattleRoom.STATE_BATTLE_STARTED )
+					continue;
+				battle = new SFSObject();
+				battle.putInt("id", r.getId());
+				battle.putText("name", r.getName());
+				battle.putInt("startAt", (Integer)r.getProperty("startAt"));
+				ISFSArray players = new SFSArray();
 				for ( User u : r.getUserList() )
-					uvar += u.getName() + ",";
-				rvar.putText("users", uvar);
-				vars.addSFSObject(rvar);
+				{
+					SFSObject p = new SFSObject();
+					p.putText("n", u.getVariable("name").getStringValue());
+					Room lobby = lobbyUtils.getLobby(u);
+					if( lobby != null )
+					{
+						p.putText("ln", lobby.getName());
+						p.putInt("lp", lobby.getVariable("pic").getIntValue());
+					}
+					players.addSFSObject(p);
+				}
+				battle.putSFSArray("players", players);
+
+				battles.addSFSObject(battle);
 			}
 
-			if( isChanged(reservedRooms, vars) ) {
+			if( isChanged(reservedRooms, battles) ) {
 				List<RoomVariable> listOfVars = new ArrayList();
-				listOfVars.add(new SFSRoomVariable("rooms", vars));
+				listOfVars.add(new SFSRoomVariable("rooms", battles));
 				sfsApi.setRoomVariables(null, room, listOfVars);
 			}
 
-			}
+		}
 
 
-		}, 0, 500);
+		}, 0, 1000);
 		trace(room.getName(), "created.");
 	}
 
@@ -77,9 +92,9 @@ public class SpectateRoom extends SFSExtension
 			return true;
 		//trace(reservedRooms.size(), newRooms.size());
 
-		for (int i = 0; i < reservedRooms.size(); i++)
+		/*for (int i = 0; i < reservedRooms.size(); i++)
 			if( !reservedRooms.getSFSObject(i).getText("users").equals(newRooms.getSFSObject(i).getText("users")) )
-				return true;
+				return true;*/
 		return false;
 	}
 

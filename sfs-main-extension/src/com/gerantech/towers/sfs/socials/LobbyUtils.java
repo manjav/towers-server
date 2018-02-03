@@ -5,6 +5,7 @@ import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
+import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
@@ -50,6 +51,15 @@ public class LobbyUtils
         } catch (SFSStorageException e) {
             e.printStackTrace();
         }
+    }
+
+    public Room getLobby(User user)
+    {
+        List<Room> rooms = user.getJoinedRooms();
+        for (Room r:rooms)
+            if( r.getGroupId().equals("lobbies" ))
+                return r;
+        return null;
     }
 
     // remove room from db
