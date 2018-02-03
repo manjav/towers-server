@@ -23,6 +23,8 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -57,12 +59,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( CORE_SIZE == 0 )
 		{
 			try {
-				CORE_SIZE = new URL("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf").openStream().available();
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				CORE_SIZE = (int) HttpClients.createDefault().execute(new HttpGet("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf")).getEntity().getContentLength();
+				//CORE_SIZE = new URL("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf").openStream().available();
+			} catch (IOException e) { e.printStackTrace(); }
 			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
 		}
 
