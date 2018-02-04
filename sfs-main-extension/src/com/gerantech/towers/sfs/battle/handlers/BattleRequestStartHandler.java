@@ -67,13 +67,12 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
-        Game game = ((Game)user.getSession().getProperty("core"));
-        int arenaIndex = game.player.get_arena(0);
+        int arenaIndex = ((Game)user.getSession().getProperty("core")).player.get_arena(0);
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList)
             if ( !r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex )
                 return r;
-        
+
         return null;
     }
 }
