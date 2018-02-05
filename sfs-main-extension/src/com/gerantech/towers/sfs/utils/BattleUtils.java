@@ -67,7 +67,6 @@ public class BattleUtils
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
         Game game = ((Game)owner.getSession().getProperty("core"));
-        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isQuest:", isQuest, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         Map<Object, Object> roomProperties = new HashMap<>();
 
@@ -76,10 +75,10 @@ public class BattleUtils
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
             List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
             index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
-            Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
-            roomProperties.put("arena", arenaIndex.intValue());// ===> is temp
+            //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
+            roomProperties.put("arena", arena.index);// ===> is temp
         }
-
+        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isQuest:", isQuest, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         // temp solution
         long now = Instant.now().getEpochSecond();
