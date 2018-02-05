@@ -29,18 +29,15 @@ public class BattleUtils
 {
     private final SFSExtension ext;
     private static AtomicInteger roomId = new AtomicInteger();
-    public static int arenaDivider = 5;
 
     public BattleUtils()
     {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
-
     public static BattleUtils getInstance()
     {
         return new BattleUtils();
     }
-
 
     public void join(User user, Room theRoom, String spectatedUser)
     {
@@ -129,8 +126,6 @@ public class BattleUtils
         return null;
     }
 
-
-
     public Room findActiveBattleRoom(int playerId)
     {
         List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
@@ -147,5 +142,4 @@ public class BattleUtils
         }
         return null;
     }
-
 }

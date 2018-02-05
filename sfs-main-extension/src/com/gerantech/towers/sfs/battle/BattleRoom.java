@@ -515,15 +515,15 @@ public class BattleRoom extends SFSExtension
 	{
 		clearAllHandlers();
 
-		if(timer != null)
+		if( timer != null )
 			timer.cancel();
 		timer = null;
 		
-		if(autoJoinTimer != null)
+		if( autoJoinTimer != null )
 			autoJoinTimer.cancel();
 		autoJoinTimer = null;
 		
-		if(getState() >= STATE_DESTROYED)
+		if( getState() >= STATE_DESTROYED )
 			return;
 		setState( STATE_DESTROYED );
 

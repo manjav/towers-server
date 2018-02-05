@@ -57,8 +57,9 @@ public class RankRequestHandler extends BaseClientRequestHandler
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
 
+		int max = arenaIndex >= game.arenas.keys().length - 1 ? Integer.MAX_VALUE : game.arenas.get(arenaIndex).max;
 		// get arena max and min point
-		Predicate sqlQuery = eo.get("point").between(game.arenas.get(arenaIndex).min, game.arenas.get(arenaIndex).max);//.and(eo.get("xp").equal(12));
+		Predicate sqlQuery = eo.get("point").between(game.arenas.get(arenaIndex).min, max);//.and(eo.get("xp").equal(12));
 		
         // a comparator which helps to sort in descending order of point field
         Comparator<Map.Entry> descendingComparator = new Comparator<Map.Entry>() {

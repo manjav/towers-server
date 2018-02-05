@@ -22,7 +22,6 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
         int now = (int)Instant.now().getEpochSecond();
-        trace(now, LoginEventHandler.UNTIL_MAINTENANCE);
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
             params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
@@ -54,7 +53,6 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             else
                 theRoom = findWaitingBattlsRoom(user);
         }
-
 
         BattleUtils bu = BattleUtils.getInstance();
         if( theRoom == null )

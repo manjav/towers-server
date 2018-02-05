@@ -17,10 +17,11 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
         while ( numBattles >= 0 )
         {
             //trace(battles.get(numBattles).getOwner().getId(), sender.getId(),  battles.get(numBattles).getProperty("state")); remove after deploy
-            if ( battles.get(numBattles).getOwner().equals(sender) )
+            if( battles.get(numBattles).getOwner().equals(sender) )
             {
-                if( (Integer) battles.get(numBattles).getProperty("state") <= BattleRoom.STATE_WAITING ) {
-                    getApi().removeRoom(battles.get(numBattles));
+                if( (Integer) battles.get(numBattles).getProperty("state") <= BattleRoom.STATE_WAITING )
+                {
+                    getApi().leaveRoom(sender, battles.get(numBattles));
                     send(Commands.CANCEL_BATTLE, null, sender);
                     return;
                 }
