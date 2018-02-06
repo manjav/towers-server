@@ -22,7 +22,6 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
         int now = (int)Instant.now().getEpochSecond();
-        trace(now, LoginEventHandler.UNTIL_MAINTENANCE);
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
             params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
@@ -55,7 +54,6 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
                 theRoom = findWaitingBattlsRoom(user);
         }
 
-
         BattleUtils bu = BattleUtils.getInstance();
         if( theRoom == null )
             theRoom = bu.make(user, isQuest, index, 0, hasExtraTime);
@@ -67,14 +65,12 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
-        Game game = ((Game)user.getSession().getProperty("core"));
-        Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(game.player.get_arena(0)/2)*2);
+        int arenaIndex = ((Game)user.getSession().getProperty("core")).player.get_arena(0);
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
-        for (Room r : rList) {
-            //trace("arena", r.getProperty("arena"), arenaIndex, ((int) r.getProperty("arena")) == arenaIndex.intValue(), ((int) r.getProperty("appVersion")) == game.appVersion );
-            if ( !r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex.intValue() )
+        for (Room r : rList)
+            if ( !r.isFull() && !r.containsProperty("isFriendly") && (Integer) r.getProperty("state") == BattleRoom.STATE_WAITING && ((int) r.getProperty("arena")) == arenaIndex )
                 return r;
-        }
+
         return null;
     }
 }
