@@ -40,13 +40,17 @@ public class BaseLobbyRoom extends SFSExtension
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         // Add time and user-id to message
-        game = ((Game) sender.getSession().getProperty("core"));
+        if( sender != null )
+        {
+            game = ((Game) sender.getSession().getProperty("core"));
+
+            params.putInt("u", (int) Instant.now().getEpochSecond());
+            params.putInt("i", game.player.id);
+            params.putText("s", game.player.nickName);
+        }
+
         if( !params.containsKey("m") )
             params.putShort("m", (short) MessageTypes.M0_TEXT);
-        params.putInt("u", (int) Instant.now().getEpochSecond());
-        params.putInt("i", game.player.id);
-        params.putText("s", game.player.nickName);
-
         mode = params.getShort("m");
         messages = messageQueue();
         // Max 30 len message queue
