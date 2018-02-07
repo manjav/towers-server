@@ -44,7 +44,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			users.put(game.player.id, rd);
 		
 		RankData playerRD = users.get(game.player.id);
-		int arenaIndex = params.getInt("arena"); //game.player.get_arena( playerRD.point ) ;//params.getInt("arena");
+		int arenaIndex = params.getInt("arena");
 
 		SFSArray players = new SFSArray();
 		if( users.size() == 0 )
@@ -54,10 +54,12 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			return;
 		}
 
+		int max = arenaIndex >= game.arenas.keys().length - 1 ? 100000 : game.arenas.get(arenaIndex).max;
+		trace(arenaIndex, game.player.get_arena(0), "max", max);
+
         // a predicate to filter out champions in selected arena
 		EntryObject eo = new PredicateBuilder().getEntryObject();
 
-		int max = arenaIndex >= game.arenas.keys().length - 1 ? Integer.MAX_VALUE : game.arenas.get(arenaIndex).max;
 		// get arena max and min point
 		Predicate sqlQuery = eo.get("point").between(game.arenas.get(arenaIndex).min, max);//.and(eo.get("xp").equal(12));
 		
