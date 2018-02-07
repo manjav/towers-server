@@ -64,11 +64,11 @@ public class LobbyRoom extends BaseLobbyRoom
                 if (room != null) {
                     BattleUtils.getInstance().join(sender, room, "");
 
-                    params.putText("o", game.player.nickName);
-                    message.putText("o", game.player.nickName);
+                    params.putUtfString("o", game.player.nickName);
+                    message.putUtfString("o", game.player.nickName);
 
                     params.putInt("i", message.getInt("i"));
-                    params.putText("s", message.getText("s"));
+                    params.putUtfString("s", message.getUtfString("s"));
 
                     params.putShort("st", (short) 1);
                     message.putShort("st", (short) 1);
@@ -157,8 +157,8 @@ public class LobbyRoom extends BaseLobbyRoom
         ISFSObject msg = new SFSObject();
         msg.putUtfString("t", "");
         msg.putShort("m", mode);
-        msg.putText("s", subject);
-        msg.putText("o", object);
+        msg.putUtfString("s", subject);
+        msg.putUtfString("o", object);
         msg.putShort("p", permissionId);
         messageQueue().addSFSObject(msg);
         super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
@@ -189,7 +189,7 @@ public class LobbyRoom extends BaseLobbyRoom
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
         InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), "towers://open?controls=screen&type=socialScreen");
-        sendComment(params.getShort("pr"), game.player.nickName, params.getText("on"), (short)-1);// mode = join
+        sendComment(params.getShort("pr"), game.player.nickName, params.getUtfString("on"), (short)-1);// mode = join
         return true;
     }
 }

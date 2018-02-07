@@ -59,7 +59,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             msg.putShort("m", (short) MessageTypes.M41_CONFIRM_JOIN);
             msg.putInt("u", (int) Instant.now().getEpochSecond());
             msg.putInt("o", game.player.id);
-            msg.putText("on", game.player.nickName);
+            msg.putUtfString("on", game.player.nickName);
             messages.addSFSObject(msg);
 
             getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList(), room, false);

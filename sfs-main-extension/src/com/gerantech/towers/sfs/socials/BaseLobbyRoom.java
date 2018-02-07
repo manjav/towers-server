@@ -46,7 +46,7 @@ public class BaseLobbyRoom extends SFSExtension
 
             params.putInt("u", (int) Instant.now().getEpochSecond());
             params.putInt("i", game.player.id);
-            params.putText("s", game.player.nickName);
+            params.putUtfString("s", game.player.nickName);
         }
 
         if( !params.containsKey("m") )
