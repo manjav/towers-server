@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
@@ -27,6 +28,7 @@ public class BaseLobbyRoom extends SFSExtension
     {
         lobby = getParentRoom();
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
+        addRequestHandler(Commands.LOBBY_REPORT, LobbyReportHandler.class);
     }
 
     public void handleClientRequest(String requestId, User sender, ISFSObject params) {
