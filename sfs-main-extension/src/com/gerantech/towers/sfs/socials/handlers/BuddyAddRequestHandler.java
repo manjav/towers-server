@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.towers.Game;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.api.ISFSBuddyApi;
 import com.smartfoxserver.v2.buddylist.Buddy;
@@ -146,7 +147,7 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         }
 
         // Send friendship notification to inviter inbox
-        InboxUtils.getInstance().send(0, msg, game.player.nickName, inviteeId, inviterId, "" );
+        InboxUtils.getInstance().send(MessageTypes.M50_URL, msg, game.player.nickName, inviteeId, inviterId, "towers://open?controls=tabs&dashTab=3&socialTab=2" );
         OneSignalUtils.getInstance().getInstance().send(msg, null, inviterId);
         sendResult(sender, params, OK);
     }
