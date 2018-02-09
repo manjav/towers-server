@@ -53,8 +53,11 @@ public class LobbyUtils
         }
     }
 
-    public Room getLobby(User user)
+    public Room getLobby(int id)
     {
+        User user = ext.getParentZone().getUserByName(id + "");
+        if( user == null )
+            return  null;
         List<Room> rooms = user.getJoinedRooms();
         for (Room r:rooms)
             if( r.getGroupId().equals("lobbies" ))
