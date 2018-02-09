@@ -22,6 +22,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
                 if( (Integer) battles.get(numBattles).getProperty("state") <= BattleRoom.STATE_WAITING )
                 {
                     getApi().leaveRoom(sender, battles.get(numBattles));
+                    getApi().removeRoom(battles.get(numBattles));
                     send(Commands.CANCEL_BATTLE, null, sender);
                     return;
                 }

@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
@@ -27,6 +28,7 @@ public class BaseLobbyRoom extends SFSExtension
     {
         lobby = getParentRoom();
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
+        addRequestHandler(Commands.LOBBY_REPORT, LobbyReportHandler.class);
     }
 
     public void handleClientRequest(String requestId, User sender, ISFSObject params) {
@@ -38,13 +40,17 @@ public class BaseLobbyRoom extends SFSExtension
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         // Add time and user-id to message
-        game = ((Game) sender.getSession().getProperty("core"));
+        if( sender != null )
+        {
+            game = ((Game) sender.getSession().getProperty("core"));
+
+            params.putInt("u", (int) Instant.now().getEpochSecond());
+            params.putInt("i", game.player.id);
+            params.putUtfString("s", game.player.nickName);
+        }
+
         if( !params.containsKey("m") )
             params.putShort("m", (short) MessageTypes.M0_TEXT);
-        params.putInt("u", (int) Instant.now().getEpochSecond());
-        params.putInt("i", game.player.id);
-        params.putText("s", game.player.nickName);
-
         mode = params.getShort("m");
         messages = messageQueue();
         // Max 30 len message queue

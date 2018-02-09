@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.administration;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -51,11 +52,13 @@ public class SpectateRoom extends SFSExtension
 				battle.putText("name", r.getName());
 				battle.putInt("startAt", (Integer)r.getProperty("startAt"));
 				ISFSArray players = new SFSArray();
-				for ( User u : r.getUserList() )
+
+				ArrayList<Game> registeredPlayers = (ArrayList)r.getProperty("registeredPlayers");
+				for ( Game g : registeredPlayers )
 				{
 					SFSObject p = new SFSObject();
-					p.putText("n", u.getVariable("name").getStringValue());
-					Room lobby = lobbyUtils.getLobby(u);
+					p.putText("n", g.player.nickName);
+					Room lobby = lobbyUtils.getLobby(g.player.id);
 					if( lobby != null )
 					{
 						p.putText("ln", lobby.getName());
@@ -68,7 +71,8 @@ public class SpectateRoom extends SFSExtension
 				battles.addSFSObject(battle);
 			}
 
-			if( isChanged(reservedRooms, battles) ) {
+			if( isChanged(reservedRooms, battles) )
+			{
 				List<RoomVariable> listOfVars = new ArrayList();
 				listOfVars.add(new SFSRoomVariable("rooms", battles));
 				sfsApi.setRoomVariables(null, room, listOfVars);
@@ -81,13 +85,8 @@ public class SpectateRoom extends SFSExtension
 		trace(room.getName(), "created.");
 	}
 
-	private boolean isChanged(ISFSArray reservedRooms, SFSArray newRooms) {
-		int nu = room.getUserList().size();
-		if( numUsers != nu )
-		{
-			numUsers = nu;
-			return true;
-		}
+	private boolean isChanged(ISFSArray reservedRooms, SFSArray newRooms)
+	{
 		if( reservedRooms.size() != newRooms.size() )
 			return true;
 		//trace(reservedRooms.size(), newRooms.size());
@@ -101,7 +100,7 @@ public class SpectateRoom extends SFSExtension
 	public void destroy()
 	{
 		clearAllHandlers();
-		if(timer != null)
+		if( timer != null )
 			timer.cancel();
 		timer = null;
 		trace(room.getName(), "destroyed.");

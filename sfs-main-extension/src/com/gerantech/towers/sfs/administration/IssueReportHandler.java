@@ -32,9 +32,6 @@ public class IssueReportHandler extends BaseClientRequestHandler
 			params.putText("errorCode", e.getErrorCode()+"");
 			trace(e.getMessage());
 		}
-		if( game.appVersion >= 2025 )
-			send(Commands.ISSUE_REPORT, params, sender);
-  		else
-			send("bugReport", params, sender);
+		send(Commands.ISSUE_REPORT, params, sender);
     }
 }
