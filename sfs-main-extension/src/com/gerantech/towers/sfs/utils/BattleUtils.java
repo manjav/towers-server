@@ -111,7 +111,7 @@ public class BattleUtils
         rs.setGame(true);
         rs.setMaxSpectators(50);
         rs.setDynamic(true);
-        rs.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
+        rs.setAutoRemoveMode( isQuest ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
         rs.setRoomProperties( roomProperties );
         rs.setName( pref + index+ "__" + roomId.getAndIncrement() );
         rs.setMaxUsers(isQuest?1:2);

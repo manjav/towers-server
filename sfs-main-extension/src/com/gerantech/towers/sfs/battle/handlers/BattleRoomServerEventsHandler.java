@@ -15,11 +15,10 @@ import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
-import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -78,7 +77,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			Game game = (Game) room.getPlayersList().get(0).getSession().getProperty("core");
 			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 :  RandomPicker.getInt(4000, 8000 );
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
@@ -87,30 +85,16 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 				@Override
 				public void run() {
-
-				IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-				RankData opponent = RankingUtils.getInstance().getNearOpponent(users, game.player.get_point(),  Math.max(20, game.player.get_point()/4));
-				try {
-					User npcUser = getApi().createNPC(opponent.id+"", getParentExtension().getParentZone(), true);
-					List<UserVariable> vars = new ArrayList<>();
-					vars.add(new SFSUserVariable("name", opponent.name));
-					vars.add(new SFSUserVariable("point", opponent.point));
-					getApi().setUserVariables(npcUser, vars, true, true);
-					getApi().joinRoom(npcUser, room);
-
-					// exclude npc from npc-opponents list
-					opponent.xp = -2;
-					users.replace(opponent.id, opponent);
-				} catch (Exception e) { e.printStackTrace(); }
-				cancel();
-				roomClass.autoJoinTimer.cancel();
-
+					cancel();
+					roomClass.autoJoinTimer.cancel();
+					room.setMaxUsers(1);
+					sendStartBattleResponse(true);
 				}
 			}, waitingPeak);
 		}
 		else
 		{
-			sendStartBattleResponse();
+			sendStartBattleResponse(false);
 		}
 	}
 
@@ -158,16 +142,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		}
 	}
 
-	private void sendStartBattleResponse()
+	private void sendStartBattleResponse(Boolean opponentNotFound)
 	{
-		boolean isQuest = (Boolean)room.getProperty("isQuest");
-		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
-
-		String mapName = getMapName(isQuest);
+		boolean isQuest = (boolean) room.getProperty("isQuest");
 		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
+		roomClass.createGame(getMapName(isQuest), opponentNotFound);
 
-		roomClass.createGame(mapName, isQuest, existsNpc||isQuest);
-		List<User> players = roomClass.getRealPlayers();
+		List<User> players = room.getPlayersList();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i));
 	}
@@ -197,9 +178,26 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", existsNpc||isQuest);
 		sfsO.putText("mapName", getMapName(isQuest));
+
+		boolean isSpectator = player.isSpectator(room);
+		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+		int i = 0;
+		for ( Game g : registeredPlayers )
+		{
+			SFSObject p = new SFSObject();
+			p.putUtfString("name", g.player.nickName);
+			p.putInt("point", g.player.get_point());
+			if( isSpectator )
+				sfsO.putSFSObject( i == 0 ? "allis" : "axis", p );
+			else
+				sfsO.putSFSObject( g.player.id == Integer.parseInt(player.getName()) ? "allis" : "axis", p );
+
+			i ++;
+		}
+
 		send("startBattle", sfsO, player);
 
-		if( !player.isSpectator(room) )
+		if( !isSpectator )
 		{
 			player.getBuddyProperties().setState("Occupied");
 			player.getBuddyProperties().setVariable(new SFSBuddyVariable("br", room.getId()));

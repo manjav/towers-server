@@ -4,12 +4,15 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.hazel.RankData;
 import com.gt.towers.Game;
+import com.gt.towers.InitData;
 import com.gt.towers.battle.AIEnemy;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -71,23 +74,33 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler(Commands.RESET_ALL, BattleRoomResetVarsRequestHandler.class);
 	}
 
-	public void createGame(String mapName, Boolean isQuest, final boolean singleMode)
+	public void createGame(String mapName, Boolean opponentNotFound)
 	{
-		if(autoJoinTimer != null)
+		if( autoJoinTimer != null )
 			autoJoinTimer.cancel();
 
 		setState( STATE_CREATED );
-		this.isQuest = isQuest;
-		this.singleMode = singleMode;
+		this.isQuest = (boolean) room.getProperty("isQuest");
+		this.singleMode = opponentNotFound;
 
 		// reserve player data
 		registeredPlayers = new ArrayList();
 		List<User> players = getRealPlayers();
         for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
+        if( opponentNotFound )
+		{
+			InitData data = new InitData();
+			data.id = (int) (Math.random() * 9999);
+			data.nickName = RankingUtils.getInstance().getRandomName();
+			data.resources.set(ResourceType.POINT, 0);
+			Game botGame = new Game();
+			botGame.init(data);
+			registeredPlayers.add( botGame );
+		}
         room.setProperty("registeredPlayers", registeredPlayers);
 
-		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
+		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
@@ -133,14 +146,14 @@ public class BattleRoom extends SFSExtension
 					}
 				}
 				
-				if(vars.size() > 0)
+				if( vars.size() > 0 )
 				{
 					// Set variables
 					List<RoomVariable> listOfVars = new ArrayList();
 					listOfVars.add( new SFSRoomVariable("towers", vars) );
 					sfsApi.setRoomVariables(null, room, listOfVars);
 				}
-				// somtimes auto start battle
+				// sometimes auto start battle
 				if( singleMode && (battleField.difficulty > 5 || Math.random()>0.5) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
 					setState(STATE_BATTLE_STARTED);
 
@@ -379,6 +392,7 @@ public class BattleRoom extends SFSExtension
 
 	private void calculateEndBattleResponse()
 	{
+		DBUtils dbUtils = DBUtils.getInstance();
 		SFSArray outcomesSFSData = new SFSArray();
 
 		IntIntMap[] outcomesList = new IntIntMap[registeredPlayers.size()];
@@ -393,10 +407,12 @@ public class BattleRoom extends SFSExtension
 
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i] );
 
-			DBUtils dbUtils = DBUtils.getInstance();
 			//trace("isQuest", isQuest, scores[i]);
-			if ( isQuest )
+			if( isQuest )
 			{
+				if( game.isBot() )
+					continue;
+
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
 					try {
@@ -424,33 +440,24 @@ public class BattleRoom extends SFSExtension
 			}
 			outcomesSFSData.addSFSObject(outcomeSFS);
 
-			game.player.addResources(outcomesList[i]);
-			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
-			try {
-
-				dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
-				dbUtils.updateResources(game.player, updateMap);
-				dbUtils.insertResources(game.player, insertMap);
-			} catch (Exception e) {
-				e.printStackTrace();
+			if( !game.isBot() )
+			{
+				game.player.addResources(outcomesList[i]);
+				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+				try {
+					dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
+					dbUtils.updateResources(game.player, updateMap);
+					dbUtils.insertResources(game.player, insertMap);
+				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}
-
-		if( !isQuest && outcomesSFSData.size() < 2 )
-		{
-			SFSObject outcomeSFS = new SFSObject();
-			outcomeSFS.putInt("id", 0);
-			outcomeSFS.putInt("score", scores[1]);
-			outcomesSFSData.addSFSObject(outcomeSFS);
-		}
-
 
 		// send to all users
 		SFSObject params = new SFSObject();
 		params.putSFSArray("outcomes", outcomesSFSData);
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-			send( "endBattle", params, users.get(i) );
+			send( Commands.END_BATTLE, params, users.get(i) );
 
 		removeAllUsers();
 	}
@@ -459,18 +466,9 @@ public class BattleRoom extends SFSExtension
 	{
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-		{
-			User user = users.get(i);
-			getApi().leaveRoom(user, room);
-			if ( user.isNpc() )
-			{
-				// return npc to npc-opponents list
-				RankingUtils.getInstance().setXP(Integer.parseInt(user.getName()), -1);
+			getApi().leaveRoom(users.get(i), room);
 
-				// remove npc
-				getApi().disconnect(user.getSession());
-			}
-		}
+		getApi().removeRoom(room);
 	}
 
 	@Override
@@ -509,15 +507,6 @@ public class BattleRoom extends SFSExtension
 		return ret;
 	}
 
-	public User getRealPlayer(int id)
-	{
-		List<User> players = getRealPlayers();
-		for (int i=0; i < players.size(); i++)
-			if( players.get(i).getName().equals(id+"") )
-				return  players.get(i);
-		return null;
-	}
-
 	public int getPlayerGroup(User player)
 	{
 		if( player == null )
@@ -545,4 +534,5 @@ public class BattleRoom extends SFSExtension
 	{
 		return _state;
 	}
+
 }
