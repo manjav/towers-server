@@ -6,11 +6,13 @@ import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
+import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.battle.Troop;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -74,28 +76,41 @@ public class BattleRoom extends SFSExtension
 		addRequestHandler(Commands.RESET_ALL,			BattleRoomResetVarsRequestHandler.class);
 	}
 
-	public void createGame(String mapName, Boolean isQuest, final boolean singleMode)
+	public void createGame(String mapName, Boolean opponentNotFound)
 	{
-		if(autoJoinTimer != null)
+		if( autoJoinTimer != null )
 			autoJoinTimer.cancel();
 
 		setState( STATE_CREATED );
-		this.isQuest = isQuest;
-		this.singleMode = singleMode;
+		this.isQuest = (boolean) room.getProperty("isQuest");
+		this.singleMode = opponentNotFound;
+
 		// reserve player data
 		registeredPlayers = new ArrayList();
 		List<User> players = getRealPlayers();
 		for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
-		room.setProperty("registeredPlayers", registeredPlayers);
+        if( opponentNotFound )
+		{
+			InitData data = new InitData();
+			data.id = (int) (Math.random() * 9999);
+			data.nickName = RankingUtils.getInstance().getRandomName();
+			data.resources.set(ResourceType.POINT, 0);
+			Game botGame = new Game();
+			botGame.init(data);
+			registeredPlayers.add( botGame );
+		}
+        room.setProperty("registeredPlayers", registeredPlayers);
 
-		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.size()==1?null:registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
+        // create battlefield
+		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
 		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
 		SFSArray decks = new SFSArray();
 		for (int i = 0; i < battleField.deckBuildings.size() ; i++)
 			decks.addInt(battleField.deckBuildings.get(i).building.type);
 		room.setProperty("decks", decks);
 
+		// reserving arrays
 		reservedTypes = new int[battleField.places.size()];
 		//reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
@@ -411,6 +426,7 @@ public class BattleRoom extends SFSExtension
 
 	private void sendEndResponse()
 	{
+		DBUtils dbUtils = DBUtils.getInstance();
 		SFSArray outcomesSFSData = new SFSArray();
 
 		IntIntMap[] outcomesList = new IntIntMap[registeredPlayers.size()];
@@ -426,10 +442,12 @@ public class BattleRoom extends SFSExtension
 
 			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i], keys[i]);
 
-			DBUtils dbUtils = DBUtils.getInstance();
 			//trace("isQuest", isQuest, scores[i]);
-			if ( isQuest )
+			if( isQuest )
 			{
+				if( game.isBot() )
+					continue;
+
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
 				{
 					try {
@@ -456,26 +474,17 @@ public class BattleRoom extends SFSExtension
 			}
 			outcomesSFSData.addSFSObject(outcomeSFS);
 
-			game.player.addResources(outcomesList[i]);
-			ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
-			try {
-
-				dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
-				dbUtils.updateResources(game.player, updateMap);
-				dbUtils.insertResources(game.player, insertMap);
-			} catch (Exception e) {
-				e.printStackTrace();
+			if( !game.isBot() )
+			{
+				game.player.addResources(outcomesList[i]);
+				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+				try {
+					dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
+					dbUtils.updateResources(game.player, updateMap);
+					dbUtils.insertResources(game.player, insertMap);
+				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}
-
-		if( !isQuest && outcomesSFSData.size() < 2 )
-		{
-			SFSObject outcomeSFS = new SFSObject();
-			outcomeSFS.putInt("id", 0);
-			outcomeSFS.putInt("key", scores[1]);
-			outcomesSFSData.addSFSObject(outcomeSFS);
-		}
-
 
 		// send to all users
 		SFSObject params = new SFSObject();
@@ -491,18 +500,9 @@ public class BattleRoom extends SFSExtension
 	{
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-		{
-			User user = users.get(i);
-			getApi().leaveRoom(user, room);
-			if ( user.isNpc() )
-			{
-				// return npc to npc-opponents list
-				RankingUtils.getInstance().setXP(Integer.parseInt(user.getName()), -1);
+			getApi().leaveRoom(users.get(i), room);
 
-				// remove npc
-				getApi().disconnect(user.getSession());
-			}
-		}
+		getApi().removeRoom(room);
 	}
 
 	@Override

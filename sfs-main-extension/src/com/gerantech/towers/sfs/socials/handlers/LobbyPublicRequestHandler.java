@@ -71,7 +71,7 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(false);
         rs.setDynamic(true);
-        rs.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
+        rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         //rs.setRoomProperties( roomProperties );
         rs.setName( "public_lobby_" + roomId.getAndIncrement() );
         rs.setMaxUsers(50);
