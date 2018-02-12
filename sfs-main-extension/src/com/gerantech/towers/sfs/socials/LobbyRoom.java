@@ -8,6 +8,8 @@ import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.constants.ResourceType;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -17,6 +19,8 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
+
+import java.sql.SQLException;
 
 /**
  * Created by ManJav on 8/25/2017.
@@ -50,6 +54,7 @@ public class LobbyRoom extends BaseLobbyRoom
         super.organizeMessage(sender, params, false);
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
+            trace("\n\t..::BATTLE::..\n");
             // cancel previous requested battle by owner
             ISFSObject message = getMyRequestedBattle(params, game.player);
             if (message != null) {
@@ -105,20 +110,31 @@ public class LobbyRoom extends BaseLobbyRoom
         }
         else if ( mode == MessageTypes.M20_DONATE )
         {
-            trace("\n\t..::DONATION::..\n");
+            trace("\n\n\t..::DONATION::..", params.getDump());
             params.putInt("did", 1000);
-            params.getDump();
 
-            //check card request or card donate. state=0 --> Request | state=1 --> Donate
+            // check card request or card donate. state=0 --> Request | state=1 --> Donate
             if ( params.getShort("st") == 0 ) // Request Card
             {
-                if ( checkPreviousCardRequest(params) )
-                    return;
+                //if ( checkPreviousCardRequest(params) )
+                //    return;
                 messages.addSFSObject(params);
+                trace("DONATION: requester:", params.getInt("i"), "| card type:", params.getShort("ct"));
             }
             else if ( params.getShort("st") == 1 ) // Donate Card
             {
-                getRequestedCardNum(params);
+                //getRequestedCardNum(params);
+                DBUtils db = new DBUtils();
+                Short cardType = params.getShort("ct");
+
+                if( db.donateCard(cardType, params.getInt("i"), params.getInt("r")))
+                {
+                    db.donorRewards(params.getShort("ct"), params.getInt("i"));
+                    trace("DONATION: donorId:", params.getInt("i"), "| requester:", params.getInt("r"), "| card type:", cardType);
+                }
+                else {
+                    trace("DONATION ERROR!");
+                }
             }
             return;
         }
@@ -166,11 +182,6 @@ public class LobbyRoom extends BaseLobbyRoom
             }
         }
         return false;
-    }
-
-    private void updateCardNum(int playerId, int cardType, int value)
-    {
-        DBUtils db = DBUtils.getInstance();
     }
 
     private int getRelatedConfirm(ISFSArray messages, ISFSObject params)

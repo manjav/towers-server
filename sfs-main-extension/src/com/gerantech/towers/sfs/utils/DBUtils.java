@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.utils;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.buildings.cals.RarityCalculator;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -236,6 +237,58 @@ public class DBUtils
         } catch (SQLException e) {
             e.printStackTrace();
             return "Player";
+        }
+    }
+
+    public Boolean donateCard(Short cardType, int donorId, int requesterId)
+    {
+        String checkRes = "SELECT resources.count FROM resources WHERE resources.player_id = "+ donorId +" AND resources.`type` = "+ cardType +" AND resources.count > 0";
+        String getCard = "UPDATE resources SET resources.count = resources.count - 1 WHERE resources.player_id = "+ donorId +" AND resources.`type`= "+ cardType;
+        String giveCard = "UPDATE resources SET resources.count = resources.count + 1 WHERE resources.player_id = "+ requesterId +" AND resources.`type`= "+ cardType;
+        try {
+            //ext.trace("checkRes:", checkRes);
+            if ( db.executeQuery(checkRes, new Object[]{}).size() > 0 )
+            {
+                //ext.trace("getCard:", getCard);
+                db.executeUpdate(getCard, new Object[]{});
+                //ext.trace("giveCards:", giveCard);
+                db.executeUpdate(giveCard, new Object[]{});
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    public void donorRewards(Short cardType, int playerId)
+    {
+        RarityCalculator r = new RarityCalculator();
+        int xp = 0, coin = 0;
+        switch (r.get(cardType))
+        {
+            case 0:
+                xp = 1; coin = 5;
+                break;
+            case 1:
+                xp = 10; coin = 20;
+                break;
+            case 2:
+                xp = 10; coin = 200;
+                break;
+            default:
+                break;
+        }
+
+        String xpReward = "UPDATE resources SET resources.count = resources.count + "+ xp +" WHERE resources.player_id = "+ playerId +" AND resources.`type`= 1000;";
+        String coinReward = "UPDATE resources SET resources.count = resources.count + "+ coin +" WHERE resources.player_id = "+ playerId +" AND resources.`type`= 1002;";
+
+        try {
+            db.executeUpdate(xpReward, new Object[]{});
+            db.executeUpdate(coinReward, new Object[]{});
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
