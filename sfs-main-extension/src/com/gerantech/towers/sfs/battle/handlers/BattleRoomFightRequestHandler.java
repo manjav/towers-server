@@ -7,10 +7,9 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 public class BattleRoomFightRequestHandler extends BaseClientRequestHandler
 {
-
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
-		roomClass.fight(params.getIntArray("s").toArray(), params.getInt("d"), false);
+		roomClass.fight(params.getSFSArray("s"), params.getInt("d"), false, 0.5);
 	}
 }
