@@ -38,10 +38,10 @@ public class BattleBot {
 
     private int sampleTime;
     private int timeFactor;
+    private int battleRatio = 0;
+    private double lastStickerTime;
     private double troopsDivision;
     private PlaceList allPlaces;
-   // private final Map<Integer, ScheduledPlace> fighters;
-    private boolean chatStarted;
     private Timer chatTimer;
 
     public BattleBot(BattleRoom battleRoom)
@@ -103,8 +103,6 @@ public class BattleBot {
             weakestPlace = samePriorities.get((int) Math.floor(Math.random() * samePriorities.size()));
         if( weakestPlace > -1 )
             fightToPlace(allPlaces.get(weakestPlace), 0);
-
-        startChating();
     }
 
     /**
@@ -142,6 +140,11 @@ public class BattleBot {
         // estimate powers of sides
         PlaceList playerPlaces = battleField.getPlacesByTroopType(TroopType.T_0, false);
         PlaceList robotPlaces = battleField.getPlacesByTroopType(TroopType.T_1, false);
+
+        // end battle
+        if( playerPlaces.size() == 0 || robotPlaces.size() == 0 )
+            return;
+
         if( estimateImproveMode(robotPlaces) < estimateImproveMode(playerPlaces) * 0.9 )
         {
             //extension.trace(estimateImproveMode(robotPlaces), estimateImproveMode(playerPlaces) * 0.9);
@@ -159,6 +162,7 @@ public class BattleBot {
             scheduleFighters(target, fighters);
 
         improveAll(robotPlaces, firstToFight);
+        startChating(robotPlaces.size() - playerPlaces.size());
     }
 
     void addFighters(Place place, IntList fightersCandidates, HashMap fighters)
@@ -265,18 +269,23 @@ public class BattleBot {
     }
 
 
-
-    private void startChating()
+    private void startChating(int battleRatio)
     {
-        if( chatStarted || battleField.map.isQuest || Math.random() > 0.002 )
+        if( battleField.map.isQuest )
             return;
 
-        SFSObject st = new SFSObject();
-        st.putInt("t", StickerType.getRandomStart());
-        battleRoom.sendSticker(null, st);
-
-        chatStarted = true;
+        //extension.trace(this.battleRatio, battleRatio);
+        if( battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() > 0.5 && battleField.now > battleField.startAt + 30 )
+        {
+            SFSObject stickerParams = new SFSObject();
+            stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
+            stickerParams.putInt("tt", 1);
+            battleRoom.sendSticker(null, stickerParams);
+            lastStickerTime = battleField.now;
+        }
+        this.battleRatio = battleRatio;
     }
+
     public void answerChat(ISFSObject params)
     {
         if( Math.random() > 0.5 )
@@ -286,6 +295,7 @@ public class BattleBot {
             {
                 ISFSObject stickerParams = new SFSObject();
                 stickerParams.putInt("t", answer);
+                stickerParams.putInt("tt", 1);
                 stickerParams.putInt("wait", 0);
 
                 chatTimer = new Timer();
@@ -346,7 +356,7 @@ public class BattleBot {
         return sum / size;
     }
     double estimateHealth(Place place) {
-        return place.building.get_population() * place.building.get_troopPower() * 1.6;
+        return place.building.get_population() * place.building.get_troopPower() * 1.3;
     }
 
     double priority(Place place)
