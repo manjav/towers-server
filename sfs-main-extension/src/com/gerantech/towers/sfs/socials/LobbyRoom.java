@@ -21,6 +21,7 @@ import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 
 import java.sql.SQLException;
+import java.time.Instant;
 
 /**
  * Created by ManJav on 8/25/2017.
@@ -111,7 +112,8 @@ public class LobbyRoom extends BaseLobbyRoom
         else if ( mode == MessageTypes.M20_DONATE )
         {
             trace("\n\n\t..::DONATION::..", params.getDump());
-            params.putInt("did", 1000);
+            //params.putInt("did", 1000);
+            checkDonateTimers();
 
             // check card request or card donate. state=0 --> Request | state=1 --> Donate
             if ( params.getShort("st") == 0 ) // Request Card
@@ -152,36 +154,14 @@ public class LobbyRoom extends BaseLobbyRoom
         messages.addSFSObject(params);
     }
 
-    private void getRequestedCardNum(ISFSObject params)
+    public void checkDonateTimers()
     {
-        try {
-            DBUtils db = new DBUtils();
-            SFSArray resources = db.getResources(params.getInt("i"));
-            trace("player resources:");
-            resources.getDump();
-            /*for (int i = 0; i < resources.size(); i++) {
-                for (int j = 0; j < resources.getSFSArray(i).size(); j++) {
-                }
-            }*/
-        } catch (SFSException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Boolean checkPreviousCardRequest(ISFSObject params) // returns true if previous card req exists
-    {
-        ISFSArray messages = messageQueue();
-        for (int i = messages.size()-1; i > 0; i--)
-        {
-            ISFSObject message = messages.getSFSObject(i);
-            Boolean isDonate = ( message.getShort("m") == MessageTypes.M20_DONATE );
-            if ( isDonate && message.getShort("st") == 0 && message.getInt("i").equals(params.getInt("i")) )
-            {
-                trace("ERROR-donation: There is a previous requests ...");
-                return true;
-            }
-        }
-        return false;
+        trace("\t..::checkMessageTimer::..");
+        int msgSize = messages.size();
+        for (int i = msgSize - 1; i > 0 ; i--)
+            if( messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE )
+                if( messages.getSFSObject(i).getLong("dt") <= Instant.now().getEpochSecond() )
+                    messages.removeElementAt(i);
     }
 
     private int getRelatedConfirm(ISFSArray messages, ISFSObject params)
