@@ -4,7 +4,6 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
-import com.hazelcast.internal.cluster.impl.JoinRequest;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -14,19 +13,12 @@ import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ManJav on 8/24/2017.
  */
 public class LobbyJoinHandler extends BaseClientRequestHandler
 {
-    private static final int REQUEST_SENT = 1;
-    private static final int JOINED = 0;
-    private static final int NOT_ALLOWED = -1;
-    private static final int MULTI_LOBBY_ILLEGAL = -2;
-
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
@@ -47,15 +39,21 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             } catch (SFSJoinRoomException e) {
                 e.printStackTrace();
             }
-            params.putInt("response", JOINED);
+            params.putInt("response", MessageTypes.JOIN_LOBBY_SUCCEED);
         }
         else if( privacy == 1 )
         {
             ISFSArray messages = room.getVariable("msg").getSFSArrayValue();
 
             for (int i = messages.size()-1; i >= 0; i--)
+            {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
+                {
+                    params.putInt("response", MessageTypes.JOIN_LOBBY_REQUEST_ALREADY_SENT);
+                    send(Commands.LOBBY_JOIN, params, sender);
                     return;
+                }
+            }
 
             SFSObject msg = new SFSObject();
             msg.putShort("m", (short) MessageTypes.M41_CONFIRM_JOIN);
@@ -66,11 +64,11 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
 
             getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList(), room, false);
             //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());
-            params.putInt("response", REQUEST_SENT);
+            params.putInt("response", MessageTypes.JOIN_LOBBY_REQUEST_SENT);
         }
         else
         {
-            params.putInt("response", NOT_ALLOWED);
+            params.putInt("response", MessageTypes.JOIN_LOBBY_NOT_ALLOWED);
         }
         send(Commands.LOBBY_JOIN, params, sender);
     }

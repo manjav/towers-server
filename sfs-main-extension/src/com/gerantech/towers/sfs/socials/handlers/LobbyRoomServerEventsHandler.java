@@ -24,7 +24,6 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 		room = (Room)arg.getParameter(SFSEventParam.ROOM);
 		roomClass = (LobbyRoom) room.getExtension();
 		User user = (User)arg.getParameter(SFSEventParam.USER);
-		//Zone zone = (Zone)arg.getParameter(SFSEventParam.ZONE);
 
 		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )
 			joinRoom( user );
