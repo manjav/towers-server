@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.hazelcast.internal.cluster.impl.JoinRequest;
@@ -28,8 +29,10 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        if(sender.getLastJoinedRoom() != null) {
-            params.putInt("response", MULTI_LOBBY_ILLEGAL);
+        Game game = ((Game) sender.getSession().getProperty("core"));
+        if( LobbyUtils.getInstance().getLobby(game.player.id) != null )
+        {
+            params.putInt("response", MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL);
             trace(sender.getName() + " not able to join more lobbies !");
             send(Commands.LOBBY_JOIN, params, sender);
             return;
@@ -48,7 +51,6 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         }
         else if( privacy == 1 )
         {
-            Game game = ((Game) sender.getSession().getProperty("core"));
             ISFSArray messages = room.getVariable("msg").getSFSArrayValue();
 
             for (int i = messages.size()-1; i >= 0; i--)
