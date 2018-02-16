@@ -53,7 +53,7 @@ public class BattleBot {
 
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
         timeFactor = Math.max(1, 10 - battleField.difficulty );
-        troopsDivision = Math.max(0.2, Math.min(0.9, battleField.difficulty * 0.2));
+        troopsDivision = Math.max(0.3, Math.min(0.9, battleField.difficulty * 0.3));
         extension.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
@@ -132,9 +132,6 @@ public class BattleBot {
 
     void fightToPlace(Place target, double forceTargetHealth)
     {
-        //if( fighters.size() > 0 )
-         //   return;
-
         fightersPower = 0;
         targetHealth = forceTargetHealth > 0 ? forceTargetHealth : estimateHealth(target);
 
@@ -157,12 +154,14 @@ public class BattleBot {
         HashMap fighters = new HashMap();
         addFighters(target, fightersCandidates, fighters);
 
-        boolean firstToFight = fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0);
         //extension.trace("target:" + target.index, " numFighters:" + fighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth, fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0) );
+        boolean firstToFight = fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0 );
         if( firstToFight )
             scheduleFighters(target, fighters);
+        else if( !improveAll(robotPlaces, firstToFight))
+            scheduleFighters(target, fighters);
+        extension.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
 
-        improveAll(robotPlaces, firstToFight);
         startChating(robotPlaces.size() - playerPlaces.size());
     }
 
@@ -231,15 +230,18 @@ public class BattleBot {
         }
     }
 
-    void improveAll(PlaceList places, boolean oneImprove)
+    boolean improveAll(PlaceList places, boolean oneImprove)
     {
         int step = places.size() - 1;
+        boolean ret = false;
         while ( step >= 0 )
         {
-            if( improve(places.get(step), true) && oneImprove)
-                return;
+            ret = improve(places.get(step), true) || ret;
+            if( ret && oneImprove)
+                return true;
             step --;
         }
+        return ret;
     }
     boolean improve(Place place, boolean needPopulation)
     {
@@ -368,7 +370,7 @@ public class BattleBot {
         return sum / size;
     }
     double estimateHealth(Place place) {
-        return place.building.get_population() * place.building.get_troopPower() * 1.3;
+        return place.building.get_population() * place.building.get_troopPower() * (1.2 + battleField.difficulty * 0.05);
     }
 
     double priority(Place place)
