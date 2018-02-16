@@ -275,20 +275,29 @@ public class BattleBot {
             return;
 
         //extension.trace(this.battleRatio, battleRatio);
-        if( battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() > 0.5 && battleField.now > battleField.startAt + 30 )
+        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() < 0.2 && battleField.now > battleField.startAt + 30 )
         {
             SFSObject stickerParams = new SFSObject();
             stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
             stickerParams.putInt("tt", 1);
-            battleRoom.sendSticker(null, stickerParams);
-            lastStickerTime = battleField.now;
+            chatTimer = new Timer();
+            chatTimer.schedule(new TimerTask() {
+                @Override
+                public void run()
+                {
+                    battleRoom.sendSticker(null, stickerParams);
+                    lastStickerTime = battleField.now;
+                    chatTimer.cancel();
+                    chatTimer = null;
+                }
+            }, (long) (Math.random() * 1000 + 500));
         }
         this.battleRatio = battleRatio;
     }
 
     public void answerChat(ISFSObject params)
     {
-        if( Math.random() > 0.5 )
+        if( chatTimer == null && Math.random() > 0.5 )
         {
             int answer = StickerType.getRandomAnswer( params.getInt("t") );
             if( answer > -1 )
@@ -305,6 +314,7 @@ public class BattleBot {
                     {
                         battleRoom.sendSticker(null, stickerParams);
                         chatTimer.cancel();
+                        chatTimer = null;
                     }
                 }, (long) (Math.random() * 2500 + 1500));
             }
