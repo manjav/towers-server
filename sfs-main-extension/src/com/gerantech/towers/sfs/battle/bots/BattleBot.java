@@ -43,6 +43,7 @@ public class BattleBot {
     private double troopsDivision;
     private PlaceList allPlaces;
     private Timer chatTimer;
+    private int lastTarget = -1;
 
     public BattleBot(BattleRoom battleRoom)
     {
@@ -192,6 +193,7 @@ public class BattleBot {
 
     void scheduleFighters(Place target, HashMap fighters)
     {
+        lastTarget = target.index;
         dangerousPoint = -1;
         long maxDelay = 0;
 
@@ -371,7 +373,6 @@ public class BattleBot {
 
     double priority(Place place)
     {
-        return estimateHealth(place) + Math.abs(place.building.troopType);
+        return estimateHealth(place) + (place.building.troopType + 1) * 0.5 + ( lastTarget == place.index ? -0.5 : 0 );
     }
-
 }
