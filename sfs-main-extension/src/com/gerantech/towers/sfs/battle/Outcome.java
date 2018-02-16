@@ -28,7 +28,7 @@ public class Outcome
 
         if( field.isQuest )
         {
-            if( game.isBot() )
+            if( game.player.isBot() )
                 return ret;
 
             int diffScore = score - game.player.quests.get(field.index);
@@ -62,7 +62,7 @@ public class Outcome
                 point = 0;
             ret.set(ResourceType.POINT, point );
 
-            if( game.isBot() )
+            if( game.player.isBot() )
                 return ret;
 
             // softs

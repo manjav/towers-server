@@ -353,7 +353,7 @@ public class BattleRoom extends SFSExtension
 			//trace("isQuest", isQuest, scores[i]);
 			if( isQuest )
 			{
-				if( game.isBot() )
+				if( game.player.isBot() )
 					continue;
 
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
@@ -383,7 +383,7 @@ public class BattleRoom extends SFSExtension
 			}
 			outcomesSFSData.addSFSObject(outcomeSFS);
 
-			if( !game.isBot() )
+			if( !game.player.isBot() )
 			{
 				game.player.addResources(outcomesList[i]);
 				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
