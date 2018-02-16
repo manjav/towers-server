@@ -14,7 +14,7 @@ public class Outcome
 {
 
     public static int MIN_POINTS = 10;
-    public static int COE_POINTS = 5;
+    public static int COE_POINTS = 6;
     public static int MAX_XP = 10;
 
     public static IntIntMap get(Game game, FieldData field, int score)
@@ -54,9 +54,9 @@ public class Outcome
             // points
             int point = 0;
             if( score > 0 )
-                point = (int) (MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 4 - 2));
+                point = (int) (MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
             else if ( score < 0 )
-                point = (int) (-MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 4 - 2));
+                point = (int) (-MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
             if( point < 0 && game.player.resources.get(ResourceType.POINT) < -point)
                 point = 0;
