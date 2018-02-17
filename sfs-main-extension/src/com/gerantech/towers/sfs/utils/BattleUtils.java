@@ -90,6 +90,7 @@ public class BattleUtils
                         RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
                         ext.getApi().disconnect(u.getSession());
                     }
+                    ext.getApi().removeRoom(r);
                 }
                 ext.trace("battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
             }
