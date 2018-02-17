@@ -4,12 +4,16 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Place;
 import com.gt.towers.constants.ResourceType;
+import com.gt.towers.constants.StickerType;
 import com.gt.towers.constants.TroopType;
 import com.gt.towers.utils.PathFinder;
 import com.gt.towers.utils.lists.IntList;
 import com.gt.towers.utils.lists.PlaceList;
 import com.smartfoxserver.v2.SmartFoxServer;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.*;
@@ -19,18 +23,21 @@ import java.util.*;
  */
 public class BattleBot {
 
+    public ISFSArray offenders;
     public int dangerousPoint = -1;
 
     protected float sourcesPowers;
     protected float targetHealth;
-
     protected final SFSExtension extension;
     protected final BattleRoom battleRoom;
     protected final BattleField battleField;
 
+    private int battleRatio;
     private int sampleTime;
     private int timeFactor;
+    private double lastStickerTime;
     private PlaceList allPlaces;
+    private Timer chatTimer;
     private final Map<Integer, ScheduledPlace> fighters;
 
     public BattleBot(BattleRoom battleRoom)
@@ -117,7 +124,7 @@ public class BattleBot {
         addFighters(target, fightersCandidates);
 
         extension.trace("target: " + target.index, "size: " + fighters.size(), " sourcesPowers: " + sourcesPowers, " targetHealth: " + targetHealth);
-        if (fighters.size() > 0 && (sourcesPowers >= targetHealth || battleField.getPlacesByTroopType(TroopType.T_1, true).size() <= 1))
+        if( fighters.size() > 0 && (sourcesPowers >= targetHealth || battleField.getPlacesByTroopType(TroopType.T_1, true).size() <= 1) )
             scheduleFighters(target);
         else
             fighters.clear();
@@ -165,9 +172,9 @@ public class BattleBot {
         for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry)
         {
             ScheduledPlace sPlace = entry.getValue();
-            sPlace.fightTime = PathFinder.getDistance(sPlace.place, target) * sPlace.place.building.troopSpeed;
-            if( maxDelay < sPlace.fightTime )
-                maxDelay = sPlace.fightTime;
+            sPlace.place.fightTime = (int) (PathFinder.getDistance(sPlace.place, target) * sPlace.place.building.troopSpeed);
+            if( maxDelay < sPlace.place.fightTime )
+                maxDelay = sPlace.place.fightTime;
         }
 
         for (Map.Entry<Integer, ScheduledPlace> entry : fightersEntry)
@@ -188,7 +195,61 @@ public class BattleBot {
                     fighters.remove(sPlace.place.index);
                     //extension.trace("remove", sPlace.place.index, "fighters.size: " + fighters.size());
                 }
-            }, (long) (maxDelay - sPlace.fightTime + sPlace.place.building.deployTime));
+            }, (long) (maxDelay - sPlace.place.fightTime + sPlace.place.building.deployTime));
+        }
+    }
+
+
+
+    private void startChating(int battleRatio)
+    {
+        if( battleField.map.isQuest )
+            return;
+
+        //extension.trace(this.battleRatio, battleRatio);
+        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() < 0.2 && battleField.now > battleField.startAt + 30 )
+        {
+            SFSObject stickerParams = new SFSObject();
+            stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
+            stickerParams.putInt("tt", 1);
+            chatTimer = new Timer();
+            chatTimer.schedule(new TimerTask() {
+                @Override
+                public void run()
+                {
+                    battleRoom.sendSticker(null, stickerParams);
+                    lastStickerTime = battleField.now;
+                    chatTimer.cancel();
+                    chatTimer = null;
+                }
+            }, (long) (Math.random() * 1000 + 500));
+        }
+        this.battleRatio = battleRatio;
+    }
+
+    public void answerChat(ISFSObject params)
+    {
+        if( chatTimer == null && Math.random() > 0.5 )
+        {
+            int answer = StickerType.getRandomAnswer( params.getInt("t") );
+            if( answer > -1 )
+            {
+                ISFSObject stickerParams = new SFSObject();
+                stickerParams.putInt("t", answer);
+                stickerParams.putInt("tt", 1);
+                stickerParams.putInt("wait", 0);
+
+                chatTimer = new Timer();
+                chatTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run()
+                    {
+                        battleRoom.sendSticker(null, stickerParams);
+                        chatTimer.cancel();
+                        chatTimer = null;
+                    }
+                }, (long) (Math.random() * 2500 + 1500));
+            }
         }
     }
 

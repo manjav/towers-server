@@ -8,12 +8,10 @@ import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
-import com.gt.towers.battle.BattleOutcome;
 import com.gt.towers.battle.Troop;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
-import com.gt.towers.constants.StickerType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -83,14 +81,14 @@ public class BattleRoom extends SFSExtension
 
 		setState( STATE_CREATED );
 		this.isQuest = (boolean) room.getProperty("isQuest");
-		this.singleMode = opponentNotFound;
+		this.singleMode = opponentNotFound || isQuest;
 
 		// reserve player data
 		registeredPlayers = new ArrayList();
 		List<User> players = getRealPlayers();
 		for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
-        if( opponentNotFound )
+        if( singleMode )
 		{
 			InitData data = new InitData();
 			data.id = (int) (Math.random() * 9999);
@@ -189,8 +187,8 @@ public class BattleRoom extends SFSExtension
 					}
 					// bot scheduler
 					bot.doAction();
-
 				}
+
 		    	// check ending battle
 		    	int[] numBuildings = new int[2];
 		    	//int[] populations = new int[2];
@@ -239,8 +237,11 @@ public class BattleRoom extends SFSExtension
 		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
-		if( singleMode && !fighterIsBot)
+		if( singleMode && !fighterIsBot && bot.dangerousPoint == -1 )
+		{
+			bot.offenders = fighters;
 			bot.dangerousPoint = target;
+		}
 
 		SFSArray vars = SFSArray.newInstance();
 		for(int i = 0; i<fighters.size(); i++)
@@ -269,22 +270,11 @@ public class BattleRoom extends SFSExtension
 	{
 		for (User u : room.getUserList())
 		{
-			if( u.isNpc() && sender != null )
-			{
-				if( Math.random() > 0.5 )
-				{
-					int answer = StickerType.getRandomAnswer( params.getInt("t") );
-					if(answer > -1) {
-						params.putInt("t", answer);
-						stickerParams = params;
-						stickerParams.putInt("wait", 0);
-					}
-				}
-			}
-			else if( sender == null || u.getId() != sender.getId() )
-			{
-				send(Commands.SEND_STICKER, params, u);
-			}
+			if( singleMode && sender != null )
+				bot.answerChat(params);
+
+			if( sender == null || u.getId() != sender.getId() )
+				send("ss", params, u);
 		}
 	}
 
@@ -439,13 +429,12 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putText("name", game.player.nickName);
 			//outcomeSFS.putInt("score", scores[i]);
 			outcomeSFS.putInt("key", keys[i]);
-
-			outcomesList[i] = BattleOutcome.get_outcomes( game, battleField.map, scores[i], keys[i]);
+			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], keys[i]);
 
 			//trace("isQuest", isQuest, scores[i]);
 			if( isQuest )
 			{
-				if( game.isBot() )
+				if( game.player.isBot() )
 					continue;
 
 				if( game.player.quests.get( battleField.map.index ) < scores[i] )
@@ -474,7 +463,7 @@ public class BattleRoom extends SFSExtension
 			}
 			outcomesSFSData.addSFSObject(outcomeSFS);
 
-			if( !game.isBot() )
+			if( !game.player.isBot() )
 			{
 				game.player.addResources(outcomesList[i]);
 				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);

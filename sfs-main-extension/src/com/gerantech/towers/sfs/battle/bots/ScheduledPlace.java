@@ -7,9 +7,10 @@ import java.util.Timer;
 /**
  * Created by ManJav on 1/25/2018.
  */
-public class ScheduledPlace {
+
+public class ScheduledPlace
+{
     public Place place;
-    public double fightTime;
     public Timer timer;
 
     public ScheduledPlace(Place place)
@@ -21,6 +22,7 @@ public class ScheduledPlace {
     {
         if( timer != null )
         {
+            place.fightTime = -1;
             timer.cancel();
             timer = null;
         }
