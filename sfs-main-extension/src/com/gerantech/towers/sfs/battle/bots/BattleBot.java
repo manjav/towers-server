@@ -160,7 +160,7 @@ public class BattleBot {
             scheduleFighters(target, fighters);
         else if( !improveAll(robotPlaces, firstToFight))
             scheduleFighters(target, fighters);
-        extension.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
+        //extension.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
 
         startChating(robotPlaces.size() - playerPlaces.size());
     }

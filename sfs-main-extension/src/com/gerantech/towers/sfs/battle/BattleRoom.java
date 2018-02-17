@@ -397,7 +397,7 @@ public class BattleRoom extends SFSExtension
 
 		// send to all users
 		SFSObject params = new SFSObject();
-		params.putSFSArray("outcomes", outcomesSFSData);trace(outcomesSFSData.getDump());
+		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
 			send( Commands.END_BATTLE, params, users.get(i) );
