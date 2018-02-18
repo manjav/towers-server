@@ -61,6 +61,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
             if( room != null ) {
                 params.putInt("c", player.id);
+
                 getApi().removeRoom(room);
             }
             sendRresponse(params);

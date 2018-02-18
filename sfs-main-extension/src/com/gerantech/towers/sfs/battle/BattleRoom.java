@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.battle;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
@@ -15,6 +16,7 @@ import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
+import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -289,7 +291,7 @@ public class BattleRoom extends SFSExtension
 		{
 			if( retryMode )
 			{
-				removeAllUsers();
+				BattleUtils.getInstance().removeRoom(room);
 				return;
 			}
 			scores = new int[2];
@@ -402,16 +404,8 @@ public class BattleRoom extends SFSExtension
 		for (int i=0; i < users.size(); i++)
 			send( Commands.END_BATTLE, params, users.get(i) );
 
-		removeAllUsers();
-	}
-
-	private void removeAllUsers()
-	{
-		List<User> users = room.getUserList();
-		for (int i=0; i < users.size(); i++)
-			getApi().leaveRoom(users.get(i), room);
-
-		getApi().removeRoom(room);
+		// kick all users and reove room
+		BattleUtils.getInstance().removeRoom(room);
 	}
 
 	@Override
