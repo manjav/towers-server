@@ -24,8 +24,8 @@ import java.util.*;
 /**
  * Created by ManJav on 1/25/2018.
  */
-public class BattleBot {
-
+public class BattleBot
+{
     public int dangerousPoint = -1;
     public ISFSArray offenders;
 
@@ -122,7 +122,7 @@ public class BattleBot {
         double totalPowers = 0;
         while( step >= 0 )
         {
-            totalPowers += estimatePower( battleField.places.get(offenders.getInt(step)).building, 0.5);
+            totalPowers += estimatePower( battleField.places.get(offenders.getInt(step)).building, 0.6);
             step --;
         }
 
@@ -171,9 +171,9 @@ public class BattleBot {
             return;
         fightersCandidates.push(place.index);
 
-        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.fightTime == -1 )
+        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.fightTime == -1 && place.index != dangerousPoint )
         {
-            double placePower = estimatePower(place.building, troopsDivision);
+            double placePower = estimatePower(place.building, hasEnemyNeighbor(place) ? 0.2 : troopsDivision);
             //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, fightersPower);
 
             fightersPower += placePower;
@@ -216,7 +216,7 @@ public class BattleBot {
             sPlace.timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    if( sPlace.place.building.troopType == TroopType.T_1  && sPlace.place.fightTime > 0 )
+                    if( sPlace.place.building.troopType == TroopType.T_1 && sPlace.place.fightTime > 0 )
                     {
                         SFSArray _fighters = new SFSArray();
                         _fighters.addInt(sPlace.place.index);
@@ -331,8 +331,14 @@ public class BattleBot {
     {
         if( place.building.troopType == TroopType.T_1 )
             return false;
-        PlaceList placeLinks = place.getLinks(TroopType.T_1);
-        return placeLinks.size() > 0;
+        return place.getLinks(TroopType.T_1).size() > 0;
+    }
+
+    boolean hasEnemyNeighbor(Place place)
+    {
+        if( place.building.troopType != TroopType.T_1 )
+            return false;
+        return place.getLinks(TroopType.T_0).size() > 0;
     }
 
     int estimateRushTime(Place fighter, Place target)
