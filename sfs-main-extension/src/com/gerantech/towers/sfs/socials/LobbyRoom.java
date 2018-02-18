@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -53,9 +54,9 @@ public class LobbyRoom extends BaseLobbyRoom
     {
 
         super.organizeMessage(sender, params, false);
+        checkDonateTimers(); // removes any previous donation message if its time has passed
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
-
-            trace("\n\t..::BATTLE::..\n");
+            trace("\n\t..::BATTLE::..");
             // cancel previous requested battle by owner
             ISFSObject message = getMyRequestedBattle(params, game.player);
             if (message != null) {
@@ -112,15 +113,12 @@ public class LobbyRoom extends BaseLobbyRoom
         else if ( mode == MessageTypes.M20_DONATE )
         {
             trace("\n\n\t..::DONATION::..", params.getDump());
-            //params.putInt("did", 1000);
-            checkDonateTimers();
 
             // check card request or card donate. state=0 --> Request | state=1 --> Donate
             if ( params.getShort("st") == 0 ) // Request Card
             {
-                //if ( checkPreviousCardRequest(params) )
-                //    return;
-                messages.addSFSObject(params);
+                int dueTime = (int) (Instant.now().getEpochSecond() + game.player.DONATION_TIMER);
+                params.putInt("dt", dueTime);
                 trace("DONATION: requester:", params.getInt("i"), "| card type:", params.getShort("ct"));
             }
             else if ( params.getShort("st") == 1 ) // Donate Card
@@ -137,8 +135,8 @@ public class LobbyRoom extends BaseLobbyRoom
                 else {
                     trace("DONATION ERROR!");
                 }
+                return;
             }
-            return;
         }
         else if (MessageTypes.isConfirm(mode))
         {
@@ -160,8 +158,14 @@ public class LobbyRoom extends BaseLobbyRoom
         int msgSize = messages.size();
         for (int i = msgSize - 1; i > 0 ; i--)
             if( messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE )
-                if( messages.getSFSObject(i).getLong("dt") <= Instant.now().getEpochSecond() )
+            {
+                if( messages.getSFSObject(i).containsKey("dt") && messages.getSFSObject(i).getInt("dt") <= (int)Instant.now().getEpochSecond() ) {
                     messages.removeElementAt(i);
+                    trace("removed element at", i);
+                }
+                else
+                    trace( "due time not reached! remaining time: '", messages.getSFSObject(i).getInt("dt")-(int)Instant.now().getEpochSecond() ,"' seconds");
+            }
     }
 
     private int getRelatedConfirm(ISFSArray messages, ISFSObject params)
