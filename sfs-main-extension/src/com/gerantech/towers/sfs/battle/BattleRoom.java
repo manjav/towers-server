@@ -292,8 +292,8 @@ public class BattleRoom extends SFSExtension
 				removeAllUsers();
 				return;
 			}
-			scores = new int[1];
-			scores[0] = 0;
+			scores = new int[2];
+			scores[1] = scores[0] = 0;
 			calculateEndBattleResponse();
 		}
 	}
