@@ -58,6 +58,9 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
+
+		if( LoginEventHandler.STARTING_STATE == 1 )
+			LoginEventHandler.STARTING_STATE = 2;
 	}
 
 	private Room rejoinToLastLobbyRoom(User user, Player player)
