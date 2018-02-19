@@ -214,15 +214,27 @@ public class BattleRoom extends SFSExtension
 		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
+		int pLen = battleField.places.size() - 1;
+		int srcLen = fighters.size();
+		//for(int i = 0; i<srcLen; i++)
+		//	trace(i, " fighter index:", fighters.getInt(i), "pLen", pLen);
+		if( target < 0 || target > pLen )
+			return;
+
 		if( singleMode && !fighterIsBot && bot.dangerousPoint == -1 )
 		{
 			bot.offenders = fighters;
 			bot.dangerousPoint = target;
 		}
 
-		int srcLen = fighters.size();
 		for(int i = 0; i<srcLen; i++)
-			battleField.places.get(fighters.getInt(i)).fight(battleField.places.get(target), battleField.places, troopsDivision);
+		{
+			if( fighters.getInt(i) > -1 && fighters.getInt(i) <= pLen )
+			{
+				//trace(i, " fighter index:", fighters.getInt(i), "target index:", target, " num places:", battleField.places.size());
+				battleField.places.get(fighters.getInt(i)).fight(battleField.places.get(target), battleField.places, troopsDivision);
+			}
+		}
 
 		// Set variables
 		List<RoomVariable> listOfVars = new ArrayList();
