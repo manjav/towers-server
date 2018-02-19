@@ -82,6 +82,7 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_CREATED );
 		this.isQuest = (boolean) room.getProperty("isQuest");
 		this.singleMode = opponentNotFound || isQuest;
+		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
 		registeredPlayers = new ArrayList();
