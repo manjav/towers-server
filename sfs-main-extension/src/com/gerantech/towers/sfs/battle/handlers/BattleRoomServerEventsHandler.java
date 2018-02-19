@@ -154,8 +154,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( player.isNpc() )
 			return;
 
-		boolean isQuest = (Boolean)room.getProperty("isQuest");
-		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
 
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
@@ -163,8 +161,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putInt("roomId", room.getId());
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
-		sfsO.putBool("singleMode", existsNpc||isQuest);
-		sfsO.putText("mapName", getMapName(isQuest));
+		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
+		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isQuest")));
 
 		boolean isSpectator = player.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
