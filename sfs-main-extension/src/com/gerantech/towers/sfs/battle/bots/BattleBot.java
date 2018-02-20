@@ -20,6 +20,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ManJav on 1/25/2018.
@@ -52,7 +53,7 @@ public class BattleBot
         ArrayList<Game> registeredPlayers = (ArrayList)battleRoom.getParentRoom().getProperty("registeredPlayers");
 
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-        timeFactor = Math.max(1, 10 - battleField.difficulty );
+        timeFactor = Math.max(2, 10 - battleField.difficulty );
         troopsDivision = Math.max(0.3, Math.min(0.9, battleField.difficulty * 0.3));
         extension.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
 
@@ -151,7 +152,7 @@ public class BattleBot
         }
 
         IntList fightersCandidates = new IntList();
-        HashMap fighters = new HashMap();
+        ConcurrentHashMap<Integer, ScheduledPlace> fighters = new ConcurrentHashMap<Integer, ScheduledPlace>();
         addFighters(target, fightersCandidates, fighters);
 
         //extension.trace("target:" + target.index, " numFighters:" + fighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth, fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0) );
@@ -165,7 +166,7 @@ public class BattleBot
         startChating(robotPlaces.size() - playerPlaces.size());
     }
 
-    void addFighters(Place place, IntList fightersCandidates, HashMap fighters)
+    void addFighters(Place place, IntList fightersCandidates, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
     {
         if( fightersCandidates.indexOf(place.index) > -1 || (fightersPower >= targetHealth && battleField.now < battleField.getTime(1)) )
             return;
@@ -190,7 +191,7 @@ public class BattleBot
         }
     }
 
-    void scheduleFighters(Place target, HashMap fighters)
+    void scheduleFighters(Place target, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
     {
         lastTarget = target.index;
         dangerousPoint = -1;
@@ -210,7 +211,8 @@ public class BattleBot
         iterator = fighters.entrySet().iterator();
         while (iterator.hasNext())
         {
-            ScheduledPlace sPlace = iterator.next().getValue();
+            Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
+            ScheduledPlace sPlace = entry.getValue();
             // extension.trace("fight", sPlace.place.index + " -> target: " + target.index, "delay:", maxDelay, sPlace.fightTime, maxDelay - sPlace.fightTime + sPlace.place.building.deployTime);
             sPlace.timer = new Timer();
             sPlace.timer.schedule(new TimerTask() {
