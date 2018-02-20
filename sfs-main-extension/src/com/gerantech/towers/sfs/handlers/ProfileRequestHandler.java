@@ -1,7 +1,9 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -19,37 +21,53 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 	public ProfileRequestHandler() {}
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		int playerId = params.getInt("id");
 
-		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
-		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
-  		try {
-			String query = "SELECT type, count FROM resources WHERE player_id=" + playerId + " AND (type=1001 OR type=1201 OR type=1202" ;
-			if( params.containsKey("am") )
-				query += " OR type=1000 OR type=1002 OR type=1003 OR type=1004 OR type=1203 OR type=1204 OR type=1211)" ;
-			else
-				query += ")" ;
+		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
+		String query = "SELECT type, count FROM resources WHERE player_id=" + playerId + " AND (type=1001 OR type=1201 OR type=1202" ;
+		if( params.containsKey("am") )
+			query += " OR type=1000 OR type=1002 OR type=1003 OR type=1004 OR type=1203 OR type=1204 OR type=1211)" ;
+		else
+			query += ")" ;
 
-			ISFSArray sfsArray = dbManager.executeQuery(query, new Object[]{});
+		ISFSArray featuresArray = null;
+		try {
+			featuresArray = dbManager.executeQuery(query, new Object[]{});
+		} catch (SQLException e) { trace(e.getMessage()); }
 
-			query = "SELECT `index` FROM quests WHERE player_id=" + playerId + " AND score>0 ORDER BY `index` DESC LIMIT 0, 1";
-			ISFSArray sfsArray2 = dbManager.executeQuery(query, new Object[]{});
-			SFSObject q = new SFSObject();
-			q.putInt("type", 5000);
-			q.putInt("count", sfsArray2.getSFSObject(0).getInt("index")+1);
-			sfsArray.addSFSObject( q );
+		//  -=-=-=-=-=-=-=-=-  add quests data  -=-=-=-=-=-=-=-=-
+		ISFSArray questsArray = null;
+		try {
+			questsArray = dbManager.executeQuery("SELECT `index` FROM quests WHERE player_id=" + playerId + " AND score>0 ORDER BY `index` DESC LIMIT 0, 1", new Object[]{});
+		} catch (SQLException e) { trace(e.getMessage()); }
+		SFSObject q = new SFSObject();
+		q.putInt("type", 5000);
+		q.putInt("count", questsArray.getSFSObject(0).getInt("index")+1);
+		featuresArray.addSFSObject( q );
 
-			params.putSFSArray("features", sfsArray );
+		params.putSFSArray("features", featuresArray );
 
-			// add buildings
-			query = "SELECT type, level FROM resources WHERE player_id=" + playerId + " AND (type<1000 AND type>0) LIMIT 100";
-			ISFSArray buildingArray = dbManager.executeQuery(query, new Object[]{});
-			params.putSFSArray("buildings", buildingArray );
+		//  -=-=-=-=-=-=-=-=-  add buildings data  -=-=-=-=-=-=-=-=-
+		ISFSArray buildingArray = null;
+		try {
+			buildingArray = dbManager.executeQuery("SELECT type, level FROM resources WHERE player_id=" + playerId + " AND (type<1000 AND type>0) LIMIT 100", new Object[]{});
+		} catch (SQLException e) { trace(e.getMessage()); }
+		params.putSFSArray("buildings", buildingArray );
 
-
-		} catch (SQLException e) {
-			trace(e.getMessage());
+		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
+		Room lobby = null;
+		if( params.containsKey("lp") )
+			lobby = LobbyUtils.getInstance().getLobbyOfOfflineUser(playerId);
+		if( lobby != null )
+		{
+			params.putText("ln", lobby.getName());
+			params.putInt("lp", lobby.getVariable("pic").getIntValue());
 		}
+
+		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
+		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
+
 		//trace(params.getDump());
 		send("profile", params, sender);
     }

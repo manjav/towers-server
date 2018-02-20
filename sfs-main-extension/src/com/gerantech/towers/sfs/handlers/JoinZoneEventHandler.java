@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -13,7 +14,6 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
@@ -41,20 +41,19 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		Game game = ((Game) user.getSession().getProperty("core"));
 		if( game == null )
 			return;
+		Zone zone = getParentExtension().getParentZone();
 
 		// Update player data
 		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `sessions_count`='" + (game.sessionsCount+1) + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";
 		try {
 			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[] {});
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		} catch (SQLException e) { e.printStackTrace(); }
 
 		// Reload saved rooms
-		loadSavedLobbies(getParentExtension().getParentZone(), getApi());
+		loadSavedLobbies(zone, getApi());
 
 		// Find last joined lobby room
-		Room room = rejoinToLastLobbyRoom(user, game.player);
+		Room room = rejoinToLastLobbyRoom(zone, user, game.player);
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
@@ -63,50 +62,23 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			LoginEventHandler.STARTING_STATE = 2;
 	}
 
-	private Room rejoinToLastLobbyRoom(User user, Player player)
-	{
-		ISFSObject member;
-		List<Room> lobbies = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
-		for (Room room : lobbies)
-		{
-			ISFSArray all = room.getVariable("all").getSFSArrayValue();
-			for(int i=0; i<all.size(); i++)
-			{
-				member = all.getSFSObject(i);
-				if( member.getInt("id").equals(player.id) )
-				{
-					try {
-						getApi().joinRoom(user, room);
-						return room;
-					} catch (SFSJoinRoomException e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	// Save room to file for server rstore rooms after resetting
+	/**
+	 * Save room to file for server restore rooms after resetting
+	 */
 	private void loadSavedLobbies(Zone zone, ISFSApi api)
 	{
 		if ( zone.getRoomListFromGroup("lobbies").size() > 0 )
 			return;
-		trace ("lobbies.count:",  zone.getRoomListFromGroup("lobbies").size());
 
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
 		dbRoomStorageConfig.storeInactiveRooms = true;
 		dbRoomStorageConfig.tableName = "rooms";
 		zone.initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
 
-
 		List<CreateRoomSettings> lobbies = null;
 		try {
 			lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
-		} catch (SFSStorageException e) {
-			e.printStackTrace();
-		}
+		} catch (SFSStorageException e) { e.printStackTrace(); }
 
 		for ( CreateRoomSettings crs : lobbies )
 		{
@@ -116,7 +88,18 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			} catch (SFSCreateRoomException e) { e.printStackTrace(); }
 
 		}
+	}
 
+	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)
+	{
+		Room room = LobbyUtils.getLobbyOfOfflineUser(zone, player.id);
+		if( room != null ) {
+			try {
+				getApi().joinRoom(user, room);
+				return room;
+			} catch (SFSJoinRoomException e) { e.printStackTrace(); return null; }
+		}
+		return null;
 	}
 
 	private static boolean hasUser(List<RoomVariable> vars)
