@@ -53,7 +53,7 @@ public class BattleBot
         ArrayList<Game> registeredPlayers = (ArrayList)battleRoom.getParentRoom().getProperty("registeredPlayers");
 
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-        timeFactor = Math.max(2, 10 - battleField.difficulty );
+        timeFactor = Math.max(1, 10 - battleField.difficulty );
         troopsDivision = Math.max(0.3, Math.min(0.9, battleField.difficulty * 0.3));
         extension.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
 
@@ -62,7 +62,7 @@ public class BattleBot
 
     public void doAction()
     {
-        int _sampleTime = (int) Math.floor(battleField.now % timeFactor);
+        int _sampleTime = (int) Math.floor((battleField.now/1000) % timeFactor);
         if( timeFactor == 1 || ( _sampleTime == 0 && _sampleTime != sampleTime ) )
             tryAction();
 
