@@ -454,7 +454,8 @@ public class BattleRoom extends SFSExtension
 			return;
 		setState( STATE_DESTROYED );
 
-		battleField.dispose();
+		if( battleField != null )
+			battleField.dispose();
 		battleField = null;
 		trace(room.getName(), "destroyed.");
 	}
