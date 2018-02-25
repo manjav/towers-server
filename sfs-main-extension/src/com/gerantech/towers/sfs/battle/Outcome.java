@@ -46,7 +46,7 @@ public class Outcome
                 ret.set(ResourceType.KEY, diffScore);
 
                 // softs
-                ret.set(ResourceType.CURRENCY_SOFT, 10 * diffScore);
+                ret.set(ResourceType.CURRENCY_SOFT, 10 * diffScore + field.index * 2);
             }
         }
         else
@@ -65,8 +65,9 @@ public class Outcome
             if( game.player.isBot() )
                 return ret;
 
+            int arena = game.player.get_arena(0);
             // softs
-            ret.set(ResourceType.CURRENCY_SOFT, 4 * Math.max(0, score));
+            ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 3, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
             // battle stats
             ret.set(ResourceType.BATTLES_COUNT, 1);
@@ -74,7 +75,6 @@ public class Outcome
 
             // win streak
             int winStreak = game.player.resources.get(ResourceType.WIN_STREAK);
-            int arena = game.player.get_arena(0);
             if( score > 0 )
             {
                 ret.set(ResourceType.BATTLES_WINS, 1);
