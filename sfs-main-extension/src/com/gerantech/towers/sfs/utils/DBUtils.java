@@ -254,6 +254,11 @@ public class DBUtils
                 //ext.trace("giveCards:", giveCard);
                 db.executeUpdate(giveCard, new Object[]{});
             }
+            else
+            {
+                ext.trace("player does not hace enough cards to donate!");
+                return false;
+            }
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
