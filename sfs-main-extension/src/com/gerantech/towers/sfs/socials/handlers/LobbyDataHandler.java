@@ -87,7 +87,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
         params.putInt("pic", room.getVariable("pic").getIntValue());
-        params.putInt("act", room.getVariable("act").getIntValue() + getLobbyActiveness(all) * 10);
+        params.putInt("act", (int) (room.getVariable("act").getIntValue() * 0.2 + getLobbyActiveness(all) ));
         if( includeMembers )
             params.putSFSArray("all", all);
     }
