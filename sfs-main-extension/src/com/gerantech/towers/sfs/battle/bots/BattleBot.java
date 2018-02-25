@@ -281,7 +281,7 @@ public class BattleBot
             return;
 
         //extension.trace(this.battleRatio, battleRatio);
-        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() < 0.2 && battleField.now > battleField.startAt + 30 )
+        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 20000 && Math.random() < 0.1 && battleField.now > battleField.startAt * 1000 + 30000 )
         {
             SFSObject stickerParams = new SFSObject();
             stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
@@ -303,7 +303,7 @@ public class BattleBot
 
     public void answerChat(ISFSObject params)
     {
-        if( chatTimer == null && Math.random() > 0.5 )
+        if( chatTimer == null && Math.random() > 0.2 )
         {
             int answer = StickerType.getRandomAnswer( params.getInt("t") );
             if( answer > -1 )
@@ -378,7 +378,7 @@ public class BattleBot
         return sum / size;
     }
     double estimateHealth(Place place) {
-        return place.building.get_population() * place.building.get_troopPower() * (1.2 + battleField.difficulty * 0.05);
+        return place.building.get_population() * place.building.get_troopPower() * (1.1 + battleField.difficulty * 0.05);
     }
 
     double priority(Place place)
