@@ -66,8 +66,10 @@ public class Outcome
                 return ret;
 
             int arena = game.player.get_arena(0);
+
             // softs
-            ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 3, Math.max(0, game.player.get_point() - game.player.get_softs())));
+            if( score > 0 )
+                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 3, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
             // battle stats
             ret.set(ResourceType.BATTLES_COUNT, 1);
