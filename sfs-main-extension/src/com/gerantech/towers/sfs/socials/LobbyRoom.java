@@ -52,8 +52,8 @@ public class LobbyRoom extends BaseLobbyRoom
                 params.putShort("st", (short) 3);
                 message.putShort("st", (short) 3);
                 Room room = getParentZone().getRoomById(message.getInt("bid"));
-                if (room != null)
-                    getApi().leaveRoom(sender, room);
+                if( room != null )
+                    BattleUtils.getInstance().removeRoom(room);
                 return;
             }
 

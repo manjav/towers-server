@@ -38,6 +38,7 @@ import java.time.Instant;
 public class LoginEventHandler extends BaseServerEventHandler 
 {
 	public static int UNTIL_MAINTENANCE = 1510006666;
+	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
@@ -49,11 +50,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 		int now = (int)Instant.now().getEpochSecond();
 
-		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10001 )
+		if( ( now < UNTIL_MAINTENANCE || STARTING_STATE == 1 ) && inData.getInt("id") != 10001 )
 		{
-			outData.putInt("umt", UNTIL_MAINTENANCE - now);
+			outData.putInt("umt", UNTIL_MAINTENANCE - now + 15);
 			return;
 		}
+		if( STARTING_STATE == 0 )
+			STARTING_STATE = 1;
 
 		LoginData loginData = new LoginData();
 		if( CORE_SIZE == 0 )
@@ -67,7 +70,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion )
 		{
 			outData.putInt("forceVersion", loginData.forceVersion);
-			LoginErrors.dispatch (LoginErrors.FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
+			try {
+				LoginErrors.dispatch (LoginErrors.FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
+			} catch (Exception e) { trace(inData.getInt("appver") + " needs " + e.getMessage() + " to " + loginData.forceVersion); }
 			return;
 		}
 

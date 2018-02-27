@@ -87,7 +87,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
         params.putInt("pic", room.getVariable("pic").getIntValue());
-        params.putInt("act", room.getVariable("act").getIntValue());
+        params.putInt("act", (int) (room.getVariable("act").getIntValue() * 0.2 + getLobbyActiveness(all) ));
         if( includeMembers )
             params.putSFSArray("all", all);
     }
@@ -127,14 +127,25 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         float rankRatio;
         int index = 0;
         int size = members.size();
-        while( index < size ) {
+        while( index < size )
+        {
             rankRatio = (float)index/(float)size;
             sum += members.getSFSObject(index).getInt("point") * RANK_COEFS[(int)Math.floor(rankRatio*5)];
             index ++;
         }
         return sum;
     }
-
+    private int getLobbyActiveness( ISFSArray members )
+    {
+        int sum = 0;
+        int size = members.size() - 1;
+        while( size >= 0 )
+        {
+            sum += members.getSFSObject(size).getInt("activity") ;
+            size --;
+        }
+        return Math.round(sum / members.size());
+    }
     private ISFSArray getMembers(Room room, IMap<Integer, RankData> users)
     {
         ISFSArray all = room.getVariable("all").getSFSArrayValue();

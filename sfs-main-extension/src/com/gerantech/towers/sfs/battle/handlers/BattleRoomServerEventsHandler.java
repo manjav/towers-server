@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
@@ -108,23 +109,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			r.setProperty("enabled", false);
 
 			int state = (Integer)r.getProperty("state");
-			if(state < BattleRoom.STATE_CREATED || state < BattleRoom.STATE_BATTLE_STARTED && r.getUserManager().getNPCCount() > 0)
+			if( state < BattleRoom.STATE_CREATED )
 			{
-				List<User> users = r.getPlayersList();
-				for (int i=0; i < users.size(); i++)
-				{
-					User u = users.get(i);
-					if ( u.isNpc() )
-					{
-						// return npc to npc-opponents list
-						RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
-
-						// remove npc
-						getApi().disconnect(u.getSession());
-					}
-				}
-
-				getApi().removeRoom(r);
+				BattleUtils.getInstance().removeRoom(r);
 			}
 			else
 			{
@@ -167,8 +154,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( player.isNpc() )
 			return;
 
-		boolean isQuest = (Boolean)room.getProperty("isQuest");
-		boolean existsNpc = room.getUserManager().getNPCCount() > 0;
 
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
@@ -176,8 +161,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putInt("roomId", room.getId());
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
-		sfsO.putBool("singleMode", existsNpc||isQuest);
-		sfsO.putText("mapName", getMapName(isQuest));
+		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
+		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isQuest")));
 		sfsO.putSFSArray("decks", (SFSArray)room.getProperty("decks"));
 
 		boolean isSpectator = player.isSpectator(room);

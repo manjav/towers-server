@@ -27,6 +27,10 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
         if( user.getBuddyProperties().getState() == "Available" )
             return;
 
+        Object core = user.getSession().getProperty("core");
+        if( core == null)
+            return;
+
         if ( !user.containsProperty("hasBuddyList") )
         {
             try {

@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.battle;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.towers.Game;
@@ -16,6 +17,7 @@ import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
+import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -36,17 +38,15 @@ public class BattleRoom extends SFSExtension
 	public static final int STATE_BATTLE_ENDED = 3;
 	public static final int STATE_DESTROYED = 4;
 
-	private static final double TIMER_PERIOD = 0.5;
-
 	public Timer autoJoinTimer;
 	public BattleField battleField;
 
 	private int _state = -1;
 	private int[] reservedPopulations;
 	private int[] reservedTypes;
-	//private int[] reservedLevels;
 	private int[] reservedTroopTypes;
-	private int[] reservedHealthes;
+	private int[] reservedHealths;
+	private int[] reservedElixirs;
 	private int[] scores;
 	private int[] keys;
 
@@ -55,6 +55,7 @@ public class BattleRoom extends SFSExtension
 	private BattleBot bot;
 	private boolean isQuest;
 	private boolean singleMode;
+	private long buildingsUpdatedAt;
 	private ISFSObject stickerParams;
 	private ArrayList<Game> registeredPlayers;
 
@@ -82,6 +83,7 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_CREATED );
 		this.isQuest = (boolean) room.getProperty("isQuest");
 		this.singleMode = opponentNotFound || isQuest;
+		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
 		registeredPlayers = new ArrayList();
@@ -102,7 +104,8 @@ public class BattleRoom extends SFSExtension
 
         // create battlefield
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
-		battleField.startAt = battleField.now = Instant.now().getEpochSecond();
+		battleField.now = Instant.now().toEpochMilli();
+		battleField.startAt = battleField.now / 1000;
 		SFSArray decks = new SFSArray();
 		for (int i = 0; i < battleField.deckBuildings.size() ; i++)
 			decks.addInt(battleField.deckBuildings.get(i).building.type);
@@ -110,10 +113,10 @@ public class BattleRoom extends SFSExtension
 
 		// reserving arrays
 		reservedTypes = new int[battleField.places.size()];
-		//reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
-		reservedHealthes = new int[battleField.places.size()];
+		reservedHealths = new int[battleField.places.size()];
+		reservedElixirs = new int[2];
 
 		for( int i = 0; i<battleField.places.size(); i++ )
 			reservedTypes[i] = battleField.places.get(i).building.type;
@@ -122,111 +125,96 @@ public class BattleRoom extends SFSExtension
 			bot = new BattleBot(this);
 
     	timer = new Timer();
-    	timer.schedule(new TimerTask() {
-
+    	timer.schedule(new TimerTask()
+		{
 			@Override
-			public void run() {
+			public void run()
+			{
 				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
 					return;
-
-				Building b;
-				double battleDuration = battleField.getDuration();
-				SFSArray vars = SFSArray.newInstance();
-				for(int i = 0; i<battleField.places.size(); i++)
+				battleField.update();
+				long battleDuration = battleField.getDuration();
+				if( battleField.now - buildingsUpdatedAt > 500 )
 				{
-					b = battleField.places.get(i).building;
-					b.interval();
-					if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || b.get_health() != reservedHealthes[i] )
-					{
-						reservedPopulations[i] = b.get_population();
-						reservedTroopTypes[i] = b.troopType;
-						reservedHealthes[i] = b.get_health();
-						vars.addText(i + "," + reservedPopulations[i] + "," + reservedTroopTypes[i] + "," + reservedHealthes[i]);
-					}
-					
-					if( b.type != reservedTypes[i] )//b.get_level() != reservedLevels[i] ||
-					{
-						SFSObject params = SFSObject.newInstance();
-						params.putInt("i", b.index);
-						params.putInt("t", b.type);
-						params.putInt("l", b.get_level());
-						//params.putInt("m", building.improveLevel);
-						//send("i", stickerParams, room.getUserList());  -->new but not test
-						sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
-
-						reservedTypes[i] = b.type;
-						//reservedLevels[i] = b.get_level();
-					}
+					updateReservesData(battleDuration);
+					pokeBot();
+					buildingsUpdatedAt = battleField.now;
 				}
 
-				// Set variables
-				List<RoomVariable> listOfVars = new ArrayList();
-				if( vars.size() > 0 )
-					listOfVars.add( new SFSRoomVariable("towers", vars) );
-
-				// sometimes auto start battle
-				if( singleMode && ( battleField.difficulty > 5 || Math.random() > 0.5 ) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
-					setState(STATE_BATTLE_STARTED);
-
-				// fight enemy bot
-				if( singleMode && getState() == STATE_BATTLE_STARTED )
-				{
-					// send answer of sticker from bot
-					if( stickerParams != null )
-					{
-						if( stickerParams.getInt("wait") < 4 )
-						{
-							stickerParams.putInt("wait", stickerParams.getInt("wait")+1);
-						}
-						else
-						{
-							stickerParams.removeElement("wait");
-							send("ss", stickerParams, room.getUserList());
-							stickerParams = null;
-						}
-					}
-					// bot scheduler
-					bot.doAction();
-				}
-
-		    	// check ending battle
-		    	int[] numBuildings = new int[2];
-		    	//int[] populations = new int[2];
-				//int[] populations = new int[2];
-				for(int i = 0; i<reservedTroopTypes.length; i++)
-				{
-					if( reservedTroopTypes[i] >= 0 )
-					{
-						//trace(i, reservedTroopTypes[i], reservedPopulations[i]);
-						numBuildings[reservedTroopTypes[i]] ++;
-						//populations[reservedTroopTypes[i]] += reservedPopulations[i];
-					}
-				}
-
-				// increase population bars
-				double increaseCoef = battleDuration > battleField.getTime(2) ? 0.45 : 0.20;
-				battleField.elixirBar.set(0, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(0) + increaseCoef ));
-				battleField.elixirBar.set(1, Math.min(BattleField.POPULATION_MAX, battleField.elixirBar.get(1) + increaseCoef ));
-				//if( battleField.now % 2 == 0 )
-				//{
-					SFSObject bars = new SFSObject();
-					bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
-					bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
-					listOfVars.add(new SFSRoomVariable("bars", bars));
-				//}
-				sfsApi.setRoomVariables(null, room, listOfVars);
-
-				if( checkEnding(battleDuration, numBuildings) )
-					end(numBuildings, battleDuration);
-				else
-					battleField.now += TIMER_PERIOD;
-
+				checkEnding(battleDuration);
 			}
-
-
-		}, 0, Math.round(TIMER_PERIOD * 1000));
+		}, 0, battleField.interval);
 
 		trace(room.getName(), "created.");
+	}
+
+	private void updateReservesData(long battleDuration)
+	{
+		Building b;
+		SFSArray vars = SFSArray.newInstance();
+		for(int i = 0; i<battleField.places.size(); i++)
+		{
+			b = battleField.places.get(i).building;
+			if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] || b.get_health() != reservedHealths[i] )
+			{
+				reservedPopulations[i] = b.get_population();
+				reservedTroopTypes[i] = b.troopType;
+				reservedHealths[i] = b.get_health();
+				vars.addText(i + "," + reservedPopulations[i] + "," + reservedTroopTypes[i] + "," + reservedHealths[i]);
+			}
+
+			if( b.type != reservedTypes[i] )//b.get_level() != reservedLevels[i] ||
+			{
+				SFSObject params = SFSObject.newInstance();
+				params.putInt("i", b.index);
+				params.putInt("t", b.type);
+				params.putInt("l", b.get_level());
+				sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
+
+				reservedTypes[i] = b.type;
+				//reservedLevels[i] = b.get_level();
+			}
+		}
+
+		// Set variables
+		List<RoomVariable> listOfVars = new ArrayList();
+		if( vars.size() > 0 )
+			listOfVars.add( new SFSRoomVariable("towers", vars) );
+
+		// set elixir bars
+		SFSObject bars = new SFSObject();
+		bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
+		bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
+		listOfVars.add(new SFSRoomVariable("bars", bars));
+
+		sfsApi.setRoomVariables(null, room, listOfVars);
+
+
+		// sometimes auto start battle
+		if( singleMode && ( battleField.difficulty > 5 || Math.random() > 0.5 ) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
+			setState(STATE_BATTLE_STARTED);
+	}
+
+	private void pokeBot()
+	{
+		if( singleMode && getState() == STATE_BATTLE_STARTED )
+		{
+			// send answer of sticker from bot
+			if( stickerParams != null )
+			{
+				if( stickerParams.getInt("wait") < 4 )
+				{
+					stickerParams.putInt("wait", stickerParams.getInt("wait") + 1);
+				}
+				else
+				{
+					stickerParams.removeElement("wait");
+					send("ss", stickerParams, room.getUserList());
+					stickerParams = null;
+				}
+			}
+			bot.doAction();
+		}
 	}
 
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -235,6 +223,13 @@ public class BattleRoom extends SFSExtension
 		if( getState() == STATE_CREATED)
 			setState( STATE_BATTLE_STARTED );
 		if( getState() != STATE_BATTLE_STARTED )
+			return;
+
+		int pLen = battleField.places.size() - 1;
+		int srcLen = fighters.size();
+		//for(int i = 0; i<srcLen; i++)
+		//	trace(i, " fighter index:", fighters.getInt(i), "pLen", pLen);
+		if( target < 0 || target > pLen )
 			return;
 
 		if( singleMode && !fighterIsBot && bot.dangerousPoint == -1 )
@@ -254,7 +249,7 @@ public class BattleRoom extends SFSExtension
 			{
 				troops += (itr.next().buildingType + (itr.hasNext() ? ":" : "") );
 			}
-			trace(fighters.getInt(i) + "," + target + "," + troops);
+			//trace(fighters.getInt(i) + "," + target + "," + troops);
 			vars.addText(fighters.getInt(i) + "," + target + "," + troops);
 			battleField.places.get(fighters.getInt(i)).fight(battleField.places.get(target), battleField.places);
 		}
@@ -318,20 +313,30 @@ public class BattleRoom extends SFSExtension
 		{
 			if( retryMode )
 			{
-				removeAllUsers();
+				BattleUtils.getInstance().removeRoom(room);
 				return;
 			}
+
 			keys = scores = new int[1];
 			keys[0] = scores[0] = 0;
 			sendEndResponse();
 		}
 	}
 
-	private boolean checkEnding(double battleDuration, int[] numBuildings)
+	private void checkEnding(long battleDuration)
 	{
+		int[] numBuildings = new int[2];
+		for(int i = 0; i<reservedTroopTypes.length; i++)
+			if( reservedTroopTypes[i] >= 0 )
+				numBuildings[reservedTroopTypes[i]] ++;
+
 		// Quest :
 		if( isQuest )
-			return battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0;
+		{
+			if( battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+				end(numBuildings, battleDuration);
+			return;
+		}
 
 		// Battle :
 		int headQuarterTroopType = -2;
@@ -340,7 +345,10 @@ public class BattleRoom extends SFSExtension
 			if( battleField.places.get(p).mode == 2 )
 			{
 				if( headQuarterTroopType == battleField.places.get(p).building.troopType )
-					return true;
+				{
+					end(numBuildings, battleDuration);
+					return;
+				}
 				headQuarterTroopType = battleField.places.get(p).building.troopType;
 			}
 		}
@@ -348,12 +356,17 @@ public class BattleRoom extends SFSExtension
 		{
 			updateScores(numBuildings, battleDuration);
 			if( scores[0] != scores[1] )
-				return true;
+			{
+				end(numBuildings, battleDuration);
+				return;
+			}
 		}
 
-		return battleDuration > battleField.getTime(3);
+		if( battleDuration > battleField.getTime(3) )
+			end(numBuildings, battleDuration);
 	}
-	private void end(int[] numBuildings, double battleDuration)
+
+	private void end(int[] numBuildings, long battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
 		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+","+battleField.map.times.get(3)+")");
@@ -362,7 +375,7 @@ public class BattleRoom extends SFSExtension
 	    sendEndResponse();
 	}
 
-	private void updateScores(int[] numBuildings, double battleDuration)
+	private void updateScores(int[] numBuildings, long battleDuration)
 	{
 		scores = new int[2];
 
@@ -482,16 +495,8 @@ public class BattleRoom extends SFSExtension
 		for (int i=0; i < users.size(); i++)
 			send( Commands.END_BATTLE, params, users.get(i) );
 
-		removeAllUsers();
-	}
-
-	private void removeAllUsers()
-	{
-		List<User> users = room.getUserList();
-		for (int i=0; i < users.size(); i++)
-			getApi().leaveRoom(users.get(i), room);
-
-		getApi().removeRoom(room);
+		// kick all users and remove room
+		BattleUtils.getInstance().removeRoom(room);
 	}
 
 	@Override
@@ -516,6 +521,8 @@ public class BattleRoom extends SFSExtension
 			return;
 		setState( STATE_DESTROYED );
 
+		if( battleField != null )
+			battleField.dispose();
 		battleField = null;
 		trace(room.getName(), "destroyed.");
 	}
@@ -541,7 +548,6 @@ public class BattleRoom extends SFSExtension
 		for (int i = 0; i < registeredPlayers.size(); i++ )
 			if ( Integer.parseInt(player.getName()) == registeredPlayers.get(i).player.id )
 				return i;
-
 		return 0;
 	}
 

@@ -3,11 +3,9 @@ package com.gerantech.towers.sfs.socials;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
-import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
-import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.Zone;
+import com.smartfoxserver.v2.entities.*;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
@@ -62,6 +60,28 @@ public class LobbyUtils
         for (Room r:rooms)
             if( r.getGroupId().equals("lobbies" ))
                 return r;
+        return null;
+    }
+
+    public Room getLobbyOfOfflineUser(int id)
+    {
+        return LobbyUtils.getLobbyOfOfflineUser(ext.getParentZone(), id);
+    }
+
+    public static Room getLobbyOfOfflineUser(Zone zone, int id)
+    {
+        ISFSObject member;
+        List<Room> lobbies = zone.getRoomListFromGroup("lobbies");
+        for (Room room : lobbies)
+        {
+            ISFSArray all = room.getVariable("all").getSFSArrayValue();
+            for(int i=0; i<all.size(); i++)
+            {
+                member = all.getSFSObject(i);
+                if( member.getInt("id").equals(id) )
+                    return  room;
+            }
+        }
         return null;
     }
 

@@ -13,6 +13,7 @@ import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
+import com.smartfoxserver.v2.exceptions.SFSLoginException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
@@ -80,19 +81,14 @@ public class BattleUtils
         // temp solution
         long now = Instant.now().getEpochSecond();
         List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
-        for (Room r : rList) {
-            if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 360 )
+        for (Room r : rList)
+        {
+            // ext.trace(">>>>>>>", r.containsProperty("startAt"), now );
+            if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 370 )
             {
                 ext.trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
-                for (User u : r.getUserList()){
-                    ext.getApi().leaveRoom(u, r);
-                    if ( u.isNpc() ){
-                        RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
-                        ext.getApi().disconnect(u.getSession());
-                    }
-                    ext.getApi().removeRoom(r);
-                }
-                ext.trace("battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
+                removeRoom(r);
+                ext.trace("** battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
             }
         }
 
@@ -142,5 +138,31 @@ public class BattleUtils
             }
         }
         return null;
+    }
+
+    /**
+     * Kick all users and reove room
+     * @param room
+     */
+    public void removeRoom(Room room)
+    {
+        List<User> users = room.getUserList();
+        if( users.size() > 0 )
+        {
+            room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
+            for( User u : users )
+            {
+                ext.getApi().leaveRoom(u, room);
+                if ( u.isNpc() )
+                {
+                    RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
+                    ext.getApi().disconnect(u.getSession());
+                }
+            }
+        }
+        else
+        {
+            ext.getApi().removeRoom(room, false, false);
+        }
     }
 }

@@ -18,12 +18,13 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ManJav on 1/25/2018.
  */
-public class BattleBot{
-	
+public class BattleBot
+{
     public int dangerousPoint = -1;
     public ISFSArray offenders;
 
@@ -48,7 +49,7 @@ public class BattleBot{
         ArrayList<Game> registeredPlayers = (ArrayList)battleRoom.getParentRoom().getProperty("registeredPlayers");
 		
         extension = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-        timeFactor = Math.max(1, 8 - battleField.difficulty );
+        timeFactor = Math.min(8, Math.max(1, 10 - battleField.difficulty ) );
         extension.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
@@ -56,7 +57,7 @@ public class BattleBot{
 
     public void doAction()
     {
-        int _sampleTime = (int) Math.floor(battleField.now % timeFactor);
+        int _sampleTime = (int) Math.floor((battleField.now/1000) % timeFactor);
         if( timeFactor == 1 || ( _sampleTime == 0 && _sampleTime != sampleTime ) )
             tryAction();
 
@@ -139,27 +140,28 @@ public class BattleBot{
             return;
 		
         IntList fightersCandidates = new IntList();
-        HashMap fighters = new HashMap();
+        ConcurrentHashMap<Integer, ScheduledPlace> fighters = new ConcurrentHashMap<Integer, ScheduledPlace>();
         addFighters(target, fightersCandidates, fighters);
 
         extension.trace("target: " + target.index, "size: " + fighters.size(), " fightersPower: " + fightersPower, " targetHealth: " + targetHealth);
         if( fighters.size() > 0 && (fightersPower >= targetHealth || battleField.getPlacesByTroopType(TroopType.T_1, true).size() <= 1) )
             scheduleFighters(target, fighters);
-		
+
          startChating(robotPlaces.size() - playerPlaces.size());
    }
 
-    void addFighters(Place place, IntList fightersCandidates, HashMap fighters)
+    void addFighters(Place place, IntList fightersCandidates, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
     {
         if( fightersCandidates.indexOf(place.index) > -1 || (fightersPower >= targetHealth && battleField.now < battleField.getTime(1)) )
             return;
         fightersCandidates.push(place.index);
 
-        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.fightTime == -1 )
+        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.fightTime == -1 && place.index != dangerousPoint )
         {
             Place card = battleField.deckBuildings.get(4);
             double placePower = place.building.getPower();
             double cardPower = estimateCardPower(card);
+
             //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, fightersPower);
 
             if( placePower >= cardPower )
@@ -184,7 +186,7 @@ public class BattleBot{
         }
     }
 
-    void scheduleFighters(Place target, HashMap fighters)
+    void scheduleFighters(Place target, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
     {
         lastTarget = target.index;
         dangerousPoint = -1;
@@ -206,6 +208,7 @@ public class BattleBot{
         {
             ScheduledPlace sPlace = iterator.next().getValue();
            // extension.trace("fight", sPlace.place.index + " -> target: " + target.index, "delay:", maxDelay, sPlace.fightTime, maxDelay - sPlace.fightTime + sPlace.place.building.deployTime);
+
             sPlace.timer = new Timer();
             sPlace.timer.schedule(new TimerTask() {
                 @Override
@@ -230,7 +233,7 @@ public class BattleBot{
             return;
 
         //extension.trace(this.battleRatio, battleRatio);
-        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 10 && Math.random() < 0.2 && battleField.now > battleField.startAt + 30 )
+        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 20000 && Math.random() < 0.1 && battleField.now > battleField.startAt * 1000 + 30000 )
         {
             SFSObject stickerParams = new SFSObject();
             stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
@@ -252,7 +255,7 @@ public class BattleBot{
 
     public void answerChat(ISFSObject params)
     {
-        if( chatTimer == null && Math.random() > 0.5 )
+        if( chatTimer == null && Math.random() > 0.2 )
         {
             int answer = StickerType.getRandomAnswer( params.getInt("t") );
             if( answer > -1 )
@@ -281,8 +284,14 @@ public class BattleBot{
     {
         if( place.building.troopType == TroopType.T_1 )
             return false;
-        PlaceList placeLinks = place.getLinks(TroopType.T_1);
-        return placeLinks.size() > 0;
+        return place.getLinks(TroopType.T_1).size() > 0;
+    }
+
+    boolean hasEnemyNeighbor(Place place)
+    {
+        if( place.building.troopType != TroopType.T_1 )
+            return false;
+        return place.getLinks(TroopType.T_0).size() > 0;
     }
 
     int estimateRushTime(Place fighter, Place target)
