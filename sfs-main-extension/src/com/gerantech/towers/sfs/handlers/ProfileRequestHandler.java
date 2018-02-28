@@ -48,12 +48,12 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 
 		params.putSFSArray("features", featuresArray );
 
-		//  -=-=-=-=-=-=-=-=-  add buildings data  -=-=-=-=-=-=-=-=-
+		/*//  -=-=-=-=-=-=-=-=-  add buildings data  -=-=-=-=-=-=-=-=-
 		ISFSArray buildingArray = null;
 		try {
 			buildingArray = dbManager.executeQuery("SELECT type, level FROM resources WHERE player_id=" + playerId + " AND (type<1000 AND type>0) LIMIT 100", new Object[]{});
 		} catch (SQLException e) { trace(e.getMessage()); }
-		params.putSFSArray("buildings", buildingArray );
+		params.putSFSArray("buildings", buildingArray );*/
 
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
 		Room lobby = null;
@@ -67,6 +67,12 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
 		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
+
+		//  -=-=-=-=-=-=-=-=-  add player deck  -=-=-=-=-=-=-=-=-
+		try {
+			params.putSFSArray("decks", dbManager.executeQuery("SELECT decks.`type`, resources.`level` FROM decks INNER JOIN resources ON decks.player_id = resources.player_id AND decks.`type` = resources.`type` WHERE decks.player_id = "+ playerId +" AND decks.deck_index = 0", new Object[]{}));
+		} catch (SQLException e) { trace(e.getMessage()); }
+
 
 		//trace(params.getDump());
 		send("profile", params, sender);
