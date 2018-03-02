@@ -40,7 +40,7 @@ public class BanSystem
 
 		// search all offends
 		try {
-			offenders = db.executeQuery("SELECT COUNT(*) as cnt, offender FROM infractions WHERE offend_at > FROM_UNIXTIME(" + (now - 3600 * investigateScope) + ") GROUP BY offender HAVING cnt > 5", new Object[]{});
+			offenders = db.executeQuery("SELECT COUNT(*) as cnt, offender FROM infractions WHERE offend_at > FROM_UNIXTIME(" + (now - 3600 * investigateScope) + ") GROUP BY offender HAVING cnt > 10", new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		if( offenders.size() == 0 )
