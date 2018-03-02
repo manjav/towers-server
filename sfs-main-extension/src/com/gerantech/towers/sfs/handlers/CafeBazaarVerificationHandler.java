@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +19,6 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
-
-import javax.annotation.Resources;
 
 /**
  * @author ManJav
@@ -55,14 +54,14 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 
 		if( !game.market.equals("cafebazaar") )
 		{
-			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", 0);
+			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());
 			return;
 		}
 		trace("Player Purchase --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
 		Data data = verify(productID, purchaseToken);
         
         // send purchase data to client
-        // if consumptionState is zero, thats mean product consumed.
+        // if consumptionState is zero, its means the product consumed.
         if( data.statusCode == HttpStatus.SC_OK )
         {
 			sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
@@ -110,21 +109,19 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 			return;
 		}
 
-
 		resObj.putBool("success", true);
 		resObj.putInt("consumptionState", consumptionState);
 		resObj.putInt("purchaseState", purchaseState);
 		resObj.putText("developerPayload", developerPayload);
 		resObj.putLong("purchaseTime", purchaseTime);
-		insertToDB(game, productID, purchaseToken, resObj);
+		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime);
 		send("verify", resObj, sender);
 		trace("Purchase SUCCESS --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
 	}
 
-	private void insertToDB(Game game, String productID, String purchaseToken, ISFSObject result)
+	private void insertToDB(Game game, String id, String token, int state, long time)
 	{
-		String query = "INSERT INTO `purchases`(`product_id`, `player_id`, `market`, `purchase_token`, `consume_state`, `purchase_state`, `purchase_time`, `success`) VALUES ('" +
-		productID+"', "+game.player.id+", '"+game.market+"', '"+purchaseToken+ "',"+1+","+result.getInt("purchaseState")+","+result.getLong("purchaseTime")+"," +1+")";
+		String query = "INSERT INTO purchases( player_id, id, market, token, consumed, state, time ) VALUES (" + game.player.id + ", '" + id + "', '" + game.market + "', '" + token + "', 1, " + state + ", FROM_UNIXTIME(" + (time/1000) + "))";
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
@@ -133,9 +130,9 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 		}
 	}
 
-	private void consume(String purchaseToken)
+	private void consume(String token)
 	{
-		String query = "UPDATE `purchases` SET `consume_state`=0 WHERE `purchase_token`='" + purchaseToken + "'";
+		String query = "UPDATE `purchases` SET `consumed`=0 WHERE `token`='" + token + "'";
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[]{});
