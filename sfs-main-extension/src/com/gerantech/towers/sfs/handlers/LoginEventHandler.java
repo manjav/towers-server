@@ -50,15 +50,39 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
 		int now = (int)Instant.now().getEpochSecond();
 
-		if( ( now < UNTIL_MAINTENANCE || STARTING_STATE == 1 ) && inData.getInt("id") != 10412 )
+		//trace("now", now, "UNTIL_MAINTENANCE", UNTIL_MAINTENANCE);
+		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10412 )
 		{
-			outData.putInt("umt", UNTIL_MAINTENANCE - now + 15);
+			outData.putInt("umt", UNTIL_MAINTENANCE - now );
 			return;
 		}
-		if( STARTING_STATE == 0 )
-			STARTING_STATE = 1;
 
+		// check ban
+		ISFSObject banData = BanSystem.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
+		if( banData != null )
+		{
+			outData.putSFSObject("ban", banData);
+			return;
+		}
+
+		// check force update
 		LoginData loginData = new LoginData();
+		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion )
+		{
+			outData.putInt("forceVersion", loginData.forceVersion);
+			//try {
+			//	LoginErrors.dispatch (LoginErrors.LOGIN_FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
+			//} catch (Exception e) { trace(inData.getInt("appver") + " needs " + e.getMessage() + " to " + loginData.forceVersion); }
+			return;
+		}
+
+
+		if( STARTING_STATE == 1 )
+		{
+			outData.putInt("umt", 15);
+			return;
+		}
+
 		if( CORE_SIZE == 0 )
 		{
 			try {
@@ -68,15 +92,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
 		}
 
-		// check force update
-		if( inData.containsKey("appver") && inData.getInt("appver") < loginData.forceVersion )
-		{
-			outData.putInt("forceVersion", loginData.forceVersion);
-			try {
-				LoginErrors.dispatch (LoginErrors.FORCE_UPDATE, "Force Update", new String[]{loginData.forceVersion+""});
-			} catch (Exception e) { trace(inData.getInt("appver") + " needs " + e.getMessage() + " to " + loginData.forceVersion); }
-			return;
-		}
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		// Create new user ============================================================
@@ -103,6 +118,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 						}
 					}
 				}
+
+				if( STARTING_STATE == 0 )
+					STARTING_STATE = 1;
 
 				password = PasswordGenerator.generate().toString();
 
@@ -223,6 +241,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 				return;
 			}
 
+			if( STARTING_STATE == 0 )
+				STARTING_STATE = 1;
+
 			DBUtils dbUtils = DBUtils.getInstance();
 			// Retrieve player data from db
 			outData.putInt("id", id);
@@ -245,6 +266,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			e.printStackTrace();
 			LoginErrors.dispatch(LoginErrors.SQL_ERROR, "SQL Failed", new String[]{e.getMessage()});
         }
+
 		//trace("initData", outData.getDump());
 	}
 

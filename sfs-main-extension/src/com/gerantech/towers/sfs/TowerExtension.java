@@ -12,6 +12,7 @@ import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
+import com.gerantech.towers.sfs.utils.BanSystem;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -97,7 +98,9 @@ public class TowerExtension extends SFSExtension
 	{
 		trace(cmdName, params);
 		if ( cmdName.equals("setumtime") )
-			return LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params);
+			return (LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params)) + ";;";
+		else if ( cmdName.equals("ban") )
+			return BanSystem.getInstance().checkOffends((String) params);
 		else if ( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
 		else if ( cmdName.equals("resetkeylimit") )
