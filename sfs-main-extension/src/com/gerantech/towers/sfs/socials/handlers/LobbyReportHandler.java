@@ -26,6 +26,7 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         IDBManager db = getParentExtension().getParentZone().getDBManager();
         ISFSArray infractions = null;
 
+
         // check report exists on db
         try {
             infractions = db.executeQuery("SELECT * From infractions WHERE content = '" + params.getUtfString("t") + "' AND lobby = '" + lobby + "' AND offender = " + params.getInt("i"), new Object[]{});
@@ -40,10 +41,9 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         try {
             infractions = db.executeQuery("SELECT * From infractions WHERE report_at > '" + new Timestamp(Instant.now().toEpochMilli()-86400000).toString() + "' AND reporter = " + reporter.id, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        if( infractions != null &&  infractions.size() > 5 )
+        if( infractions != null &&  infractions.size() > 3 )
         {
             sendResponse(sender, params, 3);
-            send(Commands.LOBBY_REPORT, params, sender);
             return;
         }
 
