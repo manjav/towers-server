@@ -47,7 +47,7 @@ public class BanSystem
 			return "We have not any offenders.";
 
 		// search all banneds and udid
-		String bannedQuery = "SELECT * FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND (";
+		String bannedQuery = "SELECT * FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND mode >= 1 AND (";
 		String udidQuery = "SELECT player_id, udid FROM devices WHERE ";
 		String ret = "";
 		for( int i = 0; i < offenders.size(); i ++ )
@@ -91,7 +91,7 @@ public class BanSystem
 			}
 
 			// ban warned offenders
-			warnOrBan(db, offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?"banned_at":"warned_at", now, banTime);
+			warnOrBan(db, offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?2:1, now, banTime);
 			// add log
 			ret += offenders.getSFSObject(i).getInt("offender") + (offenders.getSFSObject(i).containsKey("ban") ? " banned.\n" : " warned.\n");
 		}
@@ -99,26 +99,28 @@ public class BanSystem
 		return ret;
 	}
 
-	private void warnOrBan(IDBManager db, Integer offender, String udid, String key, long now, int banTime)
+	private void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime)
 	{
+		String msg = "تعلیق بعلت گزارش مکرر بازیکن ها";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at) VALUES (" + offender + ", '" + udid + "', '" + msg + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + ") ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at);";
+		ext.trace(q);
 		try {
-			String msg = "تعلیق بعلت گزارش مکرر بازیکن ها";
-			String q = "INSERT INTO banneds (player_id, udid, message, " + key + ", expire_at) VALUES (" + offender + ", '" + udid + "', '" + msg + "', FROM_UNIXTIME (" + now + "), FROM_UNIXTIME(" + (now + banTime * 3600) + ") ) ON DUPLICATE KEY UPDATE " + key + " = VALUES(" + key + "), expire_at = VALUES(expire_at);";
-			ext.trace(q);
 			db.executeUpdate(q, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
-		String message = key == "warned_at" ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "متأسفانه به دلیل ادامه تخلفات شما کاربری شما معلق شد.";
-		OneSignalUtils.getInstance().send(message, null, offender);
-		if( key == "warned_at" )
+		String message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "متأسفانه به دلیل ادامه تخلفات شما کاربری شما معلق شد.";
+		OneSignalUtils.getInstance().send(message, "", offender);
+		if( banMode == 1 )
 			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, null);
 	}
 
 	public ISFSObject checkBan(int playerId, String udid, long now)
 	{
 		ISFSArray bannedUsers = null;
+		String query = "SELECT message, expire_at FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND mode = 2 AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
+		ext.trace(query);
 		try {
-			bannedUsers = ext.getParentZone().getDBManager().executeQuery("SELECT message, expire_at FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND (player_id = " + playerId + " OR udid = '" + udid + "')", new Object[]{});
+			bannedUsers = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		if( bannedUsers.size() == 0 )
