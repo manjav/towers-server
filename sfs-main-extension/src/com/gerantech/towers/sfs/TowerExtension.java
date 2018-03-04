@@ -83,7 +83,6 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.INBOX_BROADCAST, InboxBroadcastMessageHandler.class);
 
 		// administration handlers
-		addRequestHandler("bugReport", IssueReportHandler.class);// must be removed on force-update
 		addRequestHandler(Commands.ISSUE_REPORT, IssueReportHandler.class);
 		addRequestHandler(Commands.ISSUE_GET, IssueGetHandler.class);
 		addRequestHandler(Commands.ISSUE_TRACK, IssueTrackHandler.class);

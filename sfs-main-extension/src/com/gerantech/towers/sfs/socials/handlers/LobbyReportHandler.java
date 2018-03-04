@@ -11,7 +11,6 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 
 /**
@@ -28,8 +27,10 @@ public class LobbyReportHandler extends BaseClientRequestHandler
 
 
         // check report exists on db
+        String query = "SELECT * From infractions WHERE content = '" + params.getUtfString("t") + "' AND lobby = '" + lobby + "' AND offender = " + params.getInt("i");
+        // trace(query);
         try {
-            infractions = db.executeQuery("SELECT * From infractions WHERE content = '" + params.getUtfString("t") + "' AND lobby = '" + lobby + "' AND offender = " + params.getInt("i"), new Object[]{});
+            infractions = db.executeQuery(query, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         if( infractions != null &&  infractions.size() > 0 )
         {
@@ -38,20 +39,22 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         }
 
         // check reporter is verbose
+        query = "SELECT * From infractions WHERE report_at > FROM_UNIXTIME(" + (Instant.now().getEpochSecond()-86400)+ ") AND reporter = " + reporter.id;
+        //trace(query);
         try {
-            infractions = db.executeQuery("SELECT * From infractions WHERE report_at > '" + new Timestamp(Instant.now().toEpochMilli()-86400000).toString() + "' AND reporter = " + reporter.id, new Object[]{});
+            infractions = db.executeQuery(query, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        if( infractions != null &&  infractions.size() > 3 )
+        if( infractions != null &&  infractions.size() > 2 )
         {
             sendResponse(sender, params, 3);
             return;
         }
 
         // insert report
-        Timestamp reportAt = new Timestamp(Instant.now().toEpochMilli());
-        Timestamp offendAt = new Timestamp(params.getInt("u")*1000l);
+        query = "INSERT INTO `infractions` (`reporter`, `offender`, `content`, `lobby`, `offend_at`, `report_at`) VALUES ('" + reporter.id + "', '" + params.getInt("i") + "', '" + params.getUtfString("t") + "', '" + lobby + "', FROM_UNIXTIME(" + params.getInt("u") + "), FROM_UNIXTIME(" + Instant.now().getEpochSecond() + "));";
+        //trace(query);
         try {
-            db.executeInsert( "INSERT INTO `infractions` (`reporter`, `offender`, `content`, `lobby`, `offend_at`, `report_at`) VALUES ('" + reporter.id + "', '" + params.getInt("i") + "', '" + params.getUtfString("t") + "', '" + lobby + "', '" + offendAt.toString() + "', '" + reportAt.toString() + "');", new Object[]{});
+            db.executeInsert(query , new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         sendResponse(sender, params, 0);
     }
