@@ -79,7 +79,6 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
-		trace(item.type, now);
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
 		Boolean succeed = false;
@@ -97,7 +96,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int[] updates = mapChangeCallback.updates.keys();
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
-		trace("type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
+		trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
 		// Run db queries
 		DBUtils dbUtils = DBUtils.getInstance();

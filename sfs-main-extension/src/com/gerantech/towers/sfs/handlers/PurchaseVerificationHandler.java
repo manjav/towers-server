@@ -55,13 +55,12 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
-		if( !game.market.equals("cafebazaar") || !game.market.equals("myket") )
+		if( !game.market.equals("cafebazaar") && !game.market.equals("myket") )
 		{
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());
 			return;
 		}
 		Data data = verify(productID, purchaseToken, game.market);
-        
         // send purchase data to client
         // if consumptionState is zero, its means the product consumed.
         if( data.statusCode == HttpStatus.SC_OK )
@@ -101,13 +100,21 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 	private void sendSuccessResult(User sender, Game game, String productID, String purchaseToken, int consumptionState, int purchaseState, String developerPayload, long purchaseTime)
 	{
 		ISFSObject resObj = SFSObject.newInstance();
+		if( purchaseState != 0 )
+		{
+			resObj.putBool("success", false);
+			resObj.putText("message", "error in verification");
+			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
+			return;
+		}
+
 		ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
 		int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
 		if( !exchangeHandler.exchange(game, item, 0, 0) )
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", "error in exchange");
-			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
+			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
 			return;
 		}
 
@@ -123,7 +130,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 
 	private void insertToDB(Game game, String id, String token, int state, long time)
 	{
-		String query = "INSERT INTO purchases( player_id, id, market, token, consumed, state, time ) VALUES (" + game.player.id + ", '" + id + "', '" + game.market + "', '" + token + "', 1, " + state + ", FROM_UNIXTIME(" + (time/1000) + "))";
+		String query = "INSERT INTO purchases( player_id, id, market, token, consumed, state, time ) VALUES (" + game.player.id + ", '" + id + "', '" + game.market + "', '" + token + "', 1, " + state + ", FROM_UNIXTIME(" + (time/1000) + ")) ON DUPLICATE KEY UPDATE consumed = VALUES(consumed), state = VALUES(state)";
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
@@ -226,6 +233,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		else if( market.equals("cafebazaar") )
 			url = "https://pardakht.cafebazaar.ir/devapi/v2/api/validate/"+packageName+"/inapp/"+productID+"/purchases/"+purchaseToken+"/?access_token="+ accessToken_cafebazaar;
 
+		//trace("purchase url:", url);
 		Data data = HttpTool.get(url, headers);
 		trace("verify", data.statusCode, data.text);
 		return data;
