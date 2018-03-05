@@ -6,6 +6,7 @@ import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -106,7 +107,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", "error in exchange");
-			trace("Purchase FAIL --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD), "Error Message: In exchange");
+			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
 			return;
 		}
 
@@ -117,7 +118,7 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 		resObj.putLong("purchaseTime", purchaseTime);
 		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime);
 		send("verify", resObj, sender);
-		trace("Purchase SUCCESS --playerId:", game.player.id, "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
+		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", getHardOnDB(game.player.id) );
 	}
 
 	private void insertToDB(Game game, String id, String token, int state, long time)
@@ -126,9 +127,19 @@ public class CafeBazaarVerificationHandler extends BaseClientRequestHandler
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		} catch (SQLException e) { e.printStackTrace(); }
+	}
+
+	private int getHardOnDB(int playerID)
+	{
+		ISFSArray res = null;
+		try {
+			res = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT count From resources WHERE player_id = " + playerID + " AND type = 1003", new Object[]{});
+		} catch (SQLException e) { e.printStackTrace(); }
+
+		if( res != null && res.size() > 0 )
+			return res.getSFSObject(0).getInt("count");
+		return 0;
 	}
 
 	private void consume(String token)
