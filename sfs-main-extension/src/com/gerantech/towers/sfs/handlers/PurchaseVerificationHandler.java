@@ -26,13 +26,13 @@ import java.util.Map;
  * @author ManJav
  *
  */
-public class CafeBazaarVerificationHandler extends BaseClientRequestHandler 
+public class PurchaseVerificationHandler extends BaseClientRequestHandler
 {
 
 	private static String packageName = "air.com.grantech.towers";
 	private static String accessToken_cafebazaar = "riN8RxzQMsC9x05kCz8EWscxwjSu7r";
 
-	public CafeBazaarVerificationHandler() {}
+	public PurchaseVerificationHandler() {}
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
