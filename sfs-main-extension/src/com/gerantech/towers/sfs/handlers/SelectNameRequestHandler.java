@@ -39,7 +39,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 			return;
 		}
 
-		if( game.player.nickName != "guest" )
+		if( !game.player.nickName.equals("guest") )
 		{
 			ExchangeItem ei = new ExchangeItem(-1, ResourceType.CURRENCY_HARD, 100, -1, -1, 1, 0);
 			if( !(((TowerExtension) getParentExtension()).exchangeHandler).exchange(game, ei, 0, 0) )
