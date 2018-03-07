@@ -111,7 +111,7 @@ public class BanSystem
 		String message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "متأسفانه به دلیل ادامه تخلفات شما کاربری شما معلق شد.";
 		OneSignalUtils.getInstance().send(message, "", offender);
 		if( banMode == 1 )
-			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, null);
+			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, "");
 	}
 
 	public ISFSObject checkBan(int playerId, String udid, long now)
@@ -123,7 +123,7 @@ public class BanSystem
 			bannedUsers = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
-		if( bannedUsers.size() == 0 )
+		if( bannedUsers == null || bannedUsers.size() == 0 )
 			return null;
 
 		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at")/1000-now);
