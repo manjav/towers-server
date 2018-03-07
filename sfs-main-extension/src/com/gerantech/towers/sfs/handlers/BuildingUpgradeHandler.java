@@ -15,9 +15,9 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  * @author ManJav
  *
  */
-public class BuildingUpgradeHandler extends BaseClientRequestHandler 
+public class BuildingUpgradeHandler extends BaseClientRequestHandler
 {
-	
+
 	public BuildingUpgradeHandler() {}
 
 	public void handleClientRequest(User sender, ISFSObject params)
@@ -26,17 +26,18 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
     	int confirmedHards = (int)params.getInt("confirmedHards");
 		Player player = ((Game)sender.getSession().getProperty("core")).player;
 		Building building = player.buildings.get(buildingType);
-		
+
 		trace(building.improveLevel, building.get_level(), building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
-		
+
   		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		player.resources.changeCallback = mapChangeCallback;
 		boolean success = building.upgrade(confirmedHards);
 		player.resources.changeCallback = null;
-
+		params.putBool("success", success);
 		if( !success )
 		{
 			trace(ExtensionLogLevel.WARN, "building " + buildingType + " can not upgrade to level " + building.get_level());
+			send(Commands.BUILDING_UPGRADE, params, sender);
 			return;
 		}
 		DBUtils dbUtils = DBUtils.getInstance();
