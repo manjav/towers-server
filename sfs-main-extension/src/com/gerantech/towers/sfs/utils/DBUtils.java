@@ -1,27 +1,21 @@
 package com.gerantech.towers.sfs.utils;
 
-import com.gerantech.towers.sfs.socials.handlers.LobbyDataHandler;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.hazelcast.com.eclipsesource.json.JsonObject;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.exceptions.SFSErrorCode;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-import net.sf.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -182,6 +176,34 @@ public class DBUtils
     }
 
 
+    public ISFSArray getPrefs(int id, int appVersion) throws SQLException
+    {
+        ISFSArray ret = db.executeQuery("SELECT `k`,`v` FROM userprefs WHERE player_id=" + id, new Object[]{});
+
+        if( appVersion >= 2500 )
+        {
+            for( int i=0; i < ret.size(); i ++ )
+            {
+                if( ret.getSFSObject(i).getText("k").equals("101") )
+                {
+                    String val = "";
+                    if( ret.getSFSObject(i).getText("v") == "111" )
+                        val = "141";
+                    else if( ret.getSFSObject(i).getText("v") == "113" )
+                        val = "151";
+                    else if( ret.getSFSObject(i).getText("v") == "115" )
+                        val = "160";
+                    else if( ret.getSFSObject(i).getText("v") == "116" )
+                        val = "172";
+                    else if( ret.getSFSObject(i).getText("v") == "118" )
+                        val = "182";
+                    ret.getSFSObject(i).putText("101", val);
+                }
+            }
+        }
+
+        return ret;
+    }
 
     public String resetKeyExchanges()
     {
@@ -244,4 +266,5 @@ public class DBUtils
             return "Player";
         }
     }
+
 }

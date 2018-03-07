@@ -252,8 +252,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("resources", dbUtils.getResources(id));
 			outData.putSFSArray("quests", dbUtils.getQuests(id));
 			outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
+			if( inData.getInt("appver") >= 2500 )
+				outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
 
-    		// Find active battle room
+			// Find active battle room
 			Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
 			int joinedRoomId = room == null ? -1 : room.getId();
 			session.setProperty("joinedRoomId", joinedRoomId);
