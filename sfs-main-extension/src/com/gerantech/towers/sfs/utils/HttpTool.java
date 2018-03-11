@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.utils;
 
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -15,11 +16,15 @@ import org.apache.http.impl.client.HttpClients;
 
 public class HttpTool
 {
-	public static Data get(String url)
+	public static Data get(String url, Map<String, String> headers)
 	{
         HttpGet request = new HttpGet(url);
+		if( headers != null )
+			for( String h : headers.keySet() )
+				request.addHeader(h, headers.get(h));
+		
 		CloseableHttpClient client = HttpClients.createDefault();
-        try
+		try
         {
 			HttpResponse response = client.execute(request);
 			return new Data(response.getStatusLine().getStatusCode(), convertStreamToString(response.getEntity().getContent()));

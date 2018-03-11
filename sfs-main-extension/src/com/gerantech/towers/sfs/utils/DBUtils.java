@@ -176,6 +176,28 @@ public class DBUtils
     }
 
 
+    public ISFSArray getPrefs(int id, int appVersion) throws SQLException
+    {
+        ISFSArray ret = db.executeQuery("SELECT `k`,`v` FROM userprefs WHERE player_id=" + id, new Object[]{});
+
+        if( appVersion >= 2500 )
+        {
+            for( int i=0; i < ret.size(); i ++ )
+            {
+                if( ret.getSFSObject(i).getText("k").equals("101") )
+                {
+                    if( ret.getSFSObject(i).getUtfString("v").equals("111") )
+                        ret.getSFSObject(i).putUtfString("v", "141");
+                    else if( ret.getSFSObject(i).getUtfString("v").equals("113") )
+                        ret.getSFSObject(i).putUtfString("v", "151");
+                    else if( ret.getSFSObject(i).getUtfString("v").equals("115") || ret.getSFSObject(i).getUtfString("v").equals("116") || ret.getSFSObject(i).getUtfString("v").equals("118") )
+                        ret.getSFSObject(i).putUtfString("v", "182");
+                }
+            }
+        }
+
+        return ret;
+    }
 
     public String resetKeyExchanges()
     {
@@ -238,4 +260,5 @@ public class DBUtils
             return "Player";
         }
     }
+
 }

@@ -12,6 +12,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 
 /**
  * @author ManJav
@@ -29,12 +30,8 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int type = params.getInt("type");
 		int now = (int)Instant.now().getEpochSecond();
 
-		int hardsConfimed = 0;
-		if(params.containsKey("hards"))
-			hardsConfimed = params.getInt("hards");
-
 		// call exchanger and update database
-		boolean succeed = exchange(game, type, now, hardsConfimed);
+		boolean succeed = exchange(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
 		params.putBool("succeed", succeed);
 		params.putInt("now", now);
 		if( !succeed )
@@ -60,11 +57,21 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		}
 
 		send("exchange", params, sender);
-    }
+	}
 
 	public boolean exchange(Game game, int type, int now, int hardsConfimed)
 	{
 		ExchangeItem item = game.exchanger.items.get(type);
+		if( item == null )
+		{
+			trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
+			return false;
+		}
+		return exchange(game, item, now, hardsConfimed);
+	}
+
+	public boolean exchange(Game game, ExchangeItem item, int now, int hardsConfimed)
+	{
 
 		/*String log = "";
 		int[] keys = game.player.resources.keys();
@@ -72,7 +79,6 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
-		trace(type, now);
 		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		game.player.resources.changeCallback = mapChangeCallback;
 		Boolean succeed = false;
@@ -90,7 +96,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int[] updates = mapChangeCallback.updates.keys();
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
-		trace("type:", type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
+		trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
 		// Run db queries
 		DBUtils dbUtils = DBUtils.getInstance();
@@ -99,7 +105,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			dbUtils.updateResources(game.player, mapChangeCallback.updates);
 			dbUtils.insertResources(game.player, mapChangeCallback.inserts);
 			if( item.isChest() )
-				dbUtils.updateExchange(type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
+				dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
 		}
 		catch (Exception e)
 		{

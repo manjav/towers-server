@@ -2,8 +2,6 @@ package com.grantech.towers.http;
 
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +19,7 @@ public class ExtensionHTTPFacade extends HttpServlet
     private final static String CMD_RESET_LOBBIES_ACTIVENESS = "resetlobbiesactiveness";
     private final static String CMD_GET_PLAYER_NAME_BY_IC = "getplayernamebyic";
     private final static String CMD_GET_LOBBY_NAME_BY_ID = "getlobbynamebyid";
+    private final static String CMD_BAN = "ban";
     private final static String CMD_CUSTOM = "custom";
 
     private ISFSExtension myExtension;
@@ -46,6 +45,7 @@ public class ExtensionHTTPFacade extends HttpServlet
                 case CMD_RESET_LOBBIES_ACTIVENESS:
                 case CMD_SERVER_CHECK:
                 case CMD_CUSTOM:
+                case CMD_BAN:
                     result = myExtension.handleInternalMessage(key, request.getParameter(key));
                     break;
                 case CMD_GET_PLAYER_NAME_BY_IC:

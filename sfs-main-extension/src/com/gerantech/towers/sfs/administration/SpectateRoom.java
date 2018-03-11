@@ -5,7 +5,6 @@ import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
@@ -20,7 +19,6 @@ import java.util.TimerTask;
 
 public class SpectateRoom extends SFSExtension
 {
-	private int numUsers = 0;
 	private Room room;
 	private Timer timer;
 
@@ -43,6 +41,7 @@ public class SpectateRoom extends SFSExtension
 			SFSArray battles = SFSArray.newInstance();
 			SFSObject battle;
 			List<Room> rooms = getParentZone().getRoomListFromGroup(room.getName());
+			int numRooms = 0;
 			for ( Room r : rooms )
 			{
 				if( (int)r.getProperty("state") != BattleRoom.STATE_BATTLE_STARTED )
@@ -69,6 +68,9 @@ public class SpectateRoom extends SFSExtension
 				battle.putSFSArray("players", players);
 
 				battles.addSFSObject(battle);
+				numRooms ++;
+				if( numRooms > 20 )
+					break;
 			}
 
 			if( isChanged(reservedRooms, battles) )

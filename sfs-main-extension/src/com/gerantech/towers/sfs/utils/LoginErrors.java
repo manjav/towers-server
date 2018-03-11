@@ -55,7 +55,7 @@ public enum LoginErrors implements IErrorCode
     INVITATION_NOT_VALID(42),
 
     SQL_ERROR(101),
-    FORCE_UPDATE(110);
+    LOGIN_FORCE_UPDATE(110);
 
     private short id;
 
