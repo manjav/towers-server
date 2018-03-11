@@ -186,18 +186,12 @@ public class DBUtils
             {
                 if( ret.getSFSObject(i).getText("k").equals("101") )
                 {
-                    String val = "";
-                    if( ret.getSFSObject(i).getText("v") == "111" )
-                        val = "141";
-                    else if( ret.getSFSObject(i).getText("v") == "113" )
-                        val = "151";
-                    else if( ret.getSFSObject(i).getText("v") == "115" )
-                        val = "160";
-                    else if( ret.getSFSObject(i).getText("v") == "116" )
-                        val = "172";
-                    else if( ret.getSFSObject(i).getText("v") == "118" )
-                        val = "182";
-                    ret.getSFSObject(i).putText("101", val);
+                    if( ret.getSFSObject(i).getUtfString("v").equals("111") )
+                        ret.getSFSObject(i).putUtfString("v", "141");
+                    else if( ret.getSFSObject(i).getUtfString("v").equals("113") )
+                        ret.getSFSObject(i).putUtfString("v", "151");
+                    else if( ret.getSFSObject(i).getUtfString("v").equals("115") || ret.getSFSObject(i).getUtfString("v").equals("116") || ret.getSFSObject(i).getUtfString("v").equals("118") )
+                        ret.getSFSObject(i).putUtfString("v", "182");
                 }
             }
         }
