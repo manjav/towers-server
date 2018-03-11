@@ -77,7 +77,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 
-		if( STARTING_STATE == 1 )
+		if( STARTING_STATE == 1 && inData.getInt("id") != 10412 )
 		{
 			outData.putInt("umt", 15);
 			return;
