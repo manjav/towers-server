@@ -354,6 +354,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		boolean has101 = false;
 		boolean has102 = false;
 		boolean has103 = false;
+		boolean hasDonation = false;
 		for(int i=0; i<elements.size(); i++)
 		{
 			element = elements.getSFSObject(i);
@@ -369,10 +370,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 				has103 = true;
 			if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
 				hasNewChests = true;
+			if( ct == ExchangeType.DONATION )
+				hasDonation = true;
 
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 		}
 
+		trace("hasDonation:", hasDonation);
 		SFSArray newExchanges = new SFSArray();
 		// add new chests for old players --> backward compatibility
 		if( !hasNewChests )
@@ -391,6 +395,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addNewExchangeElement(ExchangeType.CHEST_CATE_102_FREE, elements, newExchanges, initData, now );
 		if( !has103 )
 			addNewExchangeElement(ExchangeType.CHEST_CATE_103_FREE, elements, newExchanges, initData, now );
+		if( !hasDonation )
+			addNewExchangeElement(ExchangeType.DONATION_REQUEST, elements, newExchanges, initData, now);
 
 		if( newExchanges.size() > 0 )
 		{
