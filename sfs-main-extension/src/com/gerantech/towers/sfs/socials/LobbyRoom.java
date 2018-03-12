@@ -1,11 +1,14 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.TowerExtension;
+import com.gerantech.towers.sfs.handlers.ExchangeHandler;
 import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
@@ -107,6 +110,23 @@ public class LobbyRoom extends BaseLobbyRoom
                 return;
             }
         }
+        else if ( mode == MessageTypes.M20_DONATE )
+        {
+            trace("\n\t..::Donation::..", params.getDump());
+            if( getAvailableDonate(params) != null )
+            {
+                trace("another request pending!");
+                return;
+            }
+            if ( params.getInt("r") == params.getInt("i") )
+            {
+                trace("Donor can't donate himself!");
+                return;
+            }
+            ExchangeHandler exchangeHandler = new ExchangeHandler();
+            Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
+            trace("Exchange result:", ext);
+        }
         messages.addSFSObject(params);
     }
 
@@ -138,6 +158,16 @@ public class LobbyRoom extends BaseLobbyRoom
         int msgSize = messages.size();
         for (int i = msgSize-1; i >=0; i--)
             if (messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 0 && messages.getSFSObject(i).getShort("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+                return messages.getSFSObject(i);
+
+        return null;
+    }
+    private ISFSObject getAvailableDonate(ISFSObject params)
+    {
+        ISFSArray messages = messageQueue();
+        int msgSize = messages.size();
+        for (int i = msgSize-1; i >=0; i--)
+            if (messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE && messages.getSFSObject(i).getInt("i").equals(params.getInt("i")))
                 return messages.getSFSObject(i);
 
         return null;
