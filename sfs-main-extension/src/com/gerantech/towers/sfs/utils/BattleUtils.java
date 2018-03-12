@@ -72,7 +72,10 @@ public class BattleUtils
         {
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
             List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
-            index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            if( game.appVersion >= 2600 && arena.index == 0 )
+                index = 2;
+            else
+                index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena.index);// ===> is temp
         }
