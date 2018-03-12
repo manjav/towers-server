@@ -113,17 +113,19 @@ public class LobbyRoom extends BaseLobbyRoom
         else if ( mode == MessageTypes.M20_DONATE )
         {
             trace("\n\t..::Donation::..", params.getDump());
+            ExchangeHandler exchangeHandler = new ExchangeHandler();
             if( getAvailableDonate(params) != null )
             {
                 trace("another request pending!");
                 return;
             }
-            if ( params.getInt("r") == params.getInt("i") )
+            if ( params.getInt("r") != params.getInt("i"))
             {
-                trace("Donor can't donate himself!");
+                trace("requester id != player id , cant add donate msg!");
+                Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
+                trace("Exchange result:", ext);
                 return;
             }
-            ExchangeHandler exchangeHandler = new ExchangeHandler();
             Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
             trace("Exchange result:", ext);
         }
