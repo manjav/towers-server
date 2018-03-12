@@ -396,7 +396,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( !has103 )
 			addNewExchangeElement(ExchangeType.CHEST_CATE_103_FREE, elements, newExchanges, initData, now );
 		if( !hasDonation )
-			addNewExchangeElement(ExchangeType.DONATION_REQUEST, elements, newExchanges, initData, now);
+			addNewExchangeElement(ExchangeType.DONATION_141_REQUEST, elements, newExchanges, initData, now);
 
 		if( newExchanges.size() > 0 )
 		{
