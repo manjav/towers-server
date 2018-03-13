@@ -47,6 +47,7 @@ public class LobbyRoom extends BaseLobbyRoom
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         super.organizeMessage(sender, params, false);
+        removeExpiredDonations(messageQueue());
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
             // cancel requested battle by owner
@@ -164,16 +165,6 @@ public class LobbyRoom extends BaseLobbyRoom
 
         return null;
     }
-    private ISFSObject getAvailableDonate(ISFSObject params)
-    {
-        ISFSArray messages = messageQueue();
-        int msgSize = messages.size();
-        for (int i = msgSize-1; i >=0; i--)
-            if (messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE && messages.getSFSObject(i).getInt("i").equals(params.getInt("i")))
-                return messages.getSFSObject(i);
-
-        return null;
-    }
     private ISFSObject getStartedBattle(ISFSObject params)
     {
         ISFSArray messages = messageQueue();
@@ -182,6 +173,35 @@ public class LobbyRoom extends BaseLobbyRoom
             if( messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 1 && messages.getSFSObject(i).getShort("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
                 return messages.getSFSObject(i);
         return null;
+    }
+
+    private int getAvailableDonateIndex(ISFSObject params)
+    {
+        ISFSArray messages = messageQueue();
+        int msgSize = messages.size();
+        for (int i = msgSize-1; i >=0; i--)
+            if (messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE && messages.getSFSObject(i).getInt("r").equals(params.getInt("i")))
+                return i;
+
+        return -1;
+    }
+    private void removeExpiredDonations(ISFSArray messages)
+    {
+        int msgSize = messages.size();
+        for (int i = msgSize-1; i >=0; i--)
+        {
+            ISFSObject message = messages.getSFSObject(i);
+            if ( message.getShort("m") == MessageTypes.M20_DONATE )
+            {
+                int now = (int) Instant.now().getEpochSecond();
+                int expiredTime = message.getInt("u") + ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
+                if ( expiredTime < now || message.getInt("n") >= 10)
+                {
+                    messages.removeElementAt(i);
+                    trace("Removed element at", i);
+                }
+            }
+        }
     }
 
     public void sendComment(short mode, String subject, String object, short permissionId)
