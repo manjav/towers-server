@@ -18,6 +18,8 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 
+import java.time.Instant;
+
 /**
  * Created by ManJav on 8/25/2017.
  */
@@ -115,17 +117,40 @@ public class LobbyRoom extends BaseLobbyRoom
         {
             trace("\n\t..::Donation::..", params.getDump());
             ExchangeHandler exchangeHandler = new ExchangeHandler();
-            if( getAvailableDonate(params) != null )
-            {
-                trace("another request pending!");
-                return;
-            }
-            if ( params.getInt("r") != params.getInt("i"))
+            int now = (int) Instant.now().getEpochSecond();
+            int cooldown = ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
+
+            if ( !params.getInt("r").equals(params.getInt("i")) )
             {
                 trace("requester id != player id , cant add donate msg!");
+                if (params.getInt("u") + cooldown > now)
+                    return;
+                if (params.getInt("n") >= 10)
+                    return;
                 Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
                 trace("Exchange result:", ext);
-                return;
+                return; // do not add message for this
+            }
+
+            //int expiredAt = params.getInt("u") + cooldown;
+            int lastDonateIndex = getAvailableDonateIndex(params);
+            ISFSObject lastDonate = null;
+            if( lastDonateIndex != -1)
+                lastDonate = messages.getSFSObject(lastDonateIndex);
+            if( lastDonate != null )
+            {
+                int lastExpiredAt = lastDonate.getInt("u") + cooldown;
+                if( lastExpiredAt < now )
+                {
+                    trace("last donate request timer is finished, removing last request...");
+                    messages.removeElementAt(lastDonateIndex);
+                    trace("adding new request");
+                }
+                else
+                {
+                    trace("another request pending! remaining time:", lastExpiredAt - now);
+                    return;
+                }
             }
             Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
             trace("Exchange result:", ext);
