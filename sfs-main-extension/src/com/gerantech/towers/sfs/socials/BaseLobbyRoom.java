@@ -55,16 +55,15 @@ public class BaseLobbyRoom extends SFSExtension
         mode = params.getShort("m");
         messages = messageQueue();
         // Max 30 len message queue
-        int i = 0;
-        while (messages.size() > 30 )
+        int i = messages.size() - 1;
+        int j = 0;
+        while ( i >= 0 )
         {
-            if (messages.getSFSObject(i).getShort("m") != MessageTypes.M20_DONATE)
-            {
+            if ( messages.getSFSObject(i).getShort("m") != MessageTypes.M20_DONATE )
+                j++;
+            if ( j > 30 )
                 messages.removeElementAt(i);
-                trace("removing item at:",i,"type:", messages.getSFSObject(i).getShort("m"));
-            }
-            else
-                i++;
+            i--;
         }
 
         if( mode == MessageTypes.M0_TEXT )

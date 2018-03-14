@@ -48,8 +48,8 @@ public class LobbyRoom extends BaseLobbyRoom
  //   @Override
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
-        super.organizeMessage(sender, params, false);
         removeExpiredDonations(messageQueue());
+        super.organizeMessage(sender, params, false);
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
             // cancel requested battle by owner
