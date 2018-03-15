@@ -8,14 +8,8 @@ import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.buildings.cals.RarityCalculator;
-import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
-import com.gt.towers.constants.ResourceType;
-import com.gt.towers.exchanges.ExchangeDonateItem;
-import com.gt.towers.exchanges.ExchangeItem;
-import com.smartfoxserver.bitswarm.core.debug.ByteArray;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -24,7 +18,6 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 
-import java.io.*;
 import java.time.Instant;
 
 /**
@@ -55,8 +48,8 @@ public class LobbyRoom extends BaseLobbyRoom
  //   @Override
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
-        super.organizeMessage(sender, params, false);
         removeExpiredDonations(messageQueue());
+        super.organizeMessage(sender, params, false);
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
             // cancel requested battle by owner
@@ -123,53 +116,44 @@ public class LobbyRoom extends BaseLobbyRoom
         else if ( mode == MessageTypes.M20_DONATE )
         {
             trace("\n\t..::Donation::..", params.getDump());
-            ExchangeHandler exchangeHandler = ((TowerExtension)getParentZone().getExtension()).exchangeHandler;
+            ExchangeHandler exchangeHandler = new ExchangeHandler();
             int now = (int) Instant.now().getEpochSecond();
-            int coolDown = ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
-            int cardType = (int)params.getShort("ct");
-            //int cardRarity = (int) new RarityCalculator().get(cardType);
+            int cooldown = ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
 
-            try {
-                if ( !params.getInt("r").equals(params.getInt("i")) )
-                {
-                    trace("requester id != player id , cant add donate msg!");
-                    if (params.getInt("u") + coolDown > now)
-                        return;
-                    if (params.getInt("n") >= 10)
-                        return;
-                    ExchangeDonateItem edi = (ExchangeDonateItem) deserializeBytes(params.getByteArray("ei"));
-                    Boolean ext = exchangeHandler.exchange(game, edi, params.getInt("u"), 0);
-                    trace("Exchange result:", ext);
-                    return; // do not add message for this
-                }
-
-                //int expiredAt = params.getInt("u") + coolDown;
-                int lastDonateIndex = getAvailableDonateIndex(params);
-                ISFSObject lastDonate = null;
-                if( lastDonateIndex != -1)
-                    lastDonate = messages.getSFSObject(lastDonateIndex);
-                if( lastDonate != null )
-                {
-                    int lastExpiredAt = lastDonate.getInt("u") + coolDown;
-                    if( lastExpiredAt < now )
-                    {
-                        trace("last donate request timer is finished, removing last request...");
-                        messages.removeElementAt(lastDonateIndex);
-                        trace("adding new request");
-                    }
-                    else
-                    {
-                        trace("another request pending! remaining time:", lastExpiredAt - now);
-                        return;
-                    }
-                }
-                byte[] ei = serializeObject( new ExchangeDonateItem(ExchangeType.DONATION_141_REQUEST, cardType, 1, ResourceType.CURRENCY_HARD, 1, 1, params.getInt("u") + coolDown) );
-                params.putByteArray("ei", ei);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            if ( !params.getInt("r").equals(params.getInt("i")) )
+            {
+                trace("requester id != player id , cant add donate msg!");
+                if (params.getInt("u") + cooldown > now)
+                    return;
+                if (params.getInt("n") >= 10)
+                    return;
+                Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
+                trace("Exchange result:", ext);
+                return; // do not add message for this
             }
+
+            //int expiredAt = params.getInt("u") + cooldown;
+            int lastDonateIndex = getAvailableDonateIndex(params);
+            ISFSObject lastDonate = null;
+            if( lastDonateIndex != -1)
+                lastDonate = messages.getSFSObject(lastDonateIndex);
+            if( lastDonate != null )
+            {
+                int lastExpiredAt = lastDonate.getInt("u") + cooldown;
+                if( lastExpiredAt < now )
+                {
+                    trace("last donate request timer is finished, removing last request...");
+                    messages.removeElementAt(lastDonateIndex);
+                    trace("adding new request");
+                }
+                else
+                {
+                    trace("another request pending! remaining time:", lastExpiredAt - now);
+                    return;
+                }
+            }
+            Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
+            trace("Exchange result:", ext);
         }
         messages.addSFSObject(params);
     }
@@ -284,26 +268,5 @@ public class LobbyRoom extends BaseLobbyRoom
         InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
         sendComment(params.getShort("pr"), game.player.nickName, params.getUtfString("on"), (short)-1);// mode = join
         return true;
-    }
-
-    
-    public static Object deserializeBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
-        ObjectInputStream ois = new ObjectInputStream(bytesIn);
-        Object obj = ois.readObject();
-        ois.close();
-        return obj;
-    }
-
-    public static byte[] serializeObject(Object obj) throws IOException
-    {
-        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bytesOut);
-        oos.writeObject(obj);
-        oos.flush();
-        byte[] bytes = bytesOut.toByteArray();
-        bytesOut.close();
-        oos.close();
-        return bytes;
     }
 }
