@@ -59,6 +59,8 @@ public class BaseLobbyRoom extends SFSExtension
 
         if( mode == MessageTypes.M0_TEXT )
         {
+            if( params.getUtfString("t").length() > 160 )
+                params.putUtfString("t", params.getUtfString("t").substring(0, 160) + " ...");
             // Merge messages from a sender
             ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
             if (last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id) {
