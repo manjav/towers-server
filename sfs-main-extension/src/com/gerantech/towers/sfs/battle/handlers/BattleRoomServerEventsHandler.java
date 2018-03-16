@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -52,8 +53,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			return;
 		}
 
+		Player player = ((Game) user.getSession().getProperty("core")).player;
 		if( !user.isNpc() )
-			((Game) user.getSession().getProperty("core")).player.inFriendlyBattle = room.containsProperty("isFriendly");
+			player.inFriendlyBattle = room.containsProperty("isFriendly");
 
 		// Rejoin to previous room
 		if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
@@ -78,7 +80,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.isFull() )
 		{
-			int waitingPeak = room.containsProperty("isFriendly") ? 10000000 :  RandomPicker.getInt(8000, 12000 );
+			long delay = room.containsProperty("isFriendly") ? 10000000 : Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();
@@ -91,7 +93,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					room.setMaxUsers(1);
 					sendStartBattleResponse(true);
 				}
-			}, waitingPeak);
+			}, delay);
 		}
 		else
 		{
