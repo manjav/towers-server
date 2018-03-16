@@ -79,13 +79,13 @@ public class BattleRoom extends SFSExtension
 			autoJoinTimer.cancel();
 
 		setState( STATE_CREATED );
+		List<User> players = getRealPlayers();
 		this.isQuest = (boolean) room.getProperty("isQuest");
-		this.singleMode = opponentNotFound || isQuest;
+		this.singleMode = opponentNotFound || isQuest || players.size() == 1;
 		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
 		registeredPlayers = new ArrayList();
-		List<User> players = getRealPlayers();
         for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
         if( singleMode )

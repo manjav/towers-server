@@ -72,8 +72,8 @@ public class BattleUtils
         {
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
             List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
-            if( game.appVersion >= 2600 && arena.index == 0 )
-                index = 2;
+            if( game.appVersion >= 2600 && arena.index == 0 && game.player.get_battleswins() < 3 )
+                index = game.player.get_battleswins() + 1;
             else
                 index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
@@ -96,6 +96,7 @@ public class BattleUtils
         }
 
 
+        boolean singleMode = isQuest || game.player.inTutorial();
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
         if( hasExtraTime )
@@ -111,10 +112,10 @@ public class BattleUtils
         rs.setGame(true);
         rs.setMaxSpectators(50);
         rs.setDynamic(true);
-        rs.setAutoRemoveMode( isQuest ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
+        rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
         rs.setRoomProperties( roomProperties );
         rs.setName( pref + index+ "__" + roomId.getAndIncrement() );
-        rs.setMaxUsers(isQuest?1:2);
+        rs.setMaxUsers(singleMode?1:2);
         rs.setGroupId(isQuest?"quests":"battles");
         rs.setExtension(res);
 
