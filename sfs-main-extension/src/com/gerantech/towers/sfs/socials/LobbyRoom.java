@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.TowerExtension;
 import com.gerantech.towers.sfs.handlers.ExchangeHandler;
 import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.handlers.*;
@@ -10,13 +9,20 @@ import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.constants.ResourceType;
+import com.gt.towers.exchanges.ExchangeDonateItem;
+import com.smartfoxserver.bitswarm.sessions.ISession;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.entities.managers.IUserManager;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
+import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
 
@@ -25,6 +31,7 @@ import java.time.Instant;
  */
 public class LobbyRoom extends BaseLobbyRoom
 {
+    public ExchangeHandler exchangeHandler;
    // @Override
     public void init()
     {
@@ -34,6 +41,9 @@ public class LobbyRoom extends BaseLobbyRoom
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
         addRequestHandler(Commands.LOBBY_EDIT, LobbyEditHandler.class);
         addRequestHandler(Commands.LOBBY_MODERATION, LobbyModerationHandler.class);
+        // Add exchange handler
+        exchangeHandler = new ExchangeHandler();
+        addRequestHandler(Commands.EXCHANGE, exchangeHandler);
     }
 
    // @Override
@@ -48,8 +58,8 @@ public class LobbyRoom extends BaseLobbyRoom
  //   @Override
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
-        removeExpiredDonations(messageQueue());
         super.organizeMessage(sender, params, false);
+        removeExpiredDonations(messageQueue());
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
             // cancel requested battle by owner
@@ -222,6 +232,9 @@ public class LobbyRoom extends BaseLobbyRoom
                 int expiredTime = message.getInt("u") + ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
                 if ( expiredTime < now || message.getInt("n") >= message.getInt("cl"))
                 {
+                    ExchangeHandler eh = ((LobbyRoom) getParentRoom().getExtension()).exchangeHandler;
+                    ExchangeDonateItem requesterDonateItem = new ExchangeDonateItem(ExchangeType.DONATION_141_REQUEST, -1, -1, -1, -1, message.getInt("n"), message.getInt("u") + ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST), message.getShort("ct"));
+                    eh.exchange(game, requesterDonateItem, message.getInt("u"), 0);
                     messages.removeElementAt(i);
                     trace("Removed element at", i);
                 }
