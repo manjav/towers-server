@@ -220,7 +220,7 @@ public class LobbyRoom extends BaseLobbyRoom
             {
                 int now = (int) Instant.now().getEpochSecond();
                 int expiredTime = message.getInt("u") + ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
-                if ( expiredTime < now || message.getInt("n") >= 10)
+                if ( expiredTime < now || message.getInt("n") >= message.getInt("cl"))
                 {
                     messages.removeElementAt(i);
                     trace("Removed element at", i);
