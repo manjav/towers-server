@@ -168,6 +168,8 @@ public class LobbyRoom extends BaseLobbyRoom
                 lastDonate = messages.getSFSObject(lastDonateIndex);
             if( lastDonate != null )
             {
+                if ( !game.player.resources.exists(cardType) )
+                    return;
                 int lastExpiredAt = lastDonate.getInt("u") + coolDown;
                 if( lastExpiredAt < now )
                 {
