@@ -126,35 +126,53 @@ public class LobbyRoom extends BaseLobbyRoom
         else if ( mode == MessageTypes.M20_DONATE )
         {
             trace("\n\t..::Donation::..", params.getDump());
-            ExchangeHandler exchangeHandler = new ExchangeHandler();
+            ExchangeHandler eh = ((LobbyRoom) getParentRoom().getExtension()).exchangeHandler;
             int now = (int) Instant.now().getEpochSecond();
-            int cooldown = ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
+            int coolDown = ExchangeType.getCooldown(ExchangeType.DONATION_141_REQUEST);
+            int cardType = (int)params.getShort("ct");
+            ExchangeDonateItem donnorDonateItem = new ExchangeDonateItem(ExchangeType.DONATION_142_DONATE, -1, -1, -1, -1, 1, params.getInt("u") + coolDown, cardType);
 
             if ( !params.getInt("r").equals(params.getInt("i")) )
             {
                 trace("requester id != player id , cant add donate msg!");
-                if (params.getInt("u") + cooldown > now)
+                // bind new n to requested message
+                int requesterMessageIndex = findRequesterMessage(params.getInt("r"));
+                ISFSObject requesterMessage = null;
+                if ( requesterMessageIndex != -1 )
+                    requesterMessage = messages.getSFSObject(requesterMessageIndex);
+                if ( requesterMessage == null )
                     return;
-                if (params.getInt("n") >= 10)
+
+                if ( requesterMessage.getInt("u") + coolDown < params.getInt("u") )
+                {
+                    trace("Time has expired! Cannot donate");
                     return;
-                Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
-                trace("Exchange result:", ext);
+                }
+                if ( params.getInt("n") >= requesterMessage.getInt("cl") )
+                {
+                    trace("Card limit reached! Cannot donate");
+                    return;
+                }
+                requesterMessage.putInt("n", params.getInt("n"));
+                trace("\n\t..requester..", requesterMessage.getDump());
+                //send(Commands.LOBBY_PUBLIC_MESSAGE, requesterMessage, getParentRoom().getUserList());
+                // call exchange method
+                Boolean exD = eh.exchange(game, donnorDonateItem, params.getInt("u"), 0);
+                trace("Exchange D result:", exD);
                 return; // do not add message for this
             }
 
-            //int expiredAt = params.getInt("u") + cooldown;
             int lastDonateIndex = getAvailableDonateIndex(params);
             ISFSObject lastDonate = null;
             if( lastDonateIndex != -1)
                 lastDonate = messages.getSFSObject(lastDonateIndex);
             if( lastDonate != null )
             {
-                int lastExpiredAt = lastDonate.getInt("u") + cooldown;
+                int lastExpiredAt = lastDonate.getInt("u") + coolDown;
                 if( lastExpiredAt < now )
                 {
-                    trace("last donate request timer is finished, removing last request...");
+                    trace("last donate request timer is finished, removing last request... adding new request...");
                     messages.removeElementAt(lastDonateIndex);
-                    trace("adding new request");
                 }
                 else
                 {
@@ -162,8 +180,6 @@ public class LobbyRoom extends BaseLobbyRoom
                     return;
                 }
             }
-            Boolean ext = exchangeHandler.exchange(game, ExchangeType.DONATION_141_REQUEST, params.getInt("u"), 0);
-            trace("Exchange result:", ext);
         }
         messages.addSFSObject(params);
     }
@@ -218,6 +234,15 @@ public class LobbyRoom extends BaseLobbyRoom
             if (messages.getSFSObject(i).getShort("m") == MessageTypes.M20_DONATE && messages.getSFSObject(i).getInt("r").equals(params.getInt("i")))
                 return i;
 
+        return -1;
+    }
+    private int findRequesterMessage(int requesterId)
+    {
+        ISFSArray messages = messageQueue();
+        for (int i = messages.size()-1; i >= 0; i--)
+            if ( messages.getSFSObject(i).containsKey("r") )
+                if ( messages.getSFSObject(i).getInt("r") == requesterId )
+                    return i;
         return -1;
     }
     private void removeExpiredDonations(ISFSArray messages)
