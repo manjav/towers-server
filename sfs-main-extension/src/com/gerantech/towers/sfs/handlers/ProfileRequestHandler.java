@@ -41,10 +41,13 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		try {
 			questsArray = dbManager.executeQuery("SELECT `index` FROM quests WHERE player_id=" + playerId + " AND score>0 ORDER BY `index` DESC LIMIT 0, 1", new Object[]{});
 		} catch (SQLException e) { trace(e.getMessage()); }
-		SFSObject q = new SFSObject();
-		q.putInt("type", 5000);
-		q.putInt("count", questsArray.getSFSObject(0).getInt("index")+1);
-		featuresArray.addSFSObject( q );
+		if( questsArray.size() > 0 )
+		{
+			SFSObject q = new SFSObject();
+			q.putInt("count", questsArray.getSFSObject(0).getInt("index") + 1);
+			q.putInt("type", 5000);
+			featuresArray.addSFSObject(q);
+		}
 
 		params.putSFSArray("features", featuresArray );
 
