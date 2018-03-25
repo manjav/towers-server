@@ -160,7 +160,7 @@ public class BattleRoom extends SFSExtension
 
 			if( b.get_level() != reservedLevels[i] || b.type != reservedTypes[i] )
 			{
-				sendImproveResponse(i, b.type, b.get_level());
+				sendImproveResponse(i, b.type, b.get_level(), b.troopType, b.get_population());
 				reservedTypes[i] = b.type;
 				reservedLevels[i] = b.get_level();
 			}
@@ -264,12 +264,14 @@ public class BattleRoom extends SFSExtension
 		//trace("improve", b.game.player.nickName, params.getDump(),"t:", b.type, "_population:", b._population, b.improvable(params.getInt("t")));
 		b.improve(params.getInt("t"));
 	}
-	private void sendImproveResponse(int index, int type, int level)
+	private void sendImproveResponse(int index, int type, int level, int troopType, int population)
 	{
 		SFSObject params = SFSObject.newInstance();
 		params.putInt("i", index);
 		params.putInt("t", type);
 		params.putInt("l", level);
+		params.putInt("tt", troopType);
+		params.putInt("p", population);
 		//send("i", stickerParams, room.getUserList());  -->new but not test
 		sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
 
