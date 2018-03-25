@@ -286,7 +286,7 @@ public class BattleRoom extends SFSExtension
 	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void leaveGame(User user, boolean retryMode)
+	public void leave(User user, boolean retryMode)
 	{
 		if( user.isSpectator(room) )
 		{
