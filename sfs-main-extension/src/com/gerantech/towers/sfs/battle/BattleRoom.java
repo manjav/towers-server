@@ -85,10 +85,11 @@ public class BattleRoom extends SFSExtension
 		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
+		final boolean inTutorial = false;
 		registeredPlayers = new ArrayList();
-        for (User u: players)
+		for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
-        if( singleMode )
+		if( singleMode )
 		{
 			InitData data = new InitData();
 			data.id = (int) (Math.random() * 9999);
@@ -115,7 +116,13 @@ public class BattleRoom extends SFSExtension
 		}
 
 		if( singleMode )
+		{
 			bot = new BattleBot(this);
+
+			// sometimes auto start battle
+			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.isQuest && !registeredPlayers.get(0).player.inTutorial() )
+				setState(STATE_BATTLE_STARTED);
+		}
 
     	timer = new Timer();
     	timer.schedule(new TimerTask()
@@ -124,7 +131,7 @@ public class BattleRoom extends SFSExtension
 			public void run()
 			{
 
-				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED)
+				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED )
 					return;
 
 				battleField.update();
@@ -173,15 +180,11 @@ public class BattleRoom extends SFSExtension
 			listOfVars.add(new SFSRoomVariable("towers", vars));
 			sfsApi.setRoomVariables(null, room, listOfVars);
 		}
-
-		// sometimes auto start battle
-		if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.isQuest && battleDuration > 0.5 && battleDuration < 1.1 )
-			setState(STATE_BATTLE_STARTED);
 	}
 
 	private void pokeBot()
 	{
-		if( singleMode && getState() == STATE_BATTLE_STARTED )
+		if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
 		{
 			// send answer of sticker from bot
 			if( stickerParams != null )
@@ -296,18 +299,21 @@ public class BattleRoom extends SFSExtension
 			return;
 		}
 
-		setState( STATE_BATTLE_ENDED );
 		if( isQuest )
 		{
+			setState( STATE_BATTLE_ENDED );
 			if( retryMode )
 			{
+				closeGame();
 				BattleUtils.getInstance().removeRoom(room);
 				return;
 			}
 			scores = new int[2];
 			scores[1] = scores[0] = 0;
 			calculateEndBattleResponse();
+			closeGame();
 		}
+		BattleUtils.getInstance().removeRoom(room);
 	}
 	private void checkBattleEnding(long battleDuration)
 	{
@@ -359,6 +365,9 @@ public class BattleRoom extends SFSExtension
 	    }
 	    
 	    calculateEndBattleResponse();
+		closeGame();
+		if( isQuest )
+			BattleUtils.getInstance().removeRoom(room);
 	}
 
 	private void calculateEndBattleResponse()
@@ -429,37 +438,23 @@ public class BattleRoom extends SFSExtension
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
 			send( Commands.END_BATTLE, params, users.get(i) );
-
-		// kick all users and reove room
-		BattleUtils.getInstance().removeRoom(room);
 	}
 
-	@Override
-	public void destroy()
+	public void closeGame()
 	{
-		destroyGame();
-		super.destroy();
-	}
-	public void destroyGame()
-	{
-		clearAllHandlers();
+		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 
 		if( timer != null )
 			timer.cancel();
 		timer = null;
-		
+
 		if( autoJoinTimer != null )
 			autoJoinTimer.cancel();
 		autoJoinTimer = null;
-		
-		if( getState() >= STATE_DESTROYED )
-			return;
-		setState( STATE_DESTROYED );
 
 		if( battleField != null )
 			battleField.dispose();
 		battleField = null;
-		trace(room.getName(), "destroyed.");
 	}
 
 	public List<User> getRealPlayers()
@@ -480,7 +475,7 @@ public class BattleRoom extends SFSExtension
 		if( player.isSpectator(room) )
 			return getPlayerGroup(room.getUserByName(player.getVariable("spectatedUser").getStringValue()));
 
-		for (int i = 0; i < registeredPlayers.size(); i++ )
+		for( int i = 0; i < registeredPlayers.size(); i++ )
 			if ( Integer.parseInt(player.getName()) == registeredPlayers.get(i).player.id )
 				return i;
 		return 0;
@@ -488,7 +483,7 @@ public class BattleRoom extends SFSExtension
 
 	private void setState(int value)
 	{
-		if(_state == value)
+		if( _state == value )
 			return;
 		
 		_state = value;
@@ -497,5 +492,16 @@ public class BattleRoom extends SFSExtension
 	private int getState()
 	{
 		return _state;
+	}
+
+	@Override
+	public void destroy()
+	{
+		clearAllHandlers();
+		if( getState() >= STATE_DESTROYED )
+			return;
+		setState( STATE_DESTROYED );
+		trace(room.getName(), "destroyed.");
+		super.destroy();
 	}
 }
