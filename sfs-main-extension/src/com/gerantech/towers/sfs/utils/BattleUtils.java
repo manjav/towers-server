@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.utils;
 
+import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.arenas.Arena;
@@ -71,11 +72,10 @@ public class BattleUtils
         if( !isQuest )
         {
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100, (arena.index + 1) * 100);
-            if( game.appVersion >= 2600 && arena.index == 0 && game.player.get_battleswins() < 3 )
-                index = game.player.get_battleswins() + 1;
-            else
-                index = game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            boolean newTutorial = arena.index == 0 && game.appVersion >= 2600;
+            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100 + (newTutorial ? 2 : 0), (arena.index + 1) * 100);
+            index = newTutorial && game.player.get_battleswins() < 2 ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena.index);// ===> is temp
         }
@@ -96,7 +96,7 @@ public class BattleUtils
         }
 
 
-        boolean singleMode = isQuest || game.player.inTutorial();
+        boolean singleMode = isQuest || game.player.get_battleswins() < 2;
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
         if( hasExtraTime )
@@ -132,7 +132,7 @@ public class BattleUtils
         List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room room : battles)
         {
-            if ( !room.isFull() || room.getGroupId() != "quests" )
+            if( (int) room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
             {
                 ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
                 if( registeredPlayers != null )
