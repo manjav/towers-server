@@ -74,7 +74,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			return;
 		}
 
-
 		if( STARTING_STATE == 1 && inData.getInt("id") != 10412 )
 		{
 			outData.putInt("umt", 15);
@@ -280,6 +279,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putText("coreVersion", loginData.coreVersion);
 		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
+		outData.putInt("tutorialMode", outData.getInt("id") % 2);
+		outData.putBool("hasQuests", outData.getInt("id") % 2 == 0 || outData.getInt("id") > 78000);
 
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
@@ -370,6 +371,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// init core
 		Game game = new Game();
 		game.init(initData);
+		game.player.tutorialMode = outData.getInt("tutorialMode");
+		game.player.hasQuests = outData.getBool("hasQuests");
 		session.setProperty("core", game);
 
 		// init and update hazel data
