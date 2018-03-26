@@ -35,7 +35,7 @@ import java.time.Instant;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1510006666;
+	public static int UNTIL_MAINTENANCE = 1522057145;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 
@@ -277,8 +277,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putText("coreVersion", loginData.coreVersion);
 		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
-		outData.putInt("tutorialMode", outData.getInt("id") % 2);
-		outData.putBool("hasQuests", outData.getInt("id") % 2 == 0 || outData.getInt("id") > 78000);
+		outData.putBool("hasQuests", outData.getInt("id") % 2 == 0 || outData.getInt("id") < 75880);
+		outData.putInt("tutorialMode", outData.getBool("hasQuests") ? 0 : 1);
 
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
