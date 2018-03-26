@@ -225,13 +225,8 @@ public class DBUtils
     {
         String result = "\n";
         try {
-            db.executeUpdate("UPDATE `resources` SET `count`= 0 WHERE `type`=1204 AND `count` != 0;", new Object[] {});
-        }
-        catch (SQLException e)
-        {
-            //e.printStackTrace();
-            return "Query failed";
-        }
+            db.executeUpdate("UPDATE `resources` SET `count`= 0 WHERE `type`=1204 AND `count` != 0;", new Object[]{});
+        } catch (SQLException e) { return "Query failed";}
 
         // update online users
         Collection<User> users = ext.getParentZone().getUserList();
