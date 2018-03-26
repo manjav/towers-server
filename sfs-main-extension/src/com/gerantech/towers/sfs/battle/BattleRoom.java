@@ -77,6 +77,7 @@ public class BattleRoom extends SFSExtension
 	{
 		if( autoJoinTimer != null )
 			autoJoinTimer.cancel();
+		autoJoinTimer = null;
 
 		setState( STATE_CREATED );
 		List<User> players = getRealPlayers();
@@ -312,8 +313,13 @@ public class BattleRoom extends SFSExtension
 			scores[1] = scores[0] = 0;
 			calculateEndBattleResponse();
 			closeGame();
+			BattleUtils.getInstance().removeRoom(room);
 		}
-		BattleUtils.getInstance().removeRoom(room);
+		else
+		{
+			getApi().leaveRoom(user, room);
+		}
+
 	}
 	private void checkBattleEnding(long battleDuration)
 	{
@@ -447,10 +453,6 @@ public class BattleRoom extends SFSExtension
 		if( timer != null )
 			timer.cancel();
 		timer = null;
-
-		if( autoJoinTimer != null )
-			autoJoinTimer.cancel();
-		autoJoinTimer = null;
 
 		if( battleField != null )
 			battleField.dispose();

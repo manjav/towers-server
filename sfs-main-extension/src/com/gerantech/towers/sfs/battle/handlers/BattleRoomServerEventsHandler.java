@@ -2,14 +2,8 @@ package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
-import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -20,7 +14,6 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -34,7 +27,8 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private Room room;
 	private BattleRoom roomClass;
 
-	public void handleServerEvent(ISFSEvent arg) throws SFSException {
+	public void handleServerEvent(ISFSEvent arg) throws SFSException
+	{
 		user = (User) arg.getParameter(SFSEventParam.USER);
 		if (arg.getType().equals(SFSEventType.USER_DISCONNECT))
 			userDisconnected(arg);
@@ -76,11 +70,16 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			}
 			return;
 		}
+		if( room.isFull() )
+		{
+			sendStartBattleResponse(false);
+			return;
+		}
 
 		// Wait to match making ( complete battle-room`s players )
-		if( !room.isFull() )
+		if( !room.containsProperty("isFriendly") )
 		{
-			long delay = room.containsProperty("isFriendly") ? 10000000 : Math.max(12000, player.get_arena(0) * 400 + 7000);
+			long delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = new Timer();
@@ -94,10 +93,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					sendStartBattleResponse(true);
 				}
 			}, delay);
-		}
-		else
-		{
-			sendStartBattleResponse(false);
 		}
 	}
 

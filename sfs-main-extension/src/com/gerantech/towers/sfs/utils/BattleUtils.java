@@ -157,11 +157,11 @@ public class BattleUtils
             for( User u : users )
             {
                 ext.getApi().leaveRoom(u, room);
-                if ( u.isNpc() )
+                /*if ( u.isNpc() )
                 {
                     RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
                     ext.getApi().disconnect(u.getSession());
-                }
+                }*/
             }
         }
         else
