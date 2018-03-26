@@ -74,7 +74,7 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         //rs.setRoomProperties( roomProperties );
         rs.setName( "public_lobby_" + roomId.getAndIncrement() );
-        rs.setMaxUsers(50);
+        rs.setMaxUsers(30);
         rs.setGroupId("publics");
         rs.setExtension(res);
 
