@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
+import com.gt.towers.socials.Lobby;
 import com.smartfoxserver.v2.api.ISFSBuddyApi;
 import com.smartfoxserver.v2.buddylist.Buddy;
 import com.smartfoxserver.v2.buddylist.BuddyList;
@@ -100,12 +101,12 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             if( sfsArray.size() == 0 )
             {
                 // Invitee reward consumption
-                game.player.resources.increase(ResourceType.CURRENCY_HARD, 10);
+                game.player.resources.increase(ResourceType.CURRENCY_HARD, Lobby.buddyInviteeReward);
                 queryStr = "UPDATE resources SET count=" + game.player.get_hards() + " WHERE type=1003 AND player_id=" + inviteeId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
                 params.putInt("rewardType", ResourceType.CURRENCY_HARD);
-                params.putInt("rewardCount", 10);
+                params.putInt("rewardCount", Lobby.buddyInviteeReward);
             }
 
             // Inviter invited invitee before if query has result.
@@ -116,10 +117,10 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             // Inviter reward consumption if invitee is new player
             if( !existsUDID && sfsArray.size() == 0 )
             {
-                queryStr = "UPDATE resources SET count=count+5 WHERE type=1003 AND player_id=" + inviterId + ";";
+                queryStr = "UPDATE resources SET count=count+" + Lobby.buddyInviterReward + " WHERE type=1003 AND player_id=" + inviterId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
-                msg = (game.player.nickName.equals("guest")?"یه نفر":game.player.nickName) + " باهات رفیق شد و تو هم 5 تا جواهر جایزه گرفتی. ";
+                msg = (game.player.nickName.equals("guest")?"یه نفر":game.player.nickName) + " باهات رفیق شد و تو هم " + Lobby.buddyInviterReward + " تا جواهر جایزه گرفتی. ";
             }
 
             // create friendship if not exists

@@ -89,7 +89,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
 		}
 
-
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		// Create new user ============================================================
 		if ( inData.getInt("id") < 0 )
@@ -206,9 +205,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 				initiateCore(session, inData, outData, loginData);
 
 				// add udid and device as account id for restore players
-				if( deviceUDID != null ) {
+				if( deviceUDID != null )
 					dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
-				}
 			}
 	        catch (SQLException e)
 	        {
