@@ -30,6 +30,7 @@ public class Commands
     public static final String ISSUE_REPORT = "issueReport";
     public static final String ISSUE_TRACK = "issueTrack";
     public static final String PLAYERS_GET = "playersGet";
+    public static final String BAN = "ban";
 
     public static final String FIGHT = "f";
     public static final String BUILDING_IMPROVE = "i";

@@ -91,7 +91,7 @@ public class BanSystem
 			}
 
 			// ban warned offenders
-			warnOrBan(db, offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?2:1, now, banTime);
+			warnOrBan(db, offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?2:1, now, banTime, null);
 			// add log
 			ret += offenders.getSFSObject(i).getInt("offender") + (offenders.getSFSObject(i).containsKey("ban") ? " banned.\n" : " warned.\n");
 		}
@@ -99,17 +99,17 @@ public class BanSystem
 		return ret;
 	}
 
-	private void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime)
+	public void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime, String message)
 	{
-		String msg = "تعلیق بعلت گزارش مکرر بازیکن ها";
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at) VALUES (" + offender + ", '" + udid + "', '" + msg + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + ") ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at);";
+		if( message == null )
+			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + ") ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at);";
 		ext.trace(q);
 		try {
 			db.executeUpdate(q, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
-		String message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "متأسفانه به دلیل ادامه تخلفات شما کاربری شما معلق شد.";
-		OneSignalUtils.getInstance().send(message, "", offender);
+		OneSignalUtils.getInstance().send(message, null, offender);
 		if( banMode == 1 )
 			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, "");
 	}
@@ -131,4 +131,5 @@ public class BanSystem
 		ext.trace(bannedUsers.getSFSObject(0).getDump());
 		return bannedUsers.getSFSObject(0);
 	}
+
 }

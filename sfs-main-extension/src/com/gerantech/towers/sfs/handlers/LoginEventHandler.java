@@ -4,6 +4,7 @@ import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
+import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.Exchange;
@@ -35,7 +36,7 @@ import java.time.Instant;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1522057145;
+	public static int UNTIL_MAINTENANCE = 1522216705;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 
@@ -49,7 +50,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		int now = (int)Instant.now().getEpochSecond();
 
 		//trace("now", now, "UNTIL_MAINTENANCE", UNTIL_MAINTENANCE);
-		if( now < UNTIL_MAINTENANCE && inData.getInt("id") != 10412 )
+		if( now < UNTIL_MAINTENANCE && !Player.isAdmin(inData.getInt("id")) )
 		{
 			outData.putInt("umt", UNTIL_MAINTENANCE - now );
 			return;

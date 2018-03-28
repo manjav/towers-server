@@ -39,7 +39,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             } catch (SFSJoinRoomException e) {
                 e.printStackTrace();
             }
-            params.putInt("response", MessageTypes.JOIN_LOBBY_SUCCEED);
+            params.putInt("response", MessageTypes.RESPONSE_SUCCEED);
         }
         else if( privacy == 1 )
         {
@@ -49,7 +49,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
                 {
-                    params.putInt("response", MessageTypes.JOIN_LOBBY_REQUEST_ALREADY_SENT);
+                    params.putInt("response", MessageTypes.RESPONSE_ALREADY_SENT);
                     send(Commands.LOBBY_JOIN, params, sender);
                     return;
                 }
@@ -64,11 +64,11 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
 
             getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList(), room, false);
             //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());
-            params.putInt("response", MessageTypes.JOIN_LOBBY_REQUEST_SENT);
+            params.putInt("response", MessageTypes.RESPONSE_SENT);
         }
         else
         {
-            params.putInt("response", MessageTypes.JOIN_LOBBY_NOT_ALLOWED);
+            params.putInt("response", MessageTypes.RESPONSE_NOT_ALLOWED);
         }
         send(Commands.LOBBY_JOIN, params, sender);
     }
