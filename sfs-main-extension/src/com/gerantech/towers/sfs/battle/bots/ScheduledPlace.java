@@ -9,6 +9,8 @@ import java.util.Timer;
  */
 public class ScheduledPlace
 {
+    public int target;
+    public long fightTime;
     public Place place;
     public Timer timer;
 
@@ -21,7 +23,7 @@ public class ScheduledPlace
     {
         if( timer != null )
         {
-            place.fightTime = -1;
+            fightTime = -1;
             timer.cancel();
             timer = null;
         }

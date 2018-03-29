@@ -201,7 +201,7 @@ public class BattleRoom extends SFSExtension
 					stickerParams = null;
 				}
 			}
-			bot.doAction();
+			bot.update();
 		}
 	}
 

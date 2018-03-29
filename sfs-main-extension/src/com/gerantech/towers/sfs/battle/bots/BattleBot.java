@@ -19,7 +19,10 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,14 +40,14 @@ public class BattleBot
     protected final BattleRoom battleRoom;
     protected final BattleField battleField;
 
-    private int sampleTime;
-    private int timeFactor;
-    private int battleRatio = 0;
-    private double lastStickerTime;
-    private double troopsDivision;
-    private PlaceList allPlaces;
-    private Timer chatTimer;
-    private int lastTarget = -1;
+    int sampleTime;
+    int timeFactor;
+    int battleRatio = 0;
+    int lastTarget = -1;
+    double troopsDivision;
+    PlaceList allPlaces;
+    SFSObject chatPatams;
+    ConcurrentHashMap<Integer, ScheduledPlace> fighters;
 
     public BattleBot(BattleRoom battleRoom)
     {
@@ -60,16 +63,22 @@ public class BattleBot
         extension.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
+
+        chatPatams = new SFSObject();
+        chatPatams.putLong("ready", battleField.now + 20000);
     }
 
-    public void doAction()
+    public void update()
     {
         int _sampleTime = (int) Math.floor((battleField.now/1000) % timeFactor);
         if( timeFactor == 1 || ( _sampleTime == 0 && _sampleTime != sampleTime ) )
             tryAction();
 
         sampleTime = _sampleTime;
+        updateFightingProcess();
+        updateChatProcess();
     }
+
 
     void tryAction()
     {
@@ -81,7 +90,7 @@ public class BattleBot
         int step = allPlaces.size() - 1;
         int weakestPlace = -1;
         double mostPriority = 1000;
-        List <Integer> samePriorities = new ArrayList();
+        List<Integer> samePriorities = new ArrayList();
         while (step >= 0)
         {
             if( isNeighbor(allPlaces.get(step)) )
@@ -154,27 +163,28 @@ public class BattleBot
         }
 
         IntList fightersCandidates = new IntList();
-        ConcurrentHashMap<Integer, ScheduledPlace> fighters = new ConcurrentHashMap<Integer, ScheduledPlace>();
-        addFighters(target, fightersCandidates, fighters);
+        if( fighters == null )
+            fighters = new ConcurrentHashMap<Integer, ScheduledPlace>();
+        addFighters(target, fightersCandidates);
 
         //extension.trace("target:" + target.index, " numFighters:" + fighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth, fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0) );
         boolean firstToFight = fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0 );
         if( firstToFight )
-            scheduleFighters(target, fighters);
+            scheduleFighters(target);
         else if( !improveAll(robotPlaces, firstToFight))
-            scheduleFighters(target, fighters);
+            scheduleFighters(target);
         //extension.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
 
         startChating(robotPlaces.size() - playerPlaces.size());
     }
 
-    void addFighters(Place place, IntList fightersCandidates, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
+    void addFighters(Place place, IntList fightersCandidates)
     {
         if( fightersCandidates.indexOf(place.index) > -1 || (fightersPower >= targetHealth && battleField.now < battleField.getTime(1)) )
             return;
         fightersCandidates.push(place.index);
 
-        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.fightTime == -1 && place.index != dangerousPoint )
+        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.index != dangerousPoint )
         {
             double placePower = estimatePower(place.building, hasEnemyNeighbor(place) ? 0.2 : troopsDivision);
             //extension.trace(place.index, "placePower", placePower, "cardPower", cardPower, fightersPower);
@@ -188,29 +198,33 @@ public class BattleBot
         int step = placeLinks.size() - 1;
         while (step >= 0)
         {
-            addFighters(placeLinks.get(step), fightersCandidates, fighters);
+            addFighters(placeLinks.get(step), fightersCandidates);
             step --;
         }
     }
 
-    void scheduleFighters(Place target, ConcurrentHashMap<Integer, ScheduledPlace> fighters)
+    void scheduleFighters(Place target)
     {
         lastTarget = target.index;
         dangerousPoint = -1;
-        long maxDelay = 0;
+       // long maxDelay = 0;
 
         // estimate max time distance
         Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = fighters.entrySet().iterator();
         while (iterator.hasNext())
         {
             ScheduledPlace sPlace = iterator.next().getValue();
-            sPlace.place.fightTime = estimateRushTime(sPlace.place, target);
-            if( maxDelay < sPlace.place.fightTime )
-                maxDelay = sPlace.place.fightTime;
+            if( sPlace.fightTime > -1 )
+            {
+                sPlace.fightTime = battleField.now + estimateRushTime(sPlace.place, target);
+                sPlace.target = target.index;
+            }
+           // if( maxDelay < sPlace.place.fightTime )
+             //   maxDelay = sPlace.place.fightTime;
         }
 
         // shoot every places in determined times
-        iterator = fighters.entrySet().iterator();
+        /*iterator = fighters.entrySet().iterator();
         while (iterator.hasNext())
         {
             Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
@@ -231,8 +245,35 @@ public class BattleBot
                     //extension.trace("remove", sPlace.place.index, "fighters.size: " + fighters.size());
                 }
             },maxDelay - sPlace.place.fightTime);
+        }*/
+    }
+
+
+    private void updateFightingProcess()
+    {
+        if( fighters == null || fighters.size() == 0 )
+            return;
+
+        // shoot every places in determined times
+        Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = fighters.entrySet().iterator();
+        while (iterator.hasNext())
+        {
+            Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
+            ScheduledPlace sPlace = entry.getValue();
+            if( sPlace.fightTime > battleField.now )
+            {
+                if( sPlace.place.building.troopType == TroopType.T_1 )
+                {
+                    SFSArray _fighters = new SFSArray();
+                    _fighters.addInt(sPlace.place.index);
+                    battleRoom.fight(_fighters, sPlace.target, true, troopsDivision);
+                }
+                sPlace.dispose();
+                fighters.remove(sPlace.place.index);
+            }
         }
     }
+
 
     boolean improveAll(PlaceList places, boolean oneImprove)
     {
@@ -252,11 +293,11 @@ public class BattleBot
         if( battleField.difficulty < 2 )
             return false;
 
-        if( place.fightTime > -1 )
-        {
-            //extension.trace(place.index + " exists in fighters...");
-            return false;
-        }
+       // if( place.fightTime > -1 )
+       // {
+          //  extension.trace(place.index + " exists in fighters...");
+            //return false;
+       // }
         if ( place.building.type == BuildingType.B01_CAMP )
         {
             if( needPopulation )
@@ -276,59 +317,49 @@ public class BattleBot
         return place.building.improve(BuildingType.IMPROVE);
     }
 
-
-    private void startChating(int battleRatio)
+    void startChating(int battleRatio)
     {
         if( battleField.map.isQuest )
             return;
 
+        // verbose bot threshold
+        if( chatPatams.getLong("ready") > battleField.now || Math.random() > 0.1 )
+            return;
+
         //extension.trace(this.battleRatio, battleRatio);
-        if( chatTimer == null && battleRatio != this.battleRatio && battleField.now - lastStickerTime > 20000 && Math.random() < 0.1 && battleField.now > battleField.startAt * 1000 + 30000 )
+        if( battleRatio != this.battleRatio )
         {
-            SFSObject stickerParams = new SFSObject();
-            stickerParams.putInt("t", StickerType.getRandomStart(battleRatio));
-            stickerParams.putInt("tt", 1);
-            chatTimer = new Timer();
-            chatTimer.schedule(new TimerTask() {
-                @Override
-                public void run()
-                {
-                    battleRoom.sendSticker(null, stickerParams);
-                    lastStickerTime = battleField.now;
-                    chatTimer.cancel();
-                    chatTimer = null;
-                }
-            }, (long) (Math.random() * 1000 + 500));
+            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio));
+            chatPatams.putInt("tt", 1);
+            chatPatams.putLong("u", (long) (battleField.now + Math.random() * 2500 + 500));
         }
         this.battleRatio = battleRatio;
     }
 
     public void answerChat(ISFSObject params)
     {
-        if( chatTimer == null && Math.random() > 0.2 )
-        {
-            int answer = StickerType.getRandomAnswer( params.getInt("t") );
-            if( answer > -1 )
-            {
-                ISFSObject stickerParams = new SFSObject();
-                stickerParams.putInt("t", answer);
-                stickerParams.putInt("tt", 1);
-                stickerParams.putInt("wait", 0);
+        if( chatPatams.getLong("ready") > battleField.now || Math.random() < 0.2 )
+            return;
 
-                chatTimer = new Timer();
-                chatTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run()
-                    {
-                        battleRoom.sendSticker(null, stickerParams);
-                        chatTimer.cancel();
-                        chatTimer = null;
-                    }
-                }, (long) (Math.random() * 2500 + 1500));
-            }
-        }
+        int answer = StickerType.getRandomAnswer( params.getInt("t") );
+        if( answer <= -1 )
+            return;
+
+        chatPatams.putInt("t", answer);
+        chatPatams.putInt("tt", 1);
+        chatPatams.putInt("wait", 0);
+        chatPatams.putLong("u", (long) (battleField.now + Math.random() * 3500 + 1500));
     }
 
+    void updateChatProcess()
+    {
+        if( chatPatams.getLong("ready") > battleField.now || !chatPatams.containsKey("t") )
+            return;
+
+        battleRoom.sendSticker(null, chatPatams);
+        chatPatams.removeElement("t");
+        chatPatams.putLong("ready", battleField.now + 10000);
+    }
 
     // tools
     boolean isNeighbor(Place place)
@@ -345,7 +376,7 @@ public class BattleBot
         return place.getLinks(TroopType.T_0).size() > 0;
     }
 
-    int estimateRushTime(Place fighter, Place target)
+    long estimateRushTime(Place fighter, Place target)
     {
         PlaceList path = PathFinder.find(fighter, target, allPlaces);
         if( path == null )
@@ -359,7 +390,7 @@ public class BattleBot
             ret += path.get(step).building.get_troopSpeed() * PathFinder.getDistance(path.get(step), path.get(step - 1)) + path.get(step).building.get_exitGap();
             step --;
         }
-        return (int) Math.round(ret);
+        return Math.round(ret);
     }
 
     double estimatePower(Building building, double troopsDivision) {
