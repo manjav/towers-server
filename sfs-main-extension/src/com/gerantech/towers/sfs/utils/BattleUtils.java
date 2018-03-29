@@ -72,9 +72,8 @@ public class BattleUtils
         if( !isQuest )
         {
             Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
-            boolean newTutorial = arena.index == 0 && game.appVersion >= 2600;
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100 + (newTutorial ? 2 : 0), (arena.index + 1) * 100);
-            index = newTutorial && game.player.get_battleswins() < 2 ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100 + (arena.index == 0 ? 2 : 0), (arena.index + 1) * 100);
+            index = game.player.get_battleswins() < 2 ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena.index);// ===> is temp

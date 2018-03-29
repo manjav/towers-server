@@ -13,8 +13,8 @@ import com.gt.towers.utils.maps.IntIntMap;
 public class Outcome
 {
 
-    public static int MIN_POINTS = 10;
-    public static int COE_POINTS = 5;
+    public static int MIN_POINTS = 6;
+    public static int COE_POINTS = 4;
     public static int MAX_XP = 10;
 
     public static IntIntMap get(Game game, FieldData field, int score)
@@ -69,25 +69,12 @@ public class Outcome
 
             // softs
             if( score > 0 )
-                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 3, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
             // battle stats
             ret.set(ResourceType.BATTLES_COUNT, 1);
             ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
-
-            // win streak
-            int winStreak = game.player.resources.get(ResourceType.WIN_STREAK);
-            if( score > 0 )
-            {
-                ret.set(ResourceType.BATTLES_WINS, 1);
-                if( arena > 0 )
-                    ret.set(ResourceType.WIN_STREAK, 1);
-            }
-            else if ( score < 0 )
-            {
-                if( arena > 0 && winStreak >= game.arenas.get(arena).minWinStreak )
-                    ret.set(ResourceType.WIN_STREAK, Math.random() > 0.5 ? -2 : -3);
-            }
+            ret.set(ResourceType.BATTLES_WINS, getWinStak(game, arena, score));
 
             // keys
             ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
@@ -98,6 +85,21 @@ public class Outcome
                 keyItem.numExchanges += numKeys;
             }
         }
+        return ret;
+    }
+
+    private static int getWinStak(Game game, int arena, int score)
+    {
+        if( arena == 0 )
+            return 1;
+
+        int winStreak = game.player.resources.get(ResourceType.WIN_STREAK);
+        int ret = score > 0 ? 1 : -1;
+        if( ret > winStreak || winStreak < -3 )
+            ret *= (int)Math.ceil(winStreak / 2);
+
+        if( ret < game.arenas.get(arena).minWinStreak )
+            ret = 0;
         return ret;
     }
 }
