@@ -69,12 +69,15 @@ public class Outcome
 
             // softs
             if( score > 0 )
+            {
                 ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                ret.set(ResourceType.BATTLES_WINS, 1);
+            }
 
             // battle stats
             ret.set(ResourceType.BATTLES_COUNT, 1);
             ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
-            ret.set(ResourceType.BATTLES_WINS, getWinStak(game, arena, score));
+            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
 
             // keys
             ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
@@ -88,17 +91,17 @@ public class Outcome
         return ret;
     }
 
-    private static int getWinStak(Game game, int arena, int score)
+    private static int getWinStreak(Game game, int arena, int score)
     {
+        int ret = score > 0 ? 1 : -1;
         if( arena == 0 )
-            return 1;
+            return ret;
 
         int winStreak = game.player.resources.get(ResourceType.WIN_STREAK);
-        int ret = score > 0 ? 1 : -1;
-        if( ret > winStreak || winStreak < -3 )
+        if( winStreak > 3 || winStreak < -3 )
             ret *= (int)Math.ceil(winStreak / 2);
 
-        if( ret < game.arenas.get(arena).minWinStreak )
+        if( ret < 0 && winStreak < game.arenas.get(arena).minWinStreak )
             ret = 0;
         return ret;
     }
