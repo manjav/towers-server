@@ -36,7 +36,7 @@ import java.time.Instant;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1522216705;
+	public static int UNTIL_MAINTENANCE = 1522399796;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 
@@ -219,51 +219,52 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 
 		// Find player in DB ===========================================================
-		try
-        {
-			int id = Integer.parseInt(name);
-			ISFSArray res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id="+id+"", new Object[] {});
+		//try
+       // {
+		int id = Integer.parseInt(name);
+		ISFSArray res = null;
+		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id + "", new Object[]{});
+		} catch(SQLException e) { e.printStackTrace(); }
 
-			if( res.size() != 1 )
-	        {
-				LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!", new String[]{"user id nou found."});
-				return;
-			}
-
-			ISFSObject userData = res.getSFSObject(0);
-			if( !getApi().checkSecurePassword(session, userData.getText("password"), password) )
-        	{
-				LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error!", new String[]{name});
-				return;
-			}
-
-			if( STARTING_STATE == 0 )
-				STARTING_STATE = 1;
-
-			DBUtils dbUtils = DBUtils.getInstance();
-			// Retrieve player data from db
-			outData.putInt("id", id);
-			outData.putText("name", userData.getText("name"));
-			outData.putInt("sessionsCount", userData.getInt("sessions_count"));
-			outData.putSFSArray("resources", dbUtils.getResources(id));
-			outData.putSFSArray("quests", dbUtils.getQuests(id));
-			outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
-			if( inData.getInt("appver") >= 2500 )
-				outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
-
-			// Find active battle room
-			Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
-			int joinedRoomId = room == null ? -1 : room.getId();
-			session.setProperty("joinedRoomId", joinedRoomId);
-			outData.putBool("inBattle", joinedRoomId > -1 );
-
-			initiateCore(session, inData, outData, loginData);
+		if( res.size() != 1 )
+		{
+			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!", new String[]{"user id nou found."});
+			return;
 		}
+
+		ISFSObject userData = res.getSFSObject(0);
+		if( !getApi().checkSecurePassword(session, userData.getText("password"), password) )
+		{
+			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error!", new String[]{name});
+			return;
+		}
+
+		if( STARTING_STATE == 0 )
+			STARTING_STATE = 1;
+
+		DBUtils dbUtils = DBUtils.getInstance();
+		// Retrieve player data from db
+		outData.putInt("id", id);
+		outData.putText("name", userData.getText("name"));
+		outData.putInt("sessionsCount", userData.getInt("sessions_count"));
+		outData.putSFSArray("resources", dbUtils.getResources(id));
+		outData.putSFSArray("quests", dbUtils.getQuests(id));
+		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
+		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
+
+		// Find active battle room
+		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
+		int joinedRoomId = room == null ? -1 : room.getId();
+		session.setProperty("joinedRoomId", joinedRoomId);
+		outData.putBool("inBattle", joinedRoomId > -1 );
+
+		initiateCore(session, inData, outData, loginData);
+		/*}
         catch (SQLException e)
         {
 			e.printStackTrace();
 			LoginErrors.dispatch(LoginErrors.SQL_ERROR, "SQL Failed", new String[]{e.getMessage()});
-        }
+        }*/
 
 		//trace("initData", outData.getDump());
 	}

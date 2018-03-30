@@ -32,9 +32,7 @@ public class UserPrefsRequestHandler extends BaseClientRequestHandler
 		}
 		else
 		{
-			try {
-				params.putSFSArray("map", DBUtils.getInstance().getPrefs(game.player.id, game.appVersion));
-			} catch (SQLException e) { e.printStackTrace(); }
+			params.putSFSArray("map", DBUtils.getInstance().getPrefs(game.player.id, game.appVersion));
 		}
 
 		send(Commands.PREFS, params, sender);

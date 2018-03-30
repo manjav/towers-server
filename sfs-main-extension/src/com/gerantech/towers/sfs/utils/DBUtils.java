@@ -124,9 +124,13 @@ public class DBUtils
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   EXCHANGES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-    public ISFSArray getExchanges(int playerId)throws SFSException, SQLException
+    public ISFSArray getExchanges(int playerId)
     {
-        return db.executeQuery("SELECT `type`,`num_exchanges`,`expired_at`,`outcome` FROM exchanges WHERE player_id="+playerId, new Object[] {});
+        ISFSArray ret = null;
+        try {
+            ret = db.executeQuery("SELECT type,num_exchanges,expired_at,outcome FROM exchanges WHERE player_id="+playerId, new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
+        return ret;
     }
     public void updateExchange(int type, int playerId, int expireAt, int numExchanges, int outcome) throws Exception
     {
@@ -134,9 +138,13 @@ public class DBUtils
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   QUESTS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-    public SFSArray getQuests(int playerId) throws SFSException, SQLException
+    public ISFSArray getQuests(int playerId)
     {
-        return (SFSArray) db.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id="+playerId, new Object[] {});
+        ISFSArray ret = null;
+        try {
+            ret = db.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id=" + playerId, new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
+        return ret;
     }
     public void setQuestScore(Player player, int index, int score) throws SFSException, SQLException
     {
@@ -176,9 +184,12 @@ public class DBUtils
     }
 
 
-    public ISFSArray getPrefs(int id, int appVersion) throws SQLException
+    public ISFSArray getPrefs(int id, int appVersion)
     {
-        ISFSArray ret = db.executeQuery("SELECT `k`,`v` FROM userprefs WHERE player_id=" + id, new Object[]{});
+        ISFSArray ret = null;
+        try {
+            ret = db.executeQuery("SELECT k,v FROM userprefs WHERE player_id=" + id, new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
 
         if( appVersion >= 2500 )
         {
