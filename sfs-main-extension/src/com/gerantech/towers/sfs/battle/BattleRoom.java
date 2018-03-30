@@ -125,7 +125,7 @@ public class BattleRoom extends SFSExtension
 				setState(STATE_BATTLE_STARTED);
 		}
 
-    	timer = new Timer();
+    	timer = new Timer("timer-update-"+room.getName());
     	timer.schedule(new TimerTask()
 		{
 			@Override

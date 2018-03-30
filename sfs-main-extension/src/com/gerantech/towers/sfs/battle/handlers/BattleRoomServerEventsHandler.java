@@ -82,7 +82,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			long delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
-			roomClass.autoJoinTimer = new Timer();
+			roomClass.autoJoinTimer = new Timer("timer-waiting-"+room.getName());
 			roomClass.autoJoinTimer.schedule(new TimerTask() {
 
 				@Override
