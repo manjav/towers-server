@@ -221,10 +221,10 @@ public class BattleRoom extends SFSExtension
 		if( target < 0 || target > pLen )
 			return;
 
-		if( singleMode && !fighterIsBot && bot.dangerousPoint == -1 )
+		if( singleMode && !fighterIsBot )
 		{
 			bot.offenders = fighters;
-			bot.dangerousPoint = target;
+			bot.coverPoint = target;
 		}
 
 		for( int i = 0; i<srcLen; i++ )
