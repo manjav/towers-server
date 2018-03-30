@@ -25,11 +25,11 @@ public class BanHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		Game game = ((Game)sender.getSession().getProperty("core"));
-		if( !game.player.admin )
+		/*if( !game.player.admin )
 		{
 			sendResponse(sender, params, MessageTypes.RESPONSE_NOT_ALLOWED);
 			return;
-		}
+		}*/
 
 		// get name
 		ISFSArray players = null;
@@ -51,8 +51,8 @@ public class BanHandler extends BaseClientRequestHandler
 		try {
 			udids = db.executeQuery(query, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
-		if( udids != null && players.size() > 0 )
-			udid = players.getSFSObject(0).getText("udid");
+		if( udids != null && udids.size() > 0 )
+			udid = udids.getSFSObject(0).getText("udid");
 
 		long now = Instant.now().getEpochSecond();
 		BanSystem.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
