@@ -14,6 +14,7 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -27,7 +28,11 @@ import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class BattleRoom extends SFSExtension 
 {
@@ -37,7 +42,7 @@ public class BattleRoom extends SFSExtension
 	public static final int STATE_BATTLE_ENDED = 3;
 	public static final int STATE_DESTROYED = 4;
 
-	public Timer autoJoinTimer;
+	public ScheduledFuture<?> autoJoinTimer;
 	public BattleField battleField;
 
 	private int _state = -1;
@@ -48,7 +53,7 @@ public class BattleRoom extends SFSExtension
 	private int[] reservedTroopTypes;
 	private int[] scores;
 	private Room room;
-	private Timer timer;
+	private ScheduledFuture<?> timer;
 
 	private BattleBot bot;
 	private boolean isQuest;
@@ -76,7 +81,7 @@ public class BattleRoom extends SFSExtension
 	public void createGame(String mapName, Boolean opponentNotFound)
 	{
 		if( autoJoinTimer != null )
-			autoJoinTimer.cancel();
+			autoJoinTimer.cancel(true);
 		autoJoinTimer = null;
 
 		setState( STATE_CREATED );
@@ -126,29 +131,23 @@ public class BattleRoom extends SFSExtension
 				setState(STATE_BATTLE_STARTED);
 		}
 
-    	timer = new Timer("timer-u-"+room.getName());
-    	timer.schedule(new TimerTask()
-		{
+		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
-			public void run()
-			{
-
-				if( getState() < STATE_CREATED || getState()>STATE_BATTLE_ENDED )
+			public void run() {
+				if (getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED)
 					return;
 
 				battleField.update();
 				long battleDuration = battleField.getDuration();
-				if( battleField.now - buildingsUpdatedAt > 500 )
-				{
+				if (battleField.now - buildingsUpdatedAt > 500) {
 					updateReservesData(battleDuration);
 					pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
 
 				checkBattleEnding(battleDuration);
-
 			}
-		}, 0, battleField.interval);
+		}, 0, (int) battleField.interval, TimeUnit.MILLISECONDS);
 
 		trace(room.getName(), "created.");
 	}
@@ -452,7 +451,7 @@ public class BattleRoom extends SFSExtension
 		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 
 		if( timer != null )
-			timer.cancel();
+			timer.cancel(true);
 		timer = null;
 
 		if( battleField != null )

@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -18,8 +19,8 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -79,20 +80,19 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.containsProperty("isFriendly") )
 		{
-			long delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
+			int delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
-			roomClass.autoJoinTimer = new Timer("timer-w-"+room.getName());
-			roomClass.autoJoinTimer.schedule(new TimerTask() {
 
+			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
 				@Override
 				public void run() {
 					cancel();
-					roomClass.autoJoinTimer.cancel();
+					roomClass.autoJoinTimer.cancel(true);
 					room.setMaxUsers(1);
 					sendStartBattleResponse(true);
 				}
-			}, delay);
+			}, delay, TimeUnit.MILLISECONDS);
 		}
 	}
 
