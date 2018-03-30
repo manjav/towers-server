@@ -102,6 +102,7 @@ public class BattleRoom extends SFSExtension
 		}
         room.setProperty("registeredPlayers", registeredPlayers);
 
+		trace(registeredPlayers.get(0), registeredPlayers.get(1), mapName);
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
 		battleField.now = Instant.now().toEpochMilli();
 		battleField.startAt = battleField.now / 1000;
@@ -349,7 +350,7 @@ public class BattleRoom extends SFSExtension
 	    {
         	scores[i] = 0;
 	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
-	        if(wins)
+	        if( wins )
 	        {
 	        	if( battleDuration < battleField.map.times.get(0) )
 	        		scores[i] = 3;
@@ -457,6 +458,7 @@ public class BattleRoom extends SFSExtension
 		if( battleField != null )
 			battleField.dispose();
 		battleField = null;
+
 	}
 
 	public List<User> getRealPlayers()
