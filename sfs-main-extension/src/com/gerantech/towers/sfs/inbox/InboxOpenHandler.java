@@ -12,6 +12,7 @@ public class InboxOpenHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-		InboxUtils.getInstance().open(params.getInt("id"));
+    	if( params.getInt("receiverId") > 1000 )
+			InboxUtils.getInstance().open(params.getInt("id"));
 	}
 }

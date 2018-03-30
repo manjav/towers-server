@@ -61,7 +61,7 @@ public class InboxUtils
 
     public ISFSArray getAll(int receiverId)
     {
-        String query = "SELECT * FROM inbox WHERE receiverId=" + receiverId + " OR receiverId=1000 ORDER BY utc DESC LIMIT 30";
+        String query = "SELECT * FROM inbox WHERE receiverId=" + receiverId + " OR receiverId=1000 ORDER BY utc DESC LIMIT 30";//UNIX_TIMESTAMP(time)as utc
         try {
             return ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
