@@ -147,7 +147,7 @@ public class BattleRoom extends SFSExtension
 
 				checkBattleEnding(battleDuration);
 			}
-		}, 0, (int) battleField.interval, TimeUnit.MILLISECONDS);
+		}, 0, battleField.interval, TimeUnit.MILLISECONDS);
 
 		trace(room.getName(), "created.");
 	}
