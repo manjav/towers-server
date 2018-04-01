@@ -399,11 +399,11 @@ public class BattleBot
             return -1;
 
         int step = path.size() - 1;
-        double ret = fighter.building.get_troopSpeed() * PathFinder.getDistance(fighter, path.get(step)) + fighter.building.get_exitGap();
+        double ret = fighter.building.troopSpeed * PathFinder.getDistance(fighter, path.get(step)) + fighter.building.troopRushGap;
         while ( step > 0 )
         {
             //ext.trace("==>", path.get(step).index, path.get(step-1).index, path.get(step).building.get_troopSpeed(), PathFinder.getDistance(path.get(step), path.get(step - 1)) , path.get(step).building.get_exitGap());
-            ret += path.get(step).building.get_troopSpeed() * PathFinder.getDistance(path.get(step), path.get(step - 1)) + path.get(step).building.get_exitGap();
+            ret += path.get(step).building.troopSpeed * PathFinder.getDistance(path.get(step), path.get(step - 1)) + path.get(step).building.troopRushGap;
             step --;
         }
         return Math.round(ret);
@@ -427,7 +427,7 @@ public class BattleBot
         return sum / size;
     }
     double estimateHealth(Place place) {
-        return place.building.get_population() * place.building.get_troopPower() * (1.1 + battleField.difficulty * 0.05);
+        return place.building.get_population() * place.building.troopPower * (1.1 + battleField.difficulty * 0.05);
     }
 
     double priority(Place place)
