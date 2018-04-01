@@ -1,30 +1,36 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gt.towers.interfaces.IValueChangeCallback;
-import com.gt.towers.utils.maps.IntIntMap;
+import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.battle.Troop;
+import com.gt.towers.interfaces.ITroopHitCallback;
+import com.smartfoxserver.v2.entities.Room;
+import com.smartfoxserver.v2.extensions.ISFSExtension;
+import com.smartfoxserver.v2.extensions.SFSExtension;
 import haxe.root.Array;
 
+import java.util.List;
+
 /**
- * Created by ManJav on 8/14/2017.
+ * Created by ManJav on 4/1/2018.
  */
-
-public class MapChangeCallback implements IValueChangeCallback
+public class HitTroopCallback implements ITroopHitCallback
 {
-    public IntIntMap inserts = new IntIntMap();
-    public IntIntMap updates = new IntIntMap();
+    private final SFSExtension room;
 
-    @Override
-    public void insert(int key, int oldValue, int newValue)
+    public HitTroopCallback(ISFSExtension room)
     {
-        if( !inserts.exists(key) )
-            inserts.set(key, 0);
+        this.room = (SFSExtension) room;
     }
 
+
     @Override
-    public void update(int key, int oldValue, int newValue)
+    public void hit(int defenderId, List<Troop> troops)
     {
-        if( !updates.exists(key) )
-            updates.set(key, 0);
+        String log = "hit defenderId:" + defenderId;
+        for (int i = 0; i <troops.size() ; i++)
+            log += "[ troopId:" + troops.get(i).id + " troopHealth:" + troops.get(i).health  +(i == troops.size()-1 ? " ]":" ,  ");
+
+        room.trace(log);
     }
 
     @Override
@@ -69,5 +75,7 @@ public class MapChangeCallback implements IValueChangeCallback
     }
     @Override
     public void __hx_getFields(Array<String> array) {
+
     }
+
 }

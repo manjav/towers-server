@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.battle;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.callbacks.HitTroopCallback;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
@@ -109,6 +110,7 @@ public class BattleRoom extends SFSExtension
 
 		trace(registeredPlayers.get(0), registeredPlayers.get(1), mapName);
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
+		//battleField.troopHitCallback = new HitTroopCallback(getParentZone().getExtension());
 		battleField.now = Instant.now().toEpochMilli();
 		battleField.startAt = battleField.now / 1000;
 		reservedTypes = new int[battleField.places.size()];
@@ -134,12 +136,13 @@ public class BattleRoom extends SFSExtension
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				if (getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED)
+				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
 					return;
 
 				battleField.update();
 				long battleDuration = battleField.getDuration();
-				if (battleField.now - buildingsUpdatedAt > 500) {
+				if( battleField.now - buildingsUpdatedAt >= 500 )
+				{
 					updateReservesData(battleDuration);
 					pokeBot();
 					buildingsUpdatedAt = battleField.now;
@@ -283,12 +286,12 @@ public class BattleRoom extends SFSExtension
 	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void hit(int troopId, double damage)
 	{
-		if ( getState() != STATE_BATTLE_STARTED )
+		/*if ( getState() != STATE_BATTLE_STARTED )
 			return;
 
 		int index = (int) Math.floor((double)(troopId/10000));
 		//trace("hit index:", index, ", troopId:", troopId, ", damage:", damage);
-		battleField.places.get(index).hit(troopId, damage);
+		battleField.places.get(index).hit(troopId, damage);*/
 	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
