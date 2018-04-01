@@ -508,8 +508,6 @@ public class BattleRoom extends SFSExtension
 			return;
 		setState( STATE_DESTROYED );
 
-		if( room.getId() % 6 == 0 )
-			System.gc();
 		trace(room.getName(), "destroyed.");
 		super.destroy();
 	}
