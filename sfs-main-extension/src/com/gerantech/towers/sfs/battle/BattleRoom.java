@@ -136,9 +136,9 @@ public class BattleRoom extends SFSExtension
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
+
 				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
 					return;
-
 				battleField.update();
 				long battleDuration = battleField.getDuration();
 				if( battleField.now - buildingsUpdatedAt >= 500 )
@@ -147,8 +147,8 @@ public class BattleRoom extends SFSExtension
 					pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
-
 				checkBattleEnding(battleDuration);
+
 			}
 		}, 0, battleField.interval, TimeUnit.MILLISECONDS);
 

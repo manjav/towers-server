@@ -13,6 +13,12 @@ public class BattleRoomResetVarsRequestHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
+		if( ((int)getParentExtension().getParentRoom().getProperty("state")) != BattleRoom.STATE_BATTLE_STARTED )
+		{
+			send(Commands.RESET_ALL, params, sender);
+			return;
+		}
+
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
 		SFSArray buildingData = new SFSArray();
 		for (int i = 0; i < roomClass.battleField.places.size(); i++)
