@@ -235,7 +235,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject userData = res.getSFSObject(0);
 		if( !getApi().checkSecurePassword(session, userData.getText("password"), password) )
 		{
-			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error!", new String[]{name});
+			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error! id" + id + " inpass " + password + " dbpass:" + userData.getText("password"), new String[]{name});
 			return;
 		}
 
