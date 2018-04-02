@@ -7,7 +7,6 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.sql.SQLException;
@@ -35,8 +34,9 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		try {
 			featuresArray = dbManager.executeQuery(query, new Object[]{});
 		} catch (SQLException e) { trace(e.getMessage()); }
+		params.putSFSArray("features", featuresArray );
 
-		//  -=-=-=-=-=-=-=-=-  add quests data  -=-=-=-=-=-=-=-=-
+		/*//  -=-=-=-=-=-=-=-=-  add quests data  -=-=-=-=-=-=-=-=-
 		ISFSArray questsArray = null;
 		try {
 			questsArray = dbManager.executeQuery("SELECT `index` FROM quests WHERE player_id=" + playerId + " AND score>0 ORDER BY `index` DESC LIMIT 0, 1", new Object[]{});
@@ -47,9 +47,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			q.putInt("count", questsArray.getSFSObject(0).getInt("index") + 1);
 			q.putInt("type", 5000);
 			featuresArray.addSFSObject(q);
-		}
-
-		params.putSFSArray("features", featuresArray );
+		}*/
 
 		//  -=-=-=-=-=-=-=-=-  add buildings data  -=-=-=-=-=-=-=-=-
 		ISFSArray buildingArray = null;
