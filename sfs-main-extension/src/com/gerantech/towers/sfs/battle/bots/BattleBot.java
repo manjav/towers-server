@@ -168,22 +168,20 @@ public class BattleBot
         // estimate powers of sides
         PlaceList playerPlaces = battleField.getPlacesByTroopType(TroopType.T_0, false);
         PlaceList robotPlaces = battleField.getPlacesByTroopType(TroopType.T_1, false);
+        float playerImproveRatio = estimateImproveMode(playerPlaces);
+        float robotImproveRatio = estimateImproveMode(robotPlaces);
 
         // end battle
         if( playerPlaces.size() == 0 || robotPlaces.size() == 0 )
             return;
 
         // check stop fighting if needs to improvement
-        if( playerPlaces.size() > 2 && estimateImproveMode(robotPlaces) < estimateImproveMode(playerPlaces) )
+        if( playerPlaces.size() >= 2 && robotImproveRatio < playerImproveRatio )
         {
             //ext.trace(estimateImproveMode(robotPlaces), estimateImproveMode(playerPlaces) );
-            if( improveAll(robotPlaces, false, true) && playerPlaces.size() <= robotPlaces.size() )
+            if( improveAll(robotPlaces, false, true) )
                 return;
         }
-
-
-        if( repeatetiveTarget > 1000 )
-            return;
 
         IntList fightersCandidates = new IntList();
         if( fighters == null )
@@ -197,6 +195,9 @@ public class BattleBot
         else if( !improveAll(robotPlaces, firstToFight, false))
             scheduleFighters(target);
         //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
+
+        if( !firstToFight && repeatetiveTarget > 1000 )
+            return;
 
         startChating(robotPlaces.size() - playerPlaces.size());
     }
@@ -242,7 +243,6 @@ public class BattleBot
             }
         }
     }
-
 
     private void updateFightingProcess()
     {
@@ -427,11 +427,10 @@ public class BattleBot
         return sum / size;
     }
     double estimateHealth(Place place) {
-        return place.building.get_population() * place.building.troopPower * (1.1 + battleField.difficulty * 0.05);
+        return place.building.getPower() * (1.1 + battleField.difficulty * 0.05);
     }
 
-    double priority(Place place)
-    {
+    double priority(Place place) {
         return estimateHealth(place) + (place.building.troopType + 1) * 0.5 + ( lastTarget == place.index ? -0.5 : 0 );
     }
 }
