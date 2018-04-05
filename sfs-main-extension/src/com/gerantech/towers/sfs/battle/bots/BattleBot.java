@@ -347,7 +347,7 @@ public class BattleBot
         {
             chatPatams.putInt("t", StickerType.getRandomStart(battleRatio));
             chatPatams.putInt("tt", 1);
-            chatPatams.putLong("u", (long) (battleField.now + Math.random() * 2500 + 500));
+            chatPatams.putLong("ready", (long) (battleField.now + Math.random() * 2500 + 500));
         }
         this.battleRatio = battleRatio;
     }
@@ -364,7 +364,7 @@ public class BattleBot
         chatPatams.putInt("t", answer);
         chatPatams.putInt("tt", 1);
         chatPatams.putInt("wait", 0);
-        chatPatams.putLong("u", (long) (battleField.now + Math.random() * 3500 + 1500));
+        chatPatams.putLong("ready", (long) (battleField.now + Math.random() * 2500 + 2500));
     }
 
     void updateChatProcess()
