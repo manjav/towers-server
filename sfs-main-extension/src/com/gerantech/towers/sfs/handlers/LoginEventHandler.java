@@ -223,12 +223,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// Find player in DB ===========================================================
 		int id = Integer.parseInt(name);
 		ISFSArray res = null;
-		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id + "", new Object[]{});
+		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
 		} catch(SQLException e) { e.printStackTrace(); }
 
-		if( res.size() != 1 )
+		if( res == null && res.size() != 1 )
 		{
-			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!", new String[]{"user id nou found."});
+			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!" + id, new String[]{"user id nou found."});
 			return;
 		}
 
