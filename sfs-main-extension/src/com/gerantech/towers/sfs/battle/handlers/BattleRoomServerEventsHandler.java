@@ -83,7 +83,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			int delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
-
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
 				@Override
 				public void run() {

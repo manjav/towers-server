@@ -136,6 +136,8 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         int sum = 0;
         int size = members.size() - 1;
+        if( size < 1 )
+            return 0;
         while( size >= 0 )
         {
             sum += members.getSFSObject(size).getInt("activity") ;
