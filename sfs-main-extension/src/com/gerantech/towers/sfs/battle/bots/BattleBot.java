@@ -54,14 +54,12 @@ public class BattleBot
     {
         this.battleRoom = battleRoom;
         this.battleField = battleRoom.battleField;
-        ArrayList<Game> registeredPlayers = (ArrayList)battleRoom.getParentRoom().getProperty("registeredPlayers");
-
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-        timeFactor = Math.min(6, Math.max(2, 10 - battleField.difficulty ) );
+        timeFactor = Math.min(8, Math.max(2, 10 - battleField.difficulty ) );
         troopsDivision = Math.max(0.3, Math.min(0.9, battleField.difficulty * 0.4));
-        if( registeredPlayers.get(0).player.get_battleswins() < 2 )
+        if( battleField.games.get(0).player.tutorialMode == 1 && battleField.games.get(0).player.get_battleswins() < 2 )
             troopsDivision = 0.15;
-        ext.trace("p-point:" + registeredPlayers.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ registeredPlayers.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + registeredPlayers.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
+        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + battleField.games.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
 
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
 
