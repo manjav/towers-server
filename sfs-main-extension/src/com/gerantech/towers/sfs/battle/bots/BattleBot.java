@@ -333,7 +333,7 @@ public class BattleBot
 
     void startChating(int battleRatio)
     {
-        if( battleField.map.isQuest )
+        if( battleField.map.isQuest || battleField.games.get(0).player.inTutorial() )
             return;
 
         // verbose bot threshold
