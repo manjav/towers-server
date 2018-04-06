@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.battle.bots;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.buildings.Place;
@@ -10,7 +9,6 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.constants.TroopType;
 import com.gt.towers.utils.PathFinder;
-import com.gt.towers.utils.lists.IntList;
 import com.gt.towers.utils.lists.PlaceList;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -19,10 +17,7 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -48,7 +43,9 @@ public class BattleBot
     double troopsDivision;
     PlaceList allPlaces;
     SFSObject chatPatams;
-    ConcurrentHashMap<Integer, ScheduledPlace> fighters;
+    PlaceList robotPlaces;
+    PlaceList playerPlaces;
+    ConcurrentHashMap<Integer, ScheduledPlace> sceduledfighters;
 
     public BattleBot(BattleRoom battleRoom)
     {
@@ -74,6 +71,7 @@ public class BattleBot
             fightToWeakestPlace();
 
         sampleTime = _sampleTime;
+
         cover();
         updateChatProcess();
         updateFightingProcess();
@@ -103,7 +101,7 @@ public class BattleBot
             step --;
         }
 
-        if( totalPowers < estimateHealth(target) * 0.8 )
+        if( totalPowers < target.building.getPower() * 0.8 )
         {
             coverPoint = -1;
             return;
@@ -159,60 +157,74 @@ public class BattleBot
         else
             repeatetiveTarget = target.index;
 
-
         fightersPower = 0;
-        targetHealth = forceTargetHealth > 0 ? forceTargetHealth : estimateHealth(target);
+        targetHealth = forceTargetHealth > 0 ? forceTargetHealth : target.building.getPower();
 
         // estimate powers of sides
-        PlaceList playerPlaces = battleField.getPlacesByTroopType(TroopType.T_0, false);
-        PlaceList robotPlaces = battleField.getPlacesByTroopType(TroopType.T_1, false);
+        playerPlaces = battleField.getPlacesByTroopType(TroopType.T_0, false);
+        robotPlaces = battleField.getPlacesByTroopType(TroopType.T_1, false);
         float playerImproveRatio = estimateImproveMode(playerPlaces);
         float robotImproveRatio = estimateImproveMode(robotPlaces);
 
         // end battle
         if( playerPlaces.size() == 0 || robotPlaces.size() == 0 )
             return;
-
+       // if( battleField.games.get(0).player.admin )
+       // ext.trace("playerPlaces.size", playerPlaces.size(), "robotImproveRatio", robotImproveRatio, "playerImproveRatio", playerImproveRatio);
         // check stop fighting if needs to improvement
-        if( playerPlaces.size() >= 2 && robotImproveRatio < playerImproveRatio )
+        int improveIndex = -1;
+        if( robotPlaces.size() > 1 && playerPlaces.size() > 1 && robotImproveRatio < playerImproveRatio )
         {
-            //ext.trace(estimateImproveMode(robotPlaces), estimateImproveMode(playerPlaces) );
-            if( improveAll(robotPlaces, false, true) )
+            improveIndex = improveAll(robotPlaces, true);
+            if( improveIndex >= 100 )
                 return;
         }
 
-        IntList fightersCandidates = new IntList();
-        if( fighters == null )
-            fighters = new ConcurrentHashMap<Integer, ScheduledPlace>();
-        addFighters(target, fightersCandidates);
+        List<Integer> findingPath = new ArrayList<>();
+        List<Integer> candidatedfighters = new ArrayList();
+        if( sceduledfighters == null )
+            sceduledfighters = new ConcurrentHashMap();
 
-        //ext.trace("target:" + target.index, " numFighters:" + fighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth, fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0) );
-        boolean firstToFight = fighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0 );
-        if( firstToFight )
-            scheduleFighters(target);
-        else if( !improveAll(robotPlaces, firstToFight, false))
-            scheduleFighters(target);
-        //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
+/*        ext.trace(" numFighters:" + fighters.size());
+        Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = fighters.entrySet().iterator();
+        while (iterator.hasNext())
+        {
+            ScheduledPlace sp = iterator.next().getValue();
+            ext.trace("fighter:", sp.place.index, sp.fightTime, battleField.now);
+        }*/
+        addFighters(target, findingPath, candidatedfighters);
+        findingPath.clear();
 
+         // if( battleField.games.get(0).player.admin )
+            //ext.trace("target:" + target.index, " target_type:" + target.building.type, " numFighters:" + candidatedfighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth );
+        boolean firstToFight = candidatedfighters.size() > 0 && (fightersPower >= targetHealth || forceTargetHealth > 0 || robotPlaces.size() < 2 || playerPlaces.size() < 2 );
         if( !firstToFight && repeatetiveTarget > 1000 )
             return;
 
+        if( firstToFight )
+            scheduleFighters(target, candidatedfighters);
+        //else if( !improveAll(robotPlaces, firstToFight, true))
+       //     scheduleFighters(target);
+        //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + fighters.size(), forceTargetHealth);
+
+
+      //  if( battleField.games.get(0).player.admin )
+       //     ext.trace("firstToFight.size", firstToFight, "repeatetiveTarget", repeatetiveTarget);
         startChating(robotPlaces.size() - playerPlaces.size());
     }
 
-    void addFighters(Place place, IntList fightersCandidates)
+    void addFighters(Place place, List<Integer> findingPath, List<Integer> candidatedfighters)
     {
-        if( fightersCandidates.indexOf(place.index) > -1 || (fightersPower >= targetHealth && battleField.now < battleField.getTime(1)) )
+        if( findingPath.indexOf(place.index) > -1 || (fightersPower >= targetHealth) )
             return;
-        fightersCandidates.push(place.index);
-
-        if( place.building.troopType == TroopType.T_1 && !fighters.containsKey(place.index) && place.index != coverPoint)
+        findingPath.add(place.index);
+        //ext.trace( place.building.troopType, sceduledfighters.containsKey(place.index) , place.index , coverPoint);
+        if( place.building.troopType == TroopType.T_1 && !sceduledfighters.containsKey(place.index) && place.index != coverPoint )
         {
             double placePower = estimatePower(place.building, hasEnemyNeighbor(place) ? 0.2 : troopsDivision);
-            //ext.trace(place.index, "placePower", placePower, "cardPower", cardPower, fightersPower);
-
+            //ext.trace(place.index, "placePower", placePower, "fightersPower", fightersPower, "troopsDivision", troopsDivision);
             fightersPower += placePower;
-            fighters.put(place.index, new ScheduledPlace(place));
+            candidatedfighters.add(place.index);
         }
 
         // transform neighbors
@@ -220,31 +232,28 @@ public class BattleBot
         int step = placeLinks.size() - 1;
         while (step >= 0)
         {
-            addFighters(placeLinks.get(step), fightersCandidates);
+            addFighters(placeLinks.get(step), findingPath, candidatedfighters);
             step --;
         }
     }
 
-    void scheduleFighters(Place target)
+    void scheduleFighters(Place target, List<Integer> candidatedfighters)
     {
         lastTarget = target.index;
 
         // estimate max time distance
-        Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = fighters.entrySet().iterator();
+        Iterator<Integer> iterator = candidatedfighters.iterator();
         while (iterator.hasNext())
         {
-            ScheduledPlace sPlace = iterator.next().getValue();
-            if( sPlace.fightTime > -1 )
-            {
-                sPlace.fightTime = battleField.now + estimateRushTime(sPlace.place, target);
-                sPlace.target = target.index;
-            }
+            Integer p = iterator.next();
+            sceduledfighters.put(p, new ScheduledPlace(battleField.places.get(p), target.index,battleField.now + estimateRushTime(battleField.places.get(p), target)));
         }
+        candidatedfighters.clear();
     }
 
     private void updateFightingProcess()
     {
-        if( fighters == null || fighters.size() == 0 )
+        if( sceduledfighters == null || sceduledfighters.size() == 0 )
         {
             if( coverPoint == -2 )
                 coverPoint = -1;
@@ -252,7 +261,7 @@ public class BattleBot
         }
 
         // shoot every places in determined times
-        Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = fighters.entrySet().iterator();
+        Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = sceduledfighters.entrySet().iterator();
         while (iterator.hasNext())
         {
             Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
@@ -265,70 +274,65 @@ public class BattleBot
                     SFSArray _fighters = new SFSArray();
                     _fighters.addInt(sPlace.place.index);
                     battleRoom.fight(_fighters, sPlace.target, true, troopsDivision);
-                    sPlace.dispose();
-                    fighters.remove(sPlace.place.index);
+                    sceduledfighters.remove(sPlace.place.index);
                 }
             }
             else
             {
-                sPlace.dispose();
-                fighters.remove(sPlace.place.index);
+                sceduledfighters.remove(sPlace.place.index);
             }
         }
     }
 
-
-    boolean improveAll(PlaceList places, boolean oneImprove, Boolean hasCard)
+    int improveAll(PlaceList places, boolean oneImprove)
     {
         int step = places.size() - 1;
-        boolean ret = false;
+        int ret = -1;
         while ( step >= 0 )
         {
-            if( improve(places.get(step), true, hasCard) )
-                ret = true;
-            if( ret && oneImprove)
-                return true;
+            ret = improve(places.get(step), false);
+            if( ret > -1 && ret < 100 && oneImprove )
+                return ret;
             step --;
         }
         return ret;
     }
-    boolean improve(Place place, boolean needPopulation, Boolean hasCard)
+    int improve(Place place, boolean needPopulation)
     {
         if( battleField.difficulty < 2 )
-            return false;
+            return -1;
 
-       // if( place.fightTime > -1 )
-       // {
-          //  ext.trace(place.index + " exists in fighters...");
-            //return false;
-       // }
-
+        // if( place.fightTime > -1 )
+        // {
+        //  ext.trace(place.index + " exists in fighters...");
+        //return false;
+        // }
         int improveType = 0;
-        if ( place.building.type == BuildingType.B01_CAMP )
+        if( place.building.type == BuildingType.B01_CAMP )
         {
-            double rand = Math.random();
-            if( needPopulation )
-                improveType = BuildingType.B11_BARRACKS;
-            else if (rand > 0.9)
-                improveType = BuildingType.B41_CRYSTAL;
-            else if (rand > 0.8)
-                improveType = BuildingType.B31_HEAVY;
-            else if (rand > 0.7)
-                improveType = BuildingType.B21_RAPID;
+            if( place.getLinks(TroopType.T_0).size() > 0 )
+            {
+                if( robotPlaces.size() <= playerPlaces.size() )
+                    improveType = BuildingType.B41_CRYSTAL;
+                else
+                    improveType = Math.random() > 0.4 ? BuildingType.B21_RAPID : BuildingType.B31_HEAVY;
+            }
             else
+            {
                 improveType = BuildingType.B11_BARRACKS;
+            }
         }
         else
         {
             improveType = place.building.type + 1;
         }
 
-        if( hasCard )
-        {
-            place.building.improve(improveType%10>1?BuildingType.IMPROVE:improveType);
-            return battleField.games.get(1).player.buildings.exists(improveType);
-        }
-        return place.building.improve(improveType%10>1?BuildingType.IMPROVE:improveType);
+        int ret = -1;
+        if( place.building.improve(improveType%10>1?BuildingType.IMPROVE:improveType) )
+            ret = place.index;
+        else if( battleField.games.get(1).player.buildings.exists(improveType) )
+            ret = place.index + 100;
+        return ret;
     }
 
     void startChating(int battleRatio)
@@ -424,11 +428,11 @@ public class BattleBot
         }
         return sum / size;
     }
-    double estimateHealth(Place place) {
+   /* double estimateHealth(Place place) {
         return place.building.getPower() * (1.1 + battleField.difficulty * 0.05);
-    }
+    }*/
 
     double priority(Place place) {
-        return estimateHealth(place) + (place.building.troopType + 1) * 0.5 + ( lastTarget == place.index ? -0.5 : 0 );
+        return place.building.getPower() + (place.building.troopType + 1) * 0.5;
     }
 }
