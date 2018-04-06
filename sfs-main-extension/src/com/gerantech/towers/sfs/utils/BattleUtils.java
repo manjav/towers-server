@@ -86,7 +86,7 @@ public class BattleUtils
         for (Room r : rList)
         {
             // ext.trace(">>>>>>>", r.containsProperty("startAt"), now );
-            if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 370 )
+            if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 400 )
             {
                 ext.trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
                 removeRoom(r);
