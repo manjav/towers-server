@@ -11,6 +11,7 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
+import com.gt.towers.buildings.Place;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -216,11 +217,11 @@ public class BattleRoom extends SFSExtension
 		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
-		int pLen = battleField.places.size() - 1;
-		int srcLen = fighters.size();
+		int numPlaces = battleField.places.size() - 1;
+		int numFighters = fighters.size();
 		//for(int i = 0; i<srcLen; i++)
 		//	trace(i, " fighter index:", fighters.getInt(i), "pLen", pLen);
-		if( target < 0 || target > pLen )
+		if( target < 0 || target > numPlaces )
 			return;
 
 		if( singleMode && !fighterIsBot )
@@ -229,10 +230,12 @@ public class BattleRoom extends SFSExtension
 			bot.coverPoint = target;
 		}
 
-		for( int i = 0; i<srcLen; i++ )
+		for( int i = 0; i<numFighters; i++ )
 		{
-			if( fighters.getInt(i) > -1 && fighters.getInt(i) <= pLen )
+			if( fighters.getInt(i) > -1 && fighters.getInt(i) <= numPlaces )
 			{
+				if( battleField.places.get(fighters.getInt(i)) == null || battleField.places.get(target) == null )
+					continue;
 				//trace(i, " fighter index:", fighters.getInt(i), "target index:", target, " num places:", battleField.places.size());
 				battleField.places.get(fighters.getInt(i)).fight(battleField.places.get(target), battleField.places, troopsDivision);
 			}
@@ -262,9 +265,9 @@ public class BattleRoom extends SFSExtension
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void improveBuilding(User sender, ISFSObject params)
 	{
-		if(getState() == STATE_CREATED)
+		if( getState() == STATE_CREATED )
 			setState( STATE_BATTLE_STARTED );
-		if ( getState() != STATE_BATTLE_STARTED )
+		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
 		Building b = battleField.places.get(params.getInt("i")).building;
