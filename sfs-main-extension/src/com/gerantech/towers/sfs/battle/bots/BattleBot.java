@@ -170,7 +170,7 @@ public class BattleBot
             return;
         // stop fighting if needs to improvement
         int improveIndex = -2;
-        if( robotPlaces.size() > 1 && playerPlaces.size() > 1 && improveRatio >= 1 )
+        if( forceTargetHealth == 0 && robotPlaces.size() > 1 && playerPlaces.size() > 1 && improveRatio >= 1 )
         {
             improveIndex = improveAll(robotPlaces, true);
             if( improveIndex > -1 )
@@ -187,16 +187,19 @@ public class BattleBot
 
          // if( battleField.games.get(0).player.admin )
             //ext.trace("target:" + target.index, " target_type:" + target.building.type, " numFighters:" + candidatedfighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth );
-        boolean firstToFight = candidatedfighters.size() > 0 && ((fightersPower / targetHealth > 1.2) || forceTargetHealth > 0 || robotPlaces.size() < 2 || playerPlaces.size() < 2 );        if( !firstToFight && repeatetiveTarget > 1000 )
+        boolean firstToFight = candidatedfighters.size() > 0 && ((fightersPower / targetHealth > 1.2) || forceTargetHealth > 0 || robotPlaces.size() < 2 || playerPlaces.size() < 2 );
         if( !firstToFight && repeatetiveTarget > 1000 )
             return;
 
+        if( !firstToFight && improveIndex == -1 && playerPlaces.size() < 3 )
+            firstToFight = true;
+
         if( firstToFight )
             scheduleFighters(target, candidatedfighters);
-        else if( improveIndex == -1 && playerPlaces.size() < 3 )
-            scheduleFighters(target, candidatedfighters);
-        //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
+        else if( improveIndex == -2 )
+            improveAll(robotPlaces, true);// improve if bot have been frozen.
 
+        //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
         startChating(robotPlaces.size() - playerPlaces.size());
     }
 
@@ -309,7 +312,7 @@ public class BattleBot
         {
             if( place.getLinks(TroopType.T_0).size() > 0 )
             {
-                if( robotPlaces.size() <= playerPlaces.size() )
+                if( robotPlaces.size() <= playerPlaces.size() + 2 )
                     improveType = BuildingType.B41_CRYSTAL;
                 else
                     improveType = Math.random() > 0.4 ? BuildingType.B21_RAPID : BuildingType.B31_HEAVY;
