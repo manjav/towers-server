@@ -65,7 +65,7 @@ public class InboxUtils
         try {
             return ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
-        return null;
+        return new SFSArray();
     }
 
     public void remove(int id)
