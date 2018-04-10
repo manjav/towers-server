@@ -1,33 +1,38 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
+import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by ManJav on 8/24/2017.
  */
 public class LobbyDataHandler extends BaseClientRequestHandler
 {
+    private Zone zone;
+    private LobbyUtils lobbyUtils;
+
     public void handleClientRequest(User sender, ISFSObject params)
     {
+        lobbyUtils = LobbyUtils.getInstance();
+        zone = getParentExtension().getParentZone();
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
-            fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
+            fillRoomInfo( zone.getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
         else
              searchRooms(params, users );
 
@@ -42,20 +47,17 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
         //boolean rankMode = params.containsKey("rank");
 
-        List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("lobbies");
-        int roomIndex = 0;
-        int numRooms = rList.size();
-        Room room;
+        Map<String, CreateRoomSettings> allSettings = lobbyUtils.getAllSettings(zone);
+        CreateRoomSettings roomSettings;
         SFSObject r;
         List<SFSObject> roomsList = new ArrayList();
-        while( roomIndex < numRooms )
+        for (Map.Entry<String, CreateRoomSettings> entry : allSettings.entrySet())
         {
-            room = rList.get(roomIndex);
-            roomIndex ++;
-            if( roomName != null && room.getName().toLowerCase().indexOf( roomName ) == -1 )
+            roomSettings = entry.getValue();
+            if( roomName != null && roomSettings.getName().toLowerCase().indexOf( roomName ) == -1 )
                 continue;
             r = new SFSObject();
-            fillRoomData(room, r, users, false);
+            fillRoomData(roomSettings, r, users, false);
             // if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )
                 roomsList.add(r);
         }
@@ -67,8 +69,8 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt(modes[mode]) - rhs.getInt(modes[mode]); }
         });
 
-        roomIndex = 0;
-        numRooms = Math.min(50, roomsList.size());
+        int roomIndex = 0;
+        int numRooms = Math.min(50, roomsList.size());
         SFSArray rooms = new SFSArray();
         while( roomIndex < numRooms )
         {
@@ -78,8 +80,14 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putSFSArray("rooms", rooms);
         params.removeElement("name");
     }
-
-    public void fillRoomData(Room room, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers) {
+    public void fillRoomData(CreateRoomSettings settings, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
+    {
+        Room lobby = lobbyUtils.getLobby(settings, zone);
+        if( lobby != null )
+            fillRoomData(lobby, params, users, includeMembers);
+    }
+    public void fillRoomData(Room room, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
+    {
         ISFSArray all = getMembers(room, users);
         params.putText("name", room.getName());
         params.putInt("id", room.getId());

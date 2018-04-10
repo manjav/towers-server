@@ -5,7 +5,6 @@ import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
-import com.smartfoxserver.v2.api.ISFSApi;
 import com.smartfoxserver.v2.buddylist.BuddyList;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -14,9 +13,7 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
-import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
@@ -28,7 +25,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ManJav
@@ -50,7 +49,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		// Reload saved rooms
-		loadSavedLobbies(zone, getApi());
+		loadSavedLobbies(zone);
 
 		// Find last joined lobby room
 		Room room = rejoinToLastLobbyRoom(zone, user, game.player);
@@ -65,9 +64,9 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	/**
 	 * Save room to file for server restore rooms after resetting
 	 */
-	private void loadSavedLobbies(Zone zone, ISFSApi api)
+	private void loadSavedLobbies(Zone zone)
 	{
-		if ( zone.getRoomListFromGroup("lobbies").size() > 0 )
+		if( zone.containsProperty("lobbiesData") )
 			return;
 
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
@@ -80,34 +79,26 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
 		} catch (SFSStorageException e) { e.printStackTrace(); }
 
-		for ( CreateRoomSettings crs : lobbies )
-		{
-			try {
-				if( hasUser(crs.getRoomVariables()) )
-					api.createRoom(zone, crs, null);
-			} catch (SFSCreateRoomException e) { e.printStackTrace(); }
+		Map<String, CreateRoomSettings> lobbiesData = new HashMap();
+		for( CreateRoomSettings crs : lobbies )
+			lobbiesData.put(crs.getName(), crs);
 
-		}
+		zone.setProperty("lobbiesData", lobbiesData);
 	}
 
 	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)
 	{
-		Room room = LobbyUtils.getLobbyOfOfflineUser(zone, player.id);
-		if( room != null ) {
-			try {
-				getApi().joinRoom(user, room);
-				return room;
-			} catch (SFSJoinRoomException e) { e.printStackTrace(); return null; }
-		}
-		return null;
-	}
-
-	private static boolean hasUser(List<RoomVariable> vars)
-	{
-		for (int i = 0; i < vars.size(); i++)
-			if( vars.get(i).getName().equals("all") && vars.get(i).getSFSArrayValue().size() > 0 )
-				return true;
-		return false;
+		LobbyUtils lu = LobbyUtils.getInstance();
+		CreateRoomSettings lobbySetting = lu.getSettings(zone, player.id);
+		if( lobbySetting == null )
+			return null;
+		Room room = lu.getLobby(lobbySetting, zone);
+		if( room == null )
+			return null;
+		try {
+			getApi().joinRoom(user, room);
+		} catch (SFSJoinRoomException e) { e.printStackTrace(); }
+		return room;
 	}
 
 	private void initBuddy(User user, Room room) throws SFSBuddyListException {
@@ -130,6 +121,9 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		try {
 			result = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT invitee_id FROM friendship WHERE inviter_id=" + game.player.id + " AND has_reward=" + 0, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
+
+		if( result == null )
+			return;
 
 		for (int i=0; i<result.size(); i++)
 		{

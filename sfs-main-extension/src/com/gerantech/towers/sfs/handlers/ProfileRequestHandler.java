@@ -2,9 +2,11 @@ package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -21,6 +23,8 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
+		Zone zone = getParentExtension().getParentZone();
+		LobbyUtils lobbyUtils = LobbyUtils.getInstance();
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
@@ -57,13 +61,13 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		params.putSFSArray("buildings", buildingArray );
 
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
-		Room lobby = null;
+		CreateRoomSettings lobbySetting = null;
 		if( params.containsKey("lp") )
-			lobby = LobbyUtils.getInstance().getLobbyOfOfflineUser(playerId);
-		if( lobby != null )
+			lobbySetting = lobbyUtils.getSettings(zone, playerId);
+		if( lobbySetting != null )
 		{
-			params.putText("ln", lobby.getName());
-			params.putInt("lp", lobby.getVariable("pic").getIntValue());
+			params.putText("ln", lobbySetting.getName());
+			params.putInt("lp", lobbyUtils.getSettingsVariable(lobbySetting, "pic").getIntValue());
 		}
 
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
