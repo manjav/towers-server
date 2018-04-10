@@ -37,6 +37,9 @@ public class LobbyEditHandler extends BaseClientRequestHandler
             lobby.setVariable(var);
         } catch (SFSVariableException e) { e.printStackTrace(); }
 
+        if( params.containsKey("max") )
+            lobby.setMaxUsers(params.getInt("max"));
+
         LobbyUtils.getInstance().save(lobby);
         LobbyRoom roomClass = (LobbyRoom) lobby.getExtension();
         roomClass.sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
