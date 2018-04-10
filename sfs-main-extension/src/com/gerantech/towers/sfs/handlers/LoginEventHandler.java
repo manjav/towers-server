@@ -226,9 +226,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
 		} catch(SQLException e) { e.printStackTrace(); }
 
-		if( res == null && res.size() != 1 )
+		if( res == null || res.size() != 1 )
 		{
-			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error!" + id, new String[]{"user id nou found."});
+			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error! id=" + id + " name=" + name, new String[]{"user id not found."});
 			return;
 		}
 
