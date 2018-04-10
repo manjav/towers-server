@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.socials.handlers;
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -17,28 +16,17 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class LobbyPublicRequestHandler extends BaseClientRequestHandler
 {
-	private Room theRoom;
     private static AtomicInteger roomId = new AtomicInteger();
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-        int now = (int)Instant.now().getEpochSecond();
-        trace(now, LoginEventHandler.UNTIL_MAINTENANCE);
-        if( now < LoginEventHandler.UNTIL_MAINTENANCE )
-        {
-            params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
-            send(Commands.START_BATTLE, params, sender);
-            return;
-        }
-
-        theRoom = findReady(sender);
+        Room theRoom = findReady(sender);
 
         if( theRoom == null )
             theRoom = make(sender);
@@ -63,10 +51,7 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.BaseLobbyRoom");
 
-        Game game = ((Game)owner.getSession().getProperty("core"));
         trace("---------=========<<<<  MAKE public lobby by ", owner.getName(), " >>>>==========---------");
-
-       // Map<Object, Object> roomProperties = new HashMap<>();
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(false);
@@ -99,13 +84,8 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
         //vars.add(new SFSUserVariable("point", player.get_point()));
         getApi().setUserVariables(user, vars, true, true);
 
-        try
-        {
+        try {
             getApi().joinRoom(user, theRoom, null, false, null);
-        }
-        catch (SFSJoinRoomException e)
-        {
-            e.printStackTrace();
-        }
+        } catch (SFSJoinRoomException e) { e.printStackTrace(); }
     }
 }
