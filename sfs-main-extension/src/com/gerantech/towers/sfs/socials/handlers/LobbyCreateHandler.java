@@ -60,51 +60,16 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
             return;
         }
 
-        Room room = null;
-        try {
-            DBUtils.getInstance().updateResources(game.player, mapChangeCallback.updates);
-            room = createRoom(sender, roomName, bio, maxUsers, minPoint, avatar, privacyMode);
-        } catch (Exception e) {
+        DBUtils.getInstance().updateResources(game.player, mapChangeCallback.updates);
+        Room room = LobbyUtils.getInstance().create(sender, roomName, bio, maxUsers, minPoint, avatar, privacyMode);;
+        if( room == null ) {
             send("lobbyCreate", params, sender);
-            e.printStackTrace();
             params.putInt("response", RESPONSE_UNKOWN_ERROR);
             send("lobbyCreate", params, sender);
             return;
         }
 
         params.putInt("response", RESPONSE_OK);
-        LobbyUtils.getInstance().save(room);
         send(Commands.LOBBY_CREATE, params, sender);
-    }
-
-    private Room createRoom(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode) throws SFSCreateRoomException, SFSJoinRoomException
-    {
-        CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
-        CreateRoomSettings rs = new CreateRoomSettings();
-        rs.setHidden(false);
-        rs.setAllowOwnerOnlyInvitation(false);
-        rs.setDynamic(true);
-        rs.setGroupId("lobbies");
-        rs.setName(roomName);
-        rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
-        rs.setExtension(res);
-        rs.setMaxVariablesAllowed(7);
-        rs.setMaxUsers(maxUsers);
-
-        List<RoomVariable> listOfVars = new ArrayList<>();
-        listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
-        listOfVars.add( new SFSRoomVariable("bio", bio,             false, true, false) );
-        listOfVars.add( new SFSRoomVariable("pic", avatar,          false, true, false) );
-        listOfVars.add( new SFSRoomVariable("min", minPoints,       false, true, false) );
-        listOfVars.add( new SFSRoomVariable("pri", privacyMode,     false, true, false) );
-        listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
-        listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
-        for (RoomVariable rv : listOfVars )
-            rv.setHidden(true);
-        rs.setRoomVariables(listOfVars);
-
-        Room r = getApi().createRoom(getParentExtension().getParentZone(), rs, owner);
-        getApi().joinRoom(owner, r);
-        return r;
     }
 }

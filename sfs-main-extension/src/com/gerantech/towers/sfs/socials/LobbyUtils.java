@@ -9,10 +9,12 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
+import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
@@ -21,6 +23,7 @@ import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +35,7 @@ public class LobbyUtils
     private final SFSExtension ext;
     public static int arenaDivider = 5;
 
-    public LobbyUtils()
-    {
+    public LobbyUtils() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
     public static LobbyUtils getInstance()
@@ -41,7 +43,53 @@ public class LobbyUtils
         return new LobbyUtils();
     }
 
-    // Save room to file for server restore rooms after resetting
+
+    public Room create(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode)
+    {
+        CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
+        CreateRoomSettings rs = new CreateRoomSettings();
+        rs.setHidden(false);
+        rs.setAllowOwnerOnlyInvitation(false);
+        rs.setDynamic(true);
+        rs.setGroupId("lobbies");
+        rs.setName(roomName);
+        rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
+        rs.setExtension(res);
+        rs.setMaxVariablesAllowed(7);
+        rs.setMaxUsers(maxUsers);
+
+        List<RoomVariable> listOfVars = new ArrayList();
+        listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
+        listOfVars.add( new SFSRoomVariable("bio", bio,             false, true, false) );
+        listOfVars.add( new SFSRoomVariable("pic", avatar,          false, true, false) );
+        listOfVars.add( new SFSRoomVariable("min", minPoints,       false, true, false) );
+        listOfVars.add( new SFSRoomVariable("pri", privacyMode,     false, true, false) );
+        listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
+        listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
+        for (RoomVariable rv : listOfVars )
+            rv.setHidden(true);
+        rs.setRoomVariables(listOfVars);
+
+        Room lobby = null;
+        try {
+            lobby = ext.getApi().createRoom(ext.getParentZone(), rs, owner);
+        } catch (SFSCreateRoomException e) { e.printStackTrace(); }
+
+
+        try {
+            ext.getApi().joinRoom(owner, lobby);
+        } catch (SFSJoinRoomException e) { e.printStackTrace(); }
+
+        getAllSettings(ext.getParentZone()).put(rs.getName(), rs);
+        save(lobby);
+        return lobby;
+    }
+
+
+    /**
+     * Save room to file for server restore rooms after resetting
+     * @param lobby
+     */
     public void save(Room lobby)
     {
         save( ext.getParentZone(), lobby );
@@ -133,6 +181,7 @@ public class LobbyUtils
     // remove room from db
     private void remove(Zone zone, Room room)
     {
+        getAllSettings(zone).remove(room.getName());
         try {
             zone.getRoomPersistenceApi().removeRoom(room.getName());
             ext.getApi().removeRoom(room);
@@ -251,6 +300,7 @@ public class LobbyUtils
         }
         return result;
     }
+
     /*
     public Room getLobbyOfOfflineUser(int id)
     {

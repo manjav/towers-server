@@ -55,7 +55,7 @@ public class DBUtils
         return null;
     }
 
-    public void updateResources(Player player, IntIntMap resources) throws SFSException, SQLException
+    public void updateResources(Player player, IntIntMap resources)
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
@@ -86,7 +86,9 @@ public class DBUtils
 
         query += ");";
 
-        db.executeUpdate(query, new Object[] {});
+        try {
+            db.executeUpdate(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
 
         // update hazelcast map
         if( hasRankFields )
@@ -107,9 +109,8 @@ public class DBUtils
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
-        if(keyLen == 0) {
+        if( keyLen == 0 )
             return ;
-        }
 
         String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
         keyLen = keys.length;
