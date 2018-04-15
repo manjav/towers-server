@@ -61,7 +61,7 @@ public class BattleBot
         allPlaces = battleField.getPlacesByTroopType(TroopType.NONE, true);
 
         chatPatams = new SFSObject();
-        chatPatams.putLong("ready", battleField.now + 20000);
+        chatPatams.putLong("ready", battleField.now + 15000);
     }
 
     public void update()
@@ -200,7 +200,7 @@ public class BattleBot
             improveAll(robotPlaces, true);// improve if bot have been frozen.
 
         //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
-        startChating(robotPlaces.size() - playerPlaces.size());
+        startChatting(robotPlaces.size() - playerPlaces.size());
     }
 
     void addFighters(Place place, List<Integer> findingPath, List<Integer> candidatedfighters)
@@ -335,7 +335,7 @@ public class BattleBot
         return ret;
     }
 
-    void startChating(int battleRatio)
+    void startChatting(int battleRatio)
     {
         if( battleField.map.isQuest || battleField.games.get(0).player.inTutorial() )
             return;
@@ -347,7 +347,7 @@ public class BattleBot
         //ext.trace(this.battleRatio, battleRatio);
         if( battleRatio != this.battleRatio )
         {
-            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio));
+            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.get(0)));
             chatPatams.putInt("tt", 1);
             chatPatams.putLong("ready", (long) (battleField.now + Math.random() * 2500 + 500));
         }
@@ -359,7 +359,7 @@ public class BattleBot
         if( chatPatams.getLong("ready") > battleField.now || Math.random() < 0.2 )
             return;
 
-        int answer = StickerType.getRandomAnswer( params.getInt("t") );
+        int answer = StickerType.getAnswer( params.getInt("t") );
         if( answer <= -1 )
             return;
 
