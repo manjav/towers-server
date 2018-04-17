@@ -3,7 +3,6 @@ package com.gerantech.towers.sfs.battle;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
-import com.gerantech.towers.sfs.callbacks.HitTroopCallback;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
@@ -11,7 +10,6 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
-import com.gt.towers.buildings.Place;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -255,7 +253,7 @@ public class BattleRoom extends SFSExtension
 		for (User u : room.getUserList())
 		{
 			if( singleMode && sender != null )
-				bot.answerChat(params);
+				bot.chatAnswering(params);
 
 			if( sender == null || u.getId() != sender.getId() )
 				send("ss", params, u);

@@ -195,12 +195,12 @@ public class BattleBot
             firstToFight = true;
 
         if( firstToFight )
-            scheduleFighters(target, candidatedfighters);
+            scheduleFighters(target, candidatedfighters, forceTargetHealth);
         else if( improveIndex == -2 )
             improveAll(robotPlaces, true);// improve if bot have been frozen.
 
         //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
-        startChatting(robotPlaces.size() - playerPlaces.size());
+        chatStarting(robotPlaces.size() - playerPlaces.size());
     }
 
     void addFighters(Place place, List<Integer> findingPath, List<Integer> candidatedfighters)
@@ -227,19 +227,23 @@ public class BattleBot
         }
     }
 
-    void scheduleFighters(Place target, List<Integer> candidatedfighters)
+    void scheduleFighters(Place target, List<Integer> candidatedfighters, double forceTargetHealth)
     {
         lastTarget = target.index;
+        Iterator<Integer> iterator;
+        long maxDelay = 0;
 
         // estimate max time distance
-        long maxDelay = 0;
-        Iterator<Integer> iterator = candidatedfighters.iterator();
-        while (iterator.hasNext())
-            maxDelay = Math.max(estimateRushTime(battleField.places.get(iterator.next()), target), maxDelay);
-        maxDelay += battleField.interval + 1;
+        if( forceTargetHealth == 0 )
+        {
+            iterator = candidatedfighters.iterator();
+            while ( iterator.hasNext() )
+                maxDelay = Math.max(estimateRushTime(battleField.places.get(iterator.next()), target), maxDelay);
+            maxDelay += battleField.interval + 1;
+        }
 
         iterator = candidatedfighters.iterator();
-        while (iterator.hasNext())
+        while ( iterator.hasNext() )
         {
             Integer p = iterator.next();
             //ext.trace(p, battleField.now, battleField.now + maxDelay - estimateRushTime(battleField.places.get(p), target));
@@ -248,7 +252,7 @@ public class BattleBot
         candidatedfighters.clear();
     }
 
-    private void updateFightingProcess()
+    void updateFightingProcess()
     {
         if( sceduledfighters == null || sceduledfighters.size() == 0 )
         {
@@ -335,7 +339,8 @@ public class BattleBot
         return ret;
     }
 
-    void startChatting(int battleRatio)
+
+    void chatStarting(int battleRatio)
     {
         if( battleField.map.isQuest || battleField.games.get(0).player.inTutorial() )
             return;
@@ -354,7 +359,7 @@ public class BattleBot
         this.battleRatio = battleRatio;
     }
 
-    public void answerChat(ISFSObject params)
+    public void chatAnswering(ISFSObject params)
     {
         if( chatPatams.getLong("ready") > battleField.now || Math.random() < 0.2 )
             return;
@@ -378,6 +383,7 @@ public class BattleBot
         chatPatams.removeElement("t");
         chatPatams.putLong("ready", battleField.now + 10000);
     }
+
 
     // tools
     boolean isNeighbor(Place place)
