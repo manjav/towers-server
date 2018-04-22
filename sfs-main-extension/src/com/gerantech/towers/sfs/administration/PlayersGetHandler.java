@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -18,7 +19,9 @@ public class PlayersGetHandler extends BaseClientRequestHandler
 		String query = "SELECT id, name, password, app_version, sessions_count,  DATE_FORMAT(create_at, '%y-%m-%d  %h:%i:%s') create_at, DATE_FORMAT(last_login, '%y-%m-%d  %h:%i:%s') last_login FROM players WHERE ";
     	if( params.containsKey("id"))
 			query += "id=" + params.getInt("id");
-    	else if( params.containsKey("name"))
+		else if( params.containsKey("tag"))
+			query += "id=" + PasswordGenerator.recoverPlayerId(params.getText("tag"));
+		else if( params.containsKey("name"))
 			query += "name LIKE '%" + params.getUtfString("name") + "%'";
     	else
     		return;
