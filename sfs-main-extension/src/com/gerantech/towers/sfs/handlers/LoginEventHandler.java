@@ -271,8 +271,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putText("coreVersion", loginData.coreVersion);
 		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
-		outData.putBool("hasQuests", outData.getInt("id") % 2 == 0 || outData.getInt("id") < 75880);
-		outData.putInt("tutorialMode", outData.getBool("hasQuests") ? 0 : 1);
+		outData.putBool("hasQuests", true);
+		outData.putInt("tutorialMode", 1);
 
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");
