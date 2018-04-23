@@ -70,7 +70,6 @@ public class BattleRoom extends SFSExtension
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		
-		addRequestHandler("h", BattleRoomHitRequestHandler.class);
 		addRequestHandler("f", BattleRoomFightRequestHandler.class);
 		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
 		addRequestHandler("ss", BattleRoomStickerRequestHandler.class);
@@ -146,7 +145,7 @@ public class BattleRoom extends SFSExtension
 					pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
-				checkBattleEnding(battleDuration);
+				checkEnding(battleDuration);
 
 			}
 		}, 0, battleField.interval, TimeUnit.MILLISECONDS);
@@ -284,16 +283,6 @@ public class BattleRoom extends SFSExtension
 		sfsApi.sendExtensionResponse("i", params, room.getUserList(), room, false);
 
 	}
-	// hit =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void hit(int troopId, double damage)
-	{
-		/*if ( getState() != STATE_BATTLE_STARTED )
-			return;
-
-		int index = (int) Math.floor((double)(troopId/10000));
-		//trace("hit index:", index, ", troopId:", troopId, ", damage:", damage);
-		battleField.places.get(index).hit(troopId, damage);*/
-	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void leave(User user, boolean retryMode)
@@ -309,14 +298,14 @@ public class BattleRoom extends SFSExtension
 			setState( STATE_BATTLE_ENDED );
 			if( retryMode )
 			{
-				closeGame();
+				close();
 				BattleUtils.getInstance().removeRoom(room);
 				return;
 			}
 			scores = new int[2];
 			scores[1] = scores[0] = 0;
-			calculateEndBattleResponse();
-			closeGame();
+			calculateResult();
+			close();
 			BattleUtils.getInstance().removeRoom(room);
 		}
 		else
@@ -325,7 +314,7 @@ public class BattleRoom extends SFSExtension
 		}
 
 	}
-	private void checkBattleEnding(long battleDuration)
+	private void checkEnding(long battleDuration)
 	{
 		int[] numBuildings = new int[2];
 		int[] populations = new int[2];
@@ -339,13 +328,12 @@ public class BattleRoom extends SFSExtension
 			}
 		}
 		if( battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
-			endBattle(numBuildings, battleDuration);
+			end(numBuildings, battleDuration);
 	}
 
-	private void endBattle(int[] numBuildings, double battleDuration)
+	private void end(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
-
 		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
 		
 		scores = new int[2];
@@ -366,21 +354,17 @@ public class BattleRoom extends SFSExtension
 	    
 	    // balance live battle scores
 	    if( !isQuest )
-	    {
 		    for (int i=0; i < scores.length; i++)
-		    {
 		    	if( scores[i] == 0 )
 		    		scores[i] = -scores[i==0?1:0];
-		    }
-	    }
-	    
-	    calculateEndBattleResponse();
-		closeGame();
+
+	    calculateResult();
+		close();
 		if( isQuest )
 			BattleUtils.getInstance().removeRoom(room);
 	}
 
-	private void calculateEndBattleResponse()
+	private void calculateResult()
 	{
 		DBUtils dbUtils = DBUtils.getInstance();
 		SFSArray outcomesSFSData = new SFSArray();
@@ -450,7 +434,7 @@ public class BattleRoom extends SFSExtension
 			send( Commands.END_BATTLE, params, users.get(i) );
 	}
 
-	public void closeGame()
+	public void close()
 	{
 		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 
@@ -461,7 +445,6 @@ public class BattleRoom extends SFSExtension
 		if( battleField != null )
 			battleField.dispose();
 		battleField = null;
-
 	}
 
 	public List<User> getRealPlayers()

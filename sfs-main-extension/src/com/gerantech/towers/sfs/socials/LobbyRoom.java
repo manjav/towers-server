@@ -79,9 +79,10 @@ public class LobbyRoom extends BaseLobbyRoom
 
             // spectate started battle
             message = getStartedBattle(params);
-            if (message != null) {
+            if( message != null )
+            {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
-                if (room != null)
+                if( room != null )
                     BattleUtils.getInstance().join(sender, room, game.player.nickName);
                 return;
             }
