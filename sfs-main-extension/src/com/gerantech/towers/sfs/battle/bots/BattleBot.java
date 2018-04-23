@@ -86,7 +86,14 @@ public class BattleBot
             return;
 
         Place target = battleField.places.get(coverPoint);
-        if( target.building.troopType != TroopType.T_1 || battleField.getPlacesByTroopType(TroopType.T_1, false).size() < 3 )
+        if( target.building.troopType == TroopType.T_0 || battleField.getPlacesByTroopType(TroopType.T_1, false).size() < 3 )
+        {
+            coverPoint = -1;
+            return;
+        }
+
+        // if neutral place is neighbor
+        if( target.building.troopType == TroopType.NONE && !isNeighbor(target) )
         {
             coverPoint = -1;
             return;
@@ -106,8 +113,7 @@ public class BattleBot
             coverPoint = -1;
             return;
         }
-
-        fightToPlace(target, totalPowers);
+        fightToPlace(target, totalPowers, target.building.troopType == TroopType.T_1 ? 0 : 1500);
     }
 
     /**
@@ -147,10 +153,10 @@ public class BattleBot
         if( samePriorities.size() > 0 )
             weakestPlace = samePriorities.get((int) Math.floor(Math.random() * samePriorities.size()));
         if( weakestPlace > -1 )
-            fightToPlace(allPlaces.get(weakestPlace), 0);
+            fightToPlace(allPlaces.get(weakestPlace), 0, 0);
     }
 
-    void fightToPlace(Place target, double forceTargetHealth)
+    void fightToPlace(Place target, double forceTargetHealth, long delay)
     {
         if( repeatetiveTarget % 100 == target.index )
             repeatetiveTarget += 100;
@@ -195,7 +201,7 @@ public class BattleBot
             firstToFight = true;
 
         if( firstToFight )
-            scheduleFighters(target, candidatedfighters, forceTargetHealth);
+            scheduleFighters(target, candidatedfighters, forceTargetHealth, delay);
         else if( improveIndex == -2 )
             improveAll(robotPlaces, true);// improve if bot have been frozen.
 
@@ -227,11 +233,11 @@ public class BattleBot
         }
     }
 
-    void scheduleFighters(Place target, List<Integer> candidatedfighters, double forceTargetHealth)
+    void scheduleFighters(Place target, List<Integer> candidatedfighters, double forceTargetHealth, long delay)
     {
         lastTarget = target.index;
         Iterator<Integer> iterator;
-        long maxDelay = 0;
+        long maxDelay = delay + 0;
 
         // estimate max time distance
         if( forceTargetHealth == 0 )
