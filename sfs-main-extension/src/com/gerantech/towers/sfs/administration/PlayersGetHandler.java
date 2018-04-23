@@ -17,11 +17,11 @@ public class PlayersGetHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		String query = "SELECT id, name, password, app_version, sessions_count,  DATE_FORMAT(create_at, '%y-%m-%d  %h:%i:%s') create_at, DATE_FORMAT(last_login, '%y-%m-%d  %h:%i:%s') last_login FROM players WHERE ";
-    	if( params.containsKey("id"))
+    	if( params.containsKey("id") )
 			query += "id=" + params.getInt("id");
-		else if( params.containsKey("tag"))
+		else if( params.containsKey("tag") )
 			query += "id=" + PasswordGenerator.recoverPlayerId(params.getText("tag"));
-		else if( params.containsKey("name"))
+		else if( params.containsKey("name") )
 			query += "name LIKE '%" + params.getUtfString("name") + "%'";
     	else
     		return;
