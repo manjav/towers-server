@@ -226,7 +226,7 @@ public class DBUtils
         Collection<User> users = ext.getParentZone().getUserList();
         for (User u : users)
         {
-            ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.S_41_KEYS).numExchanges = 0;
+            ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C41_KEYS).numExchanges = 0;
             result += u.getName() + " key limit reset to '0'.\n";
         }
 

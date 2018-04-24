@@ -163,20 +163,20 @@ public class LoginEventHandler extends BaseServerEventHandler
 				so.putInt("num_exchanges", 0);
 
 				int ct = ExchangeType.getCategory(t);
-				/*if( ct == ExchangeType.S_20_SPECIALS || ct == ExchangeType.S_30_CHEST || ct == ExchangeType.S_40_OTHERS )
-					so.putInt("expired_at", now + (t== ExchangeType.S_31_CHEST?0:ExchangeType.getCooldown(t)));
+				/*if( ct == ExchangeType.C20_SPECIALS || ct == ExchangeType.C30_CHEST || ct == ExchangeType.C40_OTHERS )
+					so.putInt("expired_at", now + (t== ExchangeType.C31_CHEST?0:ExchangeType.getCooldown(t)));
 				else*/
 					so.putInt("expired_at", 0);
 
 				// set outcome :
-				if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
+				if( ct == ExchangeType.C110_BATTLES )
 				{
 					so.putInt("outcome", Exchanger.getBattleChestType(battleChestIndex));
 				}
-				else if( ct == ExchangeType.CHEST_CATE_120_OFFERS || ct == ExchangeType.CHEST_CATE_100_FREE )
+				else if( ct == ExchangeType.C120_MAGICS || ct == ExchangeType.C100_FREES )
 				{
 					so.putInt("outcome", Exchanger.getChestType(t));
-					if( ct == ExchangeType.CHEST_CATE_100_FREE )
+					if( ct == ExchangeType.C100_FREES )
 					{
 						if( battleChestIndex == 0 )
 							so.putInt("expired_at", now);
@@ -317,13 +317,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int t = element.getInt("type");
 			// bonus items :
 			int ct = ExchangeType.getCategory(t);
-			if( t == ExchangeType.CHEST_CATE_101_FREE )
+			if( t == ExchangeType.C101_FREE )
 				has101 = true;
-			if( t == ExchangeType.CHEST_CATE_102_FREE )
+			if( t == ExchangeType.C102_FREE )
 				has102 = true;
-			if( t == ExchangeType.CHEST_CATE_103_FREE )
+			if( t == ExchangeType.C103_FREE )
 				has103 = true;
-			if( ct == ExchangeType.CHEST_CATE_110_BATTLES )
+			if( ct == ExchangeType.C110_BATTLES )
 				hasNewChests = true;
 
 			initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
@@ -335,18 +335,18 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			for (int i = 1; i <= 3 ; i++)
 			{
-				addNewExchangeElement(ExchangeType.CHEST_CATE_110_BATTLES + i, exchanges, newExchanges, initData, now);
-				addNewExchangeElement(ExchangeType.CHEST_CATE_120_OFFERS + i, exchanges, newExchanges, initData, now);
+				addNewExchangeElement(ExchangeType.C110_BATTLES + i, exchanges, newExchanges, initData, now);
+				addNewExchangeElement(ExchangeType.C120_MAGICS + i, exchanges, newExchanges, initData, now);
 			}
 		}
 
 		// add new free books for old players --> backward compatibility
 		if( !has101 )
-			addNewExchangeElement(ExchangeType.CHEST_CATE_101_FREE, exchanges, newExchanges, initData, now );
+			addNewExchangeElement(ExchangeType.C101_FREE, exchanges, newExchanges, initData, now );
 		if( !has102 )
-			addNewExchangeElement(ExchangeType.CHEST_CATE_102_FREE, exchanges, newExchanges, initData, now );
+			addNewExchangeElement(ExchangeType.C102_FREE, exchanges, newExchanges, initData, now );
 		if( !has103 )
-			addNewExchangeElement(ExchangeType.CHEST_CATE_103_FREE, exchanges, newExchanges, initData, now );
+			addNewExchangeElement(ExchangeType.C103_FREE, exchanges, newExchanges, initData, now );
 
 		if( newExchanges.size() > 0 )
 		{
@@ -377,16 +377,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.put(game.player.id, rd);
 	}
 
-	private void addNewExchangeElement(int t, ISFSArray exchanges, SFSArray newExchanges, InitData initData, int now)
+	private void addNewExchangeElement(int type, ISFSArray exchanges, SFSArray newExchanges, InitData initData, int now)
 	{
 		SFSObject element = new SFSObject();
-		element.putInt("type", t);
+		element.putInt("type", type);
 		element.putInt("num_exchanges", 0);
-		int ct = ExchangeType.getCategory(t);
-		element.putInt("outcome", ExchangeType.getCategory(t) ==  ExchangeType.CHEST_CATE_110_BATTLES ? Exchanger.getBattleChestType(0) :  Exchanger.getChestType(t));
-		element.putInt("expired_at", ct == ExchangeType.CHEST_CATE_100_FREE ? (now + ExchangeType.getCooldown(element.getInt("outcome"))) : 0);
+		int ct = ExchangeType.getCategory(type);
+		element.putInt("outcome", ct ==  ExchangeType.C110_BATTLES ? Exchanger.getBattleChestType(0) :  Exchanger.getChestType(type));
+		element.putInt("expired_at", ct == ExchangeType.C100_FREES ? (now + ExchangeType.getCooldown(element.getInt("outcome"))) : 0);
 		newExchanges.addSFSObject( element );
 		exchanges.addSFSObject( element );
-		initData.exchanges.set( t, new Exchange( t, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
+		initData.exchanges.set( type, new Exchange( type, element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 	}
 }

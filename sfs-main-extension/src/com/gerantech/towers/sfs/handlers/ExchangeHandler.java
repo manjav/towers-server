@@ -104,7 +104,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		{
 			dbUtils.updateResources(game.player, mapChangeCallback.updates);
 			dbUtils.insertResources(game.player, mapChangeCallback.inserts);
-			if( item.isChest() )
+			if( item.isBook() )
 				dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
 		}
 		catch (Exception e)
