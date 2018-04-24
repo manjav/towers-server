@@ -417,7 +417,7 @@ public class BattleRoom extends SFSExtension
 			if( !game.player.isBot() )
 			{
 				game.player.addResources(outcomesList[i]);
-				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
 				try {
 					dbUtils.updateExchange(keysItem.type, game.player.id, keysItem.expiredAt, keysItem.numExchanges, keysItem.outcome);
 					dbUtils.updateResources(game.player, updateMap);

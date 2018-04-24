@@ -80,7 +80,7 @@ public class Outcome
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
 
             // keys
-            ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.S_41_KEYS);
+            ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
             if( keyItem.numExchanges < game.loginData.maxKeysPerDay )
             {
                 int numKeys = Math.min( game.loginData.maxKeysPerDay-keyItem.numExchanges, Math.max(0, score) );
