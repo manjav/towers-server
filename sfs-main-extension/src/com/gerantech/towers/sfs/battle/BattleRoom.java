@@ -260,7 +260,7 @@ public class BattleRoom extends SFSExtension
 	}
 
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public void improveBuilding(User sender, ISFSObject params)
+	public void improveBuilding(ISFSObject params)
 	{
 		if( getState() == STATE_CREATED )
 			setState( STATE_BATTLE_STARTED );
