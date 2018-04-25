@@ -113,7 +113,7 @@ public class BattleBot
             coverPoint = -1;
             return;
         }
-        fightToPlace(target, totalPowers, target.building.troopType == TroopType.T_1 ? 0 : 1500);
+        fightToPlace(target, totalPowers, target.building.troopType == TroopType.T_1 ? 500 : 1500);
     }
 
     /**
