@@ -17,7 +17,7 @@ public class Outcome
     public static int COE_POINTS = 4;
     public static int MAX_XP = 10;
 
-    public static IntIntMap get(Game game, FieldData field, int score)
+    public static IntIntMap get(Game game, FieldData field, int score, float ratio)
     {
         IntIntMap ret = new IntIntMap();
         if ( game.player.inFriendlyBattle )
@@ -53,11 +53,12 @@ public class Outcome
         {
             // points
             int point = 0;
-            if( score > 0 )
+            if( ratio > 1 )
                 point = (int) (MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
-            else if ( score < 0 )
-                point = (int) (-MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
+            else if( ratio < 1 )
+                point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
+            // for new players
             if( point < 0 && game.player.resources.get(ResourceType.POINT) < -point)
                 point = 0;
             ret.set(ResourceType.POINT, point );
@@ -68,7 +69,7 @@ public class Outcome
             int arena = game.player.get_arena(0);
 
             // softs
-            if( score > 0 )
+            if( point > 0 )
             {
                 ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
                 ret.set(ResourceType.BATTLES_WINS, 1);

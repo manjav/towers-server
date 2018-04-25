@@ -51,7 +51,6 @@ public class BattleRoom extends SFSExtension
 	private int[] reservedLevels;
 
 	private int[] reservedTroopTypes;
-	private int[] scores;
 	private Room room;
 	private ScheduledFuture<?> timer;
 
@@ -302,9 +301,10 @@ public class BattleRoom extends SFSExtension
 				BattleUtils.getInstance().removeRoom(room);
 				return;
 			}
-			scores = new int[2];
+			int[] scores = new int[2];
+			int[] numBuildings = new int[2];
 			scores[1] = scores[0] = 0;
-			calculateResult();
+			calculateResult(scores, numBuildings);
 			close();
 			BattleUtils.getInstance().removeRoom(room);
 		}
@@ -327,44 +327,54 @@ public class BattleRoom extends SFSExtension
 				populations[reservedTroopTypes[i]] += reservedPopulations[i];
 			}
 		}
-		if( battleDuration > battleField.getTime(2) || numBuildings[0] == 0 || numBuildings[1] == 0 )
+
+		if( numBuildings[0] == 0 || numBuildings[1] == 0 )
+		{
+			end(numBuildings, battleDuration);
+			return;
+		}
+
+		if( ( battleDuration > battleField.getTime(3) && !isQuest ) || ( battleDuration > battleField.getTime(2) && isQuest ) )
 			end(numBuildings, battleDuration);
 	}
 
 	private void end(int[] numBuildings, double battleDuration)
 	{
 		setState( STATE_BATTLE_ENDED );
-		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+")");
-		
-		scores = new int[2];
-	    for ( int i=0; i < scores.length; i++ )
-	    {
-        	scores[i] = 0;
-	        Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
-	        if( wins )
-	        {
-	        	if( battleDuration < battleField.map.times.get(0) )
-	        		scores[i] = 3;
-	        	else if( battleDuration < battleField.map.times.get(1) )
-	        		scores[i] = 2;
-	        	else
-	        		scores[i] = 1;
-	        }
-	    }
-	    
-	    // balance live battle scores
-	    if( !isQuest )
-		    for (int i=0; i < scores.length; i++)
-		    	if( scores[i] == 0 )
-		    		scores[i] = -scores[i==0?1:0];
+		trace(room.getName(), "ended", "b0:"+numBuildings[0], "b1:"+numBuildings[1], "duration:"+battleDuration, "("+battleField.map.times.get(0)+","+battleField.map.times.get(1)+","+battleField.map.times.get(2)+","+battleField.map.times.get(3)+")");
 
-	    calculateResult();
+		float numOccupied = numBuildings[0] + numBuildings[1] - 1;
+		int[] scores = new int[2];
+		for ( int i=0; i < 2; i++ )
+		{
+			if( isQuest )
+			{
+				scores[i] = 0;
+				Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
+				if( wins )
+				{
+					if( battleDuration < battleField.map.times.get(0) )
+						scores[i] = 3;
+					else if( battleDuration < battleField.map.times.get(1) )
+						scores[i] = 2;
+					else
+						scores[i] = 1;
+				}
+			}
+			else
+			{
+				scores[i] = Math.round( Math.max(0, numBuildings[i] - 1) * 3 / numOccupied );
+				trace(scores[i],  Math.max(0, numBuildings[i] - 1) * 3, numOccupied);
+			}
+		}
+
+	    calculateResult(scores, numBuildings);
 		close();
 		if( isQuest )
 			BattleUtils.getInstance().removeRoom(room);
 	}
 
-	private void calculateResult()
+	private void calculateResult(int[] scores, int[] numBuildings)
 	{
 		DBUtils dbUtils = DBUtils.getInstance();
 		SFSArray outcomesSFSData = new SFSArray();
@@ -379,9 +389,8 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putText("name", game.player.nickName);
 			outcomeSFS.putInt("score", scores[i]);
 
-			outcomesList[i] = Outcome.get( game, battleField.map, scores[i] );
-
-			//trace("isQuest", isQuest, scores[i]);
+			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], (float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
+			trace("i:", i, "score:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
 			if( isQuest )
 			{
 				if( game.player.isBot() )
@@ -407,7 +416,7 @@ public class BattleRoom extends SFSExtension
 					updateMap.set(outk[r], outcomesList[i].get(outk[r]));
 				else
 					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
-				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
+				trace(r, outk[r],outcomesList[i].get(outk[r]) );
 
 				outcomeSFS.putInt(outk[r]+"", outcomesList[i].get(outk[r]));
 				r ++;
