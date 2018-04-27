@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.TowerExtension;
+import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -42,7 +43,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 		if( !game.player.nickName.equals("guest") )
 		{
 			ExchangeItem ei = new ExchangeItem(-1, ResourceType.CURRENCY_HARD, 100, -1, -1, 1, 0);
-			if( !(((TowerExtension) getParentExtension()).exchangeHandler).exchange(game, ei, 0, 0) )
+			if( !ExchangeManager.getInstance().process(game, ei, 0, 0) )
 			{
 				params.putBool("succeed", false);
 				params.putInt("response", RESPONSE_NOT_ENOUG_REQUIREMENTS);
