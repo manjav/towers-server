@@ -25,8 +25,6 @@ import java.time.Instant;
  */
 public class TowerExtension extends SFSExtension
 {
-	public ExchangeHandler exchangeHandler;
-
 	public void init()
     {
 		// Add user server handlers
@@ -50,8 +48,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.SELECT_NAME, SelectNameRequestHandler.class);
 
 		// Add exchange handler
-		exchangeHandler = new ExchangeHandler();
-		addRequestHandler(Commands.EXCHANGE, exchangeHandler);
+		addRequestHandler(Commands.EXCHANGE, ExchangeHandler.class);
 		
         // Add socials open authentication handler
 		addRequestHandler(Commands.OAUTH, OauthHandler.class);

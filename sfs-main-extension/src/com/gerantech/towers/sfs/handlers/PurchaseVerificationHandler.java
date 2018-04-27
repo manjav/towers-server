@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.TowerExtension;
+import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
@@ -108,9 +109,8 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			return;
 		}
 
-		ExchangeHandler exchangeHandler = ((TowerExtension) getParentExtension()).exchangeHandler;
 		int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
-		if( !exchangeHandler.exchange(game, item, 0, 0) )
+		if( !ExchangeManager.getInstance().process(game, item, 0, 0) )
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", "error in exchange");
