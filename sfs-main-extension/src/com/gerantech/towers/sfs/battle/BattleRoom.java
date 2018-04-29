@@ -58,6 +58,7 @@ public class BattleRoom extends SFSExtension
 	private boolean isQuest;
 	private boolean singleMode;
 	private long buildingsUpdatedAt;
+	private long clientTimeUpdatedAt;
 	private ISFSObject stickerParams;
 	private ArrayList<Game> registeredPlayers;
 
@@ -172,6 +173,13 @@ public class BattleRoom extends SFSExtension
 				reservedTypes[i] = b.type;
 				reservedLevels[i] = b.get_level();
 			}
+		}
+
+		// update client time every 5 seconds
+		if( battleField.now - clientTimeUpdatedAt >= 5000 )
+		{
+			vars.addLong(battleField.now);
+			clientTimeUpdatedAt = battleField.now;
 		}
 
 		// Set variables
