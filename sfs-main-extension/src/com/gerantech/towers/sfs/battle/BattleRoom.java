@@ -142,7 +142,8 @@ public class BattleRoom extends SFSExtension
 				if( battleField.now - buildingsUpdatedAt >= 500 )
 				{
 					updateReservesData(battleDuration);
-					pokeBot();
+					if( battleField.getDuration() > 3 )
+					    pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
 				checkEnding(battleDuration);
