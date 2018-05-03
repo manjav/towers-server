@@ -179,8 +179,11 @@ public class BattleRoom extends SFSExtension
 		// update client time every 5 seconds
 		if( battleField.now - clientTimeUpdatedAt >= 5000 )
 		{
-			vars.addLong(battleField.now);
 			clientTimeUpdatedAt = battleField.now;
+			if( singleMode && battleField.games.get(0).appVersion >= 2900 )
+				vars.addLong(battleField.now);
+			else if( battleField.games.get(0).appVersion >= 2900 && battleField.games.get(1).appVersion >= 2900)
+				vars.addLong(battleField.now);
 		}
 
 		// Set variables
@@ -372,8 +375,8 @@ public class BattleRoom extends SFSExtension
 			}
 			else
 			{
-				scores[i] = Math.round( Math.max(0, numBuildings[i] - 1) * 3 / numOccupied );
-				trace(scores[i],  Math.max(0, numBuildings[i] - 1) * 3, numOccupied);
+				scores[i] = (int) Math.floor( Math.max(0, numBuildings[i] - 1) * 3 / numOccupied );
+				//trace(scores[i],  Math.max(0, numBuildings[i] - 1) * 3, numOccupied);
 			}
 		}
 
@@ -399,7 +402,7 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putInt("score", scores[i]);
 
 			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], (float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
-			trace("i:", i, "score:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
+			//trace("i:", i, "score:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
 			if( isQuest )
 			{
 				if( game.player.isBot() )
@@ -425,7 +428,7 @@ public class BattleRoom extends SFSExtension
 					updateMap.set(outk[r], outcomesList[i].get(outk[r]));
 				else
 					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
-				trace(r, outk[r],outcomesList[i].get(outk[r]) );
+				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
 
 				outcomeSFS.putInt(outk[r]+"", outcomesList[i].get(outk[r]));
 				r ++;

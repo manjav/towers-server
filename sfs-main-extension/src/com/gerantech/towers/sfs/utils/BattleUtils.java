@@ -69,15 +69,16 @@ public class BattleUtils
 
         Map<Object, Object> roomProperties = new HashMap<>();
 
+        int arena = 0;
         if( !isQuest )
         {
-            Arena arena = game.arenas.get(game.player.get_arena(game.player.get_point()));
-            boolean tutorMode = game.player.tutorialMode == 1 && game.player.get_battleswins() < 2;
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena.index * 100 + (arena.index == 0 && !tutorMode ? 2 : 0), (arena.index + 1) * 100);
+            arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
+            boolean tutorMode = game.player.get_battleswins() < 2;
+            List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? 2 : 0), (arena + 1) * 100);
             index = tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
-            roomProperties.put("arena", arena.index);// ===> is temp
+            roomProperties.put("arena", arena);// ===> is temp
         }
         ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isQuest:", isQuest, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
@@ -96,7 +97,7 @@ public class BattleUtils
         }
 
 
-        boolean singleMode = isQuest || game.player.get_battleswins() < 2;
+        boolean singleMode = isQuest || arena == 0;
         roomProperties.put("isQuest", isQuest);
         roomProperties.put("index", index);
         if( hasExtraTime )
