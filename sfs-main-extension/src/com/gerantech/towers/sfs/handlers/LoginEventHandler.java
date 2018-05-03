@@ -40,6 +40,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	public static int UNTIL_MAINTENANCE = 1522626392;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
+	private DBUtils dbUtils;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
@@ -91,6 +92,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			trace("LoginData.coreSize =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>>", CORE_SIZE);
 		}
 
+		dbUtils = DBUtils.getInstance();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		// Create new user ============================================================
 		if( inData.getInt("id") < 0 )
@@ -239,7 +241,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( STARTING_STATE == 0 )
 			STARTING_STATE = 1;
 
-		DBUtils dbUtils = DBUtils.getInstance();
 		// Retrieve player data from db
 		outData.putInt("id", id);
 		outData.putText("name", userData.getText("name"));
@@ -302,14 +303,35 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// create exchanges init data
+		boolean hasSpecials = false;
+		SFSArray newExchanges = new SFSArray();
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
+		for(int i=0; i<exchanges.size(); i++)
+		{
+			element = exchanges.getSFSObject(i);
+			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C20_SPECIALS )
+				hasSpecials = true;
+		}
+		if( !hasSpecials )
+		{
+			addExchangeToDB(ExchangeType.C21_SPECIAL, exchanges, newExchanges);
+			addExchangeToDB(ExchangeType.C22_SPECIAL, exchanges, newExchanges);
+			addExchangeToDB(ExchangeType.C23_SPECIAL, exchanges, newExchanges);
+		}
+		if( newExchanges.size() > 0 )
+		{
+			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
+			for(int i=0; i<newExchanges.size(); i++)
+				query += "('" + newExchanges.getSFSObject(i).getInt("type") + "', '" + initData.id + "', '" + newExchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  newExchanges.getSFSObject(i).getInt("expired_at") + "', '" +  newExchanges.getSFSObject(i).getInt("outcome") + "')" + ( i < newExchanges.size() - 1 ? ", " : ";" );
+			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
+		}
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
 			initData.exchanges.set( element.getInt("type"), new Exchange( element.getInt("type"), element.getInt("num_exchanges"), element.getInt("expired_at"), element.getInt("outcome")));
 		}
 
-		// init core
+			// init core
 		Game game = new Game();
 		game.init(initData);
 		game.player.tutorialMode = outData.getInt("tutorialMode");
@@ -318,11 +340,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- GEM -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 			addExchangeItem(game, exchanges, ExchangeType.C1_HARD, ResourceType.CURRENCY_REAL, 1000,	ResourceType.CURRENCY_HARD,		100 ,	0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C2_HARD, ResourceType.CURRENCY_REAL, 2000,	ResourceType.CURRENCY_HARD, 	300 ,	0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C3_HARD, ResourceType.CURRENCY_REAL, 5000,	ResourceType.CURRENCY_HARD, 	750 ,	0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C4_HARD, ResourceType.CURRENCY_REAL, 10000,	ResourceType.CURRENCY_HARD,		2000,	0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C5_HARD, ResourceType.CURRENCY_REAL, 50000,	ResourceType.CURRENCY_HARD, 	12000,	0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C6_HARD, ResourceType.CURRENCY_REAL, 100000,	ResourceType.CURRENCY_HARD, 	30000,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C2_HARD, ResourceType.CURRENCY_REAL, 2000,	ResourceType.CURRENCY_HARD, 	220 ,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C3_HARD, ResourceType.CURRENCY_REAL, 5000,	ResourceType.CURRENCY_HARD, 	600 ,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C4_HARD, ResourceType.CURRENCY_REAL, 10000,	ResourceType.CURRENCY_HARD,		1500,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C5_HARD, ResourceType.CURRENCY_REAL, 50000,	ResourceType.CURRENCY_HARD, 	8000,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C6_HARD, ResourceType.CURRENCY_REAL, 100000,	ResourceType.CURRENCY_HARD, 	18000,	0, 0);
 
 			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 			addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, ResourceType.CURRENCY_HARD, 20,	ResourceType.CURRENCY_SOFT,		500,	0, 0);
@@ -337,6 +359,18 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		session.setProperty("core", game);
 
+		try {
+		for( ExchangeItem item : game.exchanger.updater.changes )
+			dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomes.keys()[0]);
+		} catch (Exception e) { e.printStackTrace(); }
+
+		// create exchange data
+		SFSArray _exchanges = new SFSArray();
+		for ( ExchangeItem ex : game.exchanger.items.values() )
+			_exchanges.addSFSObject(ExchangeManager.toSFS(ex));
+		outData.putSFSArray("exchanges", _exchanges);
+
+
 		// init and update hazel data
 		IMap<Integer, RankData> users = RankingUtils.getInstance().fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
 		int wb = game.player.resources.exists(ResourceType.BATTLES_COUNT_WEEKLY) ? game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY) : 0;
@@ -345,6 +379,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
+	}
+
+	private void addExchangeToDB(int type, ISFSArray exchanges, SFSArray newExchanges)
+	{
+		SFSObject element = new SFSObject();
+		element.putInt("type", type);
+		element.putInt("num_exchanges", 0);
+		element.putInt("expired_at", 1);
+		element.putInt("outcome", 0);
+		newExchanges.addSFSObject( element );
+		exchanges.addSFSObject( element );
 	}
 
 	private void addExchangeItem(Game game, ISFSArray exchanges, int type, int reqKey, int reqValue, int outKey, int outValue, int numExchanges, int expiredAt)

@@ -2,8 +2,11 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gt.towers.Game;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.SmartFoxServer;
+import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -64,10 +67,48 @@ public class ExchangeManager
         {
             dbUtils.updateResources(game.player, mapChangeCallback.updates);
             dbUtils.insertResources(game.player, mapChangeCallback.inserts);
-            if( item.isBook() )
+            if( item.isBook() || item.category == ExchangeType.C20_SPECIALS )
                 dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
         }
         catch (Exception e) {  e.printStackTrace(); return false; }
         return true;
+    }
+
+    public static SFSObject toSFS(ExchangeItem item)
+    {
+        SFSObject ret = new SFSObject();
+        ret.putInt("type", item.type);
+        ret.putInt("outcome", item.outcome);
+        ret.putInt("expiredAt", item.expiredAt);
+        ret.putInt("numExchanges", item.numExchanges);
+
+        SFSObject sfs;
+        SFSArray elements = new SFSArray();
+        int[] keys = item.outcomes.keys();
+        int len = keys.length - 1;
+        while ( len >= 0 )
+        {
+            sfs = new SFSObject();
+            sfs.putInt("key", keys[len]);
+            sfs.putInt("value", item.outcomes.get(keys[len]));
+            elements.addSFSObject(sfs);
+            len --;
+        }
+        ret.putSFSArray("outcomes", elements);
+
+        elements = new SFSArray();
+        keys = item.requirements.keys();
+        len = keys.length - 1;
+        while ( len >= 0 )
+        {
+            sfs = new SFSObject();
+            sfs.putInt("key", keys[len]);
+            sfs.putInt("value", item.requirements.get(keys[len]));
+            elements.addSFSObject(sfs);
+            len --;
+        }
+        ret.putSFSArray("requirements", elements);
+
+        return ret;
     }
 }
