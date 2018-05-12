@@ -44,7 +44,7 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         try {
             infractions = db.executeQuery(query, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        if( infractions != null &&  infractions.size() > 2 )
+        if( infractions != null &&  infractions.size() > 4 )
         {
             sendResponse(sender, params, 3);
             return;
