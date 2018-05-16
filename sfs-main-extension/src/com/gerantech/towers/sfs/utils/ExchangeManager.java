@@ -68,7 +68,7 @@ public class ExchangeManager
             dbUtils.updateResources(game.player, mapChangeCallback.updates);
             dbUtils.insertResources(game.player, mapChangeCallback.inserts);
             if( item.isBook() || item.category == ExchangeType.C20_SPECIALS )
-                dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcome);
+                dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr);
         }
         catch (Exception e) {  e.printStackTrace(); return false; }
         return true;
