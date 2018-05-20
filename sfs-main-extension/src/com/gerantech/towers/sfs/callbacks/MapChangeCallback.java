@@ -12,19 +12,22 @@ public class MapChangeCallback implements IValueChangeCallback
 {
     public IntIntMap inserts = new IntIntMap();
     public IntIntMap updates = new IntIntMap();
+    public IntIntMap all = new IntIntMap();
 
     @Override
     public void insert(int key, int oldValue, int newValue)
     {
-        if( !inserts.exists(key) )
-            inserts.set(key, 0);
+       // if( !inserts.exists(key) )
+            inserts.increase(key, newValue - oldValue);
+        all.increase(key, newValue - oldValue);
     }
 
     @Override
     public void update(int key, int oldValue, int newValue)
     {
-        if( !updates.exists(key) )
-            updates.set(key, 0);
+       // if( !updates.exists(key) )
+            updates.increase(key, newValue - oldValue);
+        all.increase(key, newValue - oldValue);
     }
 
     @Override

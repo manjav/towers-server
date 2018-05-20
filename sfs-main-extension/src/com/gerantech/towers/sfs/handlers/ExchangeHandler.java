@@ -32,7 +32,8 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int now = (int)Instant.now().getEpochSecond();
 
 		// call exchanger and update database
-		boolean succeed = ExchangeManager.getInstance().process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
+		ExchangeManager manager = ExchangeManager.getInstance();
+		boolean succeed = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
 		params.putBool("succeed", succeed);
 		params.putInt("now", now);
 		if( !succeed )
@@ -43,19 +44,19 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 		// return chest rewards as params
 		ExchangeItem item = game.exchanger.items.get(type);
-		if( item.outcomes != null )
+
+		SFSArray sfsRewards = new SFSArray();
+		int[] outKeys = manager.mapChangeCallback.all.keys();
+		for (int i : outKeys)
 		{
-			SFSArray sfsRewards = new SFSArray();
-			int[] outKeys = item.outcomes.keys();
-    		for (int i : outKeys)
-    		{
-	    		SFSObject so = new SFSObject();
-	    		so.putInt("t", i);
-	    		so.putInt("c", item.outcomes.get(i));
-	    		sfsRewards.addSFSObject( so );
-    		}
-    		params.putSFSArray("rewards", sfsRewards);
+			SFSObject so = new SFSObject();
+			so.putInt("t", i);
+			so.putInt("c",  manager.mapChangeCallback.all.get(i));
+			sfsRewards.addSFSObject( so );
 		}
+		params.putSFSArray("rewards", sfsRewards);
+		manager.mapChangeCallback = null;
+
 		// return new outcome
 		if( item.category == ExchangeType.C110_BATTLES )
 			params.putInt("nextOutcome", item.outcome);

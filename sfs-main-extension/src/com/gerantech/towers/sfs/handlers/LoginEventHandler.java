@@ -302,6 +302,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchanges init data
 		boolean hasSpecials = false;
+		boolean hasBundles = false;
 		SFSArray newExchanges = new SFSArray();
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
 		for(int i=0; i<exchanges.size(); i++)
@@ -309,6 +310,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			element = exchanges.getSFSObject(i);
 			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C20_SPECIALS )
 				hasSpecials = true;
+			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C30_BUNDLES )
+				hasBundles = true;
 		}
 		if( !hasSpecials )
 		{
@@ -316,11 +319,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addExchangeToDB(ExchangeType.C22_SPECIAL, exchanges, newExchanges);
 			addExchangeToDB(ExchangeType.C23_SPECIAL, exchanges, newExchanges);
 		}
+		if( inData.getInt("appver") >= 3000 && !hasBundles )
+		{
+			addExchangeToDB(ExchangeType.C31_BUNDLE, exchanges, newExchanges);
+			addExchangeToDB(ExchangeType.C32_BUNDLE, exchanges, newExchanges);
+		}
 		if( newExchanges.size() > 0 )
 		{
 			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
 			for(int i=0; i<newExchanges.size(); i++)
-				query += "('" + newExchanges.getSFSObject(i).getInt("type") + "', '" + initData.id + "', '" + newExchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  newExchanges.getSFSObject(i).getInt("expired_at") + "', '" +  newExchanges.getSFSObject(i).getInt("outcome") + "')" + ( i < newExchanges.size() - 1 ? ", " : ";" );
+				query += "('" + newExchanges.getSFSObject(i).getInt("type") + "', '" + initData.id + "', '" + newExchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  newExchanges.getSFSObject(i).getInt("expired_at") + "', '" +  newExchanges.getSFSObject(i).getText("outcome") + "')" + ( i < newExchanges.size() - 1 ? ", " : ";" );
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
 		}
 		for(int i=0; i<exchanges.size(); i++)
@@ -345,9 +353,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addExchangeItem(game, exchanges, ExchangeType.C6_HARD, "1101:100000",	"1003:18000",	0, 0);
 
 			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-			addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, "1003:20", 	"1002:500",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, "1003:75", 	"1002:2000",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:350",	"1002:10000"	,	0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, "1003:" + Exchanger.softToHard(500) * 0.9, 	"1002:500",		0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, "1003:" + Exchanger.softToHard(2000) * 0.8, 	"1002:2000",		0, 0);
+			addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(10000) * 0.7,	"1002:10000"	,	0, 0);
 
 			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 			addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:0", Exchanger.getChestType(ExchangeType.C121_MAGIC) + ":0", 0, 0);
@@ -384,7 +392,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		element.putInt("type", type);
 		element.putInt("num_exchanges", 0);
 		element.putInt("expired_at", 1);
-		element.putInt("outcome", 0);
+		element.putText("outcome", "0");
 		newExchanges.addSFSObject( element );
 		exchanges.addSFSObject( element );
 	}

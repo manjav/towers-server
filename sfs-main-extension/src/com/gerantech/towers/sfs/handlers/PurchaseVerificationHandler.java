@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -109,13 +110,16 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			return;
 		}
 
-		int item = Integer.parseInt(productID.substring(productID.length()-1, productID.length() ));
-		if( !ExchangeManager.getInstance().process(game, item, 0, 0) )
+		int item = Integer.parseInt(productID.split("_")[1]);
+		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD  )
 		{
-			resObj.putBool("success", false);
-			resObj.putText("message", "error in exchange");
-			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
-			return;
+			if( !ExchangeManager.getInstance().process(game, item, 0, 0) )
+			{
+				resObj.putBool("success", false);
+				resObj.putText("message", "error in exchange");
+				trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
+				return;
+			}
 		}
 
 		resObj.putBool("success", true);

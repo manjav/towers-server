@@ -16,6 +16,7 @@ import com.smartfoxserver.v2.extensions.SFSExtension;
 public class ExchangeManager
 {
     private final SFSExtension ext;
+    public MapChangeCallback mapChangeCallback;
 
     public ExchangeManager() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
@@ -41,7 +42,7 @@ public class ExchangeManager
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
-        MapChangeCallback mapChangeCallback = new MapChangeCallback();
+        mapChangeCallback = new MapChangeCallback();
         game.player.resources.changeCallback = mapChangeCallback;
         Boolean succeed = false;
         try {
@@ -59,7 +60,7 @@ public class ExchangeManager
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
 
-        ext.trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.keys().length, " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
+        ext.trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.toString(), " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
         // Run db queries
         DBUtils dbUtils = DBUtils.getInstance();

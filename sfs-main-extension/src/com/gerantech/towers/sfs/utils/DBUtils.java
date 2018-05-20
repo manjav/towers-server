@@ -18,7 +18,9 @@ import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by ManJav on 12/4/2017.
@@ -59,25 +61,29 @@ public class DBUtils
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
-        if(keyLen == 0) {
+        List<Integer> res = new ArrayList();
+        for (int i = 0; i < keyLen; i++)
+            if( !ResourceType.isBook(keys[i]) )
+                res.add(keys[i]);
+
+        keyLen = res.size();
+        if( keyLen == 0 )
             return;
-        }
 
         String query = "Update resources SET count = CASE ";
         boolean hasRankFields = false;
 
-        keyLen = keys.length;
         for (int i = 0; i < keyLen; i++)
         {
             if( !hasRankFields )
-                hasRankFields = keys[i]== ResourceType.POINT || keys[i]==ResourceType.BATTLES_COUNT_WEEKLY;
+                hasRankFields = res.get(i) == ResourceType.POINT || res.get(i) == ResourceType.BATTLES_COUNT_WEEKLY;
 
-            query += "WHEN type = " + keys[i] + " AND player_id = " + player.id + " THEN " + player.resources.get(keys[i]) + " ";
+            query += "WHEN type = " + res.get(i) + " AND player_id = " + player.id + " THEN " + player.resources.get(res.get(i)) + " ";
         }
         query += "ELSE count END WHERE type IN (";
 
         for (int i = 0; i < keyLen; i++)
-            query += keys[i] + (i < keyLen-1 ? "," : "");
+            query += res.get(i) + (i < keyLen-1 ? "," : "");
 
         query += ") AND player_id IN (";
 
@@ -109,17 +115,25 @@ public class DBUtils
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
+        List<Integer> res = new ArrayList();
+        for (int i = 0; i < keyLen; i++)
+            if( !ResourceType.isBook(keys[i]) )
+                res.add(keys[i]);
+
+        keyLen = res.size();
         if( keyLen == 0 )
-            return ;
+            return;
 
         String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
-        keyLen = keys.length;
         for (int i = 0; i < keyLen; i++)
         {
-            query += "('" + player.id + "', '" + keys[i] + "', '" + player.resources.get(keys[i]) + "', '" + (ResourceType.isBuilding(keys[i])?player.buildings.get(keys[i]).get_level():0) + "')";
+            if( ResourceType.isBook(res.get(i)) )
+                continue;
+            query += "('" + player.id + "', '" + res.get(i) + "', '" + player.resources.get(res.get(i)) + "', '" + (ResourceType.isBuilding(res.get(i))?player.buildings.get(res.get(i)).get_level():0) + "')";
             query += i < keyLen - 1 ? ", " : ";";
         }
-
+        if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
+            return;
         db.executeInsert(query, new Object[] {});
         ext.trace(query);
     }
