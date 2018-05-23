@@ -49,12 +49,16 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int[] outKeys = manager.mapChangeCallback.all.keys();
 		for (int i : outKeys)
 		{
+			if( manager.mapChangeCallback.all.get(i) <= 0 )
+				continue;
+
 			SFSObject so = new SFSObject();
 			so.putInt("t", i);
 			so.putInt("c",  manager.mapChangeCallback.all.get(i));
 			sfsRewards.addSFSObject( so );
 		}
-		params.putSFSArray("rewards", sfsRewards);
+		if( sfsRewards.size() > 0 )
+			params.putSFSArray("rewards", sfsRewards);
 		manager.mapChangeCallback = null;
 
 		// return new outcome
