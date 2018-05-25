@@ -149,9 +149,30 @@ public class DBUtils
     }
     public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr) throws Exception
     {
-        String query = "UPDATE `exchanges` SET `expired_at`='" + expireAt + "', `num_exchanges`='" + numExchanges + "', `outcome`='" + outcomesStr + "' WHERE `type`=" + type + " AND `player_id`=" + playerId + ";";
-        // ext.trace(query);
-        db.executeUpdate(query, new Object[] {});
+        String query = "SELECT insateExchange(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "')";
+        db.executeQuery(query, new Object[] {});
+
+        /*
+        DROP FUNCTION IF EXISTS insateExchange;
+
+        DELIMITER $$
+        CREATE FUNCTION insateExchange (_type INT(5), _playerId INT(11), _numExchanges INT(4), _expiredAt INT(11), _outcomeStr VARCHAR(32)) RETURNS INT
+        BEGIN
+            DECLARE var_resp INT DEFAULT 0;
+
+            IF EXISTS (SELECT * FROM exchanges WHERE type=_type AND player_id=_playerId) THEN
+                UPDATE exchanges SET num_exchanges=_numExchanges, expired_at=_expiredAt, outcome=_outcomeStr WHERE type=_type AND player_id=_playerId;
+                SET var_resp = 1;
+            ELSE
+                INSERT INTO exchanges (type, player_id, num_exchanges, expired_at, outcome) VALUES (_type, _playerId, _numExchanges, _expiredAt, _outcomeStr);
+                SET var_resp = 2;
+            END IF;
+
+            RETURN var_resp;
+
+        END $$
+        DELIMITER ;
+        */
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   QUESTS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
