@@ -149,14 +149,14 @@ public class DBUtils
     }
     public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr) throws Exception
     {
-        String query = "SELECT insateExchange(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "')";
+        String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "')";
         db.executeQuery(query, new Object[] {});
 
         /*
-        DROP FUNCTION IF EXISTS insateExchange;
+        DROP FUNCTION IF EXISTS _func_exchanges;
 
         DELIMITER $$
-        CREATE FUNCTION insateExchange (_type INT(5), _playerId INT(11), _numExchanges INT(4), _expiredAt INT(11), _outcomeStr VARCHAR(32)) RETURNS INT
+        CREATE FUNCTION _func_exchanges (_type INT(5), _playerId INT(11), _numExchanges INT(4), _expiredAt INT(11), _outcomeStr VARCHAR(32)) RETURNS INT
         BEGIN
             DECLARE var_resp INT DEFAULT 0;
 
