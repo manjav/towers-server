@@ -37,7 +37,7 @@ import java.time.Instant;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1526482774;
+	public static int UNTIL_MAINTENANCE = 1527406499;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 	private DBUtils dbUtils;
@@ -128,7 +128,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			int playerId = 0;
 			try {
 				playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
-				outData.putUtfString(SFSConstants.NEW_LOGIN_NAME, playerId+"");
+				outData.putUtfString(SFSConstants.NEW_LOGIN_NAME, playerId + "");
 			} catch (SQLException e) { e.printStackTrace(); }
 
 			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -155,48 +155,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			dbManager.executeInsert(query, new Object[] {});
 			} catch (SQLException e) { e.printStackTrace(); }
 
-			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL SHOP ITEMS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-			SFSArray exchanges = new SFSArray();
-			for (int i=0; i<loginData.exchanges.size(); i++)
-			{
-				int t = loginData.exchanges.get(i);
-				int ct = ExchangeType.getCategory(t);
-				SFSObject so = new SFSObject();
-				so.putInt("type", t);
-				so.putInt("num_exchanges", 0);
-				so.putInt("expired_at", 0);
 
-				// set outcome :
-				int outcome = 0;
-				if( ct == ExchangeType.C110_BATTLES )
-				{
-					outcome = Exchanger.getBattleChestType(0);
-				}
-				else if( ct == ExchangeType.C100_FREES )
-				{
-					outcome = Exchanger.getChestType(t);
-					if( ct == ExchangeType.C100_FREES )
-					{
-						if( t == ExchangeType.C101_FREE )
-							so.putInt("expired_at", now);
-						else
-							so.putInt("expired_at", now + ExchangeType.getCooldown(outcome));
-					}
-				}
-				so.putText("outcome", outcome + "");
-
-				exchanges.addSFSObject( so );
-			}
-
-			query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
-			for(int i=0; i<exchanges.size(); i++)
-			{
-				query += "('" + exchanges.getSFSObject(i).getInt("type") + "', '" + playerId + "', '" + exchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  exchanges.getSFSObject(i).getInt("expired_at") + "', '" +  exchanges.getSFSObject(i).getText("outcome") + "')" ;
-				query += i<exchanges.size()-1 ? ", " : ";";
-			}
-			try {
-			dbManager.executeInsert(query, new Object[] {});
-			} catch (SQLException e) { e.printStackTrace(); }
 			session.setProperty("joinedRoomId", -1);
 
 			// send data to user
@@ -206,7 +165,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putText("password", password);
 			outData.putSFSArray("resources", resources);
 			outData.putSFSArray("quests", new SFSArray());
-			outData.putSFSArray("exchanges", exchanges);
+			outData.putSFSArray("exchanges", new SFSArray());
 			initiateCore(session, inData, outData, loginData);
 
 			// add udid and device as account id for restore players
@@ -300,30 +259,27 @@ public class LoginEventHandler extends BaseServerEventHandler
 			initData.quests.set(element.getInt("index"), element.getInt("score"));
 		}
 
+
 		// create exchanges init data
-		boolean hasSpecials = false;
-		boolean hasBundles = false;
-		SFSArray newExchanges = new SFSArray();
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
-		for(int i=0; i<exchanges.size(); i++)
+		boolean contained;
+		SFSArray newExchanges = new SFSArray();
+		for (int l=0; l<loginData.exchanges.size(); l++)
 		{
-			element = exchanges.getSFSObject(i);
-			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C20_SPECIALS )
-				hasSpecials = true;
-			if( ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C30_BUNDLES )
-				hasBundles = true;
+			contained = false;
+			for(int i=0; i<exchanges.size(); i++)
+			{
+				element = exchanges.getSFSObject(i);
+				if( element.getInt("type") == loginData.exchanges.get(l) )
+				{
+					contained = true;
+					break;
+				}
+			}
+			if( !contained )
+				addExchangeToDB(loginData.exchanges.get(l), exchanges, newExchanges);
 		}
-		if( !hasSpecials )
-		{
-			addExchangeToDB(ExchangeType.C21_SPECIAL, exchanges, newExchanges);
-			addExchangeToDB(ExchangeType.C22_SPECIAL, exchanges, newExchanges);
-			addExchangeToDB(ExchangeType.C23_SPECIAL, exchanges, newExchanges);
-		}
-		if( inData.getInt("appver") >= 3000 && !hasBundles )
-		{
-			addExchangeToDB(ExchangeType.C31_BUNDLE, exchanges, newExchanges);
-			addExchangeToDB(ExchangeType.C32_BUNDLE, exchanges, newExchanges);
-		}
+
 		if( newExchanges.size() > 0 )
 		{
 			String query = "INSERT INTO exchanges (`type`, `player_id`, `num_exchanges`, `expired_at`, `outcome`) VALUES ";
@@ -331,6 +287,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				query += "('" + newExchanges.getSFSObject(i).getInt("type") + "', '" + initData.id + "', '" + newExchanges.getSFSObject(i).getInt("num_exchanges") + "', '" +  newExchanges.getSFSObject(i).getInt("expired_at") + "', '" +  newExchanges.getSFSObject(i).getText("outcome") + "')" + ( i < newExchanges.size() - 1 ? ", " : ";" );
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
 		}
+
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
@@ -340,28 +297,27 @@ public class LoginEventHandler extends BaseServerEventHandler
 			// init core
 		Game game = new Game();
 		game.init(initData);
+		int arena = game.player.get_arena(0);
 		game.player.tutorialMode = outData.getInt("tutorialMode");
 		game.player.hasQuests = outData.getBool("hasQuests");
-		if( inData.getInt("appver") >= 2800 )
-		{
-			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- GEM -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-			addExchangeItem(game, exchanges, ExchangeType.C1_HARD, "1101:1000",		"1003:100",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C2_HARD, "1101:2000",		"1003:220" ,		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C3_HARD, "1101:5000",		"1003:600" ,		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C4_HARD, "1101:10000",		"1003:1500",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C5_HARD, "1101:50000",		"1003:8000",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C6_HARD, "1101:100000",	"1003:18000",	0, 0);
 
-			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-			addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, "1003:" + Exchanger.softToHard(500) * 0.9, 	"1002:500",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, "1003:" + Exchanger.softToHard(2000) * 0.8, 	"1002:2000",		0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(10000) * 0.7,	"1002:10000"	,	0, 0);
+		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- GEM -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+		addExchangeItem(game, exchanges, ExchangeType.C1_HARD, "1101:1000",		"1003:100",		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C2_HARD, "1101:2000",		"1003:220" ,		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C3_HARD, "1101:5000",		"1003:600" ,		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C4_HARD, "1101:10000",		"1003:1500",		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C5_HARD, "1101:50000",		"1003:8000",		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C6_HARD, "1101:100000",	"1003:18000",	0, 0);
 
-			// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-			addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:0", Exchanger.getChestType(ExchangeType.C121_MAGIC) + ":0", 0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, "1003:0", Exchanger.getChestType(ExchangeType.C122_MAGIC) + ":0", 0, 0);
-			addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, "1003:0", Exchanger.getChestType(ExchangeType.C123_MAGIC) + ":0", 0, 0);
-		}
+		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+		addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, "1003:" + Exchanger.softToHard(500) * 0.9, 	"1002:500",		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, "1003:" + Exchanger.softToHard(2000) * 0.8, 	"1002:2000",		0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(10000) * 0.7,	"1002:10000"	,	0, 0);
+
+		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+		addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:" + ExchangeType.getHardRequierement(ExchangeType.BOOK_B_57_TREASURE),	ExchangeType.BOOK_B_57_TREASURE	+ ":" + arena, 0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, "1003:" + ExchangeType.getHardRequierement(ExchangeType.BOOK_B_58_AMBER),		ExchangeType.BOOK_B_58_AMBER		+ ":" + arena, 0, 0);
+		addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, "1003:" + ExchangeType.getHardRequierement(ExchangeType.BOOK_B_59_DRAGON),		ExchangeType.BOOK_B_59_DRAGON	+ ":" + arena, 0, 0);
 
 		session.setProperty("core", game);
 
@@ -392,7 +348,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		element.putInt("type", type);
 		element.putInt("num_exchanges", 0);
 		element.putInt("expired_at", 1);
-		element.putText("outcome", "0");
+		element.putText("outcome", "");
 		newExchanges.addSFSObject( element );
 		exchanges.addSFSObject( element );
 	}

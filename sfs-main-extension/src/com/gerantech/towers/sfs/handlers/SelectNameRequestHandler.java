@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.TowerExtension;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.db.IDBManager;
@@ -42,7 +43,8 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 
 		if( !game.player.nickName.equals("guest") )
 		{
-			if( !ExchangeManager.getInstance().process(game, game.exchanger.items.get(ExchangeType.C191_RENAME), 0, 0) )
+			int res = ExchangeManager.getInstance().process(game, game.exchanger.items.get(ExchangeType.C42_RENAME), 0, 0);
+			if( res != MessageTypes.RESPONSE_SUCCEED )
 			{
 				params.putInt("response", RESPONSE_NOT_ENOUG_REQUIREMENTS);
 				send(Commands.SELECT_NAME, params, sender);

@@ -6,6 +6,7 @@ import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -113,7 +114,8 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		int item = Integer.parseInt(productID.split("_")[1]);
 		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD  )
 		{
-			if( !ExchangeManager.getInstance().process(game, item, 0, 0) )
+			int res = ExchangeManager.getInstance().process(game, item, 0, 0);
+			if( res != MessageTypes.RESPONSE_SUCCEED )
 			{
 				resObj.putBool("success", false);
 				resObj.putText("message", "error in exchange");

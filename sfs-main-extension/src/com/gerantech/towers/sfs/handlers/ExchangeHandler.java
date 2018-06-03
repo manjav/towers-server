@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -14,6 +15,7 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
+import sun.plugin2.message.Message;
 
 /**
  * @author ManJav
@@ -33,10 +35,10 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 		// call exchanger and update database
 		ExchangeManager manager = ExchangeManager.getInstance();
-		boolean succeed = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
-		params.putBool("succeed", succeed);
+		int response = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
+		params.putInt("response", response);
 		params.putInt("now", now);
-		if( !succeed )
+		if( response != MessageTypes.RESPONSE_SUCCEED )
 		{
 			send("exchange", params, sender);
 			return;

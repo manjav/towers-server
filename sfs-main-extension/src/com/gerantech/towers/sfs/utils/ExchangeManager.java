@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.utils;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -23,18 +24,19 @@ public class ExchangeManager
     }
     public static ExchangeManager getInstance() { return new ExchangeManager(); }
 
-    public boolean process(Game game, int type, int now, int hardsConfimed)
+    public int process(Game game, int type, int now, int hardsConfimed)
     {
         ExchangeItem item = game.exchanger.items.get(type);
         if( item == null )
         {
             ext.trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
-            return false;
+            return MessageTypes.RESPONSE_NOT_FOUND
+                    ;
         }
         return process(game, item, now, hardsConfimed);
     }
 
-    public boolean process(Game game, ExchangeItem item, int now, int hardsConfimed)
+    public int process(Game game, ExchangeItem item, int now, int hardsConfimed)
     {
 		/*String log = "";
 		int[] keys = game.player.resources.keys();
@@ -44,13 +46,13 @@ public class ExchangeManager
 
         mapChangeCallback = new MapChangeCallback();
         game.player.resources.changeCallback = mapChangeCallback;
-        Boolean succeed = false;
+        int response = -10;
         try {
-            succeed = game.exchanger.exchange(item, now, hardsConfimed);
+            response = game.exchanger.exchange(item, now, hardsConfimed);
         } catch (Exception e) { e.printStackTrace(); }
         game.player.resources.changeCallback = null;
-        if( !succeed )
-            return false;
+        if( response != MessageTypes.RESPONSE_SUCCEED)
+            return response;
 
         // logs .....
 		/*int[] inserts = mapChangeCallback.inserts.keys();
@@ -60,7 +62,7 @@ public class ExchangeManager
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
 
-        ext.trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.toString(), " ,hardsConfimed:", hardsConfimed, " ,succeed:", succeed, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
+        ext.trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.toString(), " ,hardsConfimed:", hardsConfimed, " ,response:", response, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
         // Run db queries
         DBUtils dbUtils = DBUtils.getInstance();
@@ -71,8 +73,8 @@ public class ExchangeManager
             if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
                 dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr);
         }
-        catch (Exception e) {  e.printStackTrace(); return false; }
-        return true;
+        catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
+        return response;
     }
 
     public static SFSObject toSFS(ExchangeItem item)
