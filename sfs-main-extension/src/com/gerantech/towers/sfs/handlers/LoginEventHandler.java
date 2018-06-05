@@ -291,6 +291,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
+			element.putInt("num_exchanges", ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C100_FREES && element.getInt("expired_at") < now ? 0 : element.getInt("num_exchanges"));
 			initData.exchanges.set( element.getInt("type"), new Exchange( element.getInt("type"), element.getInt("num_exchanges"), element.getInt("expired_at"), element.getText("outcome")));
 		}
 
