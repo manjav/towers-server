@@ -63,10 +63,6 @@ public class ExchangeHandler extends BaseClientRequestHandler
 			params.putSFSArray("rewards", sfsRewards);
 		manager.mapChangeCallback = null;
 
-		// return new outcome
-		if( item.category == ExchangeType.C110_BATTLES )
-			params.putInt("nextOutcome", item.outcome);
-
 		send("exchange", params, sender);
 	}
 }

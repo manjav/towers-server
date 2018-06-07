@@ -90,7 +90,6 @@ public class BattleRoom extends SFSExtension
 		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
-		final boolean inTutorial = false;
 		registeredPlayers = new ArrayList();
 		for (User u: players)
 			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
@@ -417,29 +416,41 @@ public class BattleRoom extends SFSExtension
 				}
 			}
 
+			if( !game.player.isBot() )
+				game.player.addResources(outcomesList[i]);
+
 			IntIntMap insertMap = new IntIntMap();
 			IntIntMap updateMap = new IntIntMap();
+			ExchangeItem earnedBook = null;
 
-			int[] outk = outcomesList[i].keys();
-			int r = 0;
-			while ( r < outk.length )
+			int[] ouyKeys = outcomesList[i].keys();
+			for ( int r : ouyKeys )
 			{
-				if ( game.player.resources.exists(outk[r]) )
-					updateMap.set(outk[r], outcomesList[i].get(outk[r]));
+				if( game.player.resources.exists(r) )
+					updateMap.set(r, outcomesList[i].get(r));
 				else
-					insertMap.set(outk[r], outcomesList[i].get(outk[r]));
-				//trace(r, outk[r],outcomesList[i].get(outk[r]) );
+					insertMap.set(r, outcomesList[i].get(r));
+				trace(r, outcomesList[i].get(r) );
 
-				outcomeSFS.putInt(outk[r]+"", outcomesList[i].get(outk[r]));
-				r ++;
+				// update exchange
+				if( ResourceType.isBook(r) && !game.player.isBot() )
+				{
+					earnedBook = game.exchanger.items.get(outcomesList[i].get(r));
+					earnedBook.outcomesStr = r + ":" + game.player.get_arena(0);
+				}
+
+				outcomeSFS.putInt(r+"", outcomesList[i].get(r));
 			}
+
 			outcomesSFSData.addSFSObject(outcomeSFS);
 
+			// update DB
 			if( !game.player.isBot() )
 			{
-				game.player.addResources(outcomesList[i]);
 				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
 				try {
+					if( earnedBook != null )
+						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr);
 					dbUtils.updateExchange(keysItem.type, game.player.id, 0, keysItem.numExchanges, "");
 					dbUtils.updateResources(game.player, updateMap);
 					dbUtils.insertResources(game.player, insertMap);

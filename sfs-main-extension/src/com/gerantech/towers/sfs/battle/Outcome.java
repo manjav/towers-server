@@ -6,6 +6,9 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ManJav on 2/13/2018.
@@ -45,7 +48,7 @@ public class Outcome
                 // keys
                 ret.set(ResourceType.KEY, diffScore);
 
-                // softs
+                // soft-currency
                 ret.set(ResourceType.CURRENCY_SOFT, 10 * diffScore + field.index * 2);
             }
         }
@@ -58,7 +61,7 @@ public class Outcome
             else if( ratio < 1 )
                 point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
-            // for new players
+            // for novice
             if( point < 0 && game.player.resources.get(ResourceType.POINT) < -point)
                 point = 0;
             ret.set(ResourceType.POINT, point );
@@ -67,12 +70,25 @@ public class Outcome
                 return ret;
 
             int arena = game.player.get_arena(0);
+            ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
+            boolean hasBookReward = false;
 
-            // softs
+            // soft-currency
             if( point > 0 )
             {
                 ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
                 ret.set(ResourceType.BATTLES_WINS, 1);
+
+                // random book
+                List<Integer> emptySlotsType = getEmptySlots(game);
+                if( emptySlotsType.size() > 0 && (Math.random() > 0.5 || keyItem.numExchanges >= game.loginData.maxKeysPerDay) )
+                {
+                    int randomEmptySlotIndex = (int) Math.floor(Math.random() * emptySlotsType.size());
+                    ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
+                    game.exchanger.findRandomOutcome(emptySlot);
+                    ret.set(emptySlot.outcome, emptySlot.type);
+                    hasBookReward = true;
+                }
             }
 
             // battle stats
@@ -80,13 +96,16 @@ public class Outcome
             ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
 
+
             // keys
-            ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
-            if( keyItem.numExchanges < game.loginData.maxKeysPerDay )
+            if( !hasBookReward )
             {
-                int numKeys = Math.min( game.loginData.maxKeysPerDay-keyItem.numExchanges, Math.max(0, score) );
-                ret.set(ResourceType.KEY, numKeys);
-                keyItem.numExchanges += numKeys;
+                if( keyItem.numExchanges < game.loginData.maxKeysPerDay )
+                {
+                    int numKeys = Math.min( game.loginData.maxKeysPerDay-keyItem.numExchanges, Math.max(0, score) );
+                    ret.set(ResourceType.KEY, numKeys);
+                    keyItem.numExchanges += numKeys;
+                }
             }
         }
         return ret;
@@ -104,6 +123,17 @@ public class Outcome
 
         if( ret < 0 && winStreak < game.arenas.get(arena).minWinStreak )
             ret = 0;
+        return ret;
+    }
+
+    private static List<Integer> getEmptySlots(Game game)
+    {
+        int now = (int) Instant.now().getEpochSecond();
+        List<Integer> ret = new ArrayList<>();
+
+        for (ExchangeItem ei : game.exchanger.items.values() )
+            if( ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY )
+                ret.add(ei.type);
         return ret;
     }
 }
