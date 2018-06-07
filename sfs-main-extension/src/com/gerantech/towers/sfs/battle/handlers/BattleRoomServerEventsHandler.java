@@ -80,7 +80,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.containsProperty("isFriendly") )
 		{
-			int delay = 1000;// Math.max(12000, player.get_arena(0) * 400 + 7000);
+			int delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
