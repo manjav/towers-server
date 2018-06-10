@@ -143,13 +143,13 @@ public class DBUtils
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT type, num_exchanges, expired_at, outcome FROM exchanges WHERE player_id=" + playerId, new Object[]{});
+            ret = db.executeQuery("SELECT type, num_exchanges, expired_at, outcome, reqs FROM exchanges WHERE player_id=" + playerId + " OR player_id=10000", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr) throws Exception
+    public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr, String reqsStr) throws Exception
     {
-        String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "')";
+        String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "', '" + reqsStr + "')";
         db.executeQuery(query, new Object[] {});
 
         /*

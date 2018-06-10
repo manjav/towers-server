@@ -327,6 +327,8 @@ public class BattleRoom extends SFSExtension
 	}
 	private void checkEnding(long battleDuration)
 	{
+		if( battleDuration < 2 )
+			return;
 		int[] numBuildings = new int[2];
 		int[] populations = new int[2];
 		for (int i = 0; i < reservedTroopTypes.length; i++)
@@ -437,6 +439,7 @@ public class BattleRoom extends SFSExtension
 				{
 					earnedBook = game.exchanger.items.get(outcomesList[i].get(r));
 					earnedBook.outcomesStr = r + ":" + game.player.get_arena(0);
+					earnedBook.expiredAt = 0;
 				}
 
 				outcomeSFS.putInt(r+"", outcomesList[i].get(r));
@@ -450,8 +453,8 @@ public class BattleRoom extends SFSExtension
 				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
 				try {
 					if( earnedBook != null )
-						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr);
-					dbUtils.updateExchange(keysItem.type, game.player.id, 0, keysItem.numExchanges, "");
+						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr, "");
+					dbUtils.updateExchange(keysItem.type, game.player.id, 0, keysItem.numExchanges, "", "");
 					dbUtils.updateResources(game.player, updateMap);
 					dbUtils.insertResources(game.player, insertMap);
 				} catch (Exception e) { e.printStackTrace(); }
