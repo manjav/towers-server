@@ -341,6 +341,10 @@ public class BattleRoom extends SFSExtension
 			}
 		}
 
+		/*fast win
+		numBuildings[0] = battleField.places.size();
+		numBuildings[1] = 0;*/
+
 		if( numBuildings[0] == 0 || numBuildings[1] == 0 )
 		{
 			end(numBuildings, battleDuration);
@@ -418,9 +422,6 @@ public class BattleRoom extends SFSExtension
 				}
 			}
 
-			if( !game.player.isBot() )
-				game.player.addResources(outcomesList[i]);
-
 			IntIntMap insertMap = new IntIntMap();
 			IntIntMap updateMap = new IntIntMap();
 			ExchangeItem earnedBook = null;
@@ -450,6 +451,7 @@ public class BattleRoom extends SFSExtension
 			// update DB
 			if( !game.player.isBot() )
 			{
+				game.player.addResources(outcomesList[i]);
 				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
 				try {
 					if( earnedBook != null )

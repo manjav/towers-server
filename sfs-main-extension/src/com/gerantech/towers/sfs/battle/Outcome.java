@@ -16,7 +16,7 @@ import java.util.List;
 public class Outcome
 {
 
-    public static int MIN_POINTS = 6;
+    public static int MIN_POINTS = 5;
     public static int COE_POINTS = 4;
     public static int MAX_XP = 10;
 
@@ -81,7 +81,7 @@ public class Outcome
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game);
-                if( emptySlotsType.size() > 0 && (Math.random() > 0.5 || keyItem.numExchanges >= game.loginData.maxKeysPerDay) )
+                if( game.player.get_battleswins() > 2 && emptySlotsType.size() > 0 && (Math.random() > 0.5 || game.player.get_battleswins() == 3 || keyItem.numExchanges >= game.loginData.maxKeysPerDay) )
                 {
                     int randomEmptySlotIndex = (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
@@ -98,7 +98,7 @@ public class Outcome
 
 
             // keys
-            if( !hasBookReward )
+            if( game.player.get_battleswins() > 1 && !hasBookReward )
             {
                 if( keyItem.numExchanges < game.loginData.maxKeysPerDay )
                 {
