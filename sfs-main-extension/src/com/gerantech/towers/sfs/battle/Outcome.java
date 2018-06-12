@@ -73,10 +73,17 @@ public class Outcome
             ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
             boolean hasBookReward = false;
 
-            // soft-currency
+            // battle stats
+            ret.set(ResourceType.BATTLES_COUNT, 1);
+            ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
+            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
+
             if( point > 0 )
             {
+                // soft-currency
                 ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+
+                // num wins
                 ret.set(ResourceType.BATTLES_WINS, 1);
 
                 // random book
@@ -90,12 +97,6 @@ public class Outcome
                     hasBookReward = true;
                 }
             }
-
-            // battle stats
-            ret.set(ResourceType.BATTLES_COUNT, 1);
-            ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
-            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
-
 
             // keys
             if( game.player.get_battleswins() > 1 && !hasBookReward )
