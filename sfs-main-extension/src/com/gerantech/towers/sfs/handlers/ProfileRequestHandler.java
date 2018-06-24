@@ -28,9 +28,9 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
-		String query = "SELECT type, count FROM resources WHERE player_id=" + playerId + " AND (type=1001 OR type=1201 OR type=1202" ;
+		String query = "SELECT type, count FROM resources WHERE player_id=" + playerId + " AND (type=1000 OR type=1001 OR type=1201 OR type=1202" ;
 		if( params.containsKey("am") )
-			query += " OR type=1000 OR type=1002 OR type=1003 OR type=1004 OR type=1203 OR type=1204 OR type=1211)" ;
+			query += " OR type=1002 OR type=1003 OR type=1004 OR type=1203 OR type=1204 OR type=1211)" ;
 		else
 			query += ")" ;
 
