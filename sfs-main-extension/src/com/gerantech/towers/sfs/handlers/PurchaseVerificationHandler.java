@@ -107,7 +107,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", "error in verification");
-			trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
+			trace("Purchase failed: response:" + purchaseState + " --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
 			return;
 		}
 
@@ -119,7 +119,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			{
 				resObj.putBool("success", false);
 				resObj.putText("message", "error in exchange");
-				trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
+				trace("Purchase failed: response:" + res + " --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--purchaseState:", purchaseState, "--Hard Currency:",  getHardOnDB(game.player.id), "Error Message: In exchange");
 				return;
 			}
 		}
@@ -131,7 +131,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		resObj.putLong("purchaseTime", purchaseTime);
 		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime);
 		send("verify", resObj, sender);
-		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", getHardOnDB(game.player.id) );
+		trace("Purchase Succeed --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", getHardOnDB(game.player.id) );
 	}
 
 	private void insertToDB(Game game, String id, String token, int state, long time)
