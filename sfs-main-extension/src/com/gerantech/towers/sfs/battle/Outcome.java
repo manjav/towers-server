@@ -2,7 +2,6 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gt.towers.Game;
 import com.gt.towers.battle.fieldes.FieldData;
-import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -43,10 +42,7 @@ public class Outcome
             if ( newRecord )
             {
                 // xp
-                ret.set(ResourceType.XP,  Math.max(0, MAX_XP * (score > 0 ? score : -3) / 3 ) );
-
-                // keys
-                ret.set(ResourceType.KEY, diffScore);
+                ret.set(ResourceType.XP, diffScore + 1);
 
                 // soft-currency
                 ret.set(ResourceType.CURRENCY_SOFT, 10 * diffScore + field.index * 2);
@@ -70,8 +66,6 @@ public class Outcome
                 return ret;
 
             int arena = game.player.get_arena(0);
-            ExchangeItem keyItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
-            boolean hasBookReward = false;
 
             // battle stats
             ret.set(ResourceType.BATTLES_COUNT, 1);
@@ -88,24 +82,12 @@ public class Outcome
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game);
-                if( game.player.get_battleswins() > 2 && emptySlotsType.size() > 0 && (Math.random() > 0.5 || game.player.get_battleswins() == 3 || keyItem.numExchanges >= game.loginData.maxKeysPerDay) )
+                if( game.player.get_battleswins() > 1 && emptySlotsType.size() > 0 )
                 {
                     int randomEmptySlotIndex = (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
                     game.exchanger.findRandomOutcome(emptySlot);
                     ret.set(emptySlot.outcome, emptySlot.type);
-                    hasBookReward = true;
-                }
-            }
-
-            // keys
-            if( game.player.get_battleswins() > 1 && !hasBookReward )
-            {
-                if( keyItem.numExchanges < game.loginData.maxKeysPerDay )
-                {
-                    int numKeys = Math.min( game.loginData.maxKeysPerDay-keyItem.numExchanges, Math.max(0, score) );
-                    ret.set(ResourceType.KEY, numKeys);
-                    keyItem.numExchanges += numKeys;
                 }
             }
         }
