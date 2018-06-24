@@ -327,7 +327,7 @@ public class BattleRoom extends SFSExtension
 	}
 	private void checkEnding(long battleDuration)
 	{
-		if( battleDuration < 2 )
+		if( battleDuration < 3 )
 			return;
 		int[] numBuildings = new int[2];
 		int[] populations = new int[2];
