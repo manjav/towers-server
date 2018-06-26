@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gt.towers.Game;
 import com.gt.towers.battle.fieldes.FieldData;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -115,7 +116,7 @@ public class Outcome
         List<Integer> ret = new ArrayList<>();
 
         for (ExchangeItem ei : game.exchanger.items.values() )
-            if( ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY )
+            if( ei.category == ExchangeType.C110_BATTLES && ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY )
                 ret.add(ei.type);
         return ret;
     }
