@@ -342,8 +342,8 @@ public class BattleRoom extends SFSExtension
 		}
 
 		//fast win
-		numBuildings[0] = battleField.places.size();
-		numBuildings[1] = 0;
+		/*numBuildings[0] = battleField.places.size();
+		numBuildings[1] = 0;*/
 
 		if( numBuildings[0] == 0 || numBuildings[1] == 0 )
 		{
