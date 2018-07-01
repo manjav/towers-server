@@ -15,7 +15,6 @@ import java.util.List;
  */
 public class Outcome
 {
-
     public static int MIN_POINTS = 5;
     public static int COE_POINTS = 4;
     public static int MAX_XP = 10;
@@ -23,7 +22,7 @@ public class Outcome
     public static IntIntMap get(Game game, FieldData field, int score, float ratio)
     {
         IntIntMap ret = new IntIntMap();
-        if ( game.player.inFriendlyBattle )
+        if( game.player.inFriendlyBattle )
         {
             ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
             return ret;
@@ -37,10 +36,10 @@ public class Outcome
             int diffScore = score - game.player.quests.get(field.index);
             boolean newRecord = diffScore > 0;
 
-            if ( game.player.inTutorial() )
+            if( game.player.inTutorial() )
                 return ret;
 
-            if ( newRecord )
+            if( newRecord )
             {
                 // xp
                 ret.set(ResourceType.XP, diffScore + 1);
@@ -83,7 +82,7 @@ public class Outcome
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game);
-                if( game.player.get_battleswins() > 1 && emptySlotsType.size() > 0 )
+                if( game.player.get_battleswins() > 0 && emptySlotsType.size() > 0 )
                 {
                     int randomEmptySlotIndex = (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
