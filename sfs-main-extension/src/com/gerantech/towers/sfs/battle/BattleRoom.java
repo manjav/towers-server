@@ -342,8 +342,8 @@ public class BattleRoom extends SFSExtension
 		}
 
 		//fast win
-		numBuildings[0] = battleField.places.size();
-		numBuildings[1] = 0;
+		/*numBuildings[0] = battleField.places.size();
+		numBuildings[1] = 0;*/
 
 		if( numBuildings[0] == 0 || numBuildings[1] == 0 )
 		{
@@ -452,11 +452,9 @@ public class BattleRoom extends SFSExtension
 			if( !game.player.isBot() )
 			{
 				game.player.addResources(outcomesList[i]);
-				ExchangeItem keysItem = game.exchanger.items.get(ExchangeType.C41_KEYS);
 				try {
 					if( earnedBook != null )
 						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr, "");
-					dbUtils.updateExchange(keysItem.type, game.player.id, 0, keysItem.numExchanges, "", "");
 					dbUtils.updateResources(game.player, updateMap);
 					dbUtils.insertResources(game.player, insertMap);
 				} catch (Exception e) { e.printStackTrace(); }
