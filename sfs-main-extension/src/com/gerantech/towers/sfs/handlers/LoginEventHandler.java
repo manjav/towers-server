@@ -276,7 +276,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					break;
 				}
 			}
-			if( !contained )
+			if( !contained && ( initData.appVersion < 3200 || ExchangeType.getCategory(loginData.exchanges.get(l)) != ExchangeType.C20_SPECIALS || initData.resources.get(ResourceType.POINT) > 100 ))// add special after arena 2
 				addExchangeToDB(loginData.exchanges.get(l), exchanges, newExchanges);
 		}
 
