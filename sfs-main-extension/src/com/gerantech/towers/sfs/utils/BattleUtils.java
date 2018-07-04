@@ -61,7 +61,7 @@ public class BattleUtils
         }
     }
 
-    public Room make(User owner, boolean isQuest, int index, int friendlyMode, boolean hasExtraTime)
+    public Room make(User owner, boolean isOperation, int index, int friendlyMode, boolean hasExtraTime)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
 
@@ -70,7 +70,7 @@ public class BattleUtils
         Map<Object, Object> roomProperties = new HashMap<>();
 
         int arena = 0;
-        if( !isQuest )
+        if( !isOperation )
         {
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
             boolean tutorMode = game.player.get_battleswins() < 2;
@@ -80,7 +80,7 @@ public class BattleUtils
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena);// ===> is temp
         }
-        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isQuest:", isQuest, "friendlyMode:", friendlyMode, " >>>>==========---------");
+        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isOperation:", isOperation, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         // temp solution
         long now = Instant.now().getEpochSecond();
@@ -97,15 +97,15 @@ public class BattleUtils
         }
 
 
-        boolean singleMode = isQuest || arena == 0;
-        roomProperties.put("isQuest", isQuest);
+        boolean singleMode = isOperation || arena == 0;
+        roomProperties.put("isOperation", isOperation);
         roomProperties.put("index", index);
         if( hasExtraTime )
             roomProperties.put("hasExtraTime", true);
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
 
-        String pref = isQuest ? "q_" : "b_";
+        String pref = isOperation ? "q_" : "b_";
         if( friendlyMode > 0 )
             pref = friendlyMode == 1 ? "fl_" : "fb_";
 
@@ -116,8 +116,8 @@ public class BattleUtils
         rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
         rs.setRoomProperties( roomProperties );
         rs.setName( pref + index+ "__" + roomId.getAndIncrement() );
-        rs.setMaxUsers(singleMode?1:2);
-        rs.setGroupId(isQuest?"quests":"battles");
+        rs.setMaxUsers(singleMode ? 1 : 2);
+        rs.setGroupId(isOperation?"operations":"battles");
         rs.setExtension(res);
 
         try {
@@ -146,7 +146,7 @@ public class BattleUtils
     }
 
     /**
-     * Kick all users and reove room
+     * Kick all users and remove room
      * @param room
      */
     public void removeRoom(Room room)

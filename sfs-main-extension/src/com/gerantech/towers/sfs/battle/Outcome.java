@@ -28,12 +28,12 @@ public class Outcome
             return ret;
         }
 
-        if( field.isQuest )
+        if( field.isOperation )
         {
             if( game.player.isBot() )
                 return ret;
 
-            int diffScore = score - game.player.quests.get(field.index);
+            int diffScore = score - game.player.operations.get(field.index);
             boolean newRecord = diffScore > 0;
 
             if( game.player.inTutorial() )

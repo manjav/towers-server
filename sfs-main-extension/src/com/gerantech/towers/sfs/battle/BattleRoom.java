@@ -10,7 +10,6 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
-import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
@@ -55,7 +54,7 @@ public class BattleRoom extends SFSExtension
 	private ScheduledFuture<?> timer;
 
 	private BattleBot bot;
-	private boolean isQuest;
+	private boolean isOperation;
 	private boolean singleMode;
 	private long buildingsUpdatedAt;
 	private long clientTimeUpdatedAt;
@@ -85,8 +84,8 @@ public class BattleRoom extends SFSExtension
 
 		setState( STATE_CREATED );
 		List<User> players = getRealPlayers();
-		this.isQuest = (boolean) room.getProperty("isQuest");
-		this.singleMode = opponentNotFound || isQuest || players.size() == 1;
+		this.isOperation = (boolean) room.getProperty("isOperation");
+		this.singleMode = opponentNotFound || isOperation || players.size() == 1;
 		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
@@ -126,7 +125,7 @@ public class BattleRoom extends SFSExtension
 			bot = new BattleBot(this);
 
 			// sometimes auto start battle
-			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.isQuest && !registeredPlayers.get(0).player.inTutorial() )
+			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.isOperation && !registeredPlayers.get(0).player.inTutorial() )
 				setState(STATE_BATTLE_STARTED);
 		}
 
@@ -303,7 +302,7 @@ public class BattleRoom extends SFSExtension
 			return;
 		}
 
-		if( isQuest )
+		if(isOperation)
 		{
 			setState( STATE_BATTLE_ENDED );
 			if( retryMode )
@@ -351,7 +350,7 @@ public class BattleRoom extends SFSExtension
 			return;
 		}
 
-		if( ( battleDuration > battleField.getTime(3) && !isQuest ) || ( battleDuration > battleField.getTime(2) && isQuest ) )
+		if( ( battleDuration > battleField.getTime(3) && !isOperation) || ( battleDuration > battleField.getTime(2) && isOperation) )
 			end(numBuildings, battleDuration);
 	}
 
@@ -364,7 +363,7 @@ public class BattleRoom extends SFSExtension
 		int[] scores = new int[2];
 		for ( int i=0; i < 2; i++ )
 		{
-			if( isQuest )
+			if( isOperation )
 			{
 				scores[i] = 0;
 				Boolean wins = numBuildings[i]>numBuildings[i==1?0:1] && battleDuration < battleField.map.times.get(2);
@@ -387,7 +386,7 @@ public class BattleRoom extends SFSExtension
 
 	    calculateResult(scores, numBuildings);
 		close();
-		if( isQuest )
+		if( isOperation )
 			BattleUtils.getInstance().removeRoom(room);
 	}
 
@@ -408,17 +407,17 @@ public class BattleRoom extends SFSExtension
 
 			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], (float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
 			//trace("i:", i, "score:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
-			if( isQuest )
+			if( isOperation )
 			{
 				if( game.player.isBot() )
 					continue;
 
-				if( game.player.quests.get( battleField.map.index ) < scores[i] )
+				if( game.player.operations.get( battleField.map.index ) < scores[i] )
 				{
 					try {
-						dbUtils.setQuestScore(game.player, battleField.map.index, scores[i]);
+						dbUtils.setOperationScore(game.player, battleField.map.index, scores[i]);
 					} catch (Exception e) { e.printStackTrace(); }
-					game.player.quests.set(battleField.map.index, scores[i]);
+					game.player.operations.set(battleField.map.index, scores[i]);
 				}
 			}
 

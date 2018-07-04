@@ -176,7 +176,7 @@ public class DBUtils
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   QUESTS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-    public ISFSArray getQuests(int playerId)
+    public ISFSArray getOperations(int playerId)
     {
         ISFSArray ret = null;
         try {
@@ -184,9 +184,9 @@ public class DBUtils
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void setQuestScore(Player player, int index, int score) throws SFSException, SQLException
+    public void setOperationScore(Player player, int index, int score) throws SFSException, SQLException
     {
-        if( player.quests.exists( index ) )
+        if( player.operations.exists( index ) )
             db.executeUpdate("UPDATE `quests` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
         else
             db.executeInsert("INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});

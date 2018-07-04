@@ -15,7 +15,7 @@ import java.util.List;
 public class BattleRequestStartHandler extends BaseClientRequestHandler
 {
     private int index;
-    private Boolean isQuest;
+    private Boolean isOperation;
     private Boolean hasExtraTime;
 	private Room theRoom;
 
@@ -30,7 +30,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         }
 
         index = params.getInt("i");
-        isQuest = params.getBool("q");
+        isOperation = params.getBool("q");
         hasExtraTime = params.containsKey("e");
         if( params.containsKey("su") )
         {
@@ -45,7 +45,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
  
 	private void joinUser(User user)
     {
-        if( !isQuest )
+        if( !isOperation )
         {
             int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
             if( joinedRoomId > -1 )
@@ -56,7 +56,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 
         BattleUtils bu = BattleUtils.getInstance();
         if( theRoom == null )
-            theRoom = bu.make(user, isQuest, index, 0, hasExtraTime);
+            theRoom = bu.make(user, isOperation, index, 0, hasExtraTime);
 
         bu.join(user, theRoom, "");
     }

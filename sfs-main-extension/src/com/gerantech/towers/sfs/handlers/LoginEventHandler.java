@@ -164,7 +164,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putText("name", "guest");
 			outData.putText("password", password);
 			outData.putSFSArray("resources", resources);
-			outData.putSFSArray("quests", new SFSArray());
+			outData.putSFSArray("operations", new SFSArray());
 			outData.putSFSArray("exchanges", new SFSArray());
 			initiateCore(session, inData, outData, loginData);
 
@@ -203,7 +203,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putText("name", userData.getText("name"));
 		outData.putInt("sessionsCount", userData.getInt("sessions_count"));
 		outData.putSFSArray("resources", dbUtils.getResources(id));
-		outData.putSFSArray("quests", dbUtils.getQuests(id));
+		outData.putSFSArray("operations", dbUtils.getOperations(id));
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
 
@@ -238,8 +238,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			initData.market = inData.containsKey("market") ? inData.getText("market") : "none";
 		}
 		initData.sessionsCount = outData.getInt("sessionsCount");
-
-
+		
 		// create resources init data
 		ISFSObject element;
 		ISFSArray resources = outData.getSFSArray("resources");
@@ -252,13 +251,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// create quests init data
-		ISFSArray quests = outData.getSFSArray("quests");
-		for(int i=0; i<quests.size(); i++)
+		ISFSArray operations = outData.getSFSArray("operations");
+		for(int i=0; i<operations.size(); i++)
 		{
-			element = quests.getSFSObject(i);
-			initData.quests.set(element.getInt("index"), element.getInt("score"));
+			element = operations.getSFSObject(i);
+			initData.operations.set(element.getInt("index"), element.getInt("score"));
 		}
-
 
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");

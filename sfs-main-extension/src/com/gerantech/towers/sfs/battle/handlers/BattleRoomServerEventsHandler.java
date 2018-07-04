@@ -127,20 +127,19 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 	private void sendStartBattleResponse(Boolean opponentNotFound)
 	{
-		boolean isQuest = (boolean) room.getProperty("isQuest");
 		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
-		roomClass.createGame(getMapName(isQuest), opponentNotFound);
+		roomClass.createGame(getMapName((boolean) room.getProperty("isOperation")), opponentNotFound);
 
 		List<User> players = room.getPlayersList();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i));
 	}
 
-	private String getMapName(boolean isQuest)
+	private String getMapName(boolean isOperation)
 	{
 		int index = (Integer)room.getProperty("index");
 		String mapName = "battle_" + index;
-		if(isQuest)
+		if( isOperation )
 			mapName = "quest_" + index;
 		return mapName;
 	}
@@ -158,7 +157,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
-		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isQuest")));
+		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
 
 		boolean isSpectator = player.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
