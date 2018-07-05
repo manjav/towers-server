@@ -51,7 +51,7 @@ public class ExchangeManager
             response = game.exchanger.exchange(item, now, hardsConfimed);
         } catch (Exception e) { e.printStackTrace(); }
         game.player.resources.changeCallback = null;
-        if( response != MessageTypes.RESPONSE_SUCCEED)
+        if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
 
         // logs .....
