@@ -73,8 +73,9 @@ public class BattleUtils
         if( !isOperation )
         {
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
-            boolean tutorMode = game.player.get_battleswins() < 2;
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? 2 : 0), (arena + 1) * 100);
+            int tutorMaps = game.appVersion >= 3200 ? 3 : 2;
+            boolean tutorMode = game.player.get_battleswins() < tutorMaps;
+            List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
             index = tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
