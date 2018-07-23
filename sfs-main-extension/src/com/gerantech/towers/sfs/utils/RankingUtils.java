@@ -63,11 +63,11 @@ public class RankingUtils
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public IMap<Integer, RankData> fill(IMap<Integer, RankData> users, Game game)
+    public void fillActives()
     {
-        if( users.size() > 10 )
-             return users;
-
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+        if( users.size() > 0 )
+            return;
         ext.trace("start filling hazelcast in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         // insert real champions
         try {
@@ -94,6 +94,8 @@ public class RankingUtils
             ext.trace("filled activity in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
 
             // fill top of arenas
+            Game game = new Game();
+            game.fillArenas();
             Arena arena;
             int[] arenaKeys = game.arenas.keys();
             for( int a=0; a<arenaKeys.length; a++ )
@@ -122,7 +124,6 @@ public class RankingUtils
                 users.put(start , new RankData(start, names[i], points[i], -1));
         }
         ext.trace("filled bots hazelcast in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-        return users;
     }
 
     public RankData getNearOpponent(IMap<Integer, RankData> users, int point, int range)

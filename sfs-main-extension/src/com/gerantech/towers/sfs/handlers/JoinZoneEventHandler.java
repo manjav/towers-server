@@ -48,42 +48,11 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
 
-		// Reload saved rooms
-		loadSavedLobbies(zone);
-
 		// Find last joined lobby room
 		Room room = rejoinToLastLobbyRoom(zone, user, game.player);
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
-
-		if( LoginEventHandler.STARTING_STATE == 1 )
-			LoginEventHandler.STARTING_STATE = 2;
-	}
-
-	/**
-	 * Save room to file for server restore rooms after resetting
-	 */
-	private void loadSavedLobbies(Zone zone)
-	{
-		if( zone.containsProperty("lobbiesData") )
-			return;
-
-        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
-		dbRoomStorageConfig.storeInactiveRooms = true;
-		dbRoomStorageConfig.tableName = "rooms";
-		zone.initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
-
-		List<CreateRoomSettings> lobbies = null;
-		try {
-			lobbies = zone.getRoomPersistenceApi().loadAllRooms("lobbies");
-		} catch (SFSStorageException e) { e.printStackTrace(); }
-
-		Map<String, CreateRoomSettings> lobbiesData = new HashMap();
-		for( CreateRoomSettings crs : lobbies )
-			lobbiesData.put(crs.getName(), crs);
-
-		zone.setProperty("lobbiesData", lobbiesData);
 	}
 
 	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)

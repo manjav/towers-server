@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
@@ -86,6 +87,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 			return;
 		}
 
+		if( STARTING_STATE == 0 )
+			STARTING_STATE = 1;
+
+		// load all settings
+		LobbyUtils.getInstance().loadAllSettings();
+		RankingUtils.getInstance().fillActives();
+
 		if( CORE_SIZE == 0 )
 		{
 			try {
@@ -94,6 +102,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			} catch (IOException e) { e.printStackTrace(); }
 			trace("LoginData  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>> version:", loginData.coreVersion + "coreSize:", CORE_SIZE);
 		}
+
+		if( LoginEventHandler.STARTING_STATE == 1 )
+			LoginEventHandler.STARTING_STATE = 2;
 
 		dbUtils = DBUtils.getInstance();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
@@ -121,9 +132,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 				}
 				} catch (SQLException e) { e.printStackTrace(); }
 			}
-
-			if( STARTING_STATE == 0 )
-				STARTING_STATE = 1;
 
 			password = PasswordGenerator.generate().toString();
 
@@ -197,9 +205,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_PASSWORD, "Login error! id" + id + " inpass " + password + " dbpass:" + userData.getText("password"), new String[]{name});
 			return;
 		}
-
-		if( STARTING_STATE == 0 )
-			STARTING_STATE = 1;
 
 		// Retrieve player data from db
 		outData.putInt("id", id);
@@ -344,7 +349,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data
-		IMap<Integer, RankData> users = RankingUtils.getInstance().fill(Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users"), game);
+		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
 		int wb = game.player.resources.exists(ResourceType.BATTLES_COUNT_WEEKLY) ? game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY) : 0;
 		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), wb);
 		if( users.containsKey(game.player.id))

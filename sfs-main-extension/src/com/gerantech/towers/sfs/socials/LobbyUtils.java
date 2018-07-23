@@ -24,6 +24,7 @@ import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,30 @@ public class LobbyUtils
     }
 
 
+    /**
+     * Save room to file for server restore rooms after resetting
+     */
+    public void loadAllSettings()
+    {
+        if( ext.getParentZone().containsProperty("lobbiesData") )
+            return;
+
+        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
+        dbRoomStorageConfig.storeInactiveRooms = true;
+        dbRoomStorageConfig.tableName = "rooms";
+        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
+
+        List<CreateRoomSettings> lobbies = null;
+        try {
+            lobbies = ext.getParentZone().getRoomPersistenceApi().loadAllRooms("lobbies");
+        } catch (SFSStorageException e) { e.printStackTrace(); }
+
+        Map<String, CreateRoomSettings> lobbiesData = new HashMap();
+        for( CreateRoomSettings crs : lobbies )
+            lobbiesData.put(crs.getName(), crs);
+
+        ext.getParentZone().setProperty("lobbiesData", lobbiesData);
+    }
     public Room create(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
