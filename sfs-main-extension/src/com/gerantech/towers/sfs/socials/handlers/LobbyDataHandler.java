@@ -34,7 +34,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         if( params.containsKey("id") )
             fillRoomInfo( zone.getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
         else
-             searchRooms(params, users );
+            searchRooms(params, users );
 
         send("lobbyData", params, sender);
     }
@@ -74,7 +74,10 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         SFSArray rooms = new SFSArray();
         while( roomIndex < numRooms )
         {
-            rooms.addSFSObject(roomsList.get(roomIndex));
+            r = roomsList.get(roomIndex);
+            roomSettings = LobbyUtils.getInstance().getSettings(getParentExtension().getParentZone(), r.getText("name"));
+            r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings, getParentExtension().getParentZone()).getId());
+            rooms.addSFSObject(r);
             roomIndex ++;
         }
         params.putSFSArray("rooms", rooms);
@@ -82,31 +85,30 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     }
     public void fillRoomData(CreateRoomSettings settings, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        Room lobby = lobbyUtils.getLobby(settings, zone);
-        if( lobby != null )
-            fillRoomData(lobby, params, users, includeMembers);
-    }
-    public void fillRoomData(Room room, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
-    {
-        ISFSArray all = getMembers(room, users);
-        params.putText("name", room.getName());
-        params.putInt("id", room.getId());
-        params.putInt("max", room.getMaxUsers());
+        ISFSArray all = getMembers(settings, users, includeMembers);
+        params.putText("name", settings.getName());
+        //params.putInt("id", settings.getId());
+        params.putInt("max", settings.getMaxUsers());
         params.putInt("num", all.size());
-        params.putInt("sum", getLobbyPoint(all));
-        params.putInt("pic", room.getVariable("pic").getIntValue());
-        params.putInt("act", (int) (room.getVariable("act").getIntValue() * 0.2 + getLobbyActiveness(all) ));
+        params.putInt("sum", includeMembers ? getLobbyPoint(all) : 0);
+        params.putInt("pic", LobbyUtils.getInstance().getSettingsVariable(settings, "pic").getIntValue());
+        params.putInt("act", (int) (LobbyUtils.getInstance().getSettingsVariable(settings, "act").getIntValue() * 0.2 + getLobbyActiveness(all) ));
         if( includeMembers )
             params.putSFSArray("all", all);
     }
 
-    private void fillRoomInfo(Room room, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
+    private void fillRoomInfo(Room lobby, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
     {
-        params.putText("bio", room.getVariable("bio").getStringValue());
-        params.putInt("min", room.getVariable("min").getIntValue());
-        params.putInt("pri", room.getVariable("pri").getIntValue());
+        params.putText("bio",lobby.getVariable("bio").getStringValue());
+        params.putInt("min", lobby.getVariable("min").getIntValue());
+        params.putInt("pri", lobby.getVariable("pri").getIntValue());
         if( includeMembers )
-            params.putSFSArray("all", getMembers(room, users));
+        {
+            CreateRoomSettings settings = LobbyUtils.getInstance().getAllSettings(zone).get(lobby.getName());
+            ISFSArray all = getMembers(settings, users, includeMembers);
+            params.putSFSArray("all", all);
+            params.putInt("sum", getLobbyPoint(all));
+        }
         params.removeElement("id");
     }
 
@@ -153,10 +155,11 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         }
         return Math.round(sum / members.size());
     }
-    private ISFSArray getMembers(Room room, IMap<Integer, RankData> users)
+    private ISFSArray getMembers(CreateRoomSettings room, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        ISFSArray all = room.getVariable("all").getSFSArrayValue();
-        RankingUtils.getInstance().fillByIds(users, all);
+        ISFSArray all = LobbyUtils.getInstance().getSettingsVariable(room, "all").getSFSArrayValue();
+        if( includeMembers )
+            RankingUtils.getInstance().fillByIds(users, all);
 
         // fill hazelcast data to members
         int index = 0;
@@ -167,24 +170,36 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             member = new SFSObject();
             member.putInt("id", all.getSFSObject(index).getInt("id"));
             member.putShort("permission", all.getSFSObject(index).getShort("pr"));
-            member.putText("name", users.get(member.getInt("id")).name);
-            member.putInt("point", users.get(member.getInt("id")).point);
-            member.putInt("activity", users.get(member.getInt("id")).xp);
+            if( includeMembers )
+            {
+                member.putText("name", users.get(member.getInt("id")).name);
+                member.putInt("point", users.get(member.getInt("id")).point);
+                member.putInt("activity", users.get(member.getInt("id")).xp);
+            }
+            else
+            {
+                member.putInt("activity", users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).xp : 0);
+            }
+
             members.add(member);
             index ++;
         }
 
         // sort on point ascending
-        Collections.sort(members, new Comparator<SFSObject>() {
-            @Override
-            public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt("point") - rhs.getInt("point"); }
-        });
+        if( includeMembers )
+        {
+            Collections.sort(members, new Comparator<SFSObject>() {
+                @Override
+                public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt("point") - rhs.getInt("point"); }
+            });
+        }
 
         // add to sfs array
         index = 0;
         size = members.size();
         ISFSArray ret = new SFSArray();
-        while( index < size ) {
+        while( index < size )
+        {
             ret.addSFSObject(members.get(index));
             index ++;
         }
