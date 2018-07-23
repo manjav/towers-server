@@ -74,7 +74,7 @@ public class RankingUtils
             IDBManager dbManager = ext.getParentZone().getDBManager();
 
             // get active players
-            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1204 AND resources.count > 0";
+            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1204 AND resources.count>0";
             ISFSArray players = dbManager.executeQuery(query, new Object[] {});
             query = "SELECT player_id, count FROM resources WHERE type=1001 AND ( ";
             for( int p=0; p<players.size(); p++ )
@@ -109,7 +109,7 @@ public class RankingUtils
                 }
             }
             ext.trace("filled tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-            
+
         } catch (SQLException e) { e.printStackTrace(); }
 
         // insert npcs

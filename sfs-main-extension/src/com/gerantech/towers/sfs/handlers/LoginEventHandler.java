@@ -49,14 +49,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSObject inData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_IN_DATA);
 		ISFSObject outData = (ISFSObject) event.getParameter(SFSEventParam.LOGIN_OUT_DATA);
 		ISession session = (ISession)event.getParameter(SFSEventParam.SESSION);
-		int now = (int)Instant.now().getEpochSecond();
 
+		int now = (int)Instant.now().getEpochSecond();
 		//trace("now", now, "UNTIL_MAINTENANCE", UNTIL_MAINTENANCE);
 		if( now < UNTIL_MAINTENANCE && !Player.isAdmin(inData.getInt("id")) )
 		{
 			outData.putInt("umt", UNTIL_MAINTENANCE - now );
 			return;
 		}
+
+		if( !getParentExtension().getParentZone().containsProperty("startTime") )
+			getParentExtension().getParentZone().setProperty("startTime", System.currentTimeMillis());
 
 		// check ban
 		ISFSObject banData = BanSystem.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
