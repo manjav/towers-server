@@ -68,7 +68,9 @@ public class LobbyUtils
             lobbiesData.put(crs.getName(), crs);
 
         ext.getParentZone().setProperty("lobbiesData", lobbiesData);
+        ext.trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
+
     public Room create(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");

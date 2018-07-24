@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.hazel.RankData;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -75,8 +74,8 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         while( roomIndex < numRooms )
         {
             r = roomsList.get(roomIndex);
-            roomSettings = LobbyUtils.getInstance().getSettings(getParentExtension().getParentZone(), r.getText("name"));
-            r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings, getParentExtension().getParentZone()).getId());
+            roomSettings = lobbyUtils.getSettings(getParentExtension().getParentZone(), r.getText("name"));
+            r.putInt("id", lobbyUtils.getLobby(roomSettings, getParentExtension().getParentZone()).getId());
             rooms.addSFSObject(r);
             roomIndex ++;
         }
@@ -85,14 +84,27 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     }
     public void fillRoomData(CreateRoomSettings settings, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        ISFSArray all = getMembers(settings, users, includeMembers);
+        ISFSArray all = getMembers(lobbyUtils.getSettingsVariable(settings, "all").getSFSArrayValue(), users, includeMembers);
         params.putText("name", settings.getName());
         //params.putInt("id", settings.getId());
         params.putInt("max", settings.getMaxUsers());
         params.putInt("num", all.size());
-        params.putInt("sum", includeMembers ? getLobbyPoint(all) : 0);
-        params.putInt("pic", LobbyUtils.getInstance().getSettingsVariable(settings, "pic").getIntValue());
-        params.putInt("act", (int) (LobbyUtils.getInstance().getSettingsVariable(settings, "act").getIntValue() * 0.2 + getLobbyActiveness(all) ));
+        params.putInt("sum", getLobbyPoint(all));
+        params.putInt("pic", lobbyUtils.getSettingsVariable(settings, "pic").getIntValue());
+        params.putInt("act", getLobbyActiveness(all));
+        if( includeMembers )
+            params.putSFSArray("all", all);
+    }
+    public void fillRoomData(Room lobby, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
+    {
+        ISFSArray all = getMembers(lobby.getVariable("all").getSFSArrayValue(), users, includeMembers);
+        params.putText("name", lobby.getName());
+        params.putInt("id", lobby.getId());
+        params.putInt("max", lobby.getMaxUsers());
+        params.putInt("num", all.size());
+        params.putInt("sum", getLobbyPoint(all));
+        params.putInt("pic", lobby.getVariable("pic").getIntValue());
+        params.putInt("act", getLobbyActiveness(all));
         if( includeMembers )
             params.putSFSArray("all", all);
     }
@@ -104,8 +116,8 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         params.putInt("pri", lobby.getVariable("pri").getIntValue());
         if( includeMembers )
         {
-            CreateRoomSettings settings = LobbyUtils.getInstance().getAllSettings(zone).get(lobby.getName());
-            ISFSArray all = getMembers(settings, users, includeMembers);
+            CreateRoomSettings settings = lobbyUtils.getAllSettings(zone).get(lobby.getName());
+            ISFSArray all = getMembers(lobby.getVariable("all").getSFSArrayValue(), users, includeMembers);
             params.putSFSArray("all", all);
             params.putInt("sum", getLobbyPoint(all));
         }
@@ -131,13 +143,13 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     private int getLobbyPoint( ISFSArray members )
     {
         int sum = 0;
-        float rankRatio;
         int index = 0;
+        float rankRatio;
         int size = members.size();
         while( index < size )
         {
-            rankRatio = (float)index/(float)size;
-            sum += members.getSFSObject(index).getInt("point") * RANK_COEFS[(int)Math.floor(rankRatio*5)];
+            rankRatio = (float)index / (float)size;
+            sum += members.getSFSObject(index).getInt("point") * RANK_COEFS[(int)Math.floor(rankRatio * 5)];
             index ++;
         }
         return sum;
@@ -145,21 +157,25 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     private int getLobbyActiveness( ISFSArray members )
     {
         int sum = 0;
+        int index = 0;
+        float rankRatio;
         int size = members.size() - 1;
         if( size < 0 )
             return 0; //break operation for empty lobbies
-        while( size >= 0 )
+        while( index < size )
         {
-            sum += members.getSFSObject(size).getInt("activity") ;
-            size --;
+            rankRatio = (float)index / (float)size;
+            sum += members.getSFSObject(index).getInt("activity") * RANK_COEFS[(int)Math.floor(rankRatio * 5)];
+            index ++;
         }
-        return Math.round(sum / members.size());
+        return sum;
     }
-    private ISFSArray getMembers(CreateRoomSettings room, IMap<Integer, RankData> users, boolean includeMembers)
+
+    private ISFSArray getMembers(ISFSArray all, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        ISFSArray all = LobbyUtils.getInstance().getSettingsVariable(room, "all").getSFSArrayValue();
-        if( includeMembers )
-            RankingUtils.getInstance().fillByIds(users, all);
+       // ISFSArray all = lobbyUtils.getSettingsVariable(settings, "all").getSFSArrayValue();
+  //    if( includeMembers )
+ //           RankingUtils.getInstance().fillByIds(users, all);
 
         // fill hazelcast data to members
         int index = 0;
@@ -170,16 +186,10 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             member = new SFSObject();
             member.putInt("id", all.getSFSObject(index).getInt("id"));
             member.putShort("permission", all.getSFSObject(index).getShort("pr"));
-            if( includeMembers )
-            {
-                member.putText("name", users.get(member.getInt("id")).name);
-                member.putInt("point", users.get(member.getInt("id")).point);
-                member.putInt("activity", users.get(member.getInt("id")).xp);
-            }
-            else
-            {
-                member.putInt("activity", users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).xp : 0);
-            }
+            boolean hasCache = users.containsKey(member.getInt("id"));
+            member.putText("name", hasCache ? users.get(member.getInt("id")).name : "???");
+            member.putInt("point", hasCache ? users.get(member.getInt("id")).point : 0);
+            member.putInt("activity", hasCache ? users.get(member.getInt("id")).xp : 0);
 
             members.add(member);
             index ++;
