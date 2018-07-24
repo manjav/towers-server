@@ -68,50 +68,40 @@ public class RankingUtils
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( users.size() > 0 )
             return;
-        ext.trace("start filling hazelcast in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        ext.trace("start in-memory filling in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         // insert real champions
         try {
             IDBManager dbManager = ext.getParentZone().getDBManager();
 
-            // get active players
+            // fill active players
             String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1204 AND resources.count>0";
             ISFSArray players = dbManager.executeQuery(query, new Object[] {});
-            query = "SELECT player_id, count FROM resources WHERE type=1001 AND ( ";
             for( int p=0; p<players.size(); p++ )
             {
                 ISFSObject pp = players.getSFSObject(p);
-                query += "player_id=" + pp.getInt("id") + (p<players.size()-1?" OR ":" );");
                 users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), 0, pp.getInt("count")));
             }
-            //fill point off active players
+            ext.trace("filled in-memory actives in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+
+            // fill top players
+            query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1001 AND resources.count>0";
             players = dbManager.executeQuery(query, new Object[]{});
             for( int p=0; p<players.size(); p++ )
             {
-                RankData rd = users.get(players.getSFSObject(p).getInt("player_id"));
-                rd.point = players.getSFSObject(p).getInt("count");
-                users.replace(rd.id, rd);
-            }
-            ext.trace("filled activity in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-
-            // fill top of arenas
-            Game game = new Game();
-            game.fillArenas();
-            Arena arena;
-            int[] arenaKeys = game.arenas.keys();
-            for( int a=0; a<arenaKeys.length; a++ )
-            {
-                arena = game.arenas.get(arenaKeys[a]);
-                query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type =1001 AND resources.count BETWEEN " + (arena.min==0?1:arena.min) + " AND " + (arena.max==10000?100000:arena.max) + " ORDER BY resources.count DESC LIMIT 100";
-                players = dbManager.executeQuery(query, new Object[] {});
-                for( int p=0; p<players.size(); p++ )
+                ISFSObject pp = players.getSFSObject(p);
+                if( users.containsKey(pp.getInt("id")) )
                 {
-                    ISFSObject pp = players.getSFSObject(p);
-                    if( !users.containsKey(pp.getInt("id")) )
-                        users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
+                    RankData rd = users.get(pp.getInt("id"));
+                    rd.point = pp.getInt("count");
+                    users.replace(rd.id, rd);
                 }
-            }
-            ext.trace("filled tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+                else
+                {
+                    users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
+                }
 
+            }
+            ext.trace("filled in-memory tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         } catch (SQLException e) { e.printStackTrace(); }
 
         // insert npcs
@@ -123,7 +113,7 @@ public class RankingUtils
             for ( int i=0;  i<len; i++,start++ )
                 users.put(start , new RankData(start, names[i], points[i], -1));
         }
-        ext.trace("filled bots hazelcast in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        ext.trace("filled in-memory bots in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
     public RankData getNearOpponent(IMap<Integer, RankData> users, int point, int range)
