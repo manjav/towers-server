@@ -17,17 +17,11 @@ import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
-import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
-import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author ManJav

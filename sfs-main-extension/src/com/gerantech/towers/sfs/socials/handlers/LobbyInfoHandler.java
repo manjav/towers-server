@@ -1,12 +1,10 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.hazel.RankData;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
-import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
