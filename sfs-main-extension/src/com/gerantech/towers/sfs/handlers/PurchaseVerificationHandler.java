@@ -112,7 +112,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		}
 
 		int item = Integer.parseInt(productID.split("_")[1]);
-		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD || ExchangeType.getCategory(item) == ExchangeType.C30_BUNDLES )
+		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD )
 		{
 			int res = ExchangeManager.getInstance().process(game, item, 0, 0);
 			if( res != MessageTypes.RESPONSE_SUCCEED )

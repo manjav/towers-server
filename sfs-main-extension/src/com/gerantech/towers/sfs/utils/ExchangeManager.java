@@ -30,8 +30,7 @@ public class ExchangeManager
         if( item == null )
         {
             ext.trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
-            return MessageTypes.RESPONSE_NOT_FOUND
-                    ;
+            return MessageTypes.RESPONSE_NOT_FOUND;
         }
         return process(game, item, now, hardsConfimed);
     }
