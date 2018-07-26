@@ -1,6 +1,10 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.hazel.RankData;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -23,10 +27,7 @@ import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 import net.sf.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ManJav on 10/15/2017.
@@ -205,15 +206,55 @@ public class LobbyUtils
         return ret;
     }
 
-    // remove room from db
-    private void remove(Zone zone, Room room)
+    public String removeInactiveLobbies()
     {
-        getAllSettings(zone).remove(room.getName());
+        String ret = "";
+        ISFSArray all;
+        ISFSObject member;
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
+        dbRoomStorageConfig.storeInactiveRooms = true;
+        dbRoomStorageConfig.tableName = "rooms";
+        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
+
+        List<CreateRoomSettings> lobbies = null;
         try {
-            zone.getRoomPersistenceApi().removeRoom(room.getName());
-            ext.getApi().removeRoom(room);
+            lobbies = ext.getParentZone().getRoomPersistenceApi().loadAllRooms("lobbies");
         } catch (SFSStorageException e) { e.printStackTrace(); }
-        ext.trace("remove " + room.getName());
+
+        for( CreateRoomSettings crs : lobbies )
+        {
+            int activeness = 0;
+            all = getSettingsVariable(crs, "all").getSFSArrayValue();
+            for(int i=0; i<all.size(); i++)
+            {
+                member = all.getSFSObject(i);
+                activeness += users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).xp : 0;
+            }
+
+            if( activeness <= 0 )
+            {
+                ret += crs.getName() + "removed.\n";
+                remove(crs.getName());
+            }
+        }
+        return ret;
+    }
+
+    private void remove(Room lobby)
+    {
+        ext.getApi().removeRoom(lobby);
+        remove(lobby.getName());
+    }
+
+    // remove room from db
+    private void remove(String lobbyName)
+    {
+        getAllSettings(ext.getParentZone()).remove(lobbyName);
+        try {
+            ext.getParentZone().getRoomPersistenceApi().removeRoom(lobbyName);
+        } catch (SFSStorageException e) { e.printStackTrace(); }
+        ext.trace(lobbyName + " removed.");
     }
 
     public boolean addUser(Room lobby, int userId)
@@ -258,7 +299,7 @@ public class LobbyUtils
         if( all.size() == 0 )
         {
             lobby.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
-            remove(ext.getParentZone(), lobby);
+            remove(lobby);
             return;
         }
 

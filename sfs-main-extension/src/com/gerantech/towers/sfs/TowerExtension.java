@@ -109,7 +109,7 @@ public class TowerExtension extends SFSExtension
 		else if ( cmdName.equals("getlobbynamebyid") )
 			return LobbyUtils.getInstance().getLobbyNameById((String) params);
 		else if( cmdName.equals("custom") )
-			return LobbyUtils.getInstance().saveAll();
+			return LobbyUtils.getInstance().removeInactiveLobbies();
 		
 		return null;
 	}
