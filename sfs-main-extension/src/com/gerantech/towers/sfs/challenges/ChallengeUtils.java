@@ -27,16 +27,16 @@ public class ChallengeUtils
         if( ext.getParentZone().containsProperty("challengesData") )
             return;
 
-        ISFSArray chlngs = new SFSArray();
+        ISFSArray challenges = new SFSArray();
         try {
-            chlngs = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM challenges WHERE start_at > NOW() - INTERVAL 1 WEEK;", new Object[]{});
+            challenges = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM challenges WHERE start_at > NOW() - INTERVAL 1 WEEK;", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
 
         Map<Integer, Challenge> challengesData = new HashMap();
         ISFSObject ch = null;
-        for( int i=0; i<chlngs.size(); i++ )
+        for( int i=0; i<challenges.size(); i++ )
         {
-            ch = chlngs.getSFSObject(i);
+            ch = challenges.getSFSObject(i);
             challengesData.put(ch.getInt("id"), new Challenge(ch.getInt("id"), ch.getLong("start_at"), ch.getByteArray("attendees")));
         }
 
