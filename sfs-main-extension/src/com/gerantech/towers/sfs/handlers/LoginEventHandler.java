@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.hazel.RankData;
@@ -93,6 +94,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// load all settings
 		LobbyUtils.getInstance().loadAllSettings();
 		RankingUtils.getInstance().fillActives();
+		ChallengeUtils.getInstance().loadAll();
 
 		if( CORE_SIZE == 0 )
 		{

@@ -35,8 +35,6 @@ import java.util.*;
 public class LobbyUtils
 {
     private final SFSExtension ext;
-    public static int arenaDivider = 5;
-
     public LobbyUtils() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
