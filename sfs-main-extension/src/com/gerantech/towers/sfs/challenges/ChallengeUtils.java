@@ -15,13 +15,18 @@ import java.util.Map;
  */
 public class ChallengeUtils
 {
+    private static ChallengeUtils _instance;
     private final SFSExtension ext;
     public ChallengeUtils() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
-    public static ChallengeUtils getInstance() {
-        return new ChallengeUtils();
+    public static ChallengeUtils getInstance()
+    {
+        if( _instance == null )
+            _instance = new ChallengeUtils();
+        return _instance;
     }
+
     public void loadAll()
     {
         if( ext.getParentZone().containsProperty("challengesData") )

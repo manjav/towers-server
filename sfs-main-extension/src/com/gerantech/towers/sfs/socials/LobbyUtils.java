@@ -34,13 +34,16 @@ import java.util.*;
  */
 public class LobbyUtils
 {
+    private static LobbyUtils _instance;
     private final SFSExtension ext;
     public LobbyUtils() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
     public static LobbyUtils getInstance()
     {
-        return new LobbyUtils();
+        if( _instance == null )
+            _instance = new LobbyUtils();
+        return _instance;
     }
 
 
