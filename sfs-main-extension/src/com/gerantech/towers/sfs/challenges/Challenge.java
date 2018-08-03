@@ -5,16 +5,22 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 
+import java.time.Instant;
+
 public class Challenge extends SFSObject
 {
+
+    public com.gt.towers.socials.Challenge base;
 
     public Challenge()
     {
         super();
+        base = new com.gt.towers.socials.Challenge();
     }
     public Challenge(Integer id, Long startAt, byte[] attendees)
     {
         super();
+        base = new com.gt.towers.socials.Challenge();
         setId(id);
         setStartAt(startAt);
         setAttendees(attendees);
@@ -27,6 +33,7 @@ public class Challenge extends SFSObject
     public void setId(int id)
     {
         putInt("id", id);
+        base.id = id;
     }
 
     public Long getStartAt()
@@ -35,7 +42,8 @@ public class Challenge extends SFSObject
     }
     public void setStartAt(Long startAt)
     {
-        putLong("start_at", startAt);
+        base.startAt = Math.toIntExact(startAt / 1000l);
+        putInt("start_at", base.startAt);
     }
 
     /**
@@ -61,5 +69,10 @@ public class Challenge extends SFSObject
     public void setAttendees(byte[] attendees)
     {
         setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
+    }
+
+    public boolean isFull()
+    {
+        return getAttendees().size() >= base.capacity;
     }
 }

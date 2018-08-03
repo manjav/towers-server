@@ -1,10 +1,12 @@
 package com.gerantech.towers.sfs.challenges;
 
+import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -74,14 +76,45 @@ public class ChallengeUtils
         return null;
     }
 
-    public Challenge create(User owner, int maxUsers)
+    public Challenge findWaitingChallenge(int type, int now)
+    {
+        Map<Integer, Challenge> challenges = ChallengeUtils.getInstance().getAll();
+        for( Map.Entry<Integer, Challenge> entry : challenges.entrySet() )
+            if( entry.getValue().base.type == type && entry.getValue().base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !entry.getValue().isFull() )
+                return entry.getValue();
+        return null;
+    }
+
+    public Challenge create(int type, int capacity, long startAt, Player player)
     {
         Challenge challenge = new Challenge();
-        String query = "INSERT INTO challenges (type, start_at, attendees) VALUES ('1', '1', '2018-08-03 02:11:48', ?);";
+        challenge.base.capacity = capacity;
+        challenge.base.type = type;
+        challenge.setStartAt(startAt);
+        join(challenge, player, false);
+        String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (0, FROM_UNIXTIME(" + startAt + "), ?);";
         try {
-            challenge.setId((Integer) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()}));
+            challenge.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()})));
         } catch (SQLException e) {  e.printStackTrace(); }
+
         getAll().put(challenge.getId(), challenge);
         return  challenge;
+    }
+
+    public void join(Challenge challenge, Player player, boolean saveToDB)
+    {
+        ISFSObject attendee = new SFSObject();
+        attendee.putInt("id", player.id);
+        attendee.putInt("lu", 0);
+        attendee.putInt("point", 0);
+        attendee.putText("name", player.nickName);
+        challenge.getAttendees().addSFSObject(attendee);
+        if( !saveToDB )
+            return;
+
+        String query = "UPDATE challenges attendees = ? WHERE id = " + challenge.getId();
+        try {
+            ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{challenge.getAttendeesBytes()});
+        } catch (SQLException e) {  e.printStackTrace(); }
     }
 }
