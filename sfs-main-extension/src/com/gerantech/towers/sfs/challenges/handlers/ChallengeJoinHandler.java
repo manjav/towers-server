@@ -10,33 +10,38 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 
 public class ChallengeJoinHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
+        // check joining time
         LocalDateTime lt = LocalDateTime.now();
-        int hour = lt.getHour();  // current hour
         int now = (int) Instant.now().getEpochSecond();
         ISFSObject response = new SFSObject();
-        if( hour < com.gt.towers.socials.Challenge.JOIN_HOUR || hour > com.gt.towers.socials.Challenge.START_HOUR )
+        if( lt.getHour() > com.gt.towers.socials.Challenge.START_HOUR )
         {
             response.putInt("response", MessageTypes.RESPONSE_NOT_ALLOWED);
             sendResponse(response, sender);
             return;
         }
 
-        lt = LocalDateTime.of(lt.getYear(), lt.getMonth(), lt.getDayOfMonth(), com.gt.towers.socials.Challenge.START_HOUR, 0);
+        // check already joined in a challenge
         Player player = ((Game)sender.getSession().getProperty("core")).player;
+        if( ChallengeUtils.getInstance().getByAttendee(0, player.id).size() > 0 )
+        {
+            response.putInt("response", MessageTypes.RESPONSE_ALREADY_SENT);
+            sendResponse(response, sender);
+            return;
+        }
+
+        int startAt = now - lt.getHour() * 3600 - lt.getMinute() * 60 - lt.getSecond() + com.gt.towers.socials.Challenge.START_HOUR * 3600;
         Challenge challenge = ChallengeUtils.getInstance().findWaitingChallenge(0, now);
         if( challenge == null )
-            challenge = ChallengeUtils.getInstance().create(0, 50, lt.atZone(ZoneId.systemDefault()).toEpochSecond(), player);
+            challenge = ChallengeUtils.getInstance().create(0, 50, startAt, now, player);
         else
-            ChallengeUtils.getInstance().join(challenge, player, true);
+            ChallengeUtils.getInstance().join(challenge, player, now, true);
 
         response.putInt("response", MessageTypes.RESPONSE_SUCCEED);
         response.putSFSObject("challenge", challenge);

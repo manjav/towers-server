@@ -3,6 +3,7 @@ import com.gerantech.towers.sfs.administration.*;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
+import com.gerantech.towers.sfs.challenges.handlers.ChallengeGetHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeJoinHandler;
 import com.gerantech.towers.sfs.handlers.*;
 import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
@@ -90,6 +91,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler("resetalllobbies", ResetLobbiesHandler.class);
 		addRequestHandler("spectateBattles", JoinSpectatorHandler.class);
 
+		addRequestHandler(Commands.CHALLENGE_GET, ChallengeGetHandler.class);
 		addRequestHandler(Commands.CHALLENGE_JOIN, ChallengeJoinHandler.class);
 	}
 

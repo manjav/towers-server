@@ -17,11 +17,12 @@ public class Challenge extends SFSObject
         super();
         base = new com.gt.towers.socials.Challenge();
     }
-    public Challenge(Integer id, Long startAt, byte[] attendees)
+    public Challenge(int id, int type, int startAt, byte[] attendees)
     {
         super();
         base = new com.gt.towers.socials.Challenge();
         setId(id);
+        setType(type);
         setStartAt(startAt);
         setAttendees(attendees);
     }
@@ -35,14 +36,25 @@ public class Challenge extends SFSObject
         putInt("id", id);
         base.id = id;
     }
-
-    public Long getStartAt()
+    public int getType()
     {
-        return containsKey("start_at") ? getLong("start_at") : -1;
+        if( !containsKey("type") )
+            putInt("type", 0);
+        return getInt("type");
     }
-    public void setStartAt(Long startAt)
+    public void setType(int type)
     {
-        base.startAt = Math.toIntExact(startAt / 1000l);
+        putInt("type", type);
+        base.type = type;
+    }
+
+    public int getStartAt()
+    {
+        return containsKey("start_at") ? getInt("start_at") : -1;
+    }
+    public void setStartAt(int startAt)
+    {
+        base.startAt = startAt;
         putInt("start_at", base.startAt);
     }
 

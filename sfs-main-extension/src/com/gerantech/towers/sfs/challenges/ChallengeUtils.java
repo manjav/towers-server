@@ -2,14 +2,15 @@ package com.gerantech.towers.sfs.challenges;
 
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
-import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +45,7 @@ public class ChallengeUtils
         for( int i=0; i<challenges.size(); i++ )
         {
             ch = challenges.getSFSObject(i);
-            challengesData.put(ch.getInt("id"), new Challenge(ch.getInt("id"), ch.getLong("start_at"), ch.getByteArray("attendees")));
+            challengesData.put(ch.getInt("id"), new Challenge(ch.getInt("id"), ch.getInt("type"),  Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees")));
         }
 
         ext.getParentZone().setProperty("challengesData", challengesData);
@@ -58,22 +59,25 @@ public class ChallengeUtils
     {
         return getAll().get(name);
     }
-    public Challenge getByAttendee(int attendeeId)
+    public ISFSArray getByAttendee(int type, int attendeeId)
     {
+        ISFSArray ret = new SFSArray();
         ISFSArray all;
         ISFSObject member;
         Map<Integer, Challenge> lobbiesData = getAll();
         for (Map.Entry<Integer, Challenge> entry : lobbiesData.entrySet())
         {
+            if( type > -1 && entry.getValue().base.type != type )
+                continue;
             all = entry.getValue().getAttendees();
             for(int i=0; i<all.size(); i++)
             {
                 member = all.getSFSObject(i);
-                if( member.getInt("id").equals(attendeeId) )
-                    return  entry.getValue();
+                if( member.getInt("id").equals(attendeeId) && member.getInt("lastUpdate") > -1 )
+                    ret.addSFSObject(entry.getValue());
             }
         }
-        return null;
+        return ret;
     }
 
     public Challenge findWaitingChallenge(int type, int now)
@@ -85,14 +89,14 @@ public class ChallengeUtils
         return null;
     }
 
-    public Challenge create(int type, int capacity, long startAt, Player player)
+    public Challenge create(int type, int capacity, int startAt, int now, Player player)
     {
         Challenge challenge = new Challenge();
-        challenge.base.capacity = capacity;
-        challenge.base.type = type;
+        challenge.setType(type);
         challenge.setStartAt(startAt);
-        join(challenge, player, false);
-        String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (0, FROM_UNIXTIME(" + startAt + "), ?);";
+        challenge.base.capacity = capacity;
+        join(challenge, player, now, false);
+        String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (" + type + ", FROM_UNIXTIME(" + startAt + "), ?);";
         try {
             challenge.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()})));
         } catch (SQLException e) {  e.printStackTrace(); }
@@ -101,11 +105,11 @@ public class ChallengeUtils
         return  challenge;
     }
 
-    public void join(Challenge challenge, Player player, boolean saveToDB)
+    public void join(Challenge challenge, Player player, int now, boolean saveToDB)
     {
         ISFSObject attendee = new SFSObject();
         attendee.putInt("id", player.id);
-        attendee.putInt("lu", 0);
+        attendee.putInt("lastUpdate", now);
         attendee.putInt("point", 0);
         attendee.putText("name", player.nickName);
         challenge.getAttendees().addSFSObject(attendee);
