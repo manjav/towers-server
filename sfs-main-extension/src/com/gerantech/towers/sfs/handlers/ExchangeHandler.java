@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.handlers;
 
 import java.time.Instant;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
@@ -10,6 +11,7 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
@@ -40,29 +42,15 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		params.putInt("now", now);
 		if( response != MessageTypes.RESPONSE_SUCCEED )
 		{
-			send("exchange", params, sender);
+			send(Commands.EXCHANGE, params, sender);
 			return;
 		}
 
-		// return chest rewards as params
-		ExchangeItem item = game.exchanger.items.get(type);
-
-		SFSArray sfsRewards = new SFSArray();
-		int[] outKeys = manager.mapChangeCallback.all.keys();
-		for (int i : outKeys)
-		{
-			if( manager.mapChangeCallback.all.get(i) <= 0 )
-				continue;
-
-			SFSObject so = new SFSObject();
-			so.putInt("t", i);
-			so.putInt("c",  manager.mapChangeCallback.all.get(i));
-			sfsRewards.addSFSObject( so );
-		}
+		// return book rewards as params
+		ISFSArray sfsRewards = manager.getRewards();
 		if( sfsRewards.size() > 0 )
 			params.putSFSArray("rewards", sfsRewards);
-		manager.mapChangeCallback = null;
 
-		send("exchange", params, sender);
+		send(Commands.EXCHANGE, params, sender);
 	}
 }

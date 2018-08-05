@@ -6,6 +6,7 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.smartfoxserver.v2.SmartFoxServer;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
@@ -74,6 +75,28 @@ public class ExchangeManager
         }
         catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
         return response;
+    }
+
+    /**
+     * Return book rewards as params and clear change callback
+     * @return
+     */
+    public ISFSArray getRewards()
+    {
+        ISFSArray ret = new SFSArray();
+        int[] outKeys = mapChangeCallback.all.keys();
+        for (int i : outKeys)
+        {
+            if( mapChangeCallback.all.get(i) <= 0 )
+                continue;
+
+            SFSObject so = new SFSObject();
+            so.putInt("t", i);
+            so.putInt("c",  mapChangeCallback.all.get(i));
+            ret.addSFSObject( so );
+        }
+        mapChangeCallback = null;
+        return ret;
     }
 
     public static SFSObject toSFS(ExchangeItem item)
