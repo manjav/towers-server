@@ -59,6 +59,8 @@ public class Commands
     public static final String INBOX_REMOVE = "inboxRemove";
     public static final String INBOX_BROADCAST = "inboxBroadcast";
 
-    public static final String CHALLENGE_GET = "challengeGet";
     public static final String CHALLENGE_JOIN = "challengeJoin";
+    public static final String CHALLENGE_GET = "challengeGet";
+    public static final String CHALLENGE_GET_ALL = "challengeGetAll";
+    public static final String CHALLENGE_COLLECT = "challengeCollect";
 }
