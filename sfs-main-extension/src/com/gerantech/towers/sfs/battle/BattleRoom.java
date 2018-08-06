@@ -7,7 +7,7 @@ import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.gt.challenges.ChallengeData;
+import com.gt.challenges.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
@@ -469,7 +469,7 @@ public class BattleRoom extends SFSExtension
 				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id);
 				for (int c = 0; c < challenges.size(); c++)
 				{
-					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, (ChallengeData) challenges.getSFSObject(i));
+					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, (ChallengeSFS) challenges.getSFSObject(i));
 					attendee.putInt("point", attendee.getInt("point") + 1);
 					attendee.putInt("updateAt", (int)(battleField.now / 1000L));
 				}

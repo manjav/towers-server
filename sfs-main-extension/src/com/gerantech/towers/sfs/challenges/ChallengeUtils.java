@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.challenges;
 
-import com.gt.challenges.ChallengeData;
+import com.gt.challenges.ChallengeSFS;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -42,24 +42,24 @@ public class ChallengeUtils
             challenges = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM challenges WHERE start_at > NOW() - INTERVAL 1 WEEK;", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
 
-        Map<Integer, ChallengeData> challengesData = new ConcurrentHashMap();
+        Map<Integer, ChallengeSFS> challengesData = new ConcurrentHashMap();
         ISFSObject ch = null;
         for( int i=0; i<challenges.size(); i++ )
         {
             ch = challenges.getSFSObject(i);
-            challengesData.put(ch.getInt("id"), new ChallengeData(ch.getInt("id"), ch.getInt("type"),  Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees")));
+            challengesData.put(ch.getInt("id"), new ChallengeSFS(ch.getInt("id"), ch.getInt("type"),  Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees")));
         }
 
         ext.getParentZone().setProperty("challengesData", challengesData);
         ext.trace("loaded challenges data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
-    public ConcurrentHashMap<Integer, ChallengeData> getAll()
+    public ConcurrentHashMap<Integer, ChallengeSFS> getAll()
     {
-        return (ConcurrentHashMap<Integer, ChallengeData>) ext.getParentZone().getProperty("challengesData");
+        return (ConcurrentHashMap<Integer, ChallengeSFS>) ext.getParentZone().getProperty("challengesData");
     }
-    public ChallengeData get(int challengeId)
+    public ChallengeSFS get(int challengeId)
     {
-        ConcurrentHashMap<Integer, ChallengeData> challenges = getAll();
+        ConcurrentHashMap<Integer, ChallengeSFS> challenges = getAll();
         if( !challenges.containsKey(challengeId) )
             return null;
         return getAll().get(challengeId);
@@ -69,12 +69,12 @@ public class ChallengeUtils
         ISFSArray ret = new SFSArray();
         ISFSArray all;
         ISFSObject member;
-        ConcurrentHashMap<Integer, ChallengeData> lobbiesData = getAll();
+        ConcurrentHashMap<Integer, ChallengeSFS> lobbiesData = getAll();
 
-        Iterator<Map.Entry<Integer, ChallengeData>> iterator = lobbiesData.entrySet().iterator();
+        Iterator<Map.Entry<Integer, ChallengeSFS>> iterator = lobbiesData.entrySet().iterator();
         while( iterator.hasNext() )
         {
-            ChallengeData challenge = iterator.next().getValue();
+            ChallengeSFS challenge = iterator.next().getValue();
             if( type > -1 && challenge.base.type != type )
                 continue;
             all = challenge.getAttendees();
@@ -91,12 +91,12 @@ public class ChallengeUtils
         return ret;
     }
 
-    public ChallengeData findWaitingChallenge(int type, int now)
+    public ChallengeSFS findWaitingChallenge(int type, int now)
     {
-        ConcurrentHashMap<Integer, ChallengeData> challenges = ChallengeUtils.getInstance().getAll();
-        for( Map.Entry<Integer, ChallengeData> entry : challenges.entrySet() )
+        ConcurrentHashMap<Integer, ChallengeSFS> challenges = ChallengeUtils.getInstance().getAll();
+        for( Map.Entry<Integer, ChallengeSFS> entry : challenges.entrySet() )
         {
-            ChallengeData challenge = entry.getValue();
+            ChallengeSFS challenge = entry.getValue();
             if( challenge.base.type == type && challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !challenge.isFull() )
                 return challenge;
         }
@@ -104,9 +104,9 @@ public class ChallengeUtils
         return null;
     }
 
-    public ChallengeData create(int type, int capacity, int startAt, int now, Player player)
+    public ChallengeSFS create(int type, int capacity, int startAt, int now, Player player)
     {
-        ChallengeData challenge = new ChallengeData();
+        ChallengeSFS challenge = new ChallengeSFS();
         challenge.setType(type);
         challenge.setStartAt(startAt);
         challenge.base.capacity = capacity;
@@ -120,7 +120,7 @@ public class ChallengeUtils
         return  challenge;
     }
 
-    private void save(ChallengeData challenge)
+    private void save(ChallengeSFS challenge)
     {
         String query = "UPDATE challenges SET attendees = ? WHERE id = " + challenge.getId();
         try {
@@ -128,7 +128,7 @@ public class ChallengeUtils
         } catch (SQLException e) {  e.printStackTrace(); }
     }
 
-    public void join(ChallengeData challenge, Player player, int now, boolean saveToDB)
+    public void join(ChallengeSFS challenge, Player player, int now, boolean saveToDB)
     {
         ISFSObject attendee = new SFSObject();
         attendee.putInt("id", player.id);
@@ -144,7 +144,7 @@ public class ChallengeUtils
 
     public int collectReward(int challengeId, int playerId, int now)
     {
-        ChallengeData challenge = get(challengeId);
+        ChallengeSFS challenge = get(challengeId);
         if( challenge == null )
             return MessageTypes.RESPONSE_NOT_FOUND;
 
@@ -163,7 +163,7 @@ public class ChallengeUtils
         return MessageTypes.RESPONSE_SUCCEED;
     }
 
-    public ISFSObject getAttendee(int playerId, ChallengeData challenge)
+    public ISFSObject getAttendee(int playerId, ChallengeSFS challenge)
     {
         ISFSArray attendees = challenge.getAttendees();
         for(int i=0; i<attendees.size(); i++)

@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.challenges.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
-import com.gt.challenges.ChallengeData;
+import com.gt.challenges.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
@@ -29,7 +29,7 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
         }
 
         // add rewards based on rank
-        ChallengeData challenge = ChallengeUtils.getInstance().get(params.getInt("id"));
+        ChallengeSFS challenge = ChallengeUtils.getInstance().get(params.getInt("id"));
         ExchangeManager manager = ExchangeManager.getInstance();
         ExchangeItem ei = new ExchangeItem(null);
         ei.type = ExchangeType.C121_MAGIC;
