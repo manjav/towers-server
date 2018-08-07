@@ -96,8 +96,8 @@ public class ChallengeUtils
         for( Map.Entry<Integer, ChallengeSFS> entry : challenges.entrySet() )
         {
             ChallengeSFS challenge = entry.getValue();
-            ext.trace(challenge.getType(), challenge.getType() == type, challenge.base.getState(now), challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT, challenge.isFull());
-            if( challenge.getType() == type && challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !challenge.isFull() )
+            ext.trace(challenge.base.type, challenge.base.type == type, challenge.base.getState(now), challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT, challenge.isFull());
+            if( challenge.base.type == type && challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !challenge.isFull() )
                 return challenge;
         }
 
@@ -106,9 +106,7 @@ public class ChallengeUtils
 
     public ChallengeSFS create(int type, int capacity, int startAt, int now, Player player)
     {
-        ChallengeSFS challenge = new ChallengeSFS();
-        challenge.setType(type);
-        challenge.setStartAt(startAt);
+        ChallengeSFS challenge = new ChallengeSFS(-1, type, startAt, null);
         challenge.base.capacity = capacity;
         join(challenge, player, now, false);
         String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (" + type + ", FROM_UNIXTIME(" + startAt + "), ?);";
@@ -116,13 +114,13 @@ public class ChallengeUtils
             challenge.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()})));
         } catch (SQLException e) {  e.printStackTrace(); }
 
-        getAll().put(challenge.getId(), challenge);
+        getAll().put(challenge.base.id, challenge);
         return  challenge;
     }
 
     private void save(ChallengeSFS challenge)
     {
-        String query = "UPDATE challenges SET attendees = ? WHERE id = " + challenge.getId();
+        String query = "UPDATE challenges SET attendees = ? WHERE id = " + challenge.base.id;
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{challenge.getAttendeesBytes()});
         } catch (SQLException e) {  e.printStackTrace(); }

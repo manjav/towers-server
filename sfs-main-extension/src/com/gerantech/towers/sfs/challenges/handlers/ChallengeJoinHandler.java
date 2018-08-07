@@ -38,13 +38,13 @@ public class ChallengeJoinHandler extends BaseClientRequestHandler
 
         int startAt = now - lt.getHour() * 3600 - lt.getMinute() * 60 - lt.getSecond() + com.gt.towers.socials.Challenge.START_HOUR * 3600;
         ChallengeSFS challenge = ChallengeUtils.getInstance().findWaitingChallenge(0, now);
-        if( challenge == null )
+        /*if( challenge == null )
             challenge = ChallengeUtils.getInstance().create(0, 50, startAt, now, player);
         else
             ChallengeUtils.getInstance().join(challenge, player, now, true);
 
         response.putInt("response", MessageTypes.RESPONSE_SUCCEED);
-        response.putSFSObject("challenge", challenge);
+        response.putSFSObject("challenge", challenge);*/
         sendResponse(response, sender);
     }
 

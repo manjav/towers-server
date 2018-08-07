@@ -195,12 +195,12 @@ public class LobbyDataHandler extends BaseClientRequestHandler
             index ++;
         }
 
-        // sort on point ascending
+        // sort on activity ascending
         if( includeMembers )
         {
             Collections.sort(members, new Comparator<SFSObject>() {
                 @Override
-                public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt("point") - rhs.getInt("point"); }
+                public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt("activity") - rhs.getInt("activity"); }
             });
         }
 
