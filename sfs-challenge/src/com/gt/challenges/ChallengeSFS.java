@@ -31,17 +31,18 @@ public class ChallengeSFS extends SFSObject
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
         setRequirements(Challenge.getRequiements(type));
-        setAttendees(attendees);
+        if( attendees != null )
+            setAttendees(attendees);
     }
 
     /**
      * Id
      * @return
      */
-    public int getId()
+/*    public int getId()
     {
         return getInt("id");
-    }
+    }*/
     public void setId(int id)
     {
         putInt("id", id);
@@ -52,11 +53,11 @@ public class ChallengeSFS extends SFSObject
      * Type
      * @return
      */
-    public int getType()
+    /*public int getType()
     {
         return getInt("type");
-    }
-    public void setType(int type)
+    }*/
+    private void setType(int type)
     {
         putInt("type", type);
         base.type = type;
@@ -66,11 +67,11 @@ public class ChallengeSFS extends SFSObject
      * StartAt
      * @return
      */
-    public int getStartAt()
+    /*public int getStartAt()
     {
         return getInt("start_at");
-    }
-    public void setStartAt(int startAt)
+    }*/
+    private void setStartAt(int startAt)
     {
         base.startAt = startAt;
         putInt("start_at", base.startAt);
@@ -80,11 +81,11 @@ public class ChallengeSFS extends SFSObject
      * Duration
      * @return
      */
-    public int getDuration()
+    /*public int getDuration()
     {
         return getInt("duration");
-    }
-    public void setDuration(int duration)
+    }*/
+    private void setDuration(int duration)
     {
         base.duration = duration;
         putInt("duration", base.duration);
@@ -94,11 +95,11 @@ public class ChallengeSFS extends SFSObject
      * Requirements
      * @return
      */
-    public ISFSArray getRequirements()
+    /*public ISFSArray getRequirements()
     {
         return getSFSArray("requirements");
-    }
-    public void setRequirements(IntIntMap requirements)
+    }*/
+    private void setRequirements(IntIntMap requirements)
     {
         ISFSObject sfs;
         ISFSArray ret = new SFSArray();
@@ -128,7 +129,7 @@ public class ChallengeSFS extends SFSObject
 
         return getSFSArray("attendees");
     }
-    public void setAttendees(ISFSArray attendees)
+    private void setAttendees(ISFSArray attendees)
     {
         putSFSArray("attendees", attendees);
     }
@@ -137,16 +138,16 @@ public class ChallengeSFS extends SFSObject
     {
         return DefaultSFSDataSerializer.getInstance().array2binary(getAttendees());
     }
-    public void setAttendees(byte[] attendees)
+    private void setAttendees(byte[] attendees)
     {
         setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
     }
 
-    public int getCapacity()
+    /*public int getCapacity()
     {
         return getInt("capacity");
-    }
-    public void setCapacity(int capacity)
+    }*/
+    private void setCapacity(int capacity)
     {
         putInt("capacity", capacity);
         base.capacity = capacity;
