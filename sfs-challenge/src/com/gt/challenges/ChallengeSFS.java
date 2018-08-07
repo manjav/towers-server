@@ -3,7 +3,10 @@
  */
 package com.gt.challenges;
 
+import com.gt.towers.socials.Challenge;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
@@ -21,26 +24,36 @@ public class ChallengeSFS extends SFSObject
     public ChallengeSFS(int id, int type, int startAt, byte[] attendees)
     {
         super();
-        base = new com.gt.towers.socials.Challenge();
+        base = new Challenge();
         setId(id);
         setType(type);
         setStartAt(startAt);
+        setDuration(Challenge.getDuration(type));
+        setCapacity(Challenge.getCapacity(type));
+        setRequirements(Challenge.getRequiements(type));
         setAttendees(attendees);
     }
 
+    /**
+     * Id
+     * @return
+     */
     public int getId()
     {
-        return containsKey("id") ? getInt("id") : -1;
+        return getInt("id");
     }
     public void setId(int id)
     {
         putInt("id", id);
         base.id = id;
     }
+
+    /**
+     * Type
+     * @return
+     */
     public int getType()
     {
-        if( !containsKey("type") )
-            putInt("type", 0);
         return getInt("type");
     }
     public void setType(int type)
@@ -49,15 +62,60 @@ public class ChallengeSFS extends SFSObject
         base.type = type;
     }
 
+    /**
+     * StartAt
+     * @return
+     */
     public int getStartAt()
     {
-        return containsKey("start_at") ? getInt("start_at") : -1;
+        return getInt("start_at");
     }
     public void setStartAt(int startAt)
     {
         base.startAt = startAt;
         putInt("start_at", base.startAt);
     }
+
+    /**
+     * Duration
+     * @return
+     */
+    public int getDuration()
+    {
+        return getInt("duration");
+    }
+    public void setDuration(int duration)
+    {
+        base.duration = duration;
+        putInt("duration", base.duration);
+    }
+
+    /**
+     * Requirements
+     * @return
+     */
+    public ISFSArray getRequirements()
+    {
+        return getSFSArray("requirements");
+    }
+    public void setRequirements(IntIntMap requirements)
+    {
+        ISFSObject sfs;
+        ISFSArray ret = new SFSArray();
+        int[] keys = requirements.keys();
+        int i = 0;
+        while ( i < keys.length )
+        {
+            sfs = new SFSObject();
+            sfs.putInt("key", keys[i]);
+            sfs.putInt("value", requirements.get(keys[i]));
+            ret.addSFSObject(sfs);
+            i ++;
+        }
+        putSFSArray("requirements", ret);
+        base.requirements = requirements;
+    }
+
 
     /**
      * all players who participate challenge
@@ -84,8 +142,19 @@ public class ChallengeSFS extends SFSObject
         setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
     }
 
+    public int getCapacity()
+    {
+        return getInt("capacity");
+    }
+    public void setCapacity(int capacity)
+    {
+        putInt("capacity", capacity);
+        base.capacity = capacity;
+    }
+
     public boolean isFull()
     {
         return getAttendees().size() >= base.capacity;
     }
+
 }
