@@ -31,8 +31,7 @@ public class ChallengeSFS extends SFSObject
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
         setRequirements(Challenge.getRequiements(type));
-        if( attendees != null )
-            setAttendees(attendees);
+        setAttendees(attendees);
     }
 
     /**
@@ -140,7 +139,10 @@ public class ChallengeSFS extends SFSObject
     }
     private void setAttendees(byte[] attendees)
     {
-        setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
+        if( attendees == null )
+            setAttendees(new SFSArray());
+        else
+            setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
     }
 
     /*public int getCapacity()
@@ -157,5 +159,8 @@ public class ChallengeSFS extends SFSObject
     {
         return getAttendees().size() >= base.capacity;
     }
-
+    public boolean inWaiting(int now)
+    {
+        return getAttendees().size() < base.capacity && base.getState(now) == Challenge.STATE_WAIT;
+    }
 }
