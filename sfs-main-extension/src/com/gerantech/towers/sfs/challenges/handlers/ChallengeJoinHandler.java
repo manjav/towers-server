@@ -29,22 +29,16 @@ public class ChallengeJoinHandler extends BaseClientRequestHandler
 
         // check already joined in a challenge
         Player player = ((Game)sender.getSession().getProperty("core")).player;
-        if( ChallengeUtils.getInstance().getChallengesOfAttendee(0, player.id).size() > 0 )
+      /*  if( ChallengeUtils.getInstance().getChallengesOfAttendee(0, player.id, now).size() > 0 )
         {
             response.putInt("response", MessageTypes.RESPONSE_ALREADY_SENT);
             sendResponse(response, sender);
             return;
-        }
+        }*/
 
-        int startAt = now - lt.getHour() * 3600 - lt.getMinute() * 60 - lt.getSecond() + com.gt.towers.socials.Challenge.START_HOUR * 3600;
-        ChallengeSFS challenge = ChallengeUtils.getInstance().findWaitingChallenge(0, now);
-        /*if( challenge == null )
-            challenge = ChallengeUtils.getInstance().create(0, 50, startAt, now, player);
-        else
-            ChallengeUtils.getInstance().join(challenge, player, now, true);
-
+        ChallengeSFS challenge = ChallengeUtils.getInstance().join(params.getInt("type"), player.id, player.nickName, now);
         response.putInt("response", MessageTypes.RESPONSE_SUCCEED);
-        response.putSFSObject("challenge", challenge);*/
+        response.putSFSObject("challenge", challenge);
         sendResponse(response, sender);
     }
 

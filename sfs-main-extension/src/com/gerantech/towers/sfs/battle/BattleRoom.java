@@ -396,6 +396,7 @@ public class BattleRoom extends SFSExtension
 	{
 		DBUtils dbUtils = DBUtils.getInstance();
 		SFSArray outcomesSFSData = new SFSArray();
+		int now = (int) Instant.now().getEpochSecond();
 
 		IntIntMap[] outcomesList = new IntIntMap[registeredPlayers.size()];
 	    for (int i=0; i < registeredPlayers.size(); i++)
@@ -466,7 +467,7 @@ public class BattleRoom extends SFSExtension
 			if( !game.player.isBot() && !isOperation && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.POINT) > 0 )
 			{
 				trace(outcomesList[i].get(ResourceType.POINT));
-				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id);
+				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id, now);
 				for (int c = 0; c < challenges.size(); c++)
 				{
 					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, (ChallengeSFS) challenges.getSFSObject(i));
