@@ -10,7 +10,6 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +33,8 @@ public class ChallengeUtils
 
     public void loadAll()
     {
-        if( ext.getParentZone().containsProperty("challengesData") )
-            return;
+       /// if( ext.getParentZone().containsProperty("challengesData") )
+         //   return;
 
         ISFSArray challenges = new SFSArray();
         try {
@@ -97,7 +96,8 @@ public class ChallengeUtils
         for( Map.Entry<Integer, ChallengeSFS> entry : challenges.entrySet() )
         {
             ChallengeSFS challenge = entry.getValue();
-            if( challenge.base.type == type && challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !challenge.isFull() )
+            ext.trace(challenge.getType(), challenge.getType() == type, challenge.base.getState(now), challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT, challenge.isFull());
+            if( challenge.getType() == type && challenge.base.getState(now) == com.gt.towers.socials.Challenge.STATE_WAIT && !challenge.isFull() )
                 return challenge;
         }
 
