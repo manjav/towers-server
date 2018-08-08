@@ -20,12 +20,6 @@ public class ChallengeJoinHandler extends BaseClientRequestHandler
         LocalDateTime lt = LocalDateTime.now();
         int now = (int) Instant.now().getEpochSecond();
         ISFSObject response = new SFSObject();
-        if( lt.getHour() > com.gt.towers.socials.Challenge.START_HOUR )
-        {
-            response.putInt("response", MessageTypes.RESPONSE_NOT_ALLOWED);
-            sendResponse(response, sender);
-            return;
-        }
 
         // check already joined in a challenge
         Player player = ((Game)sender.getSession().getProperty("core")).player;

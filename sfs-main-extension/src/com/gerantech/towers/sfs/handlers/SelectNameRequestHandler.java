@@ -71,6 +71,4 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 		params.putInt("response", game.appVersion > 3300 ? MessageTypes.RESPONSE_SUCCEED : RESPONSE_SUCCEED);
 		send(Commands.SELECT_NAME, params, sender);
     }
-
-
 }

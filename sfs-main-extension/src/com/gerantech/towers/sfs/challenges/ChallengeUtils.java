@@ -35,7 +35,7 @@ public class ChallengeUtils
 
     public void loadAll()
     {
-        if( ext.getParentZone().containsProperty("challengesData") )
+        if( ext.getParentZone().containsProperty("allChallenges") )
             return;
 
         int now = (int) Instant.now().getEpochSecond();
