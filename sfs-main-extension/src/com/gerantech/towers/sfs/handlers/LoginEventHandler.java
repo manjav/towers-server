@@ -216,6 +216,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
+		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, id, false));
 
 		// Find active battle room
 		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);

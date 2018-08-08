@@ -14,6 +14,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.towers.socials.Challenge;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.core.SFSEventType;
@@ -462,15 +463,16 @@ public class BattleRoom extends SFSExtension
 				} catch (Exception e) { e.printStackTrace(); }
 			}
 
-
 			// update active challenges
 			if( !game.player.isBot() && !isOperation && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.POINT) > 0 )
 			{
-				trace(outcomesList[i].get(ResourceType.POINT));
-				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id, now);
+				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id, false);
 				for (int c = 0; c < challenges.size(); c++)
 				{
-					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, (ChallengeSFS) challenges.getSFSObject(i));
+					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(i);
+					if( challenge.base.getState(now) != Challenge.STATE_STARTED )
+						continue;
+					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
 					attendee.putInt("point", attendee.getInt("point") + 1);
 					attendee.putInt("updateAt", (int)(battleField.now / 1000L));
 				}

@@ -118,7 +118,7 @@ public class ChallengeUtils
     }
 
 
-    public ISFSArray getChallengesOfAttendee(int type, int attendeeId, int now)
+    public ISFSArray getChallengesOfAttendee(int type, int attendeeId, boolean createIfnotExists)
     {
         ISFSObject attendee;
         Map<Integer, Boolean> types = new HashMap();
@@ -140,8 +140,8 @@ public class ChallengeUtils
                 }
             }
         }
-        if( !types.containsKey(0) )
-            ret.addSFSObject(getWaiting(0, now));
+        if( createIfnotExists && !types.containsKey(0) )
+            ret.addSFSObject(getWaiting(0, (int) Instant.now().getEpochSecond()));
 
         return ret;
     }
