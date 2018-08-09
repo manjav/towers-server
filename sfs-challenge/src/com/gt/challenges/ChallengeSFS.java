@@ -30,6 +30,7 @@ public class ChallengeSFS extends SFSObject
         setStartAt(startAt);
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
+        setRewards(Challenge.getRewards(type));
         setRequirements(Challenge.getRequiements(type));
         setAttendees(attendees);
     }
@@ -90,6 +91,18 @@ public class ChallengeSFS extends SFSObject
         putInt("duration", base.duration);
     }
 
+
+    /**
+     * Rewards
+     * @return
+     */
+    private void setRewards(IntIntMap rewards)
+    {
+        setMap("rewards", rewards);
+        base.rewards = rewards;
+    }
+
+
     /**
      * Requirements
      * @return
@@ -99,6 +112,12 @@ public class ChallengeSFS extends SFSObject
         return getSFSArray("requirements");
     }*/
     private void setRequirements(IntIntMap requirements)
+    {
+        setMap("requirements", requirements);
+        base.requirements = requirements;
+    }
+
+    private void setMap(String name, IntIntMap requirements)
     {
         ISFSObject sfs;
         ISFSArray ret = new SFSArray();
@@ -112,8 +131,7 @@ public class ChallengeSFS extends SFSObject
             ret.addSFSObject(sfs);
             i ++;
         }
-        putSFSArray("requirements", ret);
-        base.requirements = requirements;
+        putSFSArray(name, ret);
     }
 
 
