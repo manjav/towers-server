@@ -3,6 +3,7 @@
  */
 package com.gt.challenges;
 
+import com.gt.towers.socials.Attendee;
 import com.gt.towers.socials.Challenge;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -10,6 +11,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
+import haxe.root.Array;
 
 public class ChallengeSFS extends SFSObject
 {
@@ -161,6 +163,22 @@ public class ChallengeSFS extends SFSObject
             setAttendees(new SFSArray());
         else
             setAttendees(DefaultSFSDataSerializer.getInstance().binary2array(attendees));
+    }
+
+    public void representAttendees()
+    {
+        if( base.attendees == null || base.attendees.length != getAttendees().size() )
+            base.attendees = new Array<Attendee>();
+
+        if( base.attendees.length == getAttendees().size() )
+            return;
+
+        ISFSObject att;
+        for (int a = 0; a < getAttendees().size(); a++)
+        {
+            att = getAttendees().getSFSObject(a);
+            base.attendees.push(new Attendee(att.getInt("id"), att.getText("name"), att.getInt("point"), att.getInt("updateAt")));
+        }
     }
 
     /*public int getCapacity()
