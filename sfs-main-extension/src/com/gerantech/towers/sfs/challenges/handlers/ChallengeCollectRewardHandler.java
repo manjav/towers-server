@@ -30,12 +30,14 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
 
         // add rewards based on rank
         ChallengeSFS challenge = ChallengeUtils.getInstance().get(params.getInt("id"));
+        challenge.representAttendees();
+
         ExchangeManager manager = ExchangeManager.getInstance();
         ExchangeItem ei = new ExchangeItem(null);
         ei.type = ExchangeType.C121_MAGIC;
         ei.requirements = new IntIntMap();
         ei.outcomes = new IntIntMap();
-        ei.outcomes.set(challenge.base.getRewardByRank(1), game.player.get_arena(0));
+        ei.outcomes.set(challenge.base.getRewardByAttendee(game.player.id), game.player.get_arena(0));
 
         response =  manager.process(game, ei, now, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )
