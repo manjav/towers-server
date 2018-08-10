@@ -462,8 +462,19 @@ public class BattleRoom extends SFSExtension
 					dbUtils.insertResources(game.player, insertMap);
 				} catch (Exception e) { e.printStackTrace(); }
 			}
+		}
 
-			// update active challenges
+		// send to all users
+		SFSObject params = new SFSObject();
+		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
+		List<User> users = room.getUserList();
+		for (int i=0; i < users.size(); i++)
+			send( Commands.END_BATTLE, params, users.get(i) );
+
+
+		for (int i=0; i < registeredPlayers.size(); i++)
+		{
+			Game game = registeredPlayers.get(i);    // update active challenges
 			if( !game.player.isBot() && !isOperation && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.POINT) > 0 )
 			{
 				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id, false);
@@ -474,17 +485,11 @@ public class BattleRoom extends SFSExtension
 						continue;
 					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
 					attendee.putInt("point", attendee.getInt("point") + 1);
-					attendee.putInt("updateAt", (int)(battleField.now / 1000L));
+					attendee.putInt("updateAt", now);
+					ChallengeUtils.getInstance().scheduleSave(challenge);
 				}
 			}
 		}
-
-		// send to all users
-		SFSObject params = new SFSObject();
-		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
-		List<User> users = room.getUserList();
-		for (int i=0; i < users.size(); i++)
-			send( Commands.END_BATTLE, params, users.get(i) );
 	}
 
 	public void close()
