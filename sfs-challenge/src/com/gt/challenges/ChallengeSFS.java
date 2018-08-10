@@ -17,6 +17,7 @@ public class ChallengeSFS extends SFSObject
 {
 
     public com.gt.towers.socials.Challenge base;
+    public int saveRequests = 0;
 
     public ChallengeSFS()
     {

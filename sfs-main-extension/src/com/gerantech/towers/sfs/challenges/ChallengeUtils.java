@@ -115,6 +115,7 @@ public class ChallengeUtils
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{challenge.getAttendeesBytes()});
         } catch (SQLException e) {  e.printStackTrace(); }
+        challenge.saveRequests = 0;
     }
 
 
@@ -175,5 +176,12 @@ public class ChallengeUtils
             if( attendees.getSFSObject(i).getInt("id").equals(playerId) )
                 return attendees.getSFSObject(i);
         return null;
+    }
+
+    public void scheduleSave(ChallengeSFS challenge)
+    {
+        challenge.saveRequests ++;
+        if( challenge.saveRequests > 5 )
+            save(challenge);
     }
 }
