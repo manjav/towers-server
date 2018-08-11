@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -15,6 +16,10 @@ public class IssueGetHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+		Game game = ((Game)sender.getSession().getProperty("core"));
+		if( !game.player.admin )
+			return;
+
     	String query = "SELECT bugs.id, bugs.player_id, bugs.description, bugs.status, UNIX_TIMESTAMP(bugs.report_at) as date, players.name as sender FROM bugs INNER JOIN players ON bugs.player_id = players.id";
     	if( params.containsKey("id") )
 			query += " WHERE bugs.player_id=" + params.getInt("id");

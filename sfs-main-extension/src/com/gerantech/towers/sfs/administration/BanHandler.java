@@ -31,6 +31,8 @@ public class BanHandler extends BaseClientRequestHandler
 			return;
 		}*/
 
+		if( !game.player.admin )
+			return;
 		// get name
 		ISFSArray players = null;
 		IDBManager db = getParentExtension().getParentZone().getDBManager();
