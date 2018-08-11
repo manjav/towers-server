@@ -18,7 +18,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
-            LobbyDataUtils.getInstance().fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, params.containsKey("all") );
+            LobbyDataUtils.getInstance().fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, true );
         else
             LobbyDataUtils.getInstance().searchRooms(params, users );
 
