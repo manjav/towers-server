@@ -179,13 +179,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 return false;
 
             // join online users
-            User targetUser = getParentZone().getUserByName(params.getInt("o").toString());
-            if ( targetUser != null )
-            {
-                try {
-                    getApi().joinRoom(targetUser, lobby);
-                } catch (SFSJoinRoomException e) { e.printStackTrace(); }
-            }
+            LobbyUtils.getInstance().join(lobby, getParentZone().getUserByName(params.getInt("o").toString()));
         }
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");

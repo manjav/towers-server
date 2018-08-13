@@ -370,6 +370,28 @@ public class LobbyUtils
         return result;
     }
 
+    public void join(Room room, User user)
+    {
+        if( user == null )
+            return;
+        Game game = ((Game) user.getSession().getProperty("core"));
+        try {
+            ext.getApi().joinRoom(user, room, null, false, null);
+        } catch (SFSJoinRoomException e) { e.printStackTrace(); }
+
+        // reset weekly battles
+        try {
+            ext.getParentZone().getDBManager().executeUpdate("UPDATE resources SET count= 0 WHERE type=1204 AND count != 0 AND player_id = " + game.player.id, new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+        game.player.resources.set(ResourceType.BATTLES_COUNT_WEEKLY, 0);
+        RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), 0);
+        if( users.containsKey(game.player.id) )
+            users.replace(game.player.id, rd);
+        else
+            users.put(game.player.id, rd);
+    }
+
     /*
     public Room getLobbyOfOfflineUser(int id)
     {
