@@ -13,7 +13,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 import haxe.root.Array;
 
-public class ChallengeSFS extends SFSObject
+public class ChallengeSFS extends SFSDataObject
 {
 
     public com.gt.towers.socials.Challenge base;
@@ -119,24 +119,6 @@ public class ChallengeSFS extends SFSObject
         setMap("requirements", requirements);
         base.requirements = requirements;
     }
-
-    private void setMap(String name, IntIntMap requirements)
-    {
-        ISFSObject sfs;
-        ISFSArray ret = new SFSArray();
-        int[] keys = requirements.keys();
-        int i = 0;
-        while ( i < keys.length )
-        {
-            sfs = new SFSObject();
-            sfs.putInt("key", keys[i]);
-            sfs.putInt("value", requirements.get(keys[i]));
-            ret.addSFSObject(sfs);
-            i ++;
-        }
-        putSFSArray(name, ret);
-    }
-
 
     /**
      * all players who participate challenge
