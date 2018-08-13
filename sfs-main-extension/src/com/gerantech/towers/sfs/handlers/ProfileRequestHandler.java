@@ -23,8 +23,6 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
-		Zone zone = getParentExtension().getParentZone();
-		LobbyUtils lobbyUtils = LobbyUtils.getInstance();
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
@@ -63,11 +61,11 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
 		CreateRoomSettings lobbySetting = null;
 		if( params.containsKey("lp") )
-			lobbySetting = lobbyUtils.getSettings(playerId);
+			lobbySetting = LobbyUtils.getInstance().getSettings(playerId);
 		if( lobbySetting != null )
 		{
 			params.putText("ln", lobbySetting.getName());
-			params.putInt("lp", lobbyUtils.getSettingsVariable(lobbySetting, "pic").getIntValue());
+			params.putInt("lp", LobbyUtils.getInstance().getSettingsVariable(lobbySetting, "pic").getIntValue());
 		}
 
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
