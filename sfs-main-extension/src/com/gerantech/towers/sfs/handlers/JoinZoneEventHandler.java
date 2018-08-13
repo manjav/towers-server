@@ -52,10 +52,10 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)
 	{
 		LobbyUtils lu = LobbyUtils.getInstance();
-		CreateRoomSettings lobbySetting = lu.getSettings(zone, player.id);
+		CreateRoomSettings lobbySetting = lu.getSettings(player.id);
 		if( lobbySetting == null )
 			return null;
-		Room room = lu.getLobby(lobbySetting, zone);
+		Room room = lu.getLobby(lobbySetting);
 		if( room == null )
 			return null;
 		try {

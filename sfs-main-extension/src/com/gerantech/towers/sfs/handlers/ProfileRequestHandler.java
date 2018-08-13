@@ -63,7 +63,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
 		CreateRoomSettings lobbySetting = null;
 		if( params.containsKey("lp") )
-			lobbySetting = lobbyUtils.getSettings(zone, playerId);
+			lobbySetting = lobbyUtils.getSettings(playerId);
 		if( lobbySetting != null )
 		{
 			params.putText("ln", lobbySetting.getName());
