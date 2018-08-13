@@ -2,23 +2,15 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gt.hazel.RankData;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
-import com.gt.towers.constants.ResourceType;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
+import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-
-import java.sql.SQLException;
 import java.time.Instant;
 
 /**
@@ -29,11 +21,13 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
-        if( LobbyUtils.getInstance().getLobby(game.player.id) != null )
+        CreateRoomSettings setting = LobbyUtils.getInstance().getSettings(game.player.id);
+        if( setting != null )
         {
             params.putInt("response", MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL);
-            trace(sender.getName() + " not able to join more lobbies !");
+            params.putText("lobby", setting.getName());
             send(Commands.LOBBY_JOIN, params, sender);
+            trace(sender.getName() + " already joined in " + setting.getName() + ".");
             return;
         }
 

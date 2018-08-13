@@ -2,6 +2,8 @@ package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.hazel.RankData;
+import com.gt.towers.Game;
+import com.gt.towers.constants.ResourceType;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -27,6 +29,7 @@ import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 import net.sf.json.JSONObject;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -109,7 +112,7 @@ public class LobbyUtils
             ext.getApi().joinRoom(owner, lobby);
         } catch (SFSJoinRoomException e) { e.printStackTrace(); }
 
-        getAllSettings(ext.getParentZone()).put(rs.getName(), rs);
+        getAllSettings().put(rs.getName(), rs);
         save(lobby);
         return lobby;
     }
@@ -121,18 +124,14 @@ public class LobbyUtils
      */
     public void save(Room lobby)
     {
-        save( ext.getParentZone(), lobby );
-    }
-    private void save(Zone zone, Room lobby)
-    {
         try {
-            zone.getRoomPersistenceApi().saveRoom(lobby);
+            ext.getParentZone().getRoomPersistenceApi().saveRoom(lobby);
         } catch (SFSStorageException e) { e.printStackTrace(); }
 
         // update room variables
-        CreateRoomSettings settings = getSettings(zone, lobby.getName());
+        CreateRoomSettings settings = getSettings(lobby.getName());
         settings.setRoomVariables(lobby.getVariables());
-        getAllSettings(zone).put(lobby.getName(), settings);
+        getAllSettings().put(lobby.getName(), settings);
     }
 
     public Room getLobby(int id)
@@ -147,7 +146,7 @@ public class LobbyUtils
         return null;
     }
 
-    public Room getLobby(CreateRoomSettings setting, Zone zone)
+    public Room getLobby(CreateRoomSettings setting)
     {
         Room lobby = ext.getParentZone().getRoomByName(setting.getName());
         if( lobby != null )
@@ -156,26 +155,26 @@ public class LobbyUtils
         //if( !hasMember(createLobbySetting.getRoomVariables()) )
         //    return null;
         try {
-            lobby = ext.getApi().createRoom(zone, setting, null);
+            lobby = ext.getApi().createRoom(ext.getParentZone(), setting, null);
         } catch (SFSCreateRoomException e) { e.printStackTrace(); }
 
         return lobby;
     }
 
 
-    public Map<String, CreateRoomSettings> getAllSettings(Zone zone)
+    public Map<String, CreateRoomSettings> getAllSettings()
     {
-        return (Map<String, CreateRoomSettings>) zone.getProperty("lobbiesData");
+        return (Map<String, CreateRoomSettings>) ext.getParentZone().getProperty("lobbiesData");
     }
-    public CreateRoomSettings getSettings(Zone zone, String roomName)
+    public CreateRoomSettings getSettings(String roomName)
     {
-        return getAllSettings(zone).get(roomName);
+        return getAllSettings().get(roomName);
     }
-    public CreateRoomSettings getSettings(Zone zone, int memberId)
+    public CreateRoomSettings getSettings(int memberId)
     {
         ISFSArray all;
         ISFSObject member;
-        Map<String, CreateRoomSettings> lobbiesData = getAllSettings(zone);
+        Map<String, CreateRoomSettings> lobbiesData = getAllSettings();
         for (Map.Entry<String, CreateRoomSettings> entry : lobbiesData.entrySet())
         {
             all = getSettingsVariable(entry.getValue(), "all").getSFSArrayValue();
@@ -251,7 +250,7 @@ public class LobbyUtils
     // remove room from db
     private void remove(String lobbyName)
     {
-        getAllSettings(ext.getParentZone()).remove(lobbyName);
+        getAllSettings().remove(lobbyName);
         try {
             ext.getParentZone().getRoomPersistenceApi().removeRoom(lobbyName);
         } catch (SFSStorageException e) { e.printStackTrace(); }
@@ -285,8 +284,10 @@ public class LobbyUtils
         int memberIndex = -1;
         ISFSArray all = lobby.getVariable("all").getSFSArrayValue();
         int allSize = all.size();
-        for (int i = 0; i < allSize; i++) {
-            if (all.getSFSObject(i).getInt("id").equals(userId)) {
+        for( int i = 0; i < allSize; i++ )
+        {
+            if( all.getSFSObject(i).getInt("id").equals(userId) )
+            {
                 memberIndex = i;
                 break;
             }

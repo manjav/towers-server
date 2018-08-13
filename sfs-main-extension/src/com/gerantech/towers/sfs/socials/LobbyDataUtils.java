@@ -36,7 +36,7 @@ public class LobbyDataUtils
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
         //boolean rankMode = params.containsKey("rank");
 
-        Map<String, CreateRoomSettings> allSettings = LobbyUtils.getInstance().getAllSettings(ext.getParentZone());
+        Map<String, CreateRoomSettings> allSettings = LobbyUtils.getInstance().getAllSettings();
         CreateRoomSettings roomSettings;
         SFSObject r;
         List<SFSObject> roomsList = new ArrayList();
@@ -64,8 +64,8 @@ public class LobbyDataUtils
         while( roomIndex < numRooms )
         {
             r = roomsList.get(roomIndex);
-            roomSettings = LobbyUtils.getInstance().getSettings(ext.getParentZone(), r.getText("name"));
-            r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings, ext.getParentZone()).getId());
+            roomSettings = LobbyUtils.getInstance().getSettings(r.getText("name"));
+            r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings).getId());
             rooms.addSFSObject(r);
             roomIndex ++;
         }
