@@ -161,7 +161,7 @@ public class LobbyRoom extends BaseLobbyRoom
         msg.putUtfString("s", subject);
         msg.putUtfString("o", object);
         msg.putShort("p", permissionId);
-        messageQueue().addSFSObject(msg);
+        //messageQueue().addSFSObject(msg);
         super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
 
