@@ -44,7 +44,8 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         }
 
         boolean succeed = false;
-        if( targetMember == null || modMember == null ) {
+        if( targetMember == null || modMember == null )
+        {
             params.putBool("succeed", succeed);
             send(Commands.LOBBY_MODERATION, params, sender);
             return;
@@ -87,7 +88,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         roomClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobby);
         InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
-        //OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
+        OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
         return true;
     }
 
@@ -101,7 +102,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         roomClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobby);
         //InboxUtils.getInstance().send(MessageTypes.M50_URL, game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
-        //OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
+        OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
         return true;
     }
 }
