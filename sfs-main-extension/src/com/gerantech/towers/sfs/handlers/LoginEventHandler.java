@@ -179,6 +179,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("resources", resources);
 			outData.putSFSArray("operations", new SFSArray());
 			outData.putSFSArray("exchanges", new SFSArray());
+			outData.putSFSArray("prefs", new SFSArray());
 			initiateCore(session, inData, outData, loginData);
 
 			// add udid and device as account id for restore players
