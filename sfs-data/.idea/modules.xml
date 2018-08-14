@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/sfs-challenge.iml" filepath="$PROJECT_DIR$/sfs-challenge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sfs-data.iml" filepath="$PROJECT_DIR$/sfs-data.iml" />
     </modules>
   </component>
 </project>

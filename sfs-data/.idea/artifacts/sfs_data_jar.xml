@@ -1,8 +1,8 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="challenge:jar">
+  <artifact type="jar" name="sfs-data:jar">
     <output-path>C:/SmartFoxServer_2X/SFS2X/extensions/__lib__</output-path>
-    <root id="archive" name="challenges.jar">
-      <element id="module-output" name="sfs-challenge" />
+    <root id="archive" name="sfs-data.jar">
+      <element id="module-output" name="sfs-data" />
     </root>
   </artifact>
 </component>
