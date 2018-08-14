@@ -2,9 +2,9 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
-import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -21,13 +21,13 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
-        CreateRoomSettings setting = LobbyUtils.getInstance().getSettings(game.player.id);
-        if( setting != null )
+        LobbyData data = LobbyUtils.getInstance().getDataByMember(game.player.id);
+        if( data != null )
         {
             params.putInt("response", MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL);
-            params.putText("lobby", setting.getName());
+            params.putText("lobby", data.getName());
             send(Commands.LOBBY_JOIN, params, sender);
-            trace(sender.getName() + " already joined in " + setting.getName() + ".");
+            trace(sender.getName() + " already joined in " + data.getName() + ".");
             return;
         }
 
@@ -42,7 +42,6 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         else if( privacy == 1 )
         {
             ISFSArray messages = room.getVariable("msg").getSFSArrayValue();
-
             for (int i = messages.size()-1; i >= 0; i--)
             {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )

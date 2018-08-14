@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyDataUtils;
+import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.hazel.RankData;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -18,7 +19,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
-            LobbyDataUtils.getInstance().fillRoomInfo( getParentExtension().getParentZone().getRoomById(params.getInt("id")), params, users, true );
+            LobbyDataUtils.getInstance().fillRoomData(LobbyUtils.getInstance().getDataById(params.getInt("id")), params, users, true );
         else
             LobbyDataUtils.getInstance().searchRooms(params, users );
 

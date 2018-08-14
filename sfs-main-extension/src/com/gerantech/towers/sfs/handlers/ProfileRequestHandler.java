@@ -2,11 +2,10 @@ package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gt.data.LobbyData;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
@@ -59,13 +58,13 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		params.putSFSArray("buildings", buildingArray );
 
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
-		CreateRoomSettings lobbySetting = null;
+		LobbyData lobbyData = null;
 		if( params.containsKey("lp") )
-			lobbySetting = LobbyUtils.getInstance().getSettings(playerId);
-		if( lobbySetting != null )
+			lobbyData = LobbyUtils.getInstance().getDataByMember(playerId);
+		if( lobbyData != null )
 		{
-			params.putText("ln", lobbySetting.getName());
-			params.putInt("lp", LobbyUtils.getInstance().getSettingsVariable(lobbySetting, "pic").getIntValue());
+			params.putText("ln", lobbyData.getName());
+			params.putInt("lp", lobbyData.getEmblem());
 		}
 
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-

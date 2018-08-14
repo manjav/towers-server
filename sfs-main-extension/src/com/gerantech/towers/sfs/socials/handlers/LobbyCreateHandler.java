@@ -29,7 +29,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         Boolean succeed = game.lobby.create();
         game.player.resources.changeCallback = null;
 
-        if(!succeed)
+        if( !succeed )
         {
             trace("lobby create failed: RESPONSE_INTERNAL_ERROR");
             params.putInt("response", RESPONSE_INTERNAL_ERROR);
@@ -37,10 +37,10 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         }
         String roomName = params.getUtfString("name");
         String bio = params.getUtfString("bio");
-        int maxUsers = params.getInt("max");
+        int capacity = params.getInt("max");
         int minPoint = params.getInt("min");
-        int avatar = params.getInt("pic");
-        int privacyMode = params.getInt("pri");
+        int emblem = params.getInt("pic");
+        int privacy = params.getInt("pri");
 
         if( getParentExtension().getParentZone().getRoomByName(roomName) != null )
         {
@@ -50,8 +50,9 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         }
 
         DBUtils.getInstance().updateResources(game.player, mapChangeCallback.updates);
-        Room room = LobbyUtils.getInstance().create(sender, roomName, bio, maxUsers, minPoint, avatar, privacyMode);;
-        if( room == null ) {
+        Room room = LobbyUtils.getInstance().create(sender, roomName, bio, emblem, capacity, minPoint, privacy);
+        if( room == null )
+        {
             send("lobbyCreate", params, sender);
             params.putInt("response", RESPONSE_UNKOWN_ERROR);
             send("lobbyCreate", params, sender);

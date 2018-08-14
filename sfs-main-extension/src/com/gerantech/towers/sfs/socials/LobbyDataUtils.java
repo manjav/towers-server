@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials;
 
+import com.gt.data.LobbyData;
 import com.gt.hazel.RankData;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -21,7 +22,6 @@ public class LobbyDataUtils
     public LobbyDataUtils() {
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
     }
-
     public static LobbyDataUtils getInstance() {
         if( _instance == null )
             _instance = new LobbyDataUtils();
@@ -36,17 +36,17 @@ public class LobbyDataUtils
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
         //boolean rankMode = params.containsKey("rank");
 
-        Map<String, CreateRoomSettings> allSettings = LobbyUtils.getInstance().getAllSettings();
-        CreateRoomSettings roomSettings;
+        Map<Integer, LobbyData> all = LobbyUtils.getInstance().getAllData();
+        LobbyData data;
         SFSObject r;
         List<SFSObject> roomsList = new ArrayList();
-        for (Map.Entry<String, CreateRoomSettings> entry : allSettings.entrySet())
+        for (Map.Entry<Integer, LobbyData> entry : all.entrySet())
         {
-            roomSettings = entry.getValue();
-            if( roomName != null && roomSettings.getName().toLowerCase().indexOf( roomName ) == -1 )
+            data = entry.getValue();
+            if( roomName != null && data.getName().toLowerCase().indexOf( roomName ) == -1 )
                 continue;
             r = new SFSObject();
-            fillRoomData(roomSettings, r, users, false);
+            fillRoomData(data, r, users, false);
             // if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )
             roomsList.add(r);
         }
@@ -64,8 +64,8 @@ public class LobbyDataUtils
         while( roomIndex < numRooms )
         {
             r = roomsList.get(roomIndex);
-            roomSettings = LobbyUtils.getInstance().getSettings(r.getText("name"));
-            r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings).getId());
+            //roomSettings = LobbyUtils.getInstance().getDataById(r.getText("name"));
+           // r.putInt("id", LobbyUtils.getInstance().getLobby(roomSettings).getId());
             rooms.addSFSObject(r);
             roomIndex ++;
         }
@@ -74,15 +74,16 @@ public class LobbyDataUtils
     }
 
 
-    public void fillRoomData(CreateRoomSettings settings, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
+    public void fillRoomData(LobbyData data, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        ISFSArray all = getMembers(LobbyUtils.getInstance().getSettingsVariable(settings, "all").getSFSArrayValue(), users, includeMembers);
-        params.putText("name", settings.getName());
+        ISFSArray all = new SFSArray();//getMembers(LobbyUtils.getInstance().getSettingsVariable(settings, "all").getSFSArrayValue(), users, includeMembers);
+        params.putInt("id", data.getId());
+        params.putText("name", data.getName());
         //params.putInt("id", settings.getId());
-        params.putInt("max", settings.getMaxUsers());
+        params.putInt("max", data.getCapacity());
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
-        params.putInt("pic", LobbyUtils.getInstance().getSettingsVariable(settings, "pic").getIntValue());
+        params.putInt("pic", data.getEmblem());
         params.putInt("act", getLobbyActiveness(all));
         if( includeMembers )
             params.putSFSArray("all", all);
@@ -109,7 +110,7 @@ public class LobbyDataUtils
         params.putInt("pri", lobby.getVariable("pri").getIntValue());
         if( includeMembers )
         {
-            //CreateRoomSettings settings = lobbyUtils.getAllSettings(zone).get(lobby.getName());
+            //CreateRoomSettings settings = lobbyUtils.getAllData(zone).get(lobby.getName());
             ISFSArray all = getMembers(lobby.getVariable("all").getSFSArrayValue(), users, includeMembers);
             params.putSFSArray("all", all);
             params.putInt("sum", getLobbyPoint(all));

@@ -1,9 +1,12 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.data.LobbyData;
 import com.gt.hazel.RankData;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;
+import com.gt.towers.socials.Attendee;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -12,12 +15,10 @@ import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
@@ -27,7 +28,6 @@ import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
-import net.sf.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -58,25 +58,55 @@ public class LobbyUtils
         if( ext.getParentZone().containsProperty("lobbiesData") )
             return;
 
-        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
-        dbRoomStorageConfig.storeInactiveRooms = true;
-        dbRoomStorageConfig.tableName = "rooms";
-        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
-
-        List<CreateRoomSettings> lobbies = null;
+        ISFSArray lobbyRows = new SFSArray();
         try {
-            lobbies = ext.getParentZone().getRoomPersistenceApi().loadAllRooms("lobbies");
-        } catch (SFSStorageException e) { e.printStackTrace(); }
+            lobbyRows = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM lobbies;", new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
 
-        Map<String, CreateRoomSettings> lobbiesData = new HashMap();
-        for( CreateRoomSettings crs : lobbies )
-            lobbiesData.put(crs.getName(), crs);
+        ISFSObject lr;
+        LobbyData lobbySFS;
+        Map<Integer, LobbyData> lobbiesData = new HashMap();
+        for (int i = 0; i < lobbyRows.size(); i++)
+        {
+            lr = lobbyRows.getSFSObject(i);
+            lobbySFS = new LobbyData(lobbyRows.getSFSObject(i));
+            lobbiesData.put(lr.getInt("id"), lobbySFS);
+        }
 
         ext.getParentZone().setProperty("lobbiesData", lobbiesData);
         ext.trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
-    public Room create(User owner, String roomName, String bio, int maxUsers, int minPoints, int avatar, int privacyMode)
+    public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
+    {
+        LobbyData lobbyData = new LobbyData(-1, name, bio, emblem, capacity, minPoint, privacy, null, null);
+
+        // add member
+        Player player = ((Game)owner.getSession().getProperty("core")).player;
+        SFSObject member = new SFSObject();
+        member.putInt("id", player.id);
+        member.putInt("pr", privacy);
+        lobbyData.getMembers().addSFSObject(member);
+
+        // create and join room
+        Room lobby = createRoom(lobbyData);
+        try {
+            ext.getApi().joinRoom(owner, lobby);
+        } catch (SFSJoinRoomException e) { e.printStackTrace(); }
+
+        // insert to DB
+        String query = "INSERT INTO lobbies (name, bio, emblem, capacity, min_point, privacy, members) VALUES ('"
+                + name + "', '" + bio + "', " + emblem + ", " + capacity + ", " + minPoint + ", " + privacy + ", ?);";
+
+        try {
+            lobbyData.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{lobbyData.getMembersBytes()})));
+        } catch (SQLException e) {  e.printStackTrace(); }
+
+        getAllData().put(lobbyData.getId(), lobbyData);
+        return lobby;
+    }
+
+    private Room createRoom(LobbyData lobbyData)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
         CreateRoomSettings rs = new CreateRoomSettings();
@@ -84,36 +114,18 @@ public class LobbyUtils
         rs.setAllowOwnerOnlyInvitation(false);
         rs.setDynamic(true);
         rs.setGroupId("lobbies");
-        rs.setName(roomName);
+        rs.setName(lobbyData.getName());
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         rs.setExtension(res);
-        rs.setMaxVariablesAllowed(7);
-        rs.setMaxUsers(maxUsers);
-
-        List<RoomVariable> listOfVars = new ArrayList();
-        listOfVars.add( new SFSRoomVariable("act", 0,         false, true, false) );
-        listOfVars.add( new SFSRoomVariable("bio", bio,             false, true, false) );
-        listOfVars.add( new SFSRoomVariable("pic", avatar,          false, true, false) );
-        listOfVars.add( new SFSRoomVariable("min", minPoints,       false, true, false) );
-        listOfVars.add( new SFSRoomVariable("pri", privacyMode,     false, true, false) );
-        listOfVars.add( new SFSRoomVariable("all", new SFSArray(),  false, true, false) );
-        listOfVars.add( new SFSRoomVariable("msg", new SFSArray(),  false, true, false) );
-        for (RoomVariable rv : listOfVars )
-            rv.setHidden(true);
-        rs.setRoomVariables(listOfVars);
+        //rs.setMaxVariablesAllowed(7);
+        rs.setMaxUsers(lobbyData.getCapacity());
 
         Room lobby = null;
         try {
-            lobby = ext.getApi().createRoom(ext.getParentZone(), rs, owner);
+            lobby = ext.getApi().createRoom(ext.getParentZone(), rs, null);
         } catch (SFSCreateRoomException e) { e.printStackTrace(); }
 
-
-        try {
-            ext.getApi().joinRoom(owner, lobby);
-        } catch (SFSJoinRoomException e) { e.printStackTrace(); }
-
-        getAllSettings().put(rs.getName(), rs);
-        save(lobby);
+        lobby.setProperty("data", lobbyData);
         return lobby;
     }
 
@@ -124,14 +136,6 @@ public class LobbyUtils
      */
     public void save(Room lobby)
     {
-        try {
-            ext.getParentZone().getRoomPersistenceApi().saveRoom(lobby);
-        } catch (SFSStorageException e) { e.printStackTrace(); }
-
-        // update room variables
-        CreateRoomSettings settings = getSettings(lobby.getName());
-        settings.setRoomVariables(lobby.getVariables());
-        getAllSettings().put(lobby.getName(), settings);
     }
 
     public Room getLobby(int id)
@@ -146,41 +150,36 @@ public class LobbyUtils
         return null;
     }
 
-    public Room getLobby(CreateRoomSettings setting)
+    public Room getLobby(LobbyData data)
     {
-        Room lobby = ext.getParentZone().getRoomByName(setting.getName());
+        Room lobby = ext.getParentZone().getRoomByName(data.getName());
         if( lobby != null )
             return lobby;
 
         //if( !hasMember(createLobbySetting.getRoomVariables()) )
         //    return null;
-        try {
-            lobby = ext.getApi().createRoom(ext.getParentZone(), setting, null);
-        } catch (SFSCreateRoomException e) { e.printStackTrace(); }
-
-        return lobby;
+        return  createRoom(data);
     }
 
-
-    public Map<String, CreateRoomSettings> getAllSettings()
+    public Map<Integer, LobbyData> getAllData()
     {
-        return (Map<String, CreateRoomSettings>) ext.getParentZone().getProperty("lobbiesData");
+        return (Map<Integer, LobbyData>) ext.getParentZone().getProperty("lobbiesData");
     }
-    public CreateRoomSettings getSettings(String roomName)
+    public LobbyData getDataById(Integer id)
     {
-        return getAllSettings().get(roomName);
+        return getAllData().get(id);
     }
-    public CreateRoomSettings getSettings(int memberId)
+    public LobbyData getDataByMember(int memberId)
     {
-        ISFSArray all;
+        ISFSArray members;
         ISFSObject member;
-        Map<String, CreateRoomSettings> lobbiesData = getAllSettings();
-        for (Map.Entry<String, CreateRoomSettings> entry : lobbiesData.entrySet())
+        Map<Integer, LobbyData> lobbiesData = getAllData();
+        for (Map.Entry<Integer, LobbyData> entry : lobbiesData.entrySet())
         {
-            all = getSettingsVariable(entry.getValue(), "all").getSFSArrayValue();
-            for(int i=0; i<all.size(); i++)
+            members = entry.getValue().getMembers();
+            for(int i=0; i<members.size(); i++)
             {
-                member = all.getSFSObject(i);
+                member = members.getSFSObject(i);
                 if( member.getInt("id").equals(memberId) )
                     return  entry.getValue();
             }
@@ -188,7 +187,7 @@ public class LobbyUtils
         return null;
     }
 
-    public RoomVariable getSettingsVariable(CreateRoomSettings setting, String name)
+    /*public RoomVariable getSettingsVariable(CreateRoomSettings setting, String name)
     {
         List<RoomVariable> lobbyVariables = setting.getRoomVariables();
         for( RoomVariable lv : lobbyVariables )
@@ -239,7 +238,7 @@ public class LobbyUtils
             }
         }
         return ret;
-    }
+    }*/
 
     private void remove(Room lobby)
     {
@@ -250,7 +249,7 @@ public class LobbyUtils
     // remove room from db
     private void remove(String lobbyName)
     {
-        getAllSettings().remove(lobbyName);
+        getAllData().remove(lobbyName);
         try {
             ext.getParentZone().getRoomPersistenceApi().removeRoom(lobbyName);
         } catch (SFSStorageException e) { e.printStackTrace(); }

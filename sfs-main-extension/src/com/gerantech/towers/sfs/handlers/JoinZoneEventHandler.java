@@ -1,10 +1,10 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
-import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.buddylist.BuddyList;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -52,10 +52,10 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)
 	{
 		LobbyUtils lu = LobbyUtils.getInstance();
-		CreateRoomSettings lobbySetting = lu.getSettings(player.id);
-		if( lobbySetting == null )
+		LobbyData data = LobbyUtils.getInstance().getDataByMember(player.id);
+		if( data == null )
 			return null;
-		Room room = lu.getLobby(lobbySetting);
+		Room room = lu.getLobby(data);
 		if( room == null )
 			return null;
 		try {
