@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -13,7 +14,6 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 
 /**
  * Created by ManJav on 8/25/2017.
@@ -37,7 +37,7 @@ public class LobbyRoom extends BaseLobbyRoom
         if( requestId.equals(Commands.LOBBY_INFO) && !params.containsKey("nomsg") )
             params.putSFSArray("messages", messageQueue() );
         super.handleClientRequest(requestId, sender, params);
-        LobbyUtils.getInstance().setActivenessVariable (lobby, getActiveness() + 1);
+       // LobbyUtils.getInstance().setActivenessVariable (lobby, getActiveness() + 1);
     }
 
  //   @Override
@@ -165,9 +165,14 @@ public class LobbyRoom extends BaseLobbyRoom
         super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
 
-    private int getActiveness ()
+    /*private int getActiveness ()
     {
         return lobby.getVariable("act").getIntValue();
+    }*/
+
+    public LobbyData getData()
+    {
+        return (LobbyData) lobby.getProperty("data");
     }
 
     private boolean replyRequest(Game game, ISFSObject params)
@@ -175,7 +180,7 @@ public class LobbyRoom extends BaseLobbyRoom
         boolean accepted = params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT;
         if ( accepted )
         {
-            if ( !LobbyUtils.getInstance().addUser(lobby, params.getInt("o")) )
+            if ( !LobbyUtils.getInstance().addUser(getData(), params.getInt("o")) )
                 return false;
 
             // join online users

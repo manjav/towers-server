@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -21,16 +22,18 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 {
     private Game game;
     private Room lobby;
-    private LobbyRoom roomClass;
+    private LobbyRoom LobbyClass;
     private ISFSArray all;
     private ISFSObject targetMember;
     private ISFSObject modMember;
+    private LobbyData lobbyData;
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
         game = ((Game) sender.getSession().getProperty("core"));
         lobby = getParentExtension().getParentRoom();
-        roomClass = (LobbyRoom) lobby.getExtension();
+        LobbyClass = (LobbyRoom) lobby.getExtension();
+        lobbyData = LobbyClass.getData();
         all = lobby.getVariable("all").getSFSArrayValue();
         targetMember = null;
         modMember = null;
@@ -71,8 +74,8 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         if( targetUser != null )
             getApi().leaveRoom(targetUser, lobby, true, false);
 
-        roomClass.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
-        LobbyUtils.getInstance().removeUser(lobby, targetId);
+        LobbyClass.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
+        LobbyUtils.getInstance().removeUser(lobbyData, targetId);
         InboxUtils.getInstance().send(MessageTypes.M0_TEXT, " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", game.player.nickName, game.player.id, targetId, "");
         OneSignalUtils.getInstance().send(targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
         return true;
@@ -83,10 +86,10 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
          if( modMember.getShort("pr") <= targetMember.getShort("pr")+1 || targetMember.getShort("pr") >= DefaultPermissionProfile.MODERATOR.getId() )
              return false;
 
-        targetMember.putShort("pr", (short) (targetMember.getShort("pr")+1));
-        LobbyUtils.getInstance().setMembersVariable(lobby, all);
-        roomClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
-        LobbyUtils.getInstance().save(lobby);
+        targetMember.putShort("pr", (short) (targetMember.getShort("pr") + 1));
+        //LobbyUtils.getInstance().setMembersVariable(lobby, all);
+        LobbyClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
+        LobbyUtils.getInstance().save(lobbyData.getId(), null, null,-1,-1,-1, -1, lobbyData.getMembersBytes(), null);
         InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
         OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
         return true;
@@ -98,9 +101,9 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
             return false;
 
         targetMember.putShort("pr", (short) (targetMember.getShort("pr")-1));
-        LobbyUtils.getInstance().setMembersVariable(lobby, all);
-        roomClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
-        LobbyUtils.getInstance().save(lobby);
+        //LobbyUtils.getInstance().setMembersVariable(lobby, all);
+        LobbyClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
+        LobbyUtils.getInstance().save(lobbyData.getId(), null, null,-1,-1,-1, -1, lobbyData.getMembersBytes(), null);
         //InboxUtils.getInstance().send(MessageTypes.M50_URL, game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
         OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
         return true;

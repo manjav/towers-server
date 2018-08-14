@@ -53,7 +53,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         Room room = LobbyUtils.getInstance().create(sender, roomName, bio, emblem, capacity, minPoint, privacy);
         if( room == null )
         {
-            send("lobbyCreate", params, sender);
+            //send("lobbyCreate", params, sender);
             params.putInt("response", RESPONSE_UNKOWN_ERROR);
             send("lobbyCreate", params, sender);
             return;

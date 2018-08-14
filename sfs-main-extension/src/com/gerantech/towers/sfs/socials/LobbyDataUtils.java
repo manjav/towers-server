@@ -76,7 +76,7 @@ public class LobbyDataUtils
 
     public void fillRoomData(LobbyData data, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
     {
-        ISFSArray all = new SFSArray();//getMembers(LobbyUtils.getInstance().getSettingsVariable(settings, "all").getSFSArrayValue(), users, includeMembers);
+        ISFSArray all = getMembers(data.getMembers(), users, includeMembers);
         params.putInt("id", data.getId());
         params.putText("name", data.getName());
         //params.putInt("id", settings.getId());
@@ -89,21 +89,7 @@ public class LobbyDataUtils
             params.putSFSArray("all", all);
     }
 
-    public void fillRoomData(Room lobby, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
-    {
-        ISFSArray all = getMembers(lobby.getVariable("all").getSFSArrayValue(), users, includeMembers);
-        params.putText("name", lobby.getName());
-        params.putInt("id", lobby.getId());
-        params.putInt("max", lobby.getMaxUsers());
-        params.putInt("num", all.size());
-        params.putInt("sum", getLobbyPoint(all));
-        params.putInt("pic", lobby.getVariable("pic").getIntValue());
-        params.putInt("act", getLobbyActiveness(all));
-        if( includeMembers )
-            params.putSFSArray("all", all);
-    }
-
-    public void fillRoomInfo(Room lobby, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
+    /*public void fillRoomInfo(Room lobby, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)
     {
         params.putText("bio",lobby.getVariable("bio").getStringValue());
         params.putInt("min", lobby.getVariable("min").getIntValue());
@@ -116,7 +102,7 @@ public class LobbyDataUtils
             params.putInt("sum", getLobbyPoint(all));
         }
         params.removeElement("id");
-    }
+    }*/
 
 
     /**

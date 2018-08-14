@@ -1,9 +1,9 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
 import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -73,6 +73,6 @@ public class BaseLobbyRoom extends SFSExtension
     }
     protected ISFSArray messageQueue ()
     {
-        return lobby.getVariable("msg").getSFSArrayValue();
+        return ((LobbyData)lobby.getProperty("data")).getMessages();
     }
 }

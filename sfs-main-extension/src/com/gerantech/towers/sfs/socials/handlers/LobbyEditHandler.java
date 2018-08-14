@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -20,6 +21,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
         Room lobby = getParentExtension().getParentRoom();
+
         int privacyMode = params.containsKey("pri") ? params.getInt("pri") : 0;
         try {
             SFSRoomVariable var = null;
@@ -40,9 +42,17 @@ public class LobbyEditHandler extends BaseClientRequestHandler
         if( params.containsKey("max") )
             lobby.setMaxUsers(params.getInt("max"));
 
-        LobbyUtils.getInstance().save(lobby);
-        LobbyRoom roomClass = (LobbyRoom) lobby.getExtension();
-        roomClass.sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
+        LobbyUtils.getInstance().save(
+                ((LobbyData)lobby).getId(),
+                params.containsKey("name") ? params.getUtfString("name") : null,
+                params.containsKey("bio") ? params.getUtfString("bio") : null,
+                params.containsKey("pic") ? params.getInt("pic") : -1,
+                params.containsKey("max") ? params.getInt("max") : -1,
+                params.containsKey("min") ? params.getInt("min") : -1,
+                params.containsKey("pic") ? params.getShort("pri")  : -1,
+                null, null);
+
+        ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
 
         //params.putInt("response", RESPONSE_OK);
         //send(Commands.LOBBY_EDIT, params, sender);

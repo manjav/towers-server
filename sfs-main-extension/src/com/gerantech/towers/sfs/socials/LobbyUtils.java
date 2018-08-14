@@ -85,7 +85,7 @@ public class LobbyUtils
         Player player = ((Game)owner.getSession().getProperty("core")).player;
         SFSObject member = new SFSObject();
         member.putInt("id", player.id);
-        member.putInt("pr", privacy);
+        member.putShort("pr", (short) privacy);
         lobbyData.getMembers().addSFSObject(member);
 
         // create and join room
@@ -114,7 +114,7 @@ public class LobbyUtils
         rs.setAllowOwnerOnlyInvitation(false);
         rs.setDynamic(true);
         rs.setGroupId("lobbies");
-        rs.setName(lobbyData.getName());
+        rs.setName("lobby_" + lobbyData.getId());
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         rs.setExtension(res);
         //rs.setMaxVariablesAllowed(7);
@@ -132,10 +132,44 @@ public class LobbyUtils
 
     /**
      * Save room to file for server restore rooms after resetting
-     * @param lobby
+     * @param lobbyId
+     * @param name
+     * @param bio
+     * @param emblem
+     * @param capacity
+     * @param minPoint
+     * @param privacy
+     * @param members
+     * @param messages
      */
-    public void save(Room lobby)
+    public void save(int lobbyId, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
     {
+        String query = "UPDATE lobbies SET ";
+        List<String> changes =  new ArrayList();
+        if( name != null )      changes.add("name = '" + name + "'");
+        if( bio != null )       changes.add("bio = '" + bio + "'");
+        if( emblem != -1 )      changes.add("emblem = " + emblem);
+        if( capacity != -1 )    changes.add("capacity = " + capacity);
+        if( minPoint != -1 )    changes.add("min_point = " + minPoint);
+        if( privacy != -1 )     changes.add("privacy = " + privacy);
+        if( members != null )   changes.add("members = ?");
+        if( messages != null )  changes.add("messages = ?");
+
+        for (int i = 0; i < changes.size() ; i++)
+        {
+            query += changes.get(i);
+            query += ( i < changes.size() - 1 ) ? ", " : " ";
+        }
+        query += "WHERE id = " + lobbyId;
+        ext.trace(query);
+
+        Object[] arguments = new Object[]{};
+        if( members != null ) arguments[arguments.length-1] = members;
+        if( messages != null ) arguments[arguments.length-1] = messages;
+        try {
+            ext.getParentZone().getDBManager().executeUpdate(query, arguments);
+        } catch (SQLException e) {  e.printStackTrace(); }
+
     }
 
     public Room getLobby(int id)
@@ -158,7 +192,7 @@ public class LobbyUtils
 
         //if( !hasMember(createLobbySetting.getRoomVariables()) )
         //    return null;
-        return  createRoom(data);
+        return createRoom(data);
     }
 
     public Map<Integer, LobbyData> getAllData()
@@ -240,135 +274,17 @@ public class LobbyUtils
         return ret;
     }*/
 
-    private void remove(Room lobby)
+    // remove lobby from DB
+    private void remove(int lobbyId)
     {
-        ext.getApi().removeRoom(lobby);
-        remove(lobby.getName());
-    }
-
-    // remove room from db
-    private void remove(String lobbyName)
-    {
-        getAllData().remove(lobbyName);
+        String query = "DELETE FROM lobbies WHERE id =" + lobbyId;
         try {
-            ext.getParentZone().getRoomPersistenceApi().removeRoom(lobbyName);
-        } catch (SFSStorageException e) { e.printStackTrace(); }
-        ext.trace(lobbyName + " removed.");
+            ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{});
+        } catch (SQLException e) {  e.printStackTrace(); }
+        getAllData().remove(lobbyId);
+        ext.trace(lobbyId + " removed.");
     }
 
-    public boolean addUser(Room lobby, int userId)
-    {
-        ISFSArray all = lobby.getVariable("all").getSFSArrayValue();
-        int allSize = all.size();
-        for(int i=0; i<allSize; i++)
-            if ( all.getSFSObject(i).getInt("id").equals(userId) )
-                return false;
-
-        SFSObject member = new SFSObject();
-        member.putInt("id", userId);
-        member.putShort("pr", (allSize==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.STANDARD).getId());
-        all.addSFSObject(member);
-        setMembersVariable(lobby, all);
-        save(lobby);
-        return true;
-    }
-
-    /**
-     * Remove user from room variables and save lobby. if lobby is empty then lobby removed.
-     * @param lobby
-     * @param userId
-     */
-    public void removeUser(Room lobby, int userId)
-    {
-        int memberIndex = -1;
-        ISFSArray all = lobby.getVariable("all").getSFSArrayValue();
-        int allSize = all.size();
-        for( int i = 0; i < allSize; i++ )
-        {
-            if( all.getSFSObject(i).getInt("id").equals(userId) )
-            {
-                memberIndex = i;
-                break;
-            }
-        }
-        if( memberIndex < 0 )
-            return;
-
-        Short permission = all.getSFSObject(memberIndex).getShort("pr");
-        all.removeElementAt(memberIndex);
-
-        if( all.size() == 0 )
-        {
-            lobby.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
-            remove(lobby);
-            return;
-        }
-
-        // move permission to oldest member
-        if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
-            all.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
-
-        setMembersVariable(lobby, all);
-        save(lobby);
-    }
-
-    public void setMembersVariable (Room lobby, ISFSArray value)
-    {
-        try {
-            SFSRoomVariable var = new SFSRoomVariable("all", value,  true, true, false);
-            var.setHidden(true);
-            lobby.setVariable( var );
-        } catch (SFSVariableException e) { e.printStackTrace(); }
-    }
-
-    public void setActivenessVariable (Room lobby, int value)
-    {
-        try {
-            SFSRoomVariable var = new SFSRoomVariable("act", value,  true, true, false);
-            var.setHidden(true);
-            lobby.setVariable( var );
-        } catch (SFSVariableException e) { e.printStackTrace(); }
-
-        if( value % 5 == 0 )
-            save(lobby);
-    }
-
-    public String resetActivenessOfLobbies()
-    {
-        String result = "Reset Activeness:";
-        List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
-        int lobbiesLen = lobbies.size()-1;
-        while ( lobbiesLen >= 0 )
-        {
-            setActivenessVariable(lobbies.get(lobbiesLen), 0);
-            result += "\n Lobby " + lobbies.get(lobbiesLen).getName() + " activeness set to '0'";
-            lobbiesLen --;
-        }
-
-        try {
-            ext.getParentZone().getRoomPersistenceApi().saveAllRooms("lobbies");
-        } catch (SFSStorageException e) { e.printStackTrace(); }
-
-        result += DBUtils.getInstance().resetWeeklyBattles();
-        return result;
-    }
-
-    public String saveAll()
-    {
-        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
-        dbRoomStorageConfig.storeInactiveRooms = true;
-        dbRoomStorageConfig.tableName = "rooms";
-        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
-
-        String result = "Start lobby saving:";
-        List<Room> lobbies = ext.getParentZone().getRoomManager().getRoomListFromGroup("lobbies");
-        for ( Room l:lobbies )
-        {
-            ext.trace("trying to save", l.getName());
-            save(l);
-        }
-        return result;
-    }
 
     public void join(Room room, User user)
     {
@@ -391,6 +307,103 @@ public class LobbyUtils
         else
             users.put(game.player.id, rd);
     }
+
+    public boolean addUser(LobbyData lobbyData, int userId)
+    {
+        ISFSArray members = lobbyData.getMembers();
+        int allSize = members.size();
+        for(int i=0; i<allSize; i++)
+            if ( members.getSFSObject(i).getInt("id").equals(userId) )
+                return false;
+
+        SFSObject member = new SFSObject();
+        member.putInt("id", userId);
+        member.putShort("pr", (allSize==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
+        lobbyData.getMembers().addSFSObject(member);
+        save(lobbyData.getId(), null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+        return true;
+    }
+
+    /**
+     * Remove user from room variables and save lobby. if lobby is empty then lobby removed.
+     * @param lobbyData
+     * @param userId
+     */
+    public void removeUser(LobbyData lobbyData, int userId)
+    {
+        int memberIndex = -1;
+        ISFSArray members = lobbyData.getMembers();
+        int allSize = members.size();
+        for( int i = 0; i < allSize; i++ )
+        {
+            if( members.getSFSObject(i).getInt("id").equals(userId) )
+            {
+                memberIndex = i;
+                break;
+            }
+        }
+        if( memberIndex < 0 )
+            return;
+
+        Short permission = members.getSFSObject(memberIndex).getShort("pr");
+        members.removeElementAt(memberIndex);
+
+        if( members.size() == 0 )
+        {
+            remove(lobbyData.getId());
+            if( ext.getParentZone().getRoomManager().containsRoom(lobbyData.getId() + "") )
+                ext.getApi().removeRoom(ext.getParentZone().getRoomManager().getRoomByName(lobbyData.getId() + ""));
+            return;
+        }
+
+        // move permission to oldest member
+        if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
+            members.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
+
+        save(lobbyData.getId(), null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+    }
+
+    /*public void setMembersVariable (Room lobby, ISFSArray value)
+    {
+        try {
+            SFSRoomVariable var = new SFSRoomVariable("all", value,  true, true, false);
+            var.setHidden(true);
+            lobby.setVariable( var );
+        } catch (SFSVariableException e) { e.printStackTrace(); }
+    }
+
+    public void setActivenessVariable (Room lobby, int value)
+    {
+        try {
+            SFSRoomVariable var = new SFSRoomVariable("act", value,  true, true, false);
+            var.setHidden(true);
+            lobby.setVariable( var );
+        } catch (SFSVariableException e) { e.printStackTrace(); }
+
+        if( value % 5 == 0 )
+            save(lobby);
+    }
+*/
+    public String resetActivenessOfLobbies()
+    {
+        String result = "Reset Activeness:";
+       /* List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
+        int lobbiesLen = lobbies.size()-1;
+        while ( lobbiesLen >= 0 )
+        {
+            setActivenessVariable(lobbies.get(lobbiesLen), 0);
+            result += "\n Lobby " + lobbies.get(lobbiesLen).getName() + " activeness set to '0'";
+            lobbiesLen --;
+        }
+
+        try {
+            ext.getParentZone().getRoomPersistenceApi().saveAllRooms("lobbies");
+        } catch (SFSStorageException e) { e.printStackTrace(); }
+*/
+        result += DBUtils.getInstance().resetWeeklyBattles();
+        return result;
+    }
+
 
     /*
     public Room getLobbyOfOfflineUser(int id)

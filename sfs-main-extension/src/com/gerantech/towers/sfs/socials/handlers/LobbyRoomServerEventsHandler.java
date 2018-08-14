@@ -15,39 +15,29 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 {
-
-	private Room room;
-	private LobbyRoom roomClass;
-
 	public void handleServerEvent(ISFSEvent arg) throws SFSException
 	{
-		room = (Room)arg.getParameter(SFSEventParam.ROOM);
-		roomClass = (LobbyRoom) room.getExtension();
+		Room lobby = (Room) arg.getParameter(SFSEventParam.ROOM);
+		LobbyRoom lobbyClass = (LobbyRoom) lobby.getExtension();
 		User user = (User)arg.getParameter(SFSEventParam.USER);
+		Player player = ((Game) user.getSession().getProperty("core")).player;
 
 		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )
-			joinRoom( user );
+		{
+			if( !LobbyUtils.getInstance().addUser(lobbyClass.getData(), player.id) )
+				return;
+
+			// broadcast join message
+			if( lobby.getVariable("all").getSFSArrayValue().size() > 1 )
+				lobbyClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player.nickName, "", (short)-1);
+			// mode = join
+		}
 		else if( arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) )
-			leaveRoom( user );
-	}
-
-	private void joinRoom(User user)
-	{
-		Player player = ((Game) user.getSession().getProperty("core")).player;
-		if( !LobbyUtils.getInstance().addUser(room, player.id) )
-			return;
-
-		// broadcast join message
-		if( room.getVariable("all").getSFSArrayValue().size() > 1 )
-			roomClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player.nickName, "", (short)-1);// mode = join
-	}
-
-	public void leaveRoom(User user)
-	{
-		Player player = ((Game) user.getSession().getProperty("core")).player;
-
-		// broadcast leave message
-		roomClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player.nickName, "", (short)-1);// mode = leave
-		LobbyUtils.getInstance().removeUser(room, player.id);
+		{
+			// broadcast leave message
+			lobbyClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player.nickName, "", (short)-1);
+			// mode = leave
+			LobbyUtils.getInstance().removeUser(lobbyClass.getData(), player.id);
+		}
 	}
 }
