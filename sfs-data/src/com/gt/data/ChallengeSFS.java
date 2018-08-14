@@ -1,7 +1,7 @@
 /**
  * Created by ManJav on 8/6/2018.
  */
-package com.gt.challenges;
+package com.gt.data;
 
 import com.gt.towers.socials.Attendee;
 import com.gt.towers.socials.Challenge;
@@ -9,7 +9,6 @@ import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 import haxe.root.Array;
 

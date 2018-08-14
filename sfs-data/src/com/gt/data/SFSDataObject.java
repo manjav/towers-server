@@ -1,4 +1,4 @@
-package com.gt.challenges;
+package com.gt.data;
 
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.data.ISFSArray;

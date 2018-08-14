@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.challenges.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
-import com.gt.challenges.ChallengeSFS;
+import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;

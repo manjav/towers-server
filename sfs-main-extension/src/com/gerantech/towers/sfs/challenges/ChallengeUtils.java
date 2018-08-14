@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.challenges;
 
-import com.gt.challenges.ChallengeSFS;
+import com.gt.data.ChallengeSFS;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.socials.Challenge;
 import com.smartfoxserver.v2.SmartFoxServer;
