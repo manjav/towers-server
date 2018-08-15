@@ -73,6 +73,6 @@ public class BaseLobbyRoom extends SFSExtension
     }
     protected ISFSArray messageQueue ()
     {
-        return ((LobbyData)lobby.getProperty("data")).getMessages();
+        return lobby.getVariable("msg").getSFSArrayValue();
     }
 }

@@ -8,9 +8,8 @@ import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
-import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
 /**
  * Created by ManJav on 8/24/2017.
@@ -21,35 +20,25 @@ public class LobbyEditHandler extends BaseClientRequestHandler
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
         Room lobby = getParentExtension().getParentRoom();
+        LobbyData lobbyData = (LobbyData)lobby.getProperty("data");
 
-        int privacyMode = params.containsKey("pri") ? params.getInt("pri") : 0;
-        try {
-            SFSRoomVariable var = null;
-            var = new SFSRoomVariable("bio", params.getUtfString("bio"), false, true, false);
-            var.setHidden(true);
-            lobby.setVariable(var);
-            var = new SFSRoomVariable("pic", params.getInt("pic"),       false, true, false);
-            var.setHidden(true);
-            lobby.setVariable(var);
-            var = new SFSRoomVariable("min", params.getInt("min"),       false, true, false);
-            var.setHidden(true);
-            lobby.setVariable(var);
-            var = new SFSRoomVariable("pri", privacyMode,       false, true, false);
-            var.setHidden(true);
-            lobby.setVariable(var);
-        } catch (SFSVariableException e) { e.printStackTrace(); }
+        int memberIndex = LobbyUtils.getInstance().getMemberIndex(lobbyData, game.player.id);
+        if( memberIndex < 0 )
+            return;
+        if( lobbyData.getMembers().getSFSObject(memberIndex).getShort("pr") < DefaultPermissionProfile.MODERATOR.getId() )
+            return;
 
         if( params.containsKey("max") )
             lobby.setMaxUsers(params.getInt("max"));
 
         LobbyUtils.getInstance().save(
-                ((LobbyData)lobby).getId(),
+                lobbyData.getId(),
                 params.containsKey("name") ? params.getUtfString("name") : null,
                 params.containsKey("bio") ? params.getUtfString("bio") : null,
                 params.containsKey("pic") ? params.getInt("pic") : -1,
                 params.containsKey("max") ? params.getInt("max") : -1,
                 params.containsKey("min") ? params.getInt("min") : -1,
-                params.containsKey("pic") ? params.getShort("pri")  : -1,
+                params.containsKey("pri") ? params.getInt("pri")  : -1,
                 null, null);
 
         ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);

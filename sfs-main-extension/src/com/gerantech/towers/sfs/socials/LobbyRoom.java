@@ -192,4 +192,10 @@ public class LobbyRoom extends BaseLobbyRoom
         sendComment(params.getShort("pr"), game.player.nickName, params.getUtfString("on"), (short)-1);// mode = join
         return true;
     }
+
+    @Override
+    protected ISFSArray messageQueue ()
+    {
+        return ((LobbyData)lobby.getProperty("data")).getMessages();
+    }
 }

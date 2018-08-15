@@ -23,7 +23,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
     private Game game;
     private Room lobby;
     private LobbyRoom LobbyClass;
-    private ISFSArray all;
+    private ISFSArray members;
     private ISFSObject targetMember;
     private ISFSObject modMember;
     private LobbyData lobbyData;
@@ -34,16 +34,16 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         lobby = getParentExtension().getParentRoom();
         LobbyClass = (LobbyRoom) lobby.getExtension();
         lobbyData = LobbyClass.getData();
-        all = lobby.getVariable("all").getSFSArrayValue();
+        members = lobbyData.getMembers();
         targetMember = null;
         modMember = null;
         Short action = params.getShort("pr");
-        int allSize = all.size();
+        int allSize = members.size();
         for (int i = 0; i < allSize; i++) {
-            if( all.getSFSObject(i).getInt("id").equals(params.getInt("id")) )
-                targetMember = all.getSFSObject(i);
-            else if( all.getSFSObject(i).getInt("id").equals(game.player.id) )
-                modMember = all.getSFSObject(i);
+            if( members.getSFSObject(i).getInt("id").equals(params.getInt("id")) )
+                targetMember = members.getSFSObject(i);
+            else if( members.getSFSObject(i).getInt("id").equals(game.player.id) )
+                modMember = members.getSFSObject(i);
         }
 
         boolean succeed = false;
@@ -87,7 +87,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
              return false;
 
         targetMember.putShort("pr", (short) (targetMember.getShort("pr") + 1));
-        //LobbyUtils.getInstance().setMembersVariable(lobby, all);
+        //LobbyUtils.getInstance().setMembersVariable(lobby, members);
         LobbyClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobbyData.getId(), null, null,-1,-1,-1, -1, lobbyData.getMembersBytes(), null);
         InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
@@ -101,7 +101,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
             return false;
 
         targetMember.putShort("pr", (short) (targetMember.getShort("pr")-1));
-        //LobbyUtils.getInstance().setMembersVariable(lobby, all);
+        //LobbyUtils.getInstance().setMembersVariable(lobby, members);
         LobbyClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         LobbyUtils.getInstance().save(lobbyData.getId(), null, null,-1,-1,-1, -1, lobbyData.getMembersBytes(), null);
         //InboxUtils.getInstance().send(MessageTypes.M50_URL, game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");

@@ -28,8 +28,8 @@ public class LobbyData extends SFSObject
         setPrivacy(sfsObject.getInt("privacy"));
         if( sfsObject.containsKey("members") )
             setMembers(sfsObject.getByteArray("members"));
-        if( sfsObject.containsKey("message") )
-            setMessages(sfsObject.getByteArray("message"));
+        if( sfsObject.containsKey("messages") )
+            setMessages(sfsObject.getByteArray("messages"));
     }
 
     public LobbyData(int id, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] message)//, int createAt
@@ -42,7 +42,6 @@ public class LobbyData extends SFSObject
         setCapacity(capacity);
         setMinPoint(minPoint);
         setPrivacy(privacy);
-        //setCreateAt(createAt);
         setMembers(members);
         setMessages(message);
     }
@@ -164,7 +163,7 @@ public class LobbyData extends SFSObject
 
         return getSFSArray("members");
     }
-    private void setMembers(ISFSArray members)
+    public void setMembers(ISFSArray members)
     {
         putSFSArray("members", members);
     }
@@ -193,7 +192,7 @@ public class LobbyData extends SFSObject
 
         return getSFSArray("messages");
     }
-    private void setMessages(ISFSArray messages)
+    public void setMessages(ISFSArray messages)
     {
         putSFSArray("messages", messages);
     }

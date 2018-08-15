@@ -46,7 +46,7 @@ public class LobbyDataUtils
             if( roomName != null && data.getName().toLowerCase().indexOf( roomName ) == -1 )
                 continue;
             r = new SFSObject();
-            fillRoomData(data, r, users, false);
+            fillRoomData(data, r, users, false, false);
             // if( roomName != null || r.getInt("num") < r.getInt("max") || rankMode )
             roomsList.add(r);
         }
@@ -73,13 +73,12 @@ public class LobbyDataUtils
         params.removeElement("name");
     }
 
-
-    public void fillRoomData(LobbyData data, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers)
+    public void fillRoomData(LobbyData data, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers, boolean includeMessages)
     {
         ISFSArray all = getMembers(data.getMembers(), users, includeMembers);
         params.putInt("id", data.getId());
-        params.putText("name", data.getName());
-        //params.putInt("id", settings.getId());
+        params.putUtfString("name", data.getName());
+        params.putUtfString("bio", data.getBio());
         params.putInt("max", data.getCapacity());
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
@@ -87,6 +86,8 @@ public class LobbyDataUtils
         params.putInt("act", getLobbyActiveness(all));
         if( includeMembers )
             params.putSFSArray("all", all);
+        if( includeMessages )
+            params.putSFSArray("messages", data.getMessages());
     }
 
     /*public void fillRoomInfo(Room lobby, ISFSObject params, IMap<Integer, RankData>users, boolean includeMembers)

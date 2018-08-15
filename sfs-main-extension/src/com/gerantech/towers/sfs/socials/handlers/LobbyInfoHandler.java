@@ -20,7 +20,7 @@ public class LobbyInfoHandler extends BaseClientRequestHandler
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         LobbyData data = (LobbyData) getParentExtension().getParentRoom().getProperty("data");
-        LobbyDataUtils.getInstance().fillRoomData(data, params, users, true);
+        LobbyDataUtils.getInstance().fillRoomData(data, params, users, true, true);
         if( params.containsKey("broadcast") )
             send(Commands.LOBBY_INFO, params, getParentExtension().getParentRoom().getUserList());
         else

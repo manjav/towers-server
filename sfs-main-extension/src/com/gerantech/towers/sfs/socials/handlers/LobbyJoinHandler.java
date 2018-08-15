@@ -21,6 +21,8 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
+
+        // if you found lobby by member means member already joint to a lobby
         LobbyData data = LobbyUtils.getInstance().getDataByMember(game.player.id);
         if( data != null )
         {
@@ -31,17 +33,17 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             return;
         }
 
-        Room room = getParentExtension().getParentZone().getRoomById(params.getInt("id"));
-        Integer privacy = room.getVariable("pri").getIntValue();
-        if( privacy == 0 )
+        // finding lobby data
+        LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
+        Room lobby = LobbyUtils.getInstance().getLobby(lobbyData);
+        if( lobbyData.getPrivacy() == 0 )
         {
-            LobbyUtils.getInstance().join(room, sender);
-
+            LobbyUtils.getInstance().join(lobby, sender);
             params.putInt("response", MessageTypes.RESPONSE_SUCCEED);
         }
-        else if( privacy == 1 )
+        else if( lobbyData.getPrivacy() == 1 )
         {
-            ISFSArray messages = room.getVariable("msg").getSFSArrayValue();
+            ISFSArray messages = lobbyData.getMessages();
             for (int i = messages.size()-1; i >= 0; i--)
             {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
@@ -59,7 +61,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             msg.putUtfString("on", game.player.nickName);
             messages.addSFSObject(msg);
 
-            getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList(), room, false);
+            getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
             //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());
             params.putInt("response", MessageTypes.RESPONSE_SENT);
         }

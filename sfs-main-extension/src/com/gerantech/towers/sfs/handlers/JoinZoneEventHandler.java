@@ -34,7 +34,6 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		Game game = ((Game) user.getSession().getProperty("core"));
 		if( game == null )
 			return;
-		Zone zone = getParentExtension().getParentZone();
 
 		// Update player data
 		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `sessions_count`='" + (game.sessionsCount+1) + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";
@@ -43,25 +42,21 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		// Find last joined lobby room
-		Room room = rejoinToLastLobbyRoom(zone, user, game.player);
+		Room room = rejoinToLastLobbyRoom(user, game.player);
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
 	}
 
-	private Room rejoinToLastLobbyRoom(Zone zone, User user, Player player)
+	private Room rejoinToLastLobbyRoom(User user, Player player)
 	{
-		LobbyUtils lu = LobbyUtils.getInstance();
-		LobbyData data = LobbyUtils.getInstance().getDataByMember(player.id);
-		if( data == null )
-			return null;
-		Room room = lu.getLobby(data);
-		if( room == null )
+		Room lobby = LobbyUtils.getInstance().getLobby(player.id);
+		if( lobby == null )
 			return null;
 		try {
-			getApi().joinRoom(user, room);
+			getApi().joinRoom(user, lobby);
 		} catch (SFSJoinRoomException e) { e.printStackTrace(); }
-		return room;
+		return lobby;
 	}
 
 	private void initBuddy(User user, Room room) throws SFSBuddyListException {

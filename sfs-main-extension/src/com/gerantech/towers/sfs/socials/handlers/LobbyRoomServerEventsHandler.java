@@ -15,28 +15,26 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 {
-	public void handleServerEvent(ISFSEvent arg) throws SFSException
+	public void handleServerEvent(ISFSEvent arg)
 	{
 		Room lobby = (Room) arg.getParameter(SFSEventParam.ROOM);
 		LobbyRoom lobbyClass = (LobbyRoom) lobby.getExtension();
 		User user = (User)arg.getParameter(SFSEventParam.USER);
 		Player player = ((Game) user.getSession().getProperty("core")).player;
 
-		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )
+		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )// mode = join
 		{
 			if( !LobbyUtils.getInstance().addUser(lobbyClass.getData(), player.id) )
 				return;
 
 			// broadcast join message
-			if( lobby.getVariable("all").getSFSArrayValue().size() > 1 )
+			if( lobbyClass.getData().getMembers().size() > 1 )
 				lobbyClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player.nickName, "", (short)-1);
-			// mode = join
 		}
-		else if( arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) )
+		else if( arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) )// mode = leave
 		{
 			// broadcast leave message
 			lobbyClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player.nickName, "", (short)-1);
-			// mode = leave
 			LobbyUtils.getInstance().removeUser(lobbyClass.getData(), player.id);
 		}
 	}
