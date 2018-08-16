@@ -92,8 +92,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			STARTING_STATE = 1;
 
 		// load all settings
-		LobbyUtils.getInstance().loadAllSettings();
 		RankingUtils.getInstance().fillActives();
+		LobbyUtils.getInstance().loadAll();
 		ChallengeUtils.getInstance().loadAll();
 
 		if( CORE_SIZE == 0 )

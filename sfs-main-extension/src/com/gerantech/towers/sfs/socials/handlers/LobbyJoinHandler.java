@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
@@ -59,7 +60,6 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             msg.putInt("u", (int) Instant.now().getEpochSecond());
             msg.putInt("o", game.player.id);
             msg.putUtfString("on", game.player.nickName);
-            messages.addSFSObject(msg);
 
             getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
             //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());

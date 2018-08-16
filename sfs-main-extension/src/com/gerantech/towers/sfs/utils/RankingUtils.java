@@ -101,7 +101,7 @@ public class RankingUtils
                 }
 
             }
-            ext.trace("filled in-memory tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+            ext.trace("filled in-memory tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
         } catch (SQLException e) { e.printStackTrace(); }
 
         // insert npcs

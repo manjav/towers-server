@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -33,7 +34,7 @@ public class BattlesRemovedHandler extends BaseServerEventHandler
             Room lobby = lobbies.get(i);
             if ( lobby.containsProperty(room.getName()) )
             {
-                ISFSArray messageQueue = lobby.getVariable("msg").getSFSArrayValue();
+                ISFSArray messageQueue = ((LobbyData)lobby.getProperty("data")).getMessages();
                 int msgSize = messageQueue.size();
                 for (int j = msgSize-1; j >= 0; j--)
                 {

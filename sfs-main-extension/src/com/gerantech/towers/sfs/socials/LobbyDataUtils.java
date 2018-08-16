@@ -79,10 +79,11 @@ public class LobbyDataUtils
         params.putInt("id", data.getId());
         params.putUtfString("name", data.getName());
         params.putUtfString("bio", data.getBio());
+        params.putInt("pic", data.getEmblem());
+        params.putInt("pri", data.getPrivacy());
         params.putInt("max", data.getCapacity());
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
-        params.putInt("pic", data.getEmblem());
         params.putInt("act", getLobbyActiveness(all));
         if( includeMembers )
             params.putSFSArray("all", all);

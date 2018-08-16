@@ -6,7 +6,6 @@ import com.gt.hazel.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;
-import com.gt.towers.socials.Attendee;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -20,10 +19,8 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
-import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
-import com.smartfoxserver.v2.exceptions.SFSVariableException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
@@ -51,10 +48,15 @@ public class LobbyUtils
     }
 
 
+    public Map<Integer, LobbyData> getAllData()
+    {
+        return (Map<Integer, LobbyData>) ext.getParentZone().getProperty("lobbiesData");
+    }
+    
     /**
      * Save room to file for server restore rooms after resetting
      */
-    public void loadAllSettings()
+    public void loadAll()
     {
         if( ext.getParentZone().containsProperty("lobbiesData") )
             return;
@@ -66,7 +68,7 @@ public class LobbyUtils
         if( lobbyRows.size() == 0 )
         {
             migrateToLobbies();
-            loadAllSettings();
+            loadAll();
             return;
         }
 
@@ -127,29 +129,29 @@ public class LobbyUtils
         //rs.setMaxVariablesAllowed(7);
         rs.setMaxUsers(lobbyData.getCapacity());
 
+        rs.setRoomProperties(new HashMap(){{put("data", lobbyData);}});
+
         Room lobby = null;
         try {
             lobby = ext.getApi().createRoom(ext.getParentZone(), rs, null);
         } catch (SFSCreateRoomException e) { e.printStackTrace(); }
 
-        lobby.setProperty("data", lobbyData);
         return lobby;
     }
 
-
     /**
      * Save room to file for server restore rooms after resetting
-     * @param lobbyId
-     * @param name
-     * @param bio
-     * @param emblem
-     * @param capacity
-     * @param minPoint
-     * @param privacy
-     * @param members
-     * @param messages
+     * @param lobbyData (required)
+     * @param name (set null if you want not save)
+     * @param bio (set null if you want not save)
+     * @param emblem (set -1 if you want not save)
+     * @param capacity (set -1 if you want not save)
+     * @param minPoint (set -1 if you want not save)
+     * @param privacy (set -1 if you want not save)
+     * @param members (set null if you want not save)
+     * @param messages (set null if you want not save)
      */
-    public void save(int lobbyId, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
+    public void save(LobbyData lobbyData, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
     {
         String query = "UPDATE lobbies SET ";
         List<String> changes =  new ArrayList();
@@ -167,16 +169,17 @@ public class LobbyUtils
             query += changes.get(i);
             query += ( i < changes.size() - 1 ) ? ", " : " ";
         }
-        query += "WHERE id = " + lobbyId;
-        ext.trace(query);
+        query += "WHERE id = " + lobbyData.getId() + ";";
+        //ext.trace(query);
 
         List<Object> arguments = new ArrayList();
         if( members != null ) arguments.add(members);
         if( messages != null ) arguments.add(messages);
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, arguments.toArray());
-        } catch (SQLException e) {  e.printStackTrace(); }
+        } catch (SQLException e) { e.printStackTrace(); }
 
+        getAllData().replace(lobbyData.getId(), lobbyData);
     }
 
     public Room getLobby(int memberId)
@@ -195,10 +198,6 @@ public class LobbyUtils
         return createRoom(data);
     }
 
-    public Map<Integer, LobbyData> getAllData()
-    {
-        return (Map<Integer, LobbyData>) ext.getParentZone().getProperty("lobbiesData");
-    }
     public LobbyData getDataById(Integer id)
     {
         return getAllData().get(id);
@@ -216,8 +215,9 @@ public class LobbyUtils
     {
         ISFSArray members = lobbyData.getMembers();
         for(int i=0; i<members.size(); i++)
-            if( members.getSFSObject(i).getInt("id").equals(memberId) )
-                return i;
+            if( members.getSFSObject(i).getInt("id").equals(memberId) ){
+            ext.trace(lobbyData.getId(), i, members.getSFSObject(i).getInt("id"), memberId, members.size());
+                return i;}
         return -1;
     }
 
@@ -258,17 +258,18 @@ public class LobbyUtils
 
     public boolean addUser(LobbyData lobbyData, int userId)
     {
-        ISFSArray members = lobbyData.getMembers();
-        int allSize = members.size();
-        for(int i=0; i<allSize; i++)
-            if ( members.getSFSObject(i).getInt("id").equals(userId) )
-                return false;
+        LobbyData oldLobby =  getDataByMember(userId);
+        if( oldLobby != null )
+        {
+            ext.trace(userId, "already joint in", oldLobby.getName());
+            return false;
+        }
 
         SFSObject member = new SFSObject();
         member.putInt("id", userId);
-        member.putShort("pr", (allSize==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
+        member.putShort("pr", (lobbyData.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
         lobbyData.getMembers().addSFSObject(member);
-        save(lobbyData.getId(), null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+        save(lobbyData, null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
         return true;
     }
 
@@ -299,18 +300,21 @@ public class LobbyUtils
         if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
             members.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
 
-        save(lobbyData.getId(), null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+        lobbyData.setMembers(members);
+        save(lobbyData, null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
     }
 
 
 
     private void migrateToLobbies()
     {
+        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
         dbRoomStorageConfig.storeInactiveRooms = true;
         dbRoomStorageConfig.tableName = "rooms";
         ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
 
+        Map<Integer, ISFSObject> reservedPlayers = new HashMap();
         List<CreateRoomSettings> lobbies = null;
         try {
             lobbies = ext.getParentZone().getRoomPersistenceApi().loadAllRooms("lobbies");
@@ -318,12 +322,52 @@ public class LobbyUtils
 
         for( CreateRoomSettings crs : lobbies )
         {
+            ISFSArray members = getSettingsVariable(crs, "all").getSFSArrayValue();
+
+            // remove inactive lobbies
+            int activeness = 0;
+            for(int i=0; i<members.size(); i++)
+                activeness += (users.containsKey(members.getSFSObject(i).getInt("id")) ? users.get(members.getSFSObject(i).getInt("id")).xp : 0);
+
+            if( activeness <= 0 )
+            {
+                //ext.trace(crs.getName(), "is inactive.");
+                continue;
+            }
+
+
+            // remove duplicate player
+            ISFSArray mems = new SFSArray();
+            for(int i=0; i<members.size(); i++)
+            {
+                if( reservedPlayers.containsKey(members.getSFSObject(i).getInt("id")) )
+                {
+                    ext.trace(members.getSFSObject(i).getInt("id"), "already joint in other lobby");
+                }
+                else
+                {
+                    if( members.getSFSObject(i).containsKey("na") ) members.getSFSObject(i).removeElement("na");
+                    if( members.getSFSObject(i).containsKey("po") ) members.getSFSObject(i).removeElement("po");
+                    mems.addSFSObject(members.getSFSObject(i));
+                    reservedPlayers.put(members.getSFSObject(i).getInt("id"), members.getSFSObject(i));
+                }
+            }
+
+            if( mems.size() < 2 )
+            {
+                ext.trace(crs.getName(), "is too small.");
+                continue;
+            }
+
+
+            // create lobby data
             LobbyData ld = new LobbyData(-1, crs.getName(), getSettingsVariable(crs, "bio").getStringValue(), getSettingsVariable(crs, "pic").getIntValue(), crs.getMaxUsers(), getSettingsVariable(crs, "min").getIntValue(), getSettingsVariable(crs, "pri").getIntValue(), null, null);
-            ld.setMembers(getSettingsVariable(crs, "all").getSFSArrayValue());
+            ld.setMembers(mems);
             ld.setMessages(getSettingsVariable(crs, "msg").getSFSArrayValue());
+
             String query = "INSERT INTO lobbies (name, bio, emblem, capacity, min_point, privacy, members, messages) VALUES ('"
                     + ld.getName() + "', '" + ld.getBio() + "', " + ld.getEmblem() + ", " + ld.getCapacity() + ", " + ld.getMinPoint() + ", " + ld.getPrivacy() + ", ?, ?);";
-            ext.trace(query);
+            //ext.trace(ld.getName());
             try {
                 ext.getParentZone().getDBManager().executeInsert(query, new Object[]{ld.getMembersBytes(), ld.getMessagesBytes()});
             } catch (SQLException e) {  e.printStackTrace(); }

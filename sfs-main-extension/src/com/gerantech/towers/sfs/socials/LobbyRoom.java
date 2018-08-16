@@ -15,15 +15,20 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 
+import java.time.Instant;
+
 /**
  * Created by ManJav on 8/25/2017.
  */
 public class LobbyRoom extends BaseLobbyRoom
 {
-   // @Override
+    private int savedAt;
+
+    // @Override`
     public void init()
     {
         super.init();
+        savedAt = (int) Instant.now().getEpochSecond();
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
         addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
@@ -37,18 +42,19 @@ public class LobbyRoom extends BaseLobbyRoom
         if( requestId.equals(Commands.LOBBY_INFO) && !params.containsKey("nomsg") )
             params.putSFSArray("messages", messageQueue() );
         super.handleClientRequest(requestId, sender, params);
-       // LobbyUtils.getInstance().setActivenessVariable (lobby, getActiveness() + 1);
     }
 
  //   @Override
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         super.organizeMessage(sender, params, false);
-        if( mode == MessageTypes.M30_FRIENDLY_BATTLE ) {
 
+        if( mode == MessageTypes.M30_FRIENDLY_BATTLE )
+        {
             // cancel requested battle by owner
             ISFSObject message = getMyRequestedBattle(params, game.player);
-            if (message != null) {
+            if( message != null )
+            {
                 params.putShort("st", (short) 3);
                 message.putShort("st", (short) 3);
                 Room room = getParentZone().getRoomById(message.getInt("bid"));
@@ -59,9 +65,11 @@ public class LobbyRoom extends BaseLobbyRoom
 
             // join to an available battle
             message = getAvailableBattle(params);
-            if (message != null) {
+            if( message != null )
+            {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
-                if (room != null) {
+                if( room != null)
+                {
                     BattleUtils.getInstance().join(sender, room, "");
 
                     params.putUtfString("o", game.player.nickName);
@@ -73,7 +81,6 @@ public class LobbyRoom extends BaseLobbyRoom
                     params.putShort("st", (short) 1);
                     message.putShort("st", (short) 1);
                 }
-
                 return;
             }
 
@@ -88,7 +95,7 @@ public class LobbyRoom extends BaseLobbyRoom
             }
 
             // request new battle
-            if (params.getShort("st") > 0)
+            if( params.getShort("st") > 0 )
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
@@ -100,8 +107,10 @@ public class LobbyRoom extends BaseLobbyRoom
         else if (MessageTypes.isConfirm(mode))
         {
             int confirmIndex = getRelatedConfirm(messages, params);
-            if (confirmIndex > -1 || params.containsKey("pr")) {
-                if (confirmIndex > -1) {
+            if( confirmIndex > -1 || params.containsKey("pr") )
+            {
+                if( confirmIndex > -1 )
+                {
                     replyRequest(game, params);
                     messages.getSFSObject(confirmIndex).putShort("pr", params.getShort("pr"));
                 }
@@ -109,6 +118,14 @@ public class LobbyRoom extends BaseLobbyRoom
             }
         }
         messages.addSFSObject(params);
+
+        // save lobby messages every 30 seconds
+        if( savedAt < params.getInt("u") - 30 )
+        {
+            data.setMessages(messages);
+            LobbyUtils.getInstance().save(data, null, null, -1, -1, -1, -1, null, data.getMessagesBytes());
+            savedAt = params.getInt("u");
+        }
     }
 
     private int getRelatedConfirm(ISFSArray messages, ISFSObject params)

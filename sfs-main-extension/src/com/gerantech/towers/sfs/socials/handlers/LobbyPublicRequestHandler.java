@@ -32,9 +32,9 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
         if( theRoom == null )
         {
             theRoom = make(sender);
-            LobbyData lobbyData = new LobbyData(theRoom.getId(), theRoom.getName(), "", 0,0,0,0,null, null);
+            /*LobbyData lobbyData = new LobbyData(theRoom.getId(), theRoom.getName(), "", 0,0,0,0,null, null);
             lobbyData.setMessages(new SFSArray());
-            theRoom.setProperty("data", lobbyData);
+            theRoom.setProperty("data", lobbyData);*/
         }
         join(sender, theRoom);
         send(Commands.LOBBY_PUBLIC, null, sender);

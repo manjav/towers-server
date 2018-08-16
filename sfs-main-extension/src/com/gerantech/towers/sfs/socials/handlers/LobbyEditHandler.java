@@ -31,14 +31,20 @@ public class LobbyEditHandler extends BaseClientRequestHandler
         if( params.containsKey("max") )
             lobby.setMaxUsers(params.getInt("max"));
 
-        LobbyUtils.getInstance().save(
-                lobbyData.getId(),
-                params.containsKey("name") ? params.getUtfString("name") : null,
-                params.containsKey("bio") ? params.getUtfString("bio") : null,
-                params.containsKey("pic") ? params.getInt("pic") : -1,
-                params.containsKey("max") ? params.getInt("max") : -1,
-                params.containsKey("min") ? params.getInt("min") : -1,
-                params.containsKey("pri") ? params.getInt("pri")  : -1,
+        if( params.containsKey("name") )    lobbyData.setName(params.getUtfString("name"));
+        if( params.containsKey("bio") )     lobbyData.setBio(params.getUtfString("bio"));
+        if( params.containsKey("pic") )     lobbyData.setEmblem(params.getInt("pic"));
+        if( params.containsKey("max") )     lobbyData.setCapacity(params.getInt("max"));
+        if( params.containsKey("min") )     lobbyData.setMinPoint(params.getInt("min"));
+        if( params.containsKey("pri") )     lobbyData.setPrivacy(params.getInt("pri"));
+
+        LobbyUtils.getInstance().save(             lobbyData,
+                params.containsKey("name") ?    params.getUtfString("name") : null,
+                params.containsKey("bio") ?     params.getUtfString("bio")  : null,
+                params.containsKey("pic") ?     params.getInt("pic")        : -1,
+                params.containsKey("max") ?     params.getInt("max")        : -1,
+                params.containsKey("min") ?     params.getInt("min")        : -1,
+                params.containsKey("pri") ?     params.getInt("pri")        : -1,
                 null, null);
 
         ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);

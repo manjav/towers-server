@@ -107,7 +107,7 @@ public class LobbyData extends SFSObject
     {
         return getInt("min_point");
     }
-    private void setMinPoint(int capacity)
+    public void setMinPoint(int capacity)
     {
         putInt("min_point", capacity);
     }
@@ -120,7 +120,7 @@ public class LobbyData extends SFSObject
     {
         return getInt("privacy");
     }
-    private void setPrivacy(int privacy)
+    public void setPrivacy(int privacy)
     {
         putInt("privacy", privacy);
     }
@@ -133,7 +133,7 @@ public class LobbyData extends SFSObject
     {
         return getInt("capacity");
     }
-    private void setCapacity(int capacity)
+    public void setCapacity(int capacity)
     {
         putInt("capacity", capacity);
     }

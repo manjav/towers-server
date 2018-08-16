@@ -19,19 +19,22 @@ import java.time.Instant;
  */
 public class BaseLobbyRoom extends SFSExtension
 {
-    protected Room lobby;
     protected Game game;
     protected Short mode;
+    protected Room lobby;
+    protected LobbyData data;
     protected ISFSArray messages;
 
     public void init()
     {
         lobby = getParentRoom();
+        data = (LobbyData) lobby.getProperty("data");
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
         addRequestHandler(Commands.LOBBY_REPORT, LobbyReportHandler.class);
     }
 
-    public void handleClientRequest(String requestId, User sender, ISFSObject params) {
+    public void handleClientRequest(String requestId, User sender, ISFSObject params)
+    {
         if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
             organizeMessage(sender, params, true);
         super.handleClientRequest(requestId, sender, params);
@@ -44,15 +47,16 @@ public class BaseLobbyRoom extends SFSExtension
         {
             game = ((Game) sender.getSession().getProperty("core"));
 
-            params.putInt("u", (int) Instant.now().getEpochSecond());
             params.putInt("i", game.player.id);
             params.putUtfString("s", game.player.nickName);
         }
 
+        params.putInt("u", (int) Instant.now().getEpochSecond());
         if( !params.containsKey("m") )
             params.putShort("m", (short) MessageTypes.M0_TEXT);
         mode = params.getShort("m");
         messages = messageQueue();
+
         // Max 30 len message queue
         while (messages.size() > 30)
             messages.removeElementAt(0);
@@ -63,7 +67,8 @@ public class BaseLobbyRoom extends SFSExtension
                 params.putUtfString("t", params.getUtfString("t").substring(0, 160) + " ...");
             // Merge messages from a sender
             ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
-            if (last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id) {
+            if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
+            {
                 params.putUtfString("t", last.getUtfString("t") + "\n" + params.getUtfString("t"));
                 messages.removeElementAt(messages.size() - 1);
             }
