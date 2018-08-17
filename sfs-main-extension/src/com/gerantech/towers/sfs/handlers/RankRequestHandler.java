@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.handlers;
 import java.util.*;
 
 import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.gt.hazel.RankData;
+import com.gt.data.RankData;;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
 import com.hazelcast.config.Config;

@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.data.LobbyData;
-import com.gt.hazel.RankData;
+import com.gt.data.RankData;;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ResourceType;

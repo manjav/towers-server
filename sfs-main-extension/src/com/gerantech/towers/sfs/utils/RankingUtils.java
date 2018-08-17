@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.utils;
 
-import com.gt.hazel.RankData;
+import com.gt.data.RankData;;
 import com.gt.towers.Game;
 import com.gt.towers.arenas.Arena;
 import com.hazelcast.config.Config;

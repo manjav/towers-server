@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gt.data.LobbyData;
-import com.gt.hazel.RankData;
+import com.gt.data.RankData;;
 import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;

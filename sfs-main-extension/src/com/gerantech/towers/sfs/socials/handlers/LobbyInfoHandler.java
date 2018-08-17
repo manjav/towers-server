@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.socials.LobbyDataUtils;
 import com.gt.data.LobbyData;
-import com.gt.hazel.RankData;
+import com.gt.data.RankData;;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
