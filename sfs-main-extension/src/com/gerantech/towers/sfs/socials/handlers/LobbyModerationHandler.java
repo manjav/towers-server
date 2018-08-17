@@ -22,7 +22,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 {
     private Game game;
     private Room lobby;
-    private LobbyRoom LobbyClass;
+    private LobbyRoom lobbyRoom;
     private ISFSArray members;
     private ISFSObject targetMember;
     private ISFSObject modMember;
@@ -32,8 +32,8 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
     {
         game = ((Game) sender.getSession().getProperty("core"));
         lobby = getParentExtension().getParentRoom();
-        LobbyClass = (LobbyRoom) lobby.getExtension();
-        lobbyData = LobbyClass.getData();
+        lobbyRoom = (LobbyRoom) lobby.getExtension();
+        lobbyData = lobbyRoom.getData();
         members = lobbyData.getMembers();
         targetMember = null;
         modMember = null;
@@ -74,7 +74,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         if( targetUser != null )
             getApi().leaveRoom(targetUser, lobby, true, false);
 
-        LobbyClass.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
+        lobbyRoom.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player.nickName, targetName, (short)-1);// mode = leave
         LobbyUtils.getInstance().removeUser(lobbyData, targetId);
         InboxUtils.getInstance().send(MessageTypes.M0_TEXT, " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", game.player.nickName, game.player.id, targetId, "");
         OneSignalUtils.getInstance().send(targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
@@ -87,7 +87,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
              return false;
 
         changePermission((short) (targetMember.getShort("pr") + 1));
-        LobbyClass.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
+        lobbyRoom.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
         OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
         return true;
@@ -99,7 +99,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
             return false;
 
         changePermission((short) (targetMember.getShort("pr") - 1));
-        LobbyClass.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
+        lobbyRoom.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         //InboxUtils.getInstance().send(MessageTypes.M50_URL, game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
         OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
         return true;
