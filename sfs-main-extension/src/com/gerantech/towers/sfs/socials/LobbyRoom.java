@@ -104,25 +104,26 @@ public class LobbyRoom extends BaseLobbyRoom
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
         }
-        else if (MessageTypes.isConfirm(mode))
+        else if( MessageTypes.isConfirm(mode) )
         {
             int confirmIndex = getRelatedConfirm(messages, params);
             if( confirmIndex > -1 || params.containsKey("pr") )
             {
                 if( confirmIndex > -1 )
                 {
-                    replyRequest(game, params);
+                    if( replyRequest(game, params) )
+                        messages.removeElementAt(confirmIndex);
                     messages.getSFSObject(confirmIndex).putShort("pr", params.getShort("pr"));
                 }
                 return;
             }
         }
         messages.addSFSObject(params);
+        data.setMessages(messages);
 
         // save lobby messages every 30 seconds
         if( savedAt < params.getInt("u") - 30 )
         {
-            data.setMessages(messages);
             LobbyUtils.getInstance().save(data, null, null, -1, -1, -1, -1, null, data.getMessagesBytes());
             savedAt = params.getInt("u");
         }
@@ -179,7 +180,7 @@ public class LobbyRoom extends BaseLobbyRoom
         msg.putUtfString("o", object);
         msg.putShort("p", permissionId);
         //messageQueue().addSFSObject(msg);
-        super.handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
+        handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
 
     /*private int getActiveness ()
@@ -213,6 +214,6 @@ public class LobbyRoom extends BaseLobbyRoom
     @Override
     protected ISFSArray messageQueue ()
     {
-        return ((LobbyData)lobby.getProperty("data")).getMessages();
+        return getData().getMessages();
     }
 }

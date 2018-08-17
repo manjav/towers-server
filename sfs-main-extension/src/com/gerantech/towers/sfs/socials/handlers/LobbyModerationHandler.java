@@ -83,7 +83,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 
     private boolean promote(Integer targetId, String targetName)
     {
-         if( modMember.getShort("pr") <= targetMember.getShort("pr")+1 || targetMember.getShort("pr") >= DefaultPermissionProfile.MODERATOR.getId() )
+         if( modMember.getShort("pr") <= targetMember.getShort("pr") + 1 || targetMember.getShort("pr") >= DefaultPermissionProfile.MODERATOR.getId() )
              return false;
 
         changePermission((short) (targetMember.getShort("pr") + 1));
@@ -101,7 +101,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         changePermission((short) (targetMember.getShort("pr") - 1));
         lobbyRoom.sendComment((short) MessageTypes.M14_COMMENT_DEMOTE, game.player.nickName, targetName, targetMember.getShort("pr"));// mode = leave
         //InboxUtils.getInstance().send(MessageTypes.M50_URL, game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
-        OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
+        //OneSignalUtils.getInstance().send(targetName + "، " + game.player.nickName + " درجه تو رو به سرباز کاهش داد. ", null, targetId);
         return true;
     }
 

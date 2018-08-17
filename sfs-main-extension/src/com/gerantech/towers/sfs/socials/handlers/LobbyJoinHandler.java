@@ -11,6 +11,7 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import java.time.Instant;
 
@@ -60,8 +61,11 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             msg.putInt("u", (int) Instant.now().getEpochSecond());
             msg.putInt("o", game.player.id);
             msg.putUtfString("on", game.player.nickName);
+            try {
+                lobby.getExtension().handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, sender, msg);
+            } catch (SFSException e) { e.printStackTrace(); }
 
-            getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
+            // getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
             //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());
             params.putInt("response", MessageTypes.RESPONSE_SENT);
         }
