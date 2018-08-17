@@ -52,7 +52,7 @@ public class LobbyUtils
     {
         return (Map<Integer, LobbyData>) ext.getParentZone().getProperty("lobbiesData");
     }
-    
+
     /**
      * Save room to file for server restore rooms after resetting
      */

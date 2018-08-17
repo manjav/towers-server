@@ -95,7 +95,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 
     private boolean demote(Integer targetId, String targetName)
     {
-        if( modMember.getShort("pr") <= targetMember.getShort("pr") || targetMember.getShort("pr") < DefaultPermissionProfile.MODERATOR.getId() )
+        if( modMember.getShort("pr") <= targetMember.getShort("pr") || targetMember.getShort("pr") < DefaultPermissionProfile.STANDARD.getId() )
             return false;
 
         changePermission((short) (targetMember.getShort("pr") - 1));
