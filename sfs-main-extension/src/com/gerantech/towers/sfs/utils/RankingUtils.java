@@ -224,4 +224,75 @@ public class RankingUtils
     {
         return names[(int) (names.length * Math.random())];
     }
+
+    /*public void fillStatistics()
+    {
+        Map<Integer, Map<Integer, Integer>> statistics = new HashMap();
+        getResourceStats(statistics, ResourceType.POINT);
+        getResourceStats(statistics, ResourceType.XP);
+        getResourceStats(statistics, ResourceType.CURRENCY_SOFT);
+        getResourceStats(statistics, ResourceType.CURRENCY_HARD);
+        getResourceStats(statistics, ResourceType.BATTLES_COUNT);
+        getResourceStats(statistics, ResourceType.BATTLES_WINS);
+        getResourceStats(statistics, ResourceType.BATTLE_CHEST_OPENED);
+        getResourceStats(statistics, ResourceType.FREE_CHEST_OPENED);
+        getOperationStats(statistics);
+
+        String stats = "";
+        for (Map.Entry<Integer, Map<Integer, Integer>> entry : statistics.entrySet() )
+        {
+            Map<Integer, Integer> d = entry.getValue();
+            stats += entry.getKey()+","+
+                    (   d.containsKey(ResourceType.XP)                  ? d.get(ResourceType.XP) : 0 )+","+
+                    (   d.containsKey(ResourceType.POINT)               ? d.get(ResourceType.POINT) : 0 )+","+
+                    (   d.containsKey(ResourceType.CURRENCY_SOFT)       ? d.get(ResourceType.CURRENCY_SOFT) : 0 )+","+
+                    (   d.containsKey(ResourceType.CURRENCY_HARD)       ? d.get(ResourceType.CURRENCY_HARD) : 0 )+","+
+                    (   d.containsKey(ResourceType.BATTLES_COUNT)       ? d.get(ResourceType.BATTLES_COUNT) : 0 )+","+
+                    (   d.containsKey(ResourceType.BATTLES_WINS)        ? d.get(ResourceType.BATTLES_WINS) : 0 )+","+
+                    (   d.containsKey(ResourceType.BATTLE_CHEST_OPENED) ? d.get(ResourceType.BATTLE_CHEST_OPENED) : 0 )+","+
+                    (   d.containsKey(ResourceType.FREE_CHEST_OPENED)   ? d.get(ResourceType.FREE_CHEST_OPENED) : 0 )+","+
+                    (   d.containsKey(201)                              ? d.get(201) : 0 )+","+
+                    (   d.containsKey(202)                              ? d.get(202) : 0 )+ "\n";
+        }
+        ext.trace(stats);
+
+
+
+    }
+
+    private void getOperationStats(Map<Integer,Map<Integer,Integer>> statistics)
+    {
+        String query = "SELECT players.id, MAX(quests.`index` ) as i, AVG(quests.score) as s FROM players INNER JOIN quests ON players.id = quests.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') group by players.id;";
+        ISFSArray players = null;
+        try {
+            players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        for (int i = 0; i < players.size(); i++ )
+        {
+            if( !statistics.containsKey( players.getSFSObject(i).getInt("id") ) )
+                statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
+            statistics.get(players.getSFSObject(i).getInt("id")).put(201, players.getSFSObject(i).getInt("i"));
+            statistics.get(players.getSFSObject(i).getInt("id")).put(202, (int) (players.getSFSObject(i).getDouble("s")*10));
+        }
+        ext.trace("quests get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+    }
+
+    private void getResourceStats(Map<Integer, Map<Integer, Integer>> statistics, int key)
+    {
+        String query = "SELECT players.id, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') AND resources.type = " + key;
+        ISFSArray players = null;
+        try {
+            players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        for (int i = 0; i < players.size(); i++ )
+        {
+            if( !statistics.containsKey( players.getSFSObject(i).getInt("id") ) )
+                statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
+            statistics.get(players.getSFSObject(i).getInt("id")).put(key, players.getSFSObject(i).getInt("count"));
+        }
+        ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+    }*/
 }
+
