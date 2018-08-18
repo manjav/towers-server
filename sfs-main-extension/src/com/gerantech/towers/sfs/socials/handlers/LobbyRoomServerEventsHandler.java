@@ -22,6 +22,9 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 		User user = (User)arg.getParameter(SFSEventParam.USER);
 		Player player = ((Game) user.getSession().getProperty("core")).player;
 
+		if( player.admin )
+			return;
+
 		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )// mode = join
 		{
 			if( !LobbyUtils.getInstance().addUser(lobbyClass.getData(), player.id) )

@@ -1,11 +1,11 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
+import com.smartfoxserver.v2.api.SFSApi;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -23,6 +23,18 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
+        LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
+        Room lobby = LobbyUtils.getInstance().getLobby(lobbyData);
+
+        if( game.player.admin )
+        {
+            if( sender.getLastJoinedRoom() != null )
+                getApi().leaveRoom(sender, null, true, true);
+            LobbyUtils.getInstance().join(lobby, sender);
+            params.putInt("response", MessageTypes.RESPONSE_SUCCEED);
+            send(Commands.LOBBY_JOIN, params, sender);
+            return;
+        }
 
         // if you found lobby by member means member already joint to a lobby
         LobbyData data = LobbyUtils.getInstance().getDataByMember(game.player.id);
@@ -35,9 +47,6 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             return;
         }
 
-        // finding lobby data
-        LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
-        Room lobby = LobbyUtils.getInstance().getLobby(lobbyData);
         if( lobbyData.getPrivacy() == 0 )
         {
             LobbyUtils.getInstance().join(lobby, sender);
