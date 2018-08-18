@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.administration;
+package com.gerantech.towers.sfs.administration.ban;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.utils.BanSystem;
