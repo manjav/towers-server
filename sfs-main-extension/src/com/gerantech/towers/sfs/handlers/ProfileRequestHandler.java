@@ -37,6 +37,18 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		} catch (SQLException e) { trace(e.getMessage()); }
 		params.putSFSArray("features", featuresArray );
 
+
+		//  -=-=-=-=-=-=-=-=-  add player data  -=-=-=-=-=-=-=-=-
+		if( params.containsKey("pd") )
+		{
+			query = "SELECT * FROM players WHERE id=" + playerId + " Limit 1;";
+			ISFSArray dataArray = null;
+			try {
+				dataArray = dbManager.executeQuery(query, new Object[]{});
+			} catch (SQLException e) { trace(e.getMessage()); }
+			params.putSFSObject("pd", dataArray.getSFSObject(0));
+		}
+
 		/*//  -=-=-=-=-=-=-=-=-  add quests data  -=-=-=-=-=-=-=-=-
 		ISFSArray questsArray = null;
 		try {
