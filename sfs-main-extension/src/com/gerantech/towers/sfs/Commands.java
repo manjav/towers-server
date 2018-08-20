@@ -32,6 +32,7 @@ public class Commands
     public static final String PLAYERS_GET = "playersGet";
     public static final String BAN = "ban";
     public static final String INFRACTIONS_GET = "infractionsGet";
+    public static final String INFRACTIONS_DELETE = "infractionsDelete";
 
 
     public static final String FIGHT = "f";
