@@ -1,7 +1,12 @@
 package com.gerantech.towers.sfs;
-import com.gerantech.towers.sfs.administration.*;
+import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
+import com.gerantech.towers.sfs.administration.PlayersGetHandler;
+import com.gerantech.towers.sfs.administration.RestoreHandler;
 import com.gerantech.towers.sfs.administration.ban.BanHandler;
 import com.gerantech.towers.sfs.administration.ban.InfractionsGetHandler;
+import com.gerantech.towers.sfs.administration.issues.IssueGetHandler;
+import com.gerantech.towers.sfs.administration.issues.IssueReportHandler;
+import com.gerantech.towers.sfs.administration.issues.IssueTrackHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;

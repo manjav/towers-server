@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.administration;
+package com.gerantech.towers.sfs.administration.issues;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gt.towers.Game;

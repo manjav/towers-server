@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.administration;
+package com.gerantech.towers.sfs.administration.issues;
 
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
