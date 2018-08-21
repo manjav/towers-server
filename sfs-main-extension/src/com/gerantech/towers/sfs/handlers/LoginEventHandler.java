@@ -68,7 +68,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( banData != null )
 		{
 			outData.putSFSObject("ban", banData);
-			return;
+			if( banData.getInt("mode") > 2 )
+				return;
 		}
 
 		// check force update

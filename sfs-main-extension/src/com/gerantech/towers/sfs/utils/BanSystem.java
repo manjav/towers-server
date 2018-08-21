@@ -117,7 +117,7 @@ public class BanSystem
 	public ISFSObject checkBan(int playerId, String udid, long now)
 	{
 		ISFSArray bannedUsers = null;
-		String query = "SELECT message, expire_at FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND mode >= 2 AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
+		String query = "SELECT message, expire_at, mode FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND mode >= 2 AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
 		ext.trace(query);
 		try {
 			bannedUsers = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
@@ -126,7 +126,7 @@ public class BanSystem
 		if( bannedUsers == null || bannedUsers.size() == 0 )
 			return null;
 
-		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at")/1000-now);
+		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at") / 1000 - now);
 		bannedUsers.getSFSObject(0).removeElement("expire_at");
 		ext.trace(bannedUsers.getSFSObject(0).getDump());
 		return bannedUsers.getSFSObject(0);
