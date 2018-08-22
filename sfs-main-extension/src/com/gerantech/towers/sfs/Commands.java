@@ -31,6 +31,7 @@ public class Commands
     public static final String ISSUE_TRACK = "issueTrack";
     public static final String PLAYERS_GET = "playersGet";
     public static final String BAN = "ban";
+    public static final String BAN_GET = "banGet";
     public static final String INFRACTIONS_GET = "infractionsGet";
     public static final String INFRACTIONS_DELETE = "infractionsDelete";
 

@@ -99,19 +99,27 @@ public class BanSystem
 		return ret;
 	}
 
-	public void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime, String message)
-	{
-		if( message == null )
+	public void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime, String message) {
+		if (message == null)
 			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + ") ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at);";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at), time = time+1;" +
+				";";
 		ext.trace(q);
 		try {
 			db.executeUpdate(q, new Object[]{});
-		} catch (SQLException e) { e.printStackTrace(); }
+		} catch (SQLException e) {e.printStackTrace();}
 
-		OneSignalUtils.getInstance().send(message, null, offender);
+		//OneSignalUtils.getInstance().send(message, null, offender);
 		if( banMode == 1 )
 			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, "");
+		else if( banMode > 1 )
+		{
+			q = "UPDATE infractions SET proceed = 1 WHERE offender = " + offender;
+			ext.trace(q);
+			try {
+				db.executeUpdate(q, new Object[]{});
+			} catch (SQLException e) {e.printStackTrace();}
+		}
 	}
 
 	public ISFSObject checkBan(int playerId, String udid, long now)

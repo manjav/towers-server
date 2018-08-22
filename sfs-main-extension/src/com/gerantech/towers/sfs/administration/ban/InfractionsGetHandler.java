@@ -19,7 +19,7 @@ public class InfractionsGetHandler extends BaseClientRequestHandler
 		if( !game.player.admin )
 			return;
 
-		String query = "SELECT players.name, infractions.id, infractions.reporter, infractions.offender, infractions.content, infractions.lobby, infractions.offend_at FROM players INNER JOIN infractions ON players.id = infractions.offender";
+		String query = "SELECT players.name, infractions.id, infractions.reporter, infractions.offender, infractions.content, infractions.lobby, infractions.offend_at, infractions.proceed FROM players INNER JOIN infractions ON players.id = infractions.offender";
     	if( params.containsKey("id") )
 			query += " WHERE infractions.offender=" + params.getInt("id");
 		query += " ORDER BY infractions.offend_at DESC LIMIT 500;";
