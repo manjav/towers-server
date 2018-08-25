@@ -5,7 +5,6 @@ import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
-import com.smartfoxserver.v2.api.SFSApi;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -13,6 +12,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+
 import java.time.Instant;
 
 /**
@@ -24,33 +24,26 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
         LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
-        Room lobby = LobbyUtils.getInstance().getLobby(lobbyData);
-
-        if( game.player.admin )
+        if( lobbyData.isFull() && !game.player.admin )
         {
-            if( sender.getLastJoinedRoom() != null )
-                getApi().leaveRoom(sender, null, true, true);
-            LobbyUtils.getInstance().join(lobby, sender);
-            params.putInt("response", MessageTypes.RESPONSE_SUCCEED);
-            send(Commands.LOBBY_JOIN, params, sender);
+            sendResponse( MessageTypes.RESPONSE_NOT_ALLOWED, lobbyData.getName(), params, sender);
             return;
         }
 
         // if you found lobby by member means member already joint to a lobby
-        LobbyData data = LobbyUtils.getInstance().getDataByMember(game.player.id);
+        LobbyData data = game.player.admin ? null : LobbyUtils.getInstance().getDataByMember(game.player.id);
         if( data != null )
         {
-            params.putInt("response", MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL);
-            params.putText("lobby", data.getName());
-            send(Commands.LOBBY_JOIN, params, sender);
-            trace(sender.getName() + " already joined in " + data.getName() + ".");
+            sendResponse( MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL, data.getName(), params, sender);
             return;
         }
 
-        if( lobbyData.getPrivacy() == 0 )
+        int response = -1;
+        Room lobby = LobbyUtils.getInstance().getLobby(lobbyData);
+        if( lobbyData.getPrivacy() == 0 || game.player.admin )
         {
             LobbyUtils.getInstance().join(lobby, sender);
-            params.putInt("response", MessageTypes.RESPONSE_SUCCEED);
+            response = MessageTypes.RESPONSE_SUCCEED;
         }
         else if( lobbyData.getPrivacy() == 1 )
         {
@@ -59,8 +52,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
                 {
-                    params.putInt("response", MessageTypes.RESPONSE_ALREADY_SENT);
-                    send(Commands.LOBBY_JOIN, params, sender);
+                    sendResponse(MessageTypes.RESPONSE_ALREADY_SENT, lobbyData.getName(), params, sender);
                     return;
                 }
             }
@@ -74,14 +66,20 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
                 lobby.getExtension().handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, sender, msg);
             } catch (SFSException e) { e.printStackTrace(); }
 
-            // getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
-            //send(Commands.LOBBY_PUBLIC_MESSAGE, msg, room.getUserList());
-            params.putInt("response", MessageTypes.RESPONSE_SENT);
+            response = MessageTypes.RESPONSE_SENT;
         }
         else
         {
-            params.putInt("response", MessageTypes.RESPONSE_NOT_ALLOWED);
+            response = MessageTypes.RESPONSE_NOT_ALLOWED;
         }
+        sendResponse(response, lobbyData.getName(), params, sender);
+    }
+
+    private void sendResponse(int response, String name, ISFSObject params, User sender)
+    {
+        params.putInt("response", response);
+        params.putText("lobby", name);
         send(Commands.LOBBY_JOIN, params, sender);
+        trace("Sender:", sender.getName() + "  Response: " + response + "  Lobby: " + name);
     }
 }
