@@ -22,9 +22,6 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 		User user = (User)arg.getParameter(SFSEventParam.USER);
 		Player player = ((Game) user.getSession().getProperty("core")).player;
 
-		if( player.admin )
-			return;
-
 		if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )// mode = join
 		{
 			if( !LobbyUtils.getInstance().addUser(lobbyClass.getData(), player.id) )
@@ -32,12 +29,12 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 
 			// broadcast join message
 			if( lobbyClass.getData().getMembers().size() > 1 )
-				lobbyClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player.nickName, "", (short)-1);
+				lobbyClass.sendComment((short) MessageTypes.M10_COMMENT_JOINT, player, "", (short)-1);
 		}
 		else if( arg.getType().equals(SFSEventType.USER_LEAVE_ROOM) )// mode = leave
 		{
 			// broadcast leave message
-			lobbyClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player.nickName, "", (short)-1);
+			lobbyClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player, "", (short)-1);
 			LobbyUtils.getInstance().removeUser(lobbyClass.getData(), player.id);
 		}
 	}

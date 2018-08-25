@@ -47,7 +47,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
                 params.containsKey("pri") ?     params.getInt("pri")        : -1,
                 null, null);
 
-        ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player.nickName, "", (short)0);
+        ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player, "", (short)0);
 
         //params.putInt("response", RESPONSE_OK);
         //send(Commands.LOBBY_EDIT, params, sender);

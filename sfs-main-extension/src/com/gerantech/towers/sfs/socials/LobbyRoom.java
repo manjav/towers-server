@@ -171,12 +171,15 @@ public class LobbyRoom extends BaseLobbyRoom
         return null;
     }
 
-    public void sendComment(short mode, String subject, String object, short permissionId)
+    public void sendComment(short mode, Player subject, String object, short permissionId)
     {
+        if( subject.admin && (mode == MessageTypes.M10_COMMENT_JOINT || mode == MessageTypes.M11_COMMENT_LEAVE) )
+            return;
+
         ISFSObject msg = new SFSObject();
         msg.putUtfString("t", "");
         msg.putShort("m", mode);
-        msg.putUtfString("s", subject);
+        msg.putUtfString("s", subject.nickName);
         msg.putUtfString("o", object);
         msg.putShort("p", permissionId);
         //messageQueue().addSFSObject(msg);
@@ -207,7 +210,7 @@ public class LobbyRoom extends BaseLobbyRoom
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
         InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
-        sendComment(params.getShort("pr"), game.player.nickName, params.getUtfString("on"), (short)-1);// mode = join
+        sendComment(params.getShort("pr"), game.player, params.getUtfString("on"), (short)-1);// mode = join
         return true;
     }
 
