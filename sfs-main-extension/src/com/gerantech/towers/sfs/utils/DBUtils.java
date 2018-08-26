@@ -175,21 +175,21 @@ public class DBUtils
         */
     }
 
-    // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   QUESTS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+    // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OPERATIONS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public ISFSArray getOperations(int playerId)
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT `index`,`score` FROM quests WHERE player_id=" + playerId, new Object[]{});
+            ret = db.executeQuery("SELECT `index`,`score` FROM operations WHERE player_id=" + playerId, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void setOperationScore(Player player, int index, int score) throws SFSException, SQLException
+    public void setOperationScore(Player player, int index, int score) throws SQLException
     {
         if( player.operations.exists( index ) )
-            db.executeUpdate("UPDATE `quests` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
+            db.executeUpdate("UPDATE `operations` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
         else
-            db.executeInsert("INSERT INTO quests (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
+            db.executeInsert("INSERT INTO operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OTHERS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -204,7 +204,7 @@ public class DBUtils
         return (SFSArray) db.executeQuery("SELECT * FROM decks WHERE player_id="+playerId, new Object[] {});
     }
 
-    public ISFSArray getFriends(int playerId)throws SFSException, SQLException
+    public ISFSArray getFriends(int playerId)throws SQLException
     {
         String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN friendship ON players.id=friendship.invitee_id OR players.id=friendship.inviter_id INNER JOIN resources ON resources.type=1001 AND players.id=resources.player_id WHERE players.id!=" + playerId + " AND friendship.inviter_id=" + playerId + " OR friendship.invitee_id=" + playerId + " ORDER BY resources.count DESC LIMIT 0,100";
         ISFSArray result = db.executeQuery(query , new Object[] {});
