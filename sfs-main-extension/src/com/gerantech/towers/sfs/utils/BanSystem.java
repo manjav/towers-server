@@ -5,6 +5,7 @@ import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
@@ -140,4 +141,26 @@ public class BanSystem
 		return bannedUsers.getSFSObject(0);
 	}
 
+	public ISFSArray getInfractions(int selectedPlayer, int proceed, int size, String requestFields)
+	{
+		if( requestFields == null )
+			requestFields = "players.name, infractions.id, infractions.reporter, infractions.offender, infractions.content, infractions.lobby, infractions.offend_at, infractions.proceed";
+		String query = "SELECT " + requestFields + " FROM ";
+		if( requestFields.indexOf("players") > -1 )
+			query += "players INNER JOIN infractions ON players.id = infractions.offender";
+		else
+			query += "infractions";
+
+		if( selectedPlayer > -1 )
+			query += " WHERE infractions.offender=" + selectedPlayer;
+		if( proceed > -1 )
+			query += (selectedPlayer > -1 ? " AND" : " WHERE") + " infractions.proceed=" + proceed;
+		query += " ORDER BY infractions.offend_at DESC LIMIT " + size;
+		//ext.trace(query);
+		ISFSArray ret = new SFSArray();
+		try {
+			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
+		} catch (SQLException e) { e.printStackTrace(); }
+		return ret;
+	}
 }

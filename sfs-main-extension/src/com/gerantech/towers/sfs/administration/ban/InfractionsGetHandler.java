@@ -1,11 +1,11 @@
 package com.gerantech.towers.sfs.administration.ban;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.utils.BanSystem;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import java.sql.SQLException;
 
 /**
  * @author ManJav
@@ -18,15 +18,7 @@ public class InfractionsGetHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		if( !game.player.admin )
 			return;
-
-		String query = "SELECT players.name, infractions.id, infractions.reporter, infractions.offender, infractions.content, infractions.lobby, infractions.offend_at, infractions.proceed FROM players INNER JOIN infractions ON players.id = infractions.offender";
-    	if( params.containsKey("id") )
-			query += " WHERE infractions.offender=" + params.getInt("id");
-		query += " ORDER BY infractions.offend_at DESC LIMIT 200;";
-
- 		try {
-			params.putSFSArray("data", getParentExtension().getParentZone().getDBManager().executeQuery(query, new Object[] {}));
-		} catch (SQLException e) { e.printStackTrace(); }
+		params.putSFSArray("data", BanSystem.getInstance().getInfractions(params.containsKey("id") ? params.getInt("id") : -1, -1, 200, null));
 		send(Commands.INFRACTIONS_GET, params, sender);
     }
 }

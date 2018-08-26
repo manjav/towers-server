@@ -3,7 +3,7 @@ import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
 import com.gerantech.towers.sfs.administration.PlayersGetHandler;
 import com.gerantech.towers.sfs.administration.RestoreHandler;
 import com.gerantech.towers.sfs.administration.ban.BanHandler;
-import com.gerantech.towers.sfs.administration.ban.GetBannedHandler;
+import com.gerantech.towers.sfs.administration.ban.GetOffenderDataHandler;
 import com.gerantech.towers.sfs.administration.ban.InfractionsDeleteHandler;
 import com.gerantech.towers.sfs.administration.ban.InfractionsGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueGetHandler;
@@ -98,7 +98,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.ISSUE_TRACK, IssueTrackHandler.class);
 		addRequestHandler(Commands.RESTORE, RestoreHandler.class);
 		addRequestHandler(Commands.BAN, BanHandler.class);
-		addRequestHandler(Commands.BAN_GET, GetBannedHandler.class);
+		addRequestHandler(Commands.OFFENDER_DATA_GET, GetOffenderDataHandler.class);
 		addRequestHandler(Commands.INFRACTIONS_GET, InfractionsGetHandler.class);
 		addRequestHandler(Commands.INFRACTIONS_DELETE, InfractionsDeleteHandler.class);
 		addRequestHandler(Commands.PLAYERS_GET, PlayersGetHandler.class);
