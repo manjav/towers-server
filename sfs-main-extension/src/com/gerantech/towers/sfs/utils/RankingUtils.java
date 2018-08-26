@@ -3,6 +3,9 @@ package com.gerantech.towers.sfs.utils;
 import com.gt.data.RankData;;
 import com.gt.towers.Game;
 import com.gt.towers.arenas.Arena;
+import com.gt.towers.buildings.Building;
+import com.gt.towers.constants.BuildingType;
+import com.gt.towers.constants.ResourceType;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -227,7 +230,7 @@ public class RankingUtils
 
     /*public void fillStatistics()
     {
-        Map<Integer, Map<Integer, Integer>> statistics = new HashMap();
+        Map<Integer, Map<Integer, Object>> statistics = new HashMap();
         getResourceStats(statistics, ResourceType.POINT);
         getResourceStats(statistics, ResourceType.XP);
         getResourceStats(statistics, ResourceType.CURRENCY_SOFT);
@@ -236,33 +239,73 @@ public class RankingUtils
         getResourceStats(statistics, ResourceType.BATTLES_WINS);
         getResourceStats(statistics, ResourceType.BATTLE_CHEST_OPENED);
         getResourceStats(statistics, ResourceType.FREE_CHEST_OPENED);
-        getOperationStats(statistics);
+        getCardStats(statistics, BuildingType.B11_BARRACKS);
+        getCardStats(statistics, BuildingType.B12_BARRACKS);
+        getCardStats(statistics, BuildingType.B13_BARRACKS);
+        getCardStats(statistics, BuildingType.B14_BARRACKS);
+        getCardStats(statistics, BuildingType.B21_RAPID);
+        getCardStats(statistics, BuildingType.B22_RAPID);
+        getCardStats(statistics, BuildingType.B23_RAPID);
+        getCardStats(statistics, BuildingType.B24_RAPID);
+        getCardStats(statistics, BuildingType.B31_HEAVY);
+        getCardStats(statistics, BuildingType.B32_HEAVY);
+        getCardStats(statistics, BuildingType.B33_HEAVY);
+        getCardStats(statistics, BuildingType.B34_HEAVY);
+        getCardStats(statistics, BuildingType.B41_CRYSTAL);
+        getCardStats(statistics, BuildingType.B42_CRYSTAL);
+        getCardStats(statistics, BuildingType.B43_CRYSTAL);
+        getCardStats(statistics, BuildingType.B44_CRYSTAL);
+        //getOperationStats(statistics);
 
         String stats = "";
-        for (Map.Entry<Integer, Map<Integer, Integer>> entry : statistics.entrySet() )
+        for (Map.Entry<Integer, Map<Integer, Object>> entry : statistics.entrySet() )
         {
-            Map<Integer, Integer> d = entry.getValue();
-            stats += entry.getKey()+","+
-                    (   d.containsKey(ResourceType.XP)                  ? d.get(ResourceType.XP) : 0 )+","+
-                    (   d.containsKey(ResourceType.POINT)               ? d.get(ResourceType.POINT) : 0 )+","+
-                    (   d.containsKey(ResourceType.CURRENCY_SOFT)       ? d.get(ResourceType.CURRENCY_SOFT) : 0 )+","+
-                    (   d.containsKey(ResourceType.CURRENCY_HARD)       ? d.get(ResourceType.CURRENCY_HARD) : 0 )+","+
-                    (   d.containsKey(ResourceType.BATTLES_COUNT)       ? d.get(ResourceType.BATTLES_COUNT) : 0 )+","+
-                    (   d.containsKey(ResourceType.BATTLES_WINS)        ? d.get(ResourceType.BATTLES_WINS) : 0 )+","+
-                    (   d.containsKey(ResourceType.BATTLE_CHEST_OPENED) ? d.get(ResourceType.BATTLE_CHEST_OPENED) : 0 )+","+
-                    (   d.containsKey(ResourceType.FREE_CHEST_OPENED)   ? d.get(ResourceType.FREE_CHEST_OPENED) : 0 )+","+
-                    (   d.containsKey(201)                              ? d.get(201) : 0 )+","+
-                    (   d.containsKey(202)                              ? d.get(202) : 0 )+ "\n";
+            stats += entry.getKey() + ",";
+            Map<Integer, Object> d = entry.getValue();
+
+            stats += (   d.containsKey(ResourceType.XP)                  ? d.get(ResourceType.XP) : 0 )+","+
+            (   d.containsKey(ResourceType.POINT)               ? d.get(ResourceType.POINT) : 0 )+","+
+            (   d.containsKey(ResourceType.CURRENCY_SOFT)       ? d.get(ResourceType.CURRENCY_SOFT) : 0 )+","+
+            (   d.containsKey(ResourceType.CURRENCY_HARD)       ? d.get(ResourceType.CURRENCY_HARD) : 0 )+","+
+            (   d.containsKey(ResourceType.BATTLES_COUNT)       ? d.get(ResourceType.BATTLES_COUNT) : 0 )+","+
+            (   d.containsKey(ResourceType.BATTLES_WINS)        ? d.get(ResourceType.BATTLES_WINS) : 0 )+","+
+            (   d.containsKey(ResourceType.BATTLE_CHEST_OPENED) ? d.get(ResourceType.BATTLE_CHEST_OPENED) : 0 )+","+
+            (   d.containsKey(ResourceType.FREE_CHEST_OPENED)   ? d.get(ResourceType.FREE_CHEST_OPENED) : 0 )+","+
+            (   d.containsKey(201)                              ? d.get(201) : 0 )+","+
+            (   d.containsKey(202)                              ? d.get(202) : 0 );
+
+            stats += getCardValues(entry, d, BuildingType.B11_BARRACKS, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B12_BARRACKS, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B13_BARRACKS, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B14_BARRACKS, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B21_RAPID, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B22_RAPID, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B23_RAPID, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B24_RAPID, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B31_HEAVY, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B32_HEAVY, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B33_HEAVY, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B34_HEAVY, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B41_CRYSTAL, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B42_CRYSTAL, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B43_CRYSTAL, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B44_CRYSTAL, ",\n");
         }
+
         ext.trace(stats);
-
-
-
     }
 
-    private void getOperationStats(Map<Integer,Map<Integer,Integer>> statistics)
+    private String getCardValues(Map.Entry<Integer,Map<Integer,Object>> entry, Map<Integer, Object> d, int type, String post)
     {
-        String query = "SELECT players.id, MAX(quests.`index` ) as i, AVG(quests.score) as s FROM players INNER JOIN quests ON players.id = quests.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') group by players.id;";
+        if( d.containsKey(type) )
+            return ((RankData)d.get(type)).point + "," + ((RankData)d.get(type)).xp + post;
+        return "0,0" + post;
+    }
+
+
+    private void getCardStats(Map<Integer,Map<Integer,Object>> statistics, int key)
+    {
+        String query = "SELECT players.id, resources.count, resources.level FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') AND resources.type = " + key;
         ISFSArray players = null;
         try {
             players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
@@ -272,13 +315,12 @@ public class RankingUtils
         {
             if( !statistics.containsKey( players.getSFSObject(i).getInt("id") ) )
                 statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
-            statistics.get(players.getSFSObject(i).getInt("id")).put(201, players.getSFSObject(i).getInt("i"));
-            statistics.get(players.getSFSObject(i).getInt("id")).put(202, (int) (players.getSFSObject(i).getDouble("s")*10));
+            statistics.get(players.getSFSObject(i).getInt("id")).put(key, new RankData(0,"", players.getSFSObject(i).getInt("count"), players.getSFSObject(i).getInt("level")));
         }
-        ext.trace("quests get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
-    private void getResourceStats(Map<Integer, Map<Integer, Integer>> statistics, int key)
+    private void getResourceStats(Map<Integer, Map<Integer, Object>> statistics, int key)
     {
         String query = "SELECT players.id, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') AND resources.type = " + key;
         ISFSArray players = null;
@@ -293,6 +335,25 @@ public class RankingUtils
             statistics.get(players.getSFSObject(i).getInt("id")).put(key, players.getSFSObject(i).getInt("count"));
         }
         ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-    }*/
+    }
+
+    private void getOperationStats(Map<Integer,Map<Integer,Object>> statistics)
+    {
+        String query = "SELECT players.id, MAX(operations.`index` ) as i, AVG(operations.score) as s FROM players INNER JOIN operations ON players.id = operations.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') group by players.id;";
+        ISFSArray players = null;
+        try {
+            players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        for (int i = 0; i < players.size(); i++ )
+        {
+            if( !statistics.containsKey( players.getSFSObject(i).getInt("id") ) )
+                statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
+            statistics.get(players.getSFSObject(i).getInt("id")).put(201, players.getSFSObject(i).getInt("i"));
+            statistics.get(players.getSFSObject(i).getInt("id")).put(202, (int) (players.getSFSObject(i).getDouble("s")*10));
+        }
+        ext.trace("operations get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+    }
+*/
 }
 
