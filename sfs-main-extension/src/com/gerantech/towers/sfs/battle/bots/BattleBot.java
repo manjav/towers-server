@@ -41,7 +41,7 @@ public class BattleBot
     // bot behaviours
     int favoriteBuilding;// type of improvement
     boolean coveringBehaviour;
-    boolean waitForPowerfull;// bot will moved to waiting for improvement and powreful
+    boolean waitForPowerfull;// bot will moved to waiting for improvement and powerfull
 
     int sampleTime;
 
@@ -329,7 +329,7 @@ public class BattleBot
 
         // shoot every places in determined times
         Iterator<Map.Entry<Integer, ScheduledPlace>> iterator = sceduledfighters.entrySet().iterator();
-        while (iterator.hasNext())
+        while ( iterator.hasNext() )
         {
             Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
             ScheduledPlace sPlace = entry.getValue();
