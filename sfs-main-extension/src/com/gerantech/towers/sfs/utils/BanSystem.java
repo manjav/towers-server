@@ -17,6 +17,7 @@ import java.time.Instant;
  */
 public class BanSystem
 {
+	private static BanSystem _instance;
 	private final SFSExtension ext;
 
 	public BanSystem()	{
@@ -24,7 +25,9 @@ public class BanSystem
 	}
 	public static BanSystem getInstance()
 	{
-		return new BanSystem();
+		if( _instance == null )
+			_instance = new BanSystem();
+		return _instance;
 	}
 
 	public String checkOffends(String params)
