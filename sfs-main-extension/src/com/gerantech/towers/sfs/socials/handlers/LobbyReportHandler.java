@@ -39,8 +39,8 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         }
 
         // check reporter is verbose
-        query = "SELECT * From infractions WHERE report_at > FROM_UNIXTIME(" + (Instant.now().getEpochSecond()-86400)+ ") AND reporter = " + reporter.id;
         //trace(query);
+        query = "SELECT * From infractions WHERE report_at > FROM_UNIXTIME(" + (Instant.now().getEpochSecond() - 86400)+ ") AND reporter = " + reporter.id;
         try {
             infractions = db.executeQuery(query, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
@@ -63,6 +63,7 @@ public class LobbyReportHandler extends BaseClientRequestHandler
     {
         params.putInt("response", response);
         params.removeElement("t");
+        params.removeElement("u");
         send(Commands.LOBBY_REPORT, params, sender);
     }
 }
