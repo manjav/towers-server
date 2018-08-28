@@ -61,6 +61,10 @@ public class LobbyUtils
         if( ext.getParentZone().containsProperty("lobbiesData") )
             return;
 
+        try {
+            ext.getParentZone().getDBManager().executeUpdate("SET collation_connection = 'utf8mb4_bin';", new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
+
         ISFSArray lobbyRows = new SFSArray();
         try {
             lobbyRows = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM lobbies;", new Object[]{});
@@ -223,7 +227,7 @@ public class LobbyUtils
 
 
     // remove lobby from DB
-    private void remove(int lobbyId)
+    public void remove(int lobbyId)
     {
         String query = "DELETE FROM lobbies WHERE id =" + lobbyId;
         try {

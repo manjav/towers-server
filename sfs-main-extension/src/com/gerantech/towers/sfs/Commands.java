@@ -49,7 +49,7 @@ public class Commands
     public static final String LOBBY_EDIT = "lobbyEdit";
     public static final String LOBBY_REPORT = "lobbyReport";
     public static final String LOBBY_PUBLIC = "lobbyPublic";
-
+    public static final String LOBBY_REMOVE = "lobbyRemove";
 
     public static final String LOBBY_PUBLIC_MESSAGE = "m";
     public static final String BUDDY_ADD = "buddyAdd";
