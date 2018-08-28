@@ -111,6 +111,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			return;
 		}
 
+		String beforePurchaseData = game.player.resources.toString();
 		int item = Integer.parseInt(productID.split("_")[1]);
 		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD )
 		{
@@ -123,20 +124,21 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 				return;
 			}
 		}
+		String afterPurchaseData = game.player.resources.toString();
 
 		resObj.putBool("success", true);
 		resObj.putInt("consumptionState", consumptionState);
 		resObj.putInt("purchaseState", purchaseState);
 		resObj.putText("developerPayload", developerPayload);
 		resObj.putLong("purchaseTime", purchaseTime);
-		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime);
+		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime, beforePurchaseData, afterPurchaseData);
 		send("verify", resObj, sender);
 		trace("Purchase Succeed --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", getHardOnDB(game.player.id) );
 	}
 
-	private void insertToDB(Game game, String id, String token, int state, long time)
+	private void insertToDB(Game game, String id, String token, int state, long time, String beforePurchaseData, String afterPurchaseData)
 	{
-		String query = "INSERT INTO purchases( player_id, id, market, token, consumed, state, time ) VALUES (" + game.player.id + ", '" + id + "', '" + game.market + "', '" + token + "', 1, " + state + ", FROM_UNIXTIME(" + (time/1000) + ")) ON DUPLICATE KEY UPDATE consumed = VALUES(consumed), state = VALUES(state)";
+		String query = "INSERT INTO purchases( player_id, id, market, token, consumed, state, time, old_res, new_res ) VALUES (" + game.player.id + ", '" + id + "', '" + game.market + "', '" + token + "', 1, " + state + ", FROM_UNIXTIME(" + (time/1000) + "), '" + beforePurchaseData + "', '" + afterPurchaseData + "') ON DUPLICATE KEY UPDATE consumed = VALUES(consumed), state = VALUES(state)";
 		trace(query);
 		try {
 			getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[]{});
