@@ -389,7 +389,10 @@ public class BattleBot
             }
             else
             {
-                improveType = favoriteBuilding;
+                if( robotPlaces.size() < allPlaces.size() * 0.3 )
+                    improveType = BuildingType.B11_BARRACKS;
+                else
+                    improveType = favoriteBuilding;
             }
         }
         else
