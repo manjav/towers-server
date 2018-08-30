@@ -82,6 +82,7 @@ public class LobbyDataUtils
         params.putInt("pic", data.getEmblem());
         params.putInt("pri", data.getPrivacy());
         params.putInt("max", data.getCapacity());
+        params.putInt("min", data.getMinPoint());
         params.putInt("num", all.size());
         params.putInt("sum", getLobbyPoint(all));
         params.putInt("act", getLobbyActiveness(all));
