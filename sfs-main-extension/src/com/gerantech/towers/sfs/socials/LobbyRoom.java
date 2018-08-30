@@ -14,6 +14,7 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
 import java.time.Instant;
 
@@ -173,7 +174,7 @@ public class LobbyRoom extends BaseLobbyRoom
 
     public void sendComment(short mode, Player subject, String object, short permissionId)
     {
-        if( subject.admin && (mode == MessageTypes.M10_COMMENT_JOINT || mode == MessageTypes.M11_COMMENT_LEAVE) )
+        if( subject.admin && permissionId < DefaultPermissionProfile.MODERATOR.getId() )
             return;
 
         ISFSObject msg = new SFSObject();
