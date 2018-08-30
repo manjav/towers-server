@@ -25,7 +25,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
         int memberIndex = LobbyUtils.getInstance().getMemberIndex(lobbyData, game.player.id);
         if( memberIndex < 0 )
             return;
-        if( lobbyData.getMembers().getSFSObject(memberIndex).getShort("pr") < DefaultPermissionProfile.MODERATOR.getId() )
+        if( !game.player.admin && lobbyData.getMembers().getSFSObject(memberIndex).getShort("pr") < DefaultPermissionProfile.MODERATOR.getId() )
             return;
 
         if( params.containsKey("max") )
