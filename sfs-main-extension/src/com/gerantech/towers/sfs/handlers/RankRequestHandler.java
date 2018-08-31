@@ -23,7 +23,7 @@ import java.util.*;
 public class RankRequestHandler extends BaseClientRequestHandler 
 {
 	//public static int FIRST_PAGE_SIZE = 10;
-	public static int PAGE_SIZE = 100;
+	public static int PAGE_SIZE = 50;
 
 	private List<RankData> allUsers;
 	public RankRequestHandler() {}
@@ -94,19 +94,23 @@ public class RankRequestHandler extends BaseClientRequestHandler
 					addNearsToPlayers(players, index, pagingPredicate.getPage());
 			}*/
 		}
-		allUsers.clear();
+		//allUsers.clear();
 		params.putSFSArray("list", players);
 		send("rank", params, sender);
 	}
 
 	private void addFakeRankData(SFSArray players, IMap<Integer, RankData> users, RankData playerRD, int lastHeroPoint)
 	{
-		List<RankData> fakedRanks = RankingUtils.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
-		float rankingRatio = 1 - (float)playerRD.point / (float)lastHeroPoint;
-		int playerFakeRanking = Math.round(rankingRatio * RankingUtils.getInstance().NUM_USERS);
-		fakedRanks.add(fakedRanks.size()/2, playerRD);
+		//List<RankData> fakedRanks = RankingUtils.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
+		float rankingRatio = (float) (1 - Math.log( 1 + ( 1.7183 * ( (float)playerRD.point / (float)lastHeroPoint) ) ));
+		int playerFakeRanking = Math.round(rankingRatio * users.size() * 0.5f) + PAGE_SIZE;
+		//fakedRanks.add(fakedRanks.size()/2, playerRD);
 
-		Collections.sort(fakedRanks, new Comparator<RankData>() {
+		ISFSObject p = toSFS(playerRD);
+		p.putInt("s", playerFakeRanking);
+		players.addSFSObject(p);
+
+		/*Collections.sort(fakedRanks, new Comparator<RankData>() {
 			@Override
 			public int compare(RankData rhs, RankData lhs) {
 				// -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
@@ -121,7 +125,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			p.putInt("s", playerFakeRanking + c);
 			players.addSFSObject(p);
 			c ++;
-		}
+		}*/
 	}
 
 	/*private int findMe(RankData playerRD, IMap<Integer, RankData> users, PagingPredicate pagingPredicate)
