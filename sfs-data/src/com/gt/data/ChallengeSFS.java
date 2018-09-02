@@ -3,12 +3,15 @@
  */
 package com.gt.data;
 
+import com.gt.towers.arenas.Arena;
 import com.gt.towers.socials.Attendee;
 import com.gt.towers.socials.Challenge;
+import com.gt.towers.utils.maps.IntArenaMap;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 import haxe.root.Array;
 
@@ -98,9 +101,23 @@ public class ChallengeSFS extends SFSDataObject
      * Rewards
      * @return
      */
-    private void setRewards(IntIntMap rewards)
+    private void setRewards(IntArenaMap rewards)
     {
-        setMap("rewards", rewards);
+        ISFSObject sfs;
+        ISFSArray ret = new SFSArray();
+        int[] keys = rewards.keys();
+        int i = 0;
+        while ( i < keys.length )
+        {
+            sfs = new SFSObject();
+            sfs.putInt("key", keys[i]);
+            sfs.putInt("min", rewards.get(keys[i]).min);
+            sfs.putInt("max", rewards.get(keys[i]).max);
+            sfs.putInt("prize", rewards.get(keys[i]).minWinStreak);
+            ret.addSFSObject(sfs);
+            i ++;
+        }
+        putSFSArray("rewards", ret);
         base.rewards = rewards;
     }
 

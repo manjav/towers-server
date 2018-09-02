@@ -17,17 +17,17 @@ public class SFSDataObject extends SFSObject
         super();
     }
 
-    protected void setMap(String name, IntIntMap requirements)
+    protected void setMap(String name, IntIntMap map)
     {
         ISFSObject sfs;
         ISFSArray ret = new SFSArray();
-        int[] keys = requirements.keys();
+        int[] keys = map.keys();
         int i = 0;
         while ( i < keys.length )
         {
             sfs = new SFSObject();
             sfs.putInt("key", keys[i]);
-            sfs.putInt("value", requirements.get(keys[i]));
+            sfs.putInt("value", map.get(keys[i]));
             ret.addSFSObject(sfs);
             i ++;
         }
