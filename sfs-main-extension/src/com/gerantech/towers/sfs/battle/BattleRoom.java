@@ -71,12 +71,10 @@ public class BattleRoom extends SFSExtension
 		
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
-		
-		addRequestHandler("f", BattleRoomFightRequestHandler.class);
-		addRequestHandler("i", BattleRoomImproveRequestHandler.class);
-		addRequestHandler("ss", BattleRoomStickerRequestHandler.class);
-		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
-		addRequestHandler(Commands.RESET_ALL, BattleRoomResetVarsRequestHandler.class);
+		addRequestHandler(Commands.FIGHT, BattleRoomFightRequestHandler.class);
+		addRequestHandler(Commands.LEAVE, BattleRoomLeaveRequestHandler.class);
+		addRequestHandler(Commands.SEND_STICKER, BattleRoomStickerRequestHandler.class);
+		addRequestHandler(Commands.BUILDING_IMPROVE, BattleRoomImproveRequestHandler.class);
 	}
 
 	public void createGame(String mapName, Boolean opponentNotFound)

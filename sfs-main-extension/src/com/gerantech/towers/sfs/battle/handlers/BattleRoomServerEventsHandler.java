@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.buildings.Building;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -11,6 +12,7 @@ import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;
@@ -44,7 +46,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 		if( user.isSpectator(room) )
 		{
-			sendBattleData( user );
+			sendBattleData(user, true);
 			return;
 		}
 
@@ -58,9 +60,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			List<User> players = room.getPlayersList();
 			for (int i=0; i < players.size(); i++)
 			{
-				if(players.get(i).equals(user))
+				if( players.get(i).equals(user) )
 				{
-					sendBattleData( players.get(i) );
+					sendBattleData(players.get(i), true);
 				}
 				/*else if( !players.get(i).isNpc() )
 				{
@@ -132,7 +134,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 		List<User> players = room.getPlayersList();
 		for (int i=0; i < players.size(); i++)
-	    	sendBattleData(players.get(i));
+	    	sendBattleData(players.get(i), false);
 	}
 
 	private String getMapName(boolean isOperation)
@@ -144,11 +146,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		return mapName;
 	}
 
-	private void sendBattleData(User player)
+	private void sendBattleData(User player, boolean containBuildings)
 	{
 		if( player.isNpc() )
 			return;
-
 
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
@@ -173,6 +174,24 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				sfsO.putSFSObject( g.player.id == Integer.parseInt(player.getName()) ? "allis" : "axis", p );
 
 			i ++;
+		}
+
+		// send buildings data
+		if( containBuildings )
+		{
+			SFSArray buildingData = new SFSArray();
+			for (int j = 0; j < roomClass.battleField.places.size(); j++)
+			{
+				Building b = roomClass.battleField.places.get(j).building;
+				SFSObject bo = new SFSObject();
+				bo.putInt("i", j);
+				bo.putInt("t", b.type);
+				bo.putInt("tt", b.troopType);
+				bo.putInt("l", b.get_level());
+				bo.putInt("p", b.get_population());
+				buildingData.addSFSObject(bo);
+			}
+			sfsO.putSFSArray("buildings", buildingData);
 		}
 
 		send("startBattle", sfsO, player);

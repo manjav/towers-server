@@ -12,7 +12,6 @@ public class Commands
     public static final String REJOIN_BATTLE = "rejoinBattle";
     public static final String RANK = "rank";
     public static final String LEAVE = "leave";
-    public static final String RESET_ALL = "resetAll";
     public static final String SEND_STICKER = "ss";
 
     public static final String PROFILE = "profile";
