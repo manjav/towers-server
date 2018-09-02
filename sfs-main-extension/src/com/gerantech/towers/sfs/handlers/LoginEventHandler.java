@@ -219,7 +219,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
-		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, id, false));
 
 		// Find active battle room
 		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
@@ -227,11 +226,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
 
-		initiateCore(session, inData, outData, loginData);
+		Game game = initiateCore(session, inData, outData, loginData);
+//		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
 		//trace("initData", outData.getDump());
 	}
 
-	private void initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
+	private Game initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
 	{
 		int now = (int)Instant.now().getEpochSecond();
 		outData.putInt("serverTime", now);
@@ -362,6 +362,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
+
+		return game;
 	}
 
 	private void addExchangeToDB(int type, ISFSArray exchanges, SFSArray newExchanges)

@@ -477,7 +477,7 @@ public class BattleRoom extends SFSExtension
 			Game game = registeredPlayers.get(i);    // update active challenges
 			if( !game.player.isBot() && !isOperation && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.POINT) > 0 )
 			{
-				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(0, game.player.id, false);
+				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
 				for (int c = 0; c < challenges.size(); c++)
 				{
 					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(i);

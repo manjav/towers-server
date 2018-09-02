@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.challenges;
 
 import com.gt.data.ChallengeSFS;
+import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.socials.Challenge;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -35,8 +36,8 @@ public class ChallengeUtils
 
     public void loadAll()
     {
-        if( ext.getParentZone().containsProperty("allChallenges") )
-            return;
+      //  if( ext.getParentZone().containsProperty("allChallenges") )
+      //      return;
 
         int now = (int) Instant.now().getEpochSecond();
         ISFSArray challenges = new SFSArray();
@@ -98,15 +99,18 @@ public class ChallengeUtils
 
     public ChallengeSFS join(int type, int playerId, String playerName, int now)
     {
-        ChallengeSFS ret = getWaiting(type, now);
+        return join(getWaiting(type, now), playerId, playerName, now);
+    }
+    public ChallengeSFS join(ChallengeSFS challenge, int playerId, String playerName, int now)
+    {
         ISFSObject attendee = new SFSObject();
         attendee.putInt("id", playerId);
         attendee.putInt("updateAt", now);
         attendee.putInt("point", 0);
         attendee.putText("name", playerName);
-        ret.getAttendees().addSFSObject(attendee);
-        save(ret);
-        return ret;
+        challenge.getAttendees().addSFSObject(attendee);
+        save(challenge);
+        return challenge;
     }
 
     private void save(ChallengeSFS challenge)
@@ -119,7 +123,7 @@ public class ChallengeUtils
     }
 
 
-    public ISFSArray getChallengesOfAttendee(int type, int attendeeId, boolean createIfnotExists)
+    public ISFSArray getChallengesOfAttendee(int type, Player player, boolean createIfNotExists)
     {
         ISFSObject attendee;
         Map<Integer, Boolean> types = new HashMap();
@@ -133,7 +137,7 @@ public class ChallengeUtils
             for(int i=0; i<challenge.getAttendees().size(); i++)
             {
                 attendee = challenge.getAttendees().getSFSObject(i);
-                if( attendee.getInt("id").equals(attendeeId) && attendee.getInt("updateAt") > -1 )
+                if( attendee.getInt("id").equals(player.id) && attendee.getInt("updateAt") > -1 )
                 {
                     ret.addSFSObject(challenge);
                     types.put(challenge.base.type, true);
@@ -141,8 +145,20 @@ public class ChallengeUtils
                 }
             }
         }
-        if( createIfnotExists && !types.containsKey(0) )
-            ret.addSFSObject(getWaiting(0, (int) Instant.now().getEpochSecond()));
+        if( createIfNotExists )
+        {
+            int now = (int) Instant.now().getEpochSecond();
+
+            if( !types.containsKey(0) )
+                ret.addSFSObject(getWaiting(0, now));
+
+            if( !types.containsKey(1) )
+            {
+                ChallengeSFS ch = getWaiting(1, now);
+                join(ch, player.id, player.nickName, now );
+                ret.addSFSObject(ch);
+            }
+        }
 
         return ret;
     }
