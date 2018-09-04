@@ -3,7 +3,6 @@
  */
 package com.gt.data;
 
-import com.gt.towers.arenas.Arena;
 import com.gt.towers.socials.Attendee;
 import com.gt.towers.socials.Challenge;
 import com.gt.towers.utils.maps.IntArenaMap;

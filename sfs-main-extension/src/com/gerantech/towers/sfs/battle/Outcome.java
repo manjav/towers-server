@@ -5,6 +5,7 @@ import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.towers.others.Arena;
 import com.gt.towers.utils.maps.IntIntMap;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -104,7 +105,8 @@ public class Outcome
         if( winStreak > 3 || winStreak < -3 )
             ret *= (int)Math.ceil(winStreak / 2);
 
-        if( ret < 0 && winStreak < game.arenas.get(arena).minWinStreak )
+        Arena a = game.arenas.get(arena);
+        if( ret < 0 && winStreak < a.minWinStreak )
             ret = 0;
         return ret;
     }

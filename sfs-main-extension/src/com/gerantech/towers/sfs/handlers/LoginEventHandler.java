@@ -241,6 +241,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
 		outData.putBool("hasQuests", true);
+		outData.putBool("hasOperations", true);
 		outData.putInt("tutorialMode", 1);
 
 		InitData initData = new InitData();
@@ -306,7 +307,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.init(initData);
 		int arena = game.player.get_arena(0);
 		game.player.tutorialMode = outData.getInt("tutorialMode");
-		game.player.hasOperations = outData.getBool("hasQuests");
+		game.player.hasOperations = outData.getBool("hasOperations");
 		game.exchanger.updater = new ExchangeUpdater(game);
 
 		for(int i=0; i<exchanges.size(); i++)
