@@ -106,7 +106,7 @@ public class BattleUtils
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
 
-        String pref = isOperation ? "q_" : "b_";
+        String pref = isOperation ? "o_" : "b_";
         if( friendlyMode > 0 )
             pref = friendlyMode == 1 ? "fl_" : "fb_";
 

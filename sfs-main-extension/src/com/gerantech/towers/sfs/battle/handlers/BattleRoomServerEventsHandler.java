@@ -142,7 +142,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		int index = (Integer)room.getProperty("index");
 		String mapName = "battle_" + index;
 		if( isOperation )
-			mapName = "quest_" + index;
+			mapName = "operation_" + index;
 		return mapName;
 	}
 

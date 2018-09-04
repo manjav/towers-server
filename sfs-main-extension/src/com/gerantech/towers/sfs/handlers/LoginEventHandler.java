@@ -264,7 +264,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
-		// create quests init data
+		// create operations init data
 		ISFSArray operations = outData.getSFSArray("operations");
 		for(int i=0; i<operations.size(); i++)
 		{
@@ -306,7 +306,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.init(initData);
 		int arena = game.player.get_arena(0);
 		game.player.tutorialMode = outData.getInt("tutorialMode");
-		game.player.hasQuests = outData.getBool("hasQuests");
+		game.player.hasOperations = outData.getBool("hasQuests");
 		game.exchanger.updater = new ExchangeUpdater(game);
 
 		for(int i=0; i<exchanges.size(); i++)
