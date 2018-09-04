@@ -158,7 +158,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
-		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
+		if( (boolean)room.getProperty("isOperation") && ((Game)player.getSession().getProperty("core")).appVersion < 3610 )
+			sfsO.putText("mapName", "quest_" + room.getProperty("index"));
+		else
+			sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
 
 		boolean isSpectator = player.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
