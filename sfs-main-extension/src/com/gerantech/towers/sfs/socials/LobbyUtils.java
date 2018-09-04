@@ -98,7 +98,7 @@ public class LobbyUtils
         Player player = ((Game)owner.getSession().getProperty("core")).player;
         SFSObject member = new SFSObject();
         member.putInt("id", player.id);
-        member.putShort("pr", (short) privacy);
+        member.putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
         lobbyData.getMembers().addSFSObject(member);
 
         // insert to DB
