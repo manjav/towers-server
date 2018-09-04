@@ -478,7 +478,7 @@ public class BattleRoom extends SFSExtension
 				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
 				for (int c = 0; c < challenges.size(); c++)
 				{
-					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(i);
+					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(c);
 					if( challenge.base.getState(now) != Challenge.STATE_STARTED )
 						continue;
 					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
