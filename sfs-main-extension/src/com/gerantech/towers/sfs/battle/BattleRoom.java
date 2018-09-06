@@ -407,7 +407,7 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putText("name", game.player.nickName);
 			outcomeSFS.putInt("score", scores[i]);
 
-			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], (float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
+			outcomesList[i] = Outcome.get( game, battleField.map, scores[i], (float)numBuildings[i] / (float)numBuildings[i==0?1:0], now );
 			//trace("i:", i, "score:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
 			if( isOperation )
 			{

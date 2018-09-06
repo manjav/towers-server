@@ -18,9 +18,8 @@ public class Outcome
 {
     public static int MIN_POINTS = 5;
     public static int COE_POINTS = 4;
-    public static int MAX_XP = 10;
 
-    public static IntIntMap get(Game game, FieldData field, int score, float ratio)
+    public static IntIntMap get(Game game, FieldData field, int score, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();
         if( game.player.inFriendlyBattle )
@@ -87,7 +86,7 @@ public class Outcome
                 {
                     int randomEmptySlotIndex = game.player.get_battleswins() == 1 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
-                    game.exchanger.findRandomOutcome(emptySlot);
+                    game.exchanger.findRandomOutcome(emptySlot, now);
                     ret.set(emptySlot.outcome, emptySlot.type);
                 }
             }
