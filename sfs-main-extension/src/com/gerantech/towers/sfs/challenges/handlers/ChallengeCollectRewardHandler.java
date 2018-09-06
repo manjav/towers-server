@@ -6,6 +6,7 @@ import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.entities.User;
@@ -36,8 +37,10 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
         ExchangeItem ei = new ExchangeItem(null);
         ei.type = ExchangeType.C121_MAGIC;
         ei.requirements = new IntIntMap();
-        ei.outcomes = new IntIntMap();
-        ei.outcomes.set(challenge.base.getRewardByAttendee(game.player.id), game.player.get_arena(0));
+        ei.outcomes = challenge.base.getRewardByAttendee(game.player.id);
+        int rewardType = ei.outcomes.keys()[0];
+        if( ResourceType.isBook( rewardType ) )
+            ei.outcomes.set(rewardType, game.player.get_arena(0));
 
         response =  manager.process(game, ei, now, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )

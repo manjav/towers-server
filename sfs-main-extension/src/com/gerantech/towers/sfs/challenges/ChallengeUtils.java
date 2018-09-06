@@ -36,8 +36,8 @@ public class ChallengeUtils
 
     public void loadAll()
     {
-      //  if( ext.getParentZone().containsProperty("allChallenges") )
-      //      return;
+        if( ext.getParentZone().containsProperty("allChallenges") )
+            return;
 
         int now = (int) Instant.now().getEpochSecond();
         ISFSArray challenges = new SFSArray();
