@@ -110,6 +110,8 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.CHALLENGE_UPDATE, ChallengeUpdateHandler.class);
 		addRequestHandler(Commands.CHALLENGE_GET_ALL, ChallengeGetAllHandler.class);
 		addRequestHandler(Commands.CHALLENGE_COLLECT, ChallengeCollectRewardHandler.class);
+
+		addRequestHandler(Commands.QUEST_REWARD_COLLECT, QuestRewardCollectHandler.class);
 	}
 
 	@Override

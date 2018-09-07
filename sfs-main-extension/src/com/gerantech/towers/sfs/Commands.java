@@ -34,6 +34,7 @@ public class Commands
     public static final String INFRACTIONS_GET = "infractionsGet";
     public static final String INFRACTIONS_DELETE = "infractionsDelete";
 
+    public static final String QUEST_REWARD_COLLECT = "questRewardCollect";
 
     public static final String FIGHT = "f";
     public static final String BUILDING_IMPROVE = "i";
