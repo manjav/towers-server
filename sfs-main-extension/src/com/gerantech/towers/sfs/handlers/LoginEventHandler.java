@@ -338,9 +338,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addExchangeItem(game, exchanges, ExchangeType.C43_ADS,		"",	"51:" + arena,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE,	arena))),	ExchangeType.BOOK_55_PIRATE	+ ":" + arena, 0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_56_JUNGLE,	arena))),	ExchangeType.BOOK_56_JUNGLE	+ ":" + arena, 0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_58_AMBER,	arena))),	ExchangeType.BOOK_58_AMBER	+ ":" + arena, 0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_55_PIRATE	+ ":" + arena, 0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_56_JUNGLE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_56_JUNGLE	+ ":" + arena, 0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_58_AMBER,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_58_AMBER	+ ":" + arena, 0, 0, true);
 
 		session.setProperty("core", game);
 
