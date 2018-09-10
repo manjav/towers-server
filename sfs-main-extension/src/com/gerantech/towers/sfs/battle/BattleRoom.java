@@ -10,6 +10,7 @@ import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
+import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ResourceType;
@@ -303,7 +304,7 @@ public class BattleRoom extends SFSExtension
 			return;
 		}
 
-		if(isOperation)
+		if( isOperation )
 		{
 			setState( STATE_BATTLE_ENDED );
 			if( retryMode )
@@ -321,7 +322,22 @@ public class BattleRoom extends SFSExtension
 		}
 		else
 		{
-			getApi().leaveRoom(user, room);
+			Player player = ((Game) user.getSession().getProperty("core")).player;
+			int playerIndex = -1;
+			for (int i=0; i < registeredPlayers.size(); i++)
+			{
+				if( player.id == registeredPlayers.get(i).player.id )
+				{
+					playerIndex = i;
+					break;
+				}
+			}
+
+			int[] numBuildings = new int[2];
+			numBuildings[playerIndex] = 0;
+			numBuildings[playerIndex == 0 ? 1 : 0] = battleField.places.size();
+			end(numBuildings, battleField.getDuration());
+			//getApi().leaveRoom(user, room);
 		}
 
 	}
