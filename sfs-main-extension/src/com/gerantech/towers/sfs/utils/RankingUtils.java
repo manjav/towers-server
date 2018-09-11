@@ -2,10 +2,7 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.data.RankData;;
 import com.gt.towers.Game;
-import com.gt.towers.arenas.Arena;
-import com.gt.towers.buildings.Building;
-import com.gt.towers.constants.BuildingType;
-import com.gt.towers.constants.ResourceType;
+import com.gt.towers.others.Arena;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;

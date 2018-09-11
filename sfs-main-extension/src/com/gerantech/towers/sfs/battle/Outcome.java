@@ -24,7 +24,8 @@ public class Outcome
         IntIntMap ret = new IntIntMap();
         if( game.player.inFriendlyBattle )
         {
-            ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
+            ret.set(ResourceType.BATTLES_FRIENDLY, 1);
+            ret.set(ResourceType.BATTLES_WEEKLY, 1);
             return ret;
         }
 
@@ -68,8 +69,8 @@ public class Outcome
             int arena = game.player.get_arena(0);
 
             // battle stats
-            ret.set(ResourceType.BATTLES_COUNT, 1);
-            ret.set(ResourceType.BATTLES_COUNT_WEEKLY, 1);
+            ret.set(ResourceType.BATTLES, 1);
+            ret.set(ResourceType.BATTLES_WEEKLY, 1);
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
 
             if( point > 0 )

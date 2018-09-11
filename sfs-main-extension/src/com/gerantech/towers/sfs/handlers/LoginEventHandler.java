@@ -357,8 +357,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// init and update hazel data
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-		int wb = game.player.resources.exists(ResourceType.BATTLES_COUNT_WEEKLY) ? game.player.resources.get(ResourceType.BATTLES_COUNT_WEEKLY) : 0;
-		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), wb);
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else
