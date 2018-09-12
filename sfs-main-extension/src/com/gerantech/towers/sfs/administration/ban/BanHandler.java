@@ -60,7 +60,7 @@ public class BanHandler extends BaseClientRequestHandler
 		BanSystem.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
 		sendResponse(sender, params, MessageTypes.RESPONSE_SUCCEED);
 
-		if( params.getInt("mode") == 2 )
+		if( params.getInt("mode") >= 2 )
 		{
 			User u = getParentExtension().getParentZone().getUserByName(params.getInt("id")+"");
 			if( u != null )
