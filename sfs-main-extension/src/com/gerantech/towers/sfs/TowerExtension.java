@@ -21,6 +21,7 @@ import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
 import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
 import com.gerantech.towers.sfs.inbox.InboxGetHandler;
 import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
+import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;

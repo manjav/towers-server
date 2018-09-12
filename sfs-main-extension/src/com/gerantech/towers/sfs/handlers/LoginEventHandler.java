@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
+import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.data.RankData;;
@@ -12,6 +13,7 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
+import com.gt.towers.others.Quest;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -218,6 +220,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("resources", dbUtils.getResources(id));
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
+		outData.putSFSArray("quests", new SFSArray());
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
 
 		// Find active battle room
@@ -354,6 +357,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 		for ( ExchangeItem ex : game.exchanger.items.values() )
 			_exchanges.addSFSObject(ExchangeManager.toSFS(ex));
 		outData.putSFSArray("exchanges", _exchanges);
+
+		// insert quests in registration or get in next time
+		ISFSArray quests = QuestsUtils.getInstance().getAll(game.player.id);
+		if( quests.size() > 0 )
+			QuestsUtils.getInstance().updateAll(game.player, quests);
+		else
+			QuestsUtils.getInstance().insertNewQuests(game.player);
+		outData.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
 
 		// init and update hazel data
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
