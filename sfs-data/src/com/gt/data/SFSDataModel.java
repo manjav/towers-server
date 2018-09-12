@@ -9,15 +9,15 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 /**
  * Created by ManJav on 8/13/2018.
  */
-public class SFSDataObject extends SFSObject
+public class SFSDataModel extends SFSObject
 {
 
-    public SFSDataObject()
+    public SFSDataModel()
     {
         super();
     }
 
-    protected void setMap(String name, IntIntMap map)
+    public static ISFSArray toSFSArray(IntIntMap map)
     {
         ISFSObject sfs;
         ISFSArray ret = new SFSArray();
@@ -31,6 +31,12 @@ public class SFSDataObject extends SFSObject
             ret.addSFSObject(sfs);
             i ++;
         }
-        putSFSArray(name, ret);
+        return ret;
+    }
+
+
+    protected void setMap(String name, IntIntMap requirements)
+    {
+        putSFSArray(name, SFSDataModel.toSFSArray(requirements));
     }
 }

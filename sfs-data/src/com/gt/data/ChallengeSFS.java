@@ -14,7 +14,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 import haxe.root.Array;
 
-public class ChallengeSFS extends SFSDataObject
+public class ChallengeSFS extends SFSDataModel
 {
 
     public com.gt.towers.socials.Challenge base;
