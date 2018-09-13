@@ -6,6 +6,7 @@ import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.others.Quest;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -84,9 +85,7 @@ public class QuestsUtils
         quest.current = Quest.getCurrent(game.player, quest.type, quest.key);
 
         // exchange
-        ExchangeItem item = new ExchangeItem(ExchangeType.C130_QUESTS, 1, 0, "", "");
-        item.outcomes = quest.rewards;
-        int response = ExchangeManager.getInstance().process(game, item, 0, 0);
+        int response = ExchangeManager.getInstance().process(game, Quest.getExchangeItem(quest.type, quest.nextStep), 0, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
         game.player.quests.remove(quest);
