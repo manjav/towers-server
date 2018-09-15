@@ -25,12 +25,6 @@ public class BanHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		Game game = ((Game)sender.getSession().getProperty("core"));
-		/*if( !game.player.admin )
-		{
-			sendResponse(sender, params, MessageTypes.RESPONSE_NOT_ALLOWED);
-			return;
-		}*/
-
 		if( !game.player.admin )
 			return;
 		// get name

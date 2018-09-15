@@ -14,9 +14,10 @@ import java.sql.SQLException;
  */
 public class InfractionsDeleteHandler extends BaseClientRequestHandler
 {
-	public void handleClientRequest(User sender, ISFSObject params) {
+	public void handleClientRequest(User sender, ISFSObject params)
+	{
 		Game game = (Game) sender.getSession().getProperty("core");
-		if (!game.player.admin)
+		if( !game.player.admin )
 			return;
 
 		try {

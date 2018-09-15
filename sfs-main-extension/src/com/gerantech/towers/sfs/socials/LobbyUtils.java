@@ -5,6 +5,7 @@ import com.gt.data.LobbyData;
 import com.gt.data.RankData;;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -277,6 +278,8 @@ public class LobbyUtils
         return true;
     }
 
+
+
     /**
      * Remove user from room variables and save lobby. if lobby is empty then lobby removed.
      * @param lobbyData
@@ -386,6 +389,30 @@ public class LobbyUtils
                 return lv;
         ext.trace(name , "not found  in", setting.getName());
         return null;
+    }
+
+    public ISFSArray searchInChats(String word)
+    {
+        ISFSObject message;
+        ISFSArray ret = new SFSArray();
+        Map<Integer, LobbyData> all = getAllData();
+        LobbyData data;
+        for (Map.Entry<Integer, LobbyData> entry : all.entrySet())
+        {
+            data = entry.getValue();
+            for(int i = 0; i < data.getMessages().size(); i++)
+            {
+                message = data.getMessages().getSFSObject(i);
+                if( message.getShort("m") == (short) MessageTypes.M0_TEXT && message.getUtfString("t").indexOf( word ) > -1 )
+                {
+                    message.putInt("li", data.getId());
+                    message.putUtfString("ln", data.getName());
+                    ret.addSFSObject(message);
+                }
+            }
+
+        }
+        return ret;
     }
 
 
