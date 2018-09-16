@@ -358,14 +358,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			_exchanges.addSFSObject(ExchangeManager.toSFS(ex));
 		outData.putSFSArray("exchanges", _exchanges);
 
-		// insert quests in registration or get in next time
-		ISFSArray quests = QuestsUtils.getInstance().getAll(game.player.id);
-		if( quests.size() > 0 )
-			QuestsUtils.getInstance().updateAll(game.player, quests);
-		else
-			QuestsUtils.getInstance().insertNewQuests(game.player);
-		outData.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
-
 		// init and update hazel data
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
 		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY));
@@ -373,6 +365,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
+
+		if( initData.appVersion < 3700 )
+			return game;
+
+		// insert quests in registration or get in next time
+		ISFSArray quests = QuestsUtils.getInstance().getAll(game.player.id);
+		if( quests.size() > 0 )
+			QuestsUtils.getInstance().updateAll(game.player, quests);
+		else
+			QuestsUtils.getInstance().insertNewQuests(game.player);
+		outData.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
 
 		return game;
 	}

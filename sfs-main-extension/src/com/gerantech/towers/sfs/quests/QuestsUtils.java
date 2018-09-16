@@ -32,6 +32,10 @@ public class QuestsUtils
     public void insertNewQuests(Player player)
     {
         Quest.fill(player);
+
+        if( player.quests.length == 0 )
+            return;
+
         String query = "INSERT INTO quests (player_id, `type`, `key`, step) VALUES ";
         Quest q;
         for(int i = 0; i < player.quests.length; i++ )

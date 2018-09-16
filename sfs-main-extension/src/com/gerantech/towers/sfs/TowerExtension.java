@@ -22,6 +22,7 @@ import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
 import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
 import com.gerantech.towers.sfs.inbox.InboxGetHandler;
 import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
+import com.gerantech.towers.sfs.quests.QuestInitializeHandler;
 import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
@@ -114,6 +115,7 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.CHALLENGE_GET_ALL, ChallengeGetAllHandler.class);
 		addRequestHandler(Commands.CHALLENGE_COLLECT, ChallengeCollectRewardHandler.class);
 
+		addRequestHandler(Commands.QUEST_INIT, QuestInitializeHandler.class);
 		addRequestHandler(Commands.QUEST_REWARD_COLLECT, QuestRewardCollectHandler.class);
 	}
 

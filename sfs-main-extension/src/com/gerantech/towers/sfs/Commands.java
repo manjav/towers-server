@@ -67,5 +67,6 @@ public class Commands
     public static final String CHALLENGE_GET_ALL = "challengeGetAll";
     public static final String CHALLENGE_COLLECT = "challengeCollect";
 
+    public static final String QUEST_INIT = "questInit";
     public static final String QUEST_REWARD_COLLECT = "questRewardCollect";
 }
