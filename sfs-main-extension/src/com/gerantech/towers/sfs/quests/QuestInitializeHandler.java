@@ -18,6 +18,6 @@ public class QuestInitializeHandler extends BaseClientRequestHandler
 		QuestsUtils.getInstance().insertNewQuests(game.player);
 		params.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
 		trace(params.getDump());
-		send(Commands.QUEST_REWARD_COLLECT, params, sender);
+		send(Commands.QUEST_INIT, params, sender);
     }
 }

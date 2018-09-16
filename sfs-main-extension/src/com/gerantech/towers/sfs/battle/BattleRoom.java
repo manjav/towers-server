@@ -323,6 +323,8 @@ public class BattleRoom extends SFSExtension
 		else
 		{
 			Player player = ((Game) user.getSession().getProperty("core")).player;
+			if( player.game.appVersion < 3700 )
+				return;
 			int playerIndex = -1;
 			for (int i=0; i < registeredPlayers.size(); i++)
 			{
