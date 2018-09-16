@@ -2,6 +2,8 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.data.RankData;;
 import com.gt.towers.Game;
+import com.gt.towers.constants.BuildingType;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.others.Arena;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -226,33 +228,35 @@ public class RankingUtils
     }
 
     /*public void fillStatistics()
+    public void fillStatistics()
     {
+        String time = "'2018-09-09 00:00:00' AND '2018-09-16 00:00:00'";
         Map<Integer, Map<Integer, Object>> statistics = new HashMap();
-        getResourceStats(statistics, ResourceType.POINT);
-        getResourceStats(statistics, ResourceType.XP);
-        getResourceStats(statistics, ResourceType.CURRENCY_SOFT);
-        getResourceStats(statistics, ResourceType.CURRENCY_HARD);
-        getResourceStats(statistics, ResourceType.BATTLES_COUNT);
-        getResourceStats(statistics, ResourceType.BATTLES_WINS);
-        getResourceStats(statistics, ResourceType.BATTLE_CHEST_OPENED);
-        getResourceStats(statistics, ResourceType.FREE_CHEST_OPENED);
-        getCardStats(statistics, BuildingType.B11_BARRACKS);
-        getCardStats(statistics, BuildingType.B12_BARRACKS);
-        getCardStats(statistics, BuildingType.B13_BARRACKS);
-        getCardStats(statistics, BuildingType.B14_BARRACKS);
-        getCardStats(statistics, BuildingType.B21_RAPID);
-        getCardStats(statistics, BuildingType.B22_RAPID);
-        getCardStats(statistics, BuildingType.B23_RAPID);
-        getCardStats(statistics, BuildingType.B24_RAPID);
-        getCardStats(statistics, BuildingType.B31_HEAVY);
-        getCardStats(statistics, BuildingType.B32_HEAVY);
-        getCardStats(statistics, BuildingType.B33_HEAVY);
-        getCardStats(statistics, BuildingType.B34_HEAVY);
-        getCardStats(statistics, BuildingType.B41_CRYSTAL);
-        getCardStats(statistics, BuildingType.B42_CRYSTAL);
-        getCardStats(statistics, BuildingType.B43_CRYSTAL);
-        getCardStats(statistics, BuildingType.B44_CRYSTAL);
-        //getOperationStats(statistics);
+        getResourceStats(statistics, ResourceType.XP, time);
+        getResourceStats(statistics, ResourceType.POINT, time);
+        getResourceStats(statistics, ResourceType.CURRENCY_SOFT, time);
+        getResourceStats(statistics, ResourceType.CURRENCY_HARD, time);
+        getResourceStats(statistics, ResourceType.BATTLES, time);
+        getResourceStats(statistics, ResourceType.BATTLES_WINS, time);
+        getResourceStats(statistics, ResourceType.BOOK_OPENED_BATTLE, time);
+        getResourceStats(statistics, ResourceType.BOOK_OPENED_FREE, time);
+        getCardStats(statistics, BuildingType.B11_BARRACKS, time);
+        getCardStats(statistics, BuildingType.B12_BARRACKS, time);
+        getCardStats(statistics, BuildingType.B13_BARRACKS, time);
+        getCardStats(statistics, BuildingType.B14_BARRACKS, time);
+        getCardStats(statistics, BuildingType.B21_RAPID, time);
+        getCardStats(statistics, BuildingType.B22_RAPID, time);
+        getCardStats(statistics, BuildingType.B23_RAPID, time);
+        getCardStats(statistics, BuildingType.B24_RAPID, time);
+        getCardStats(statistics, BuildingType.B31_HEAVY, time);
+        getCardStats(statistics, BuildingType.B32_HEAVY, time);
+        getCardStats(statistics, BuildingType.B33_HEAVY, time);
+        getCardStats(statistics, BuildingType.B34_HEAVY, time);
+        getCardStats(statistics, BuildingType.B41_CRYSTAL, time);
+        getCardStats(statistics, BuildingType.B42_CRYSTAL, time);
+        getCardStats(statistics, BuildingType.B43_CRYSTAL, time);
+        getCardStats(statistics, BuildingType.B44_CRYSTAL, time);
+        getOperationStats(statistics, time);
 
         String stats = "";
         for (Map.Entry<Integer, Map<Integer, Object>> entry : statistics.entrySet() )
@@ -264,14 +268,14 @@ public class RankingUtils
             (   d.containsKey(ResourceType.POINT)               ? d.get(ResourceType.POINT) : 0 )+","+
             (   d.containsKey(ResourceType.CURRENCY_SOFT)       ? d.get(ResourceType.CURRENCY_SOFT) : 0 )+","+
             (   d.containsKey(ResourceType.CURRENCY_HARD)       ? d.get(ResourceType.CURRENCY_HARD) : 0 )+","+
-            (   d.containsKey(ResourceType.BATTLES_COUNT)       ? d.get(ResourceType.BATTLES_COUNT) : 0 )+","+
+            (   d.containsKey(ResourceType.BATTLES)             ? d.get(ResourceType.BATTLES) : 0 )+","+
             (   d.containsKey(ResourceType.BATTLES_WINS)        ? d.get(ResourceType.BATTLES_WINS) : 0 )+","+
-            (   d.containsKey(ResourceType.BATTLE_CHEST_OPENED) ? d.get(ResourceType.BATTLE_CHEST_OPENED) : 0 )+","+
-            (   d.containsKey(ResourceType.FREE_CHEST_OPENED)   ? d.get(ResourceType.FREE_CHEST_OPENED) : 0 )+","+
+            (   d.containsKey(ResourceType.BOOK_OPENED_BATTLE)  ? d.get(ResourceType.BOOK_OPENED_BATTLE) : 0 )+","+
+            (   d.containsKey(ResourceType.BOOK_OPENED_FREE)    ? d.get(ResourceType.BOOK_OPENED_FREE) : 0 )+","+
             (   d.containsKey(201)                              ? d.get(201) : 0 )+","+
-            (   d.containsKey(202)                              ? d.get(202) : 0 );
+            (   d.containsKey(202)                              ? d.get(202) : 0 )+",,,";
 
-            stats += getCardValues(entry, d, BuildingType.B11_BARRACKS, ",,");
+            stats += getCardValues(entry, d,  BuildingType.B11_BARRACKS, ",,");
             stats += getCardValues(entry, d,  BuildingType.B12_BARRACKS, ",,");
             stats += getCardValues(entry, d,  BuildingType.B13_BARRACKS, ",,");
             stats += getCardValues(entry, d,  BuildingType.B14_BARRACKS, ",,");
@@ -300,9 +304,9 @@ public class RankingUtils
     }
 
 
-    private void getCardStats(Map<Integer,Map<Integer,Object>> statistics, int key)
+    private void getCardStats(Map<Integer,Map<Integer,Object>> statistics, int key, String time)
     {
-        String query = "SELECT players.id, resources.count, resources.level FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') AND resources.type = " + key;
+        String query = "SELECT players.id, resources.count, resources.level FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN " + time + ") AND resources.type = " + key;
         ISFSArray players = null;
         try {
             players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
@@ -317,9 +321,9 @@ public class RankingUtils
         ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
-    private void getResourceStats(Map<Integer, Map<Integer, Object>> statistics, int key)
+    private void getResourceStats(Map<Integer, Map<Integer, Object>> statistics, int key, String time)
     {
-        String query = "SELECT players.id, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') AND resources.type = " + key;
+        String query = "SELECT players.id, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE (players.create_at BETWEEN " + time + ") AND resources.type = " + key;
         ISFSArray players = null;
         try {
             players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
@@ -334,9 +338,9 @@ public class RankingUtils
         ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
-    private void getOperationStats(Map<Integer,Map<Integer,Object>> statistics)
+    private void getOperationStats(Map<Integer,Map<Integer,Object>> statistics, String time)
     {
-        String query = "SELECT players.id, MAX(operations.`index` ) as i, AVG(operations.score) as s FROM players INNER JOIN operations ON players.id = operations.player_id WHERE (players.create_at BETWEEN '2018-07-03 00:00:00' AND '2018-08-03 00:00:00') group by players.id;";
+        String query = "SELECT players.id, MAX(operations.`index` ) as i, AVG(operations.score) as s FROM players INNER JOIN operations ON players.id = operations.player_id WHERE (players.create_at BETWEEN " + time + ") group by players.id;";
         ISFSArray players = null;
         try {
             players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
@@ -350,7 +354,6 @@ public class RankingUtils
             statistics.get(players.getSFSObject(i).getInt("id")).put(202, (int) (players.getSFSObject(i).getDouble("s")*10));
         }
         ext.trace("operations get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-    }
-*/
+    }*/
 }
 
