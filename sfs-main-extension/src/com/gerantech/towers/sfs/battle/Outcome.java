@@ -82,7 +82,7 @@ public class Outcome
                 ret.set(ResourceType.BATTLES_WINS, 1);
 
                 // random book
-                List<Integer> emptySlotsType = getEmptySlots(game);
+                List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1);
                 if( game.player.get_battleswins() > 0 && emptySlotsType.size() > 0 )
                 {
                     int randomEmptySlotIndex = game.player.get_battleswins() == 1 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
@@ -111,13 +111,13 @@ public class Outcome
         return ret;
     }
 
-    private static List<Integer> getEmptySlots(Game game)
+    private static List<Integer> getEmptySlots(Game game, boolean forced)
     {
         int now = (int) Instant.now().getEpochSecond();
         List<Integer> ret = new ArrayList<>();
 
         for (ExchangeItem ei : game.exchanger.items.values() )
-            if( ei.category == ExchangeType.C110_BATTLES && ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY )
+            if( ei.category == ExchangeType.C110_BATTLES && (forced || ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
                 ret.add(ei.type);
         return ret;
     }
