@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.battle;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.BattleUtils;
@@ -12,7 +11,6 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
-import com.gt.towers.buildings.Building;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.socials.Challenge;
@@ -57,7 +55,7 @@ public class BattleRoom extends SFSExtension
 	private Room room;
 	private ScheduledFuture<?> timer;
 
-	private BattleBot bot;
+	//private BattleBot bot;
 	private boolean isOperation;
 	private boolean singleMode;
 	private long buildingsUpdatedAt;
@@ -111,7 +109,7 @@ public class BattleRoom extends SFSExtension
 		//battleField.troopHitCallback = new HitTroopCallback(getParentZone().getExtension());
 		battleField.now = Instant.now().toEpochMilli();
 		battleField.startAt = battleField.now / 1000;
-		reservedTypes = new int[battleField.places.size()];
+		/*reservedTypes = new int[battleField.places.size()];
 		reservedLevels = new int[battleField.places.size()];
 		reservedTroopTypes = new int[battleField.places.size()];
 		reservedPopulations = new int[battleField.places.size()];
@@ -130,7 +128,7 @@ public class BattleRoom extends SFSExtension
 			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.isOperation && !registeredPlayers.get(0).player.inTutorial() )
 				setState(STATE_BATTLE_STARTED);
 		}
-
+*/
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
@@ -156,7 +154,7 @@ public class BattleRoom extends SFSExtension
 
 	private void updateReservesData(long battleDuration)
 	{
-		Building b = null;
+		/*Building b = null;
 		SFSArray vars = SFSArray.newInstance();
 		for (int i = 0; i < battleField.places.size(); i++)
 		{
@@ -192,12 +190,12 @@ public class BattleRoom extends SFSExtension
 			List<RoomVariable> listOfVars = new ArrayList();
 			listOfVars.add(new SFSRoomVariable("towers", vars));
 			sfsApi.setRoomVariables(null, room, listOfVars);
-		}
+		}*/
 	}
 
 	private void pokeBot()
 	{
-		if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
+		/*if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
 		{
 			// send answer of sticker from bot
 			if( stickerParams != null )
@@ -214,13 +212,13 @@ public class BattleRoom extends SFSExtension
 				}
 			}
 			bot.update();
-		}
+		}*/
 	}
 
 	// fight =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void fight(ISFSArray fighters, int target, boolean fighterIsBot, double troopsDivision)
 	{
-		if( getState() == STATE_CREATED)
+		/*if( getState() == STATE_CREATED)
 			setState( STATE_BATTLE_STARTED );
 		if( getState() != STATE_BATTLE_STARTED )
 			return;
@@ -254,20 +252,20 @@ public class BattleRoom extends SFSExtension
 		listOfVars.add( new SFSRoomVariable("s", fighters) );
 		listOfVars.add( new SFSRoomVariable("d", target) );
 		listOfVars.add( new SFSRoomVariable("n", troopsDivision) );
-		sfsApi.setRoomVariables(null, room, listOfVars);
+		sfsApi.setRoomVariables(null, room, listOfVars);*/
 	}
 
 	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void sendSticker(User sender, ISFSObject params)
 	{
-		for (User u : room.getUserList())
+		/*for (User u : room.getUserList())
 		{
 			if( singleMode && sender != null )
 				bot.chatAnswering(params);
 
 			if( sender == null || u.getId() != sender.getId() )
 				send("ss", params, u);
-		}
+		}*/
 	}
 
 	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -278,9 +276,9 @@ public class BattleRoom extends SFSExtension
 		if( getState() != STATE_BATTLE_STARTED )
 			return;
 
-		Building b = battleField.places.get(params.getInt("i")).building;
+		/*Building b = battleField.places.get(params.getInt("i")).building;
 		//trace("improve", b.game.player.nickName, params.getDump(),"t:", b.type, "_population:", b._population, b.improvable(params.getInt("t")));
-		b.improve(params.getInt("t"));
+		b.improve(params.getInt("t"));*/
 	}
 	private void sendImproveResponse(int index, int type, int level, int troopType, int population)
 	{
@@ -335,10 +333,10 @@ public class BattleRoom extends SFSExtension
 				}
 			}
 
-			int[] numBuildings = new int[2];
+			/*int[] numBuildings = new int[2];
 			numBuildings[playerIndex] = 0;
 			numBuildings[playerIndex == 0 ? 1 : 0] = battleField.places.size();
-			end(numBuildings, battleField.getDuration());
+			end(numBuildings, battleField.getDuration());*/
 			//getApi().leaveRoom(user, room);
 		}
 

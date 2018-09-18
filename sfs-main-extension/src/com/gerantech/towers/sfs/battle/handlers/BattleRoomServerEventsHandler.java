@@ -4,7 +4,6 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.buildings.Building;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -183,7 +182,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( containBuildings )
 		{
 			SFSArray buildingData = new SFSArray();
-			for (int j = 0; j < roomClass.battleField.places.size(); j++)
+			/*for (int j = 0; j < roomClass.battleField.places.size(); j++)
 			{
 				Building b = roomClass.battleField.places.get(j).building;
 				SFSObject bo = new SFSObject();
@@ -193,7 +192,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				bo.putInt("l", b.get_level());
 				bo.putInt("p", b.get_population());
 				buildingData.addSFSObject(bo);
-			}
+			}*/
 			sfsO.putSFSArray("buildings", buildingData);
 		}
 

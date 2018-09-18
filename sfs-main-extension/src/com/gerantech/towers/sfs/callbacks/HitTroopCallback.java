@@ -1,9 +1,7 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gt.towers.battle.Troop;
-import com.gt.towers.interfaces.ITroopHitCallback;
-import com.smartfoxserver.v2.entities.Room;
+import com.gt.towers.battle.units.Unit;
+import com.gt.towers.interfaces.IUnitHitCallback;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import haxe.root.Array;
@@ -13,7 +11,7 @@ import java.util.List;
 /**
  * Created by ManJav on 4/1/2018.
  */
-public class HitTroopCallback implements ITroopHitCallback
+public class HitTroopCallback implements IUnitHitCallback
 {
     private final SFSExtension room;
 
@@ -24,11 +22,11 @@ public class HitTroopCallback implements ITroopHitCallback
 
 
     @Override
-    public void hit(int defenderId, List<Troop> troops)
+    public void hit(int defenderId, List<Unit> units)
     {
         String log = "hit defenderId:" + defenderId;
-        for (int i = 0; i <troops.size() ; i++)
-            log += "[ troopId:" + troops.get(i).id + " troopHealth:" + troops.get(i).health  +(i == troops.size()-1 ? " ]":" ,  ");
+        for (int i = 0; i <units.size() ; i++)
+            log += "[ troopId:" + units.get(i).id + " troopHealth:" + units.get(i).card.troopHealth  +(i == units.size()-1 ? " ]":" ,  ");
 
         room.trace(log);
     }

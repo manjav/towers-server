@@ -129,7 +129,7 @@ public class DBUtils
         {
             if( ResourceType.isBook(res.get(i)) )
                 continue;
-            query += "('" + player.id + "', '" + res.get(i) + "', '" + player.resources.get(res.get(i)) + "', '" + (ResourceType.isBuilding(res.get(i))?player.buildings.get(res.get(i)).get_level():0) + "')";
+            query += "('" + player.id + "', '" + res.get(i) + "', '" + player.resources.get(res.get(i)) + "', '" + (ResourceType.isCard(res.get(i))?player.cards.get(res.get(i)).level:0) + "')";
             query += i < keyLen - 1 ? ", " : ";";
         }
         if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
