@@ -70,12 +70,12 @@ public class LobbyUtils
         try {
             lobbyRows = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM lobbies;", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        if( lobbyRows.size() == 0 )
+        /*if( lobbyRows.size() == 0 )
         {
             migrateToLobbies();
             loadAll();
             return;
-        }
+        }*/
 
         ISFSObject lr;
         LobbyData lobbySFS;

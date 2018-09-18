@@ -14,6 +14,7 @@ import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
 import com.gt.towers.others.Quest;
+import com.gt.towers.utils.lists.IntList;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -184,6 +185,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putSFSArray("operations", new SFSArray());
 			outData.putSFSArray("exchanges", new SFSArray());
 			outData.putSFSArray("prefs", new SFSArray());
+			outData.putSFSArray("decks", dbUtils.createDeck(loginData, playerId));
 			initiateCore(session, inData, outData, loginData);
 
 			// add udid and device as account id for restore players
@@ -222,6 +224,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 		outData.putSFSArray("quests", new SFSArray());
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
+		outData.putSFSArray("decks", dbUtils.getDecks(id));
 
 		// Find active battle room
 		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
@@ -268,6 +271,22 @@ public class LoginEventHandler extends BaseServerEventHandler
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
+		// create decks init data
+		IntList deck;
+		for(int di=0; di<loginData.deckSize; di++)
+		{
+			deck = new IntList();
+			for(int d=0; d<4; d++)
+				deck.push(0);
+			initData.decks.push(deck);
+		}
+		ISFSArray decks = outData.getSFSArray("decks");
+		for(int i=0; i<decks.size(); i++)
+		{
+			element = decks.getSFSObject(i);
+			initData.decks.get(element.getInt("deck_index")).set(element.getInt("index"), element.getInt("type"));
+		}
+
 		// create operations init data
 		ISFSArray operations = outData.getSFSArray("operations");
 		for(int i=0; i<operations.size(); i++)
@@ -304,8 +323,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
 		}*/
 
-
-			// init core
+		// init core
 		Game game = new Game();
 		game.init(initData);
 		int arena = game.player.get_arena(0);

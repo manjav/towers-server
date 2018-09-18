@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.data.RankData;;
 import com.gt.towers.Game;
+import com.gt.towers.LoginData;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
@@ -13,7 +14,9 @@ import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -192,16 +195,49 @@ public class DBUtils
             db.executeInsert("INSERT INTO operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
     }
 
+    // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   DECKS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+    public ISFSArray createDeck(LoginData loginData, int playerId)
+    {
+        SFSArray decks = new SFSArray();
+        //for (int di=0; di<loginData.deckSize; di++)
+        for (int i=0; i<loginData.deck.size(); i++)
+        {
+            ISFSObject so = new SFSObject();
+            so.putInt("index", i);
+            so.putInt("deck_index", 0);
+            so.putInt("type", loginData.deck.get(i));
+            decks.addSFSObject(so);
+        }
+
+
+        String query = "INSERT INTO decks (`player_id`, `deck_index`, `index`, `type`) VALUES ";
+        for(int i=0; i<decks.size(); i++)
+        {
+            query += "(" + playerId + ", " + decks.getSFSObject(i).getInt("deck_index") + ", " + decks.getSFSObject(i).getInt("index") + ",  " + decks.getSFSObject(i).getInt("type") + ")" ;
+            query += i<decks.size()-1 ? ", " : ";";
+        }
+        ext.trace(query);
+        try {
+            db.executeInsert(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
+        return decks;
+    }
+
+    public ISFSArray getDecks(int playerId)
+    {
+        ISFSArray ret = null;
+        try {
+            ret = db.executeQuery("SELECT * FROM decks WHERE player_id = " + playerId, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
+        return ret;
+    }
+
+
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OTHERS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public void upgradeBuilding(Player player, int type, int level) throws SQLException
     {
         String query = "UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";";
         db.executeUpdate(query, new Object[] {});
-    }
-
-    public SFSArray getDecks(int playerId) throws SQLException
-    {
-        return (SFSArray) db.executeQuery("SELECT * FROM decks WHERE player_id="+playerId, new Object[] {});
     }
 
     public ISFSArray getFriends(int playerId)throws SQLException
@@ -304,5 +340,4 @@ public class DBUtils
             return "Player";
         }
     }
-
 }
