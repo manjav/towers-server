@@ -68,12 +68,12 @@ public class BattleRoom extends SFSExtension
 		room = getParentRoom();
 		setState( STATE_WAITING );
 		
-		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
-		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 		addRequestHandler(Commands.FIGHT, BattleRoomFightRequestHandler.class);
 		addRequestHandler(Commands.LEAVE, BattleRoomLeaveRequestHandler.class);
 		addRequestHandler(Commands.SEND_STICKER, BattleRoomStickerRequestHandler.class);
 		addRequestHandler(Commands.BUILDING_IMPROVE, BattleRoomImproveRequestHandler.class);
+		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
+		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 	}
 
 	public void createGame(String mapName, Boolean opponentNotFound)
