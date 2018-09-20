@@ -1,7 +1,8 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gerantech.towers.sfs.battle.BattleUtils;
+import com.gt.data.SFSDataModel;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -32,9 +33,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	public void handleServerEvent(ISFSEvent arg) throws SFSException
 	{
 		user = (User) arg.getParameter(SFSEventParam.USER);
-		if (arg.getType().equals(SFSEventType.USER_DISCONNECT))
+		if( arg.getType().equals(SFSEventType.USER_DISCONNECT) )
 			userDisconnected(arg);
-		else if (arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
+		else if( arg.getType().equals(SFSEventType.USER_JOIN_ROOM) )
 			userJoined(arg);
 	}
 
@@ -81,7 +82,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		// Wait to match making ( complete battle-room`s players )
 		if( !room.containsProperty("isFriendly") )
 		{
-			int delay = Math.max(12000, player.get_arena(0) * 400 + 7000);
+			int delay = 1000;//Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
@@ -150,6 +151,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( player.isNpc() )
 			return;
 
+		Game game = (Game) player.getSession().getProperty("core");
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("troopType", roomClass.getPlayerGroup(player) );
 		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
@@ -157,10 +159,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
-		if( (boolean)room.getProperty("isOperation") && ((Game)player.getSession().getProperty("core")).appVersion < 3610 )
-			sfsO.putText("mapName", "quest_" + room.getProperty("index"));
-		else
-			sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
+		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
 
 		boolean isSpectator = player.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
@@ -173,8 +172,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			if( isSpectator )
 				sfsO.putSFSObject( i == 0 ? "allis" : "axis", p );
 			else
-				sfsO.putSFSObject( g.player.id == Integer.parseInt(player.getName()) ? "allis" : "axis", p );
+				sfsO.putSFSObject( g.player.id == game.player.id ? "allis" : "axis", p );
 
+			p.putSFSArray("deck", SFSDataModel.toSFSArray(roomClass.battleField.decks.get(i)));
 			i ++;
 		}
 

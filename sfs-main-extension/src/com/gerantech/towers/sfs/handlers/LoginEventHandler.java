@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
@@ -13,7 +14,6 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
-import com.gt.towers.others.Quest;
 import com.gt.towers.utils.lists.IntList;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;

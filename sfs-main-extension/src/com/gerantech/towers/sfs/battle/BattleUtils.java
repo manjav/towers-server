@@ -1,6 +1,5 @@
-package com.gerantech.towers.sfs.utils;
+package com.gerantech.towers.sfs.battle;
 
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.hazelcast.util.RandomPicker;
@@ -62,9 +61,7 @@ public class BattleUtils
     public Room make(User owner, boolean isOperation, int index, int friendlyMode, boolean hasExtraTime)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
-
         Game game = ((Game)owner.getSession().getProperty("core"));
-
         Map<Object, Object> roomProperties = new HashMap<>();
 
         int arena = 0;
@@ -73,8 +70,8 @@ public class BattleUtils
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
             int tutorMaps = game.appVersion >= 3200 ? 3 : 2;
             boolean tutorMode = game.player.get_battleswins() < tutorMaps;
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
-            index = tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            //List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
+            index = 1;//tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena);// ===> is temp

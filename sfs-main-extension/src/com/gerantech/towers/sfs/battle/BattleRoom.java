@@ -3,7 +3,6 @@ package com.gerantech.towers.sfs.battle;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.utils.BattleUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
@@ -154,9 +153,8 @@ public class BattleRoom extends SFSExtension
 
 	private void updateReservesData(long battleDuration)
 	{
-		/*Building b = null;
-		SFSArray vars = SFSArray.newInstance();
-		for (int i = 0; i < battleField.places.size(); i++)
+		List<RoomVariable> listOfVars = new ArrayList();
+		/*for (int i = 0; i < battleField.places.size(); i++)
 		{
 			b = battleField.places.get(i).building;
 			if( b.get_population() != reservedPopulations[i] || b.troopType != reservedTroopTypes[i] )
@@ -178,19 +176,16 @@ public class BattleRoom extends SFSExtension
 		if( battleField.now - clientTimeUpdatedAt >= 5000 )
 		{
 			clientTimeUpdatedAt = battleField.now;
-			if( singleMode && battleField.games.get(0).appVersion >= 2900 )
-				vars.addLong(battleField.now);
-			else if( battleField.games.get(0).appVersion >= 2900 && battleField.games.get(1).appVersion >= 2900)
-				vars.addLong(battleField.now);
-		}
-
-		// Set variables
-		if( vars.size() > 0 )
-		{
-			List<RoomVariable> listOfVars = new ArrayList();
-			listOfVars.add(new SFSRoomVariable("towers", vars));
-			sfsApi.setRoomVariables(null, room, listOfVars);
+			vars.addLong(battleField.now);
 		}*/
+
+		// set elixir bars
+		SFSObject bars = new SFSObject();
+		bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
+		bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
+		listOfVars.add(new SFSRoomVariable("bars", bars));
+
+		sfsApi.setRoomVariables(null, room, listOfVars);
 	}
 
 	private void pokeBot()
@@ -346,7 +341,7 @@ public class BattleRoom extends SFSExtension
 		if( battleDuration < 3 )
 			return;
 		int[] numBuildings = new int[2];
-		int[] populations = new int[2];
+		/*int[] populations = new int[2];
 		for (int i = 0; i < reservedTroopTypes.length; i++)
 		{
 			if( reservedTroopTypes[i] >= 0 )
@@ -358,14 +353,14 @@ public class BattleRoom extends SFSExtension
 		}
 
 		//fast win
-		/*numBuildings[0] = battleField.places.size();
-		numBuildings[1] = 0;*/
+//		numBuildings[0] = battleField.places.size();
+//		numBuildings[1] = 0;
 
 		if( numBuildings[0] == 0 || numBuildings[1] == 0 )
 		{
 			end(numBuildings, battleDuration);
 			return;
-		}
+		}*/
 
 		if( ( battleDuration > battleField.getTime(3) && !isOperation) || ( battleDuration > battleField.getTime(2) && isOperation) )
 			end(numBuildings, battleDuration);

@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.inbox.InboxUtils;
-import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
