@@ -14,7 +14,7 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
-import com.gt.towers.utils.lists.IntList;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -272,18 +272,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// create decks init data
-		IntList deck;
-		for(int di=0; di<loginData.deckSize; di++)
+		for(int i=0; i<outData.getSFSArray("decks").size(); i++)
 		{
-			deck = new IntList();
-			for(int d=0; d<4; d++)
-				deck.push(0);
-			initData.decks.push(deck);
-		}
-		ISFSArray decks = outData.getSFSArray("decks");
-		for(int i=0; i<decks.size(); i++)
-		{
-			element = decks.getSFSObject(i);
+			element = outData.getSFSArray("decks").getSFSObject(i);
+			if( !initData.decks.exists(element.getInt("deck_index")) )
+				initData.decks.set(element.getInt("deck_index"), new IntIntMap());
 			initData.decks.get(element.getInt("deck_index")).set(element.getInt("index"), element.getInt("type"));
 		}
 
