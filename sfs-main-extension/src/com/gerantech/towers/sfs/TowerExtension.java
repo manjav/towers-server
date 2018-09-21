@@ -55,26 +55,16 @@ public class TowerExtension extends SFSExtension
 		addRequestHandler(Commands.CANCEL_BATTLE, BattleRequestCancelHandler.class);
 
         // Add billing upgrade handler
-		addRequestHandler(Commands.BUILDING_UPGRADE, BuildingUpgradeHandler.class);
+		addRequestHandler(Commands.CARD_UPGRADE, CardUpgradeHandler.class);
 		
         // Add rank handler
 		addRequestHandler(Commands.RANK, RankRequestHandler.class);
-
-		// Add select name handler
 		addRequestHandler(Commands.SELECT_NAME, SelectNameRequestHandler.class);
-
-		// Add exchange handler
 		addRequestHandler(Commands.EXCHANGE, ExchangeHandler.class);
-		
-        // Add socials open authentication handler
 		addRequestHandler(Commands.OAUTH, OauthHandler.class);
-
-        // Add in app billing verification handler
 		addRequestHandler(Commands.VERIFY_PURCHASE, PurchaseVerificationHandler.class);
-
+		addRequestHandler(Commands.CHANGE_DECK, ChangeDeckHandler.class);
 		addRequestHandler(Commands.PREFS, UserPrefsRequestHandler.class);
-
-		// Register push panels to db
 		addRequestHandler(Commands.REGISTER_PUSH, RegisterPushHandler.class);
 
 		// Social handlers

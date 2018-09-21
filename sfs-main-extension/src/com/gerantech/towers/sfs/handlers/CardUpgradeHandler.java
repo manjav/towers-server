@@ -15,11 +15,9 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  * @author ManJav
  *
  */
-public class BuildingUpgradeHandler extends BaseClientRequestHandler
+public class CardUpgradeHandler extends BaseClientRequestHandler
 {
-
-	public BuildingUpgradeHandler() {}
-
+	public CardUpgradeHandler() {}
 	public void handleClientRequest(User sender, ISFSObject params)
     {
     	int cardType = params.getInt("type");
@@ -36,8 +34,8 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		params.putBool("success", success);
 		if( !success )
 		{
-			trace(ExtensionLogLevel.WARN, "building " + cardType + " can not upgrade to level " + card.level);
-			send(Commands.BUILDING_UPGRADE, params, sender);
+			trace(ExtensionLogLevel.WARN, "card " + cardType + " can not upgrade to level " + card.level);
+			send(Commands.CARD_UPGRADE, params, sender);
 			return;
 		}
 		DBUtils dbUtils = DBUtils.getInstance();
@@ -48,7 +46,7 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			e.printStackTrace();
 			return;
 		}
-		trace(ExtensionLogLevel.INFO, "building " + cardType + " upgraded to " + card.level );
-		send(Commands.BUILDING_UPGRADE, params, sender);
+		trace(ExtensionLogLevel.INFO, "card " + cardType + " upgraded to " + card.level );
+		send(Commands.CARD_UPGRADE, params, sender);
     }
 }

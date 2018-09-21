@@ -16,7 +16,7 @@ public class Commands
 
     public static final String PROFILE = "profile";
 
-    public static final String BUILDING_UPGRADE = "buildingUpgrade";
+    public static final String CARD_UPGRADE = "cardUpgrade";
     public static final String EXCHANGE = "exchange";
     public static final String SELECT_NAME = "selectName";
     public static final String OAUTH = "oauth";
@@ -24,6 +24,7 @@ public class Commands
     public static final String VERIFY_PURCHASE = "verify";
     public static final String RESTORE = "restore";
     public static final String PREFS = "prefs";
+    public static final String CHANGE_DECK = "changeDeck";
 
     public static final String ISSUE_REPORT = "issueReport";
     public static final String ISSUE_TRACK = "issueTrack";
