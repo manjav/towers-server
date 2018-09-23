@@ -10,6 +10,7 @@ import com.gerantech.towers.sfs.administration.ban.InfractionsGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueReportHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueTrackHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleDeployRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
@@ -51,10 +52,12 @@ public class TowerExtension extends SFSExtension
 		addEventHandler(SFSEventType.ROOM_REMOVED, BattlesRemovedHandler.class);
 
         // Add startBattle request handler
-		addRequestHandler(Commands.START_BATTLE, BattleRequestStartHandler.class);
-		addRequestHandler(Commands.CANCEL_BATTLE, BattleRequestCancelHandler.class);
+		addRequestHandler(Commands.BATTLE_START, BattleRequestStartHandler.class);
+		addRequestHandler(Commands.BATTLE_CANCEL, BattleRequestCancelHandler.class);
+		addRequestHandler(Commands.BATTLE_DEPLOY_UNIT, BattleDeployRequestHandler.class);
 
-        // Add billing upgrade handler
+
+		// Add billing upgrade handler
 		addRequestHandler(Commands.CARD_UPGRADE, CardUpgradeHandler.class);
 		
         // Add rank handler

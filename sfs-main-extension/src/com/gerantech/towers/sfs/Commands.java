@@ -5,14 +5,13 @@ package com.gerantech.towers.sfs;
  */
 public class Commands
 {
-    public static final String START_BATTLE = "startBattle";
-    public static final String END_BATTLE = "endBattle";
-    public static final String CANCEL_BATTLE = "cancelBattle" ;
-    public static final String LEFT_BATTLE = "leftBattle";
-    public static final String REJOIN_BATTLE = "rejoinBattle";
-    public static final String RANK = "rank";
-    public static final String LEAVE = "leave";
-    public static final String SEND_STICKER = "ss";
+
+    public static final String BATTLE_START = "battleStart";
+    public static final String BATTLE_CANCEL = "battleCancel";
+    public static final String BATTLE_LEAVE = "battleLeave";
+    public static final String BATTLE_END = "battleEnd";
+    public static final String BATTLE_SEND_STICKER = "ss";
+    public static final String BATTLE_DEPLOY_UNIT = "d";
 
     public static final String PROFILE = "profile";
 
@@ -36,10 +35,7 @@ public class Commands
     public static final String INFRACTIONS_DELETE = "infractionsDelete";
     public static final String SEARCH_IN_CHATS = "searchInChats";
 
-    public static final String FIGHT = "f";
-    public static final String BUILDING_IMPROVE = "i";
-
-    public static final String HIT = "h";
+    public static final String RANK = "rank";
     public static final String LOBBY_CREATE = "lobbyCreate";
     public static final String LOBBY_DATA = "lobbyData";
     public static final String LOBBY_INFO = "lobbyInfo";

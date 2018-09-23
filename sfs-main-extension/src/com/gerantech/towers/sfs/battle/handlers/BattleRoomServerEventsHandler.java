@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.data.SFSDataModel;
@@ -15,7 +16,6 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
-import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
@@ -30,7 +30,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private Room room;
 	private BattleRoom roomClass;
 
-	public void handleServerEvent(ISFSEvent arg) throws SFSException
+	public void handleServerEvent(ISFSEvent arg)
 	{
 		user = (User) arg.getParameter(SFSEventParam.USER);
 		if( arg.getType().equals(SFSEventType.USER_DISCONNECT) )
@@ -68,7 +68,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				{
 					SFSObject sfsO = new SFSObject();
 					sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
-					send("rejoinBattle", sfsO, players.get(i));
+					send("battleRejoin", sfsO, players.get(i));
 				}*/
 			}
 			return;
@@ -119,7 +119,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 					{
 						SFSObject sfsO = SFSObject.newInstance();
 						sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
-						send("leftBattle", sfsO, u);
+						send("battleLeft", sfsO, u);
 					}
 				}*/
 			}
@@ -197,7 +197,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			sfsO.putSFSArray("buildings", buildingData);
 		}
 
-		send("startBattle", sfsO, player);
+		send(Commands.BATTLE_START, sfsO, player);
 
 		if( !isSpectator )
 		{

@@ -67,10 +67,9 @@ public class BattleRoom extends SFSExtension
 		room = getParentRoom();
 		setState( STATE_WAITING );
 		
-		addRequestHandler(Commands.FIGHT, BattleRoomFightRequestHandler.class);
-		addRequestHandler(Commands.LEAVE, BattleRoomLeaveRequestHandler.class);
-		addRequestHandler(Commands.SEND_STICKER, BattleRoomStickerRequestHandler.class);
-		addRequestHandler(Commands.BUILDING_IMPROVE, BattleRoomImproveRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_DEPLOY_UNIT, BattleDeployRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_SEND_STICKER, BattleStickerRequestHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
 	}
@@ -478,7 +477,7 @@ public class BattleRoom extends SFSExtension
 		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-			send( Commands.END_BATTLE, params, users.get(i) );
+			send( Commands.BATTLE_END, params, users.get(i) );
 
 
 		for (int i=0; i < registeredPlayers.size(); i++)

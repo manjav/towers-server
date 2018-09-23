@@ -1,7 +1,8 @@
 package com.gerantech.towers.sfs.administration;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
@@ -28,7 +29,7 @@ public class SpectateRoom extends SFSExtension
 	public void init() 
 	{
 		room = getParentRoom();
-		addRequestHandler("leave", BattleRoomLeaveRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
 		List<RoomVariable> listOfVars = new ArrayList();
 		listOfVars.add( new SFSRoomVariable("rooms", SFSArray.newInstance()) );
 		sfsApi.setRoomVariables(null, room, listOfVars);

@@ -25,7 +25,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
             params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
-            send(Commands.START_BATTLE, params, sender);
+            send(Commands.BATTLE_START, params, sender);
             return;
         }
 
