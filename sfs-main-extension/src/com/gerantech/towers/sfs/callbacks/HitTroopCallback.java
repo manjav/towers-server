@@ -26,7 +26,7 @@ public class HitTroopCallback implements IUnitHitCallback
     {
         String log = "hit defenderId:" + defenderId;
         for (int i = 0; i <units.size() ; i++)
-            log += "[ troopId:" + units.get(i).id + " troopHealth:" + units.get(i).card.troopHealth  +(i == units.size()-1 ? " ]":" ,  ");
+            log += "[ troopId:" + units.get(i).id + " troopHealth:" + units.get(i).card.health  +(i == units.size()-1 ? " ]":" ,  ");
 
         room.trace(log);
     }

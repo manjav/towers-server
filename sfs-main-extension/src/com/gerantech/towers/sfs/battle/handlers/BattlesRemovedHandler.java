@@ -1,20 +1,14 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.data.LobbyData;
-import com.gt.towers.Game;
-import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-
 import java.util.List;
 
 /**
