@@ -50,14 +50,13 @@ public class BattleRoom extends SFSExtension
 	private int _state = -1;
 	private Map<Integer, UnitData> reservedUnits;
 
-	private int[] reservedTroopTypes;
 	private Room room;
 	private ScheduledFuture<?> timer;
 
 	//private BattleBot bot;
 	private boolean isOperation;
 	private boolean singleMode;
-	private long buildingsUpdatedAt;
+	private double buildingsUpdatedAt;
 	private long clientTimeUpdatedAt;
 	private ISFSObject stickerParams;
 	private ArrayList<Game> registeredPlayers;
@@ -146,7 +145,7 @@ public class BattleRoom extends SFSExtension
 				checkEnding(battleDuration);
 
 			}
-		}, 0, battleField.interval, TimeUnit.MILLISECONDS);
+		}, 0, battleField.INTERVAL, TimeUnit.MILLISECONDS);
 
 		trace(room.getName(), "created.");
 	}
@@ -157,12 +156,12 @@ public class BattleRoom extends SFSExtension
 		SFSArray units = SFSArray.newInstance();
 		Unit unit;
 		UnitData ud;
-		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units.entrySet().iterator();
+		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
 		while( iterator.hasNext() )
 		{
 			unit = iterator.next().getValue();
 
-			if( !reservedUnits.containsKey(unit.id) || (reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y || reservedUnits.get(unit.id).health != unit.card.health) )
+			if( !reservedUnits.containsKey(unit.id) || (reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y || reservedUnits.get(unit.id).health != unit.health) )
 			{
 				if( reservedUnits.containsKey(unit.id) )
 				{
@@ -174,10 +173,10 @@ public class BattleRoom extends SFSExtension
 				}
 				else
 				{
-					reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.card.health));
+					reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.health));
 				}
-				reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.card.health));
-				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.card.health);
+				reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.health));
+				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health);
 			}
 		}
 		listOfVars.add(new SFSRoomVariable("units", units));
