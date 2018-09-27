@@ -133,9 +133,9 @@ public class BattleRoom extends SFSExtension
 
 				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
 					return;
-				battleField.update();
+				battleField.update(battleField.deltaTime);
 				long battleDuration = battleField.getDuration();
-				if( battleField.now - buildingsUpdatedAt >= 500 )
+				if( battleField.now - buildingsUpdatedAt >= 1500 )
 				{
 					updateReservesData(battleDuration);
 					if( battleField.getDuration() > 3 )
@@ -145,7 +145,7 @@ public class BattleRoom extends SFSExtension
 				checkEnding(battleDuration);
 
 			}
-		}, 0, battleField.INTERVAL, TimeUnit.MILLISECONDS);
+		}, 0, battleField.deltaTime, TimeUnit.MILLISECONDS);
 
 		trace(room.getName(), "created.");
 	}
