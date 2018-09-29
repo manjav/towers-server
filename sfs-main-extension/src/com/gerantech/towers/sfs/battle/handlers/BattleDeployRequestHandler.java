@@ -20,8 +20,8 @@ public class BattleDeployRequestHandler extends BaseClientRequestHandler
 			params.putInt("s", side);
 			params.putInt("l", unit.card.level);
 			params.putInt("id", id);
+			send(Commands.BATTLE_DEPLOY_UNIT, params, getParentExtension().getParentRoom().getUserList());
 		}
 
-		send(Commands.BATTLE_DEPLOY_UNIT, params, getParentExtension().getParentRoom().getUserList());
 	}
 }
