@@ -93,7 +93,7 @@ public class BattleUtils
         }
 
 
-        boolean singleMode = isOperation || arena == 0;
+        boolean singleMode = false;//isOperation || arena == 0;
         roomProperties.put("isOperation", isOperation);
         roomProperties.put("index", index);
         if( hasExtraTime )
