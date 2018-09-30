@@ -13,15 +13,6 @@ public class BattleDeployRequestHandler extends BaseClientRequestHandler
 	{
 		BattleRoom battleRoom = (BattleRoom) getParentExtension().getParentRoom().getExtension();
 		int side = battleRoom.getPlayerGroup(sender);
-		int id = battleRoom.deployUnit(side, params.getInt("t"), params.getDouble("x"), params.getDouble("y"));
-		if( id >= 0 )
-		{
-			Unit unit = battleRoom.battleField.units.get(id);
-			params.putInt("s", side);
-			params.putInt("l", unit.card.level);
-			params.putInt("id", id);
-			send(Commands.BATTLE_DEPLOY_UNIT, params, getParentExtension().getParentRoom().getUserList());
-		}
-
+		battleRoom.deployUnit(side, params.getInt("t"), params.getDouble("x"), params.getDouble("y"));
 	}
 }

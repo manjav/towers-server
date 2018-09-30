@@ -277,7 +277,19 @@ public class BattleRoom extends SFSExtension
 			return MessageTypes.RESPONSE_NOT_ALLOWED;
 		int id = battleField.deployUnit(type, side, x, y);
 		if( id > -1)
+		{
 			battleField.units.get(id).eventCallback = eventCallback;
+			Unit unit = battleField.units.get(id);
+
+			SFSObject params = new SFSObject();
+			params.putInt("s", side);
+			params.putInt("t", type);
+			params.putDouble("x", x);
+			params.putDouble("y", y);
+			params.putInt("l", unit.card.level);
+			params.putInt("id", id);
+			send(Commands.BATTLE_DEPLOY_UNIT, params, room.getUserList());
+		}
 		return id;
 	}
 
