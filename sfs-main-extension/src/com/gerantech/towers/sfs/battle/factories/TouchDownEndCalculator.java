@@ -1,8 +1,11 @@
 package com.gerantech.towers.sfs.battle.factories;
 
+import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.units.Unit;
+import com.smartfoxserver.v2.entities.data.SFSObject;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -20,9 +23,9 @@ public class TouchDownEndCalculator extends EndCalculator
         if( unit == null )
             return false;
         roomClass.trace("unit passed " + unit.id);
-        roomClass.battleField.units.clear();
         scores[unit.side] ++;
 
+        sendNewRoundResponse();
         for (int g : scores)
             if( g > 3 )
                 return true;
@@ -30,13 +33,25 @@ public class TouchDownEndCalculator extends EndCalculator
         return false;
     }
 
-    private Unit checkUnitPassed()
+
+
+    void sendNewRoundResponse()
+    {
+        SFSObject params = new SFSObject();
+        params.putInt("0", scores[0]);
+        params.putInt("1", scores[1]);
+        roomClass.send(Commands.BATTLE_NEW_ROUND, params, roomClass.getParentRoom().getUserList());
+        roomClass.battleField.units.clear();
+    }
+
+    Unit checkUnitPassed()
     {
         Unit u;
         Iterator<Map.Entry<Object, Unit>> iterator = roomClass.battleField.units._map.entrySet().iterator();
-        while( iterator.hasNext() ) {
+        while( iterator.hasNext() )
+        {
            u = iterator.next().getValue();
-           if( (u.side == 0 && u.y > BattleField.HEIGHT) || (u.side == 1 && u.y < 0) )
+           if( (u.side == 0 && u.y < 1) || (u.side == 1 && u.y > BattleField.HEIGHT) )
                return u;
         }
         return null;
