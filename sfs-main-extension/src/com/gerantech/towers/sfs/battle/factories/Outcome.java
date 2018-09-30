@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.battle;
+package com.gerantech.towers.sfs.battle.factories;
 
 import com.gt.towers.Game;
 import com.gt.towers.battle.fieldes.FieldData;
