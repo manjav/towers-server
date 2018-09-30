@@ -158,7 +158,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				so.putInt("type", i);
 				so.putInt("count", loginData.resources.get(i));
-				so.putInt("level", i < 1000 ? loginData.buildingsLevel.get(i) : 0);
+				so.putInt("level", i < 1000 ? 1 : 0);
 
 				resources.addSFSObject( so );
 			}
