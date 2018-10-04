@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.data.SFSDataModel;
+import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -160,6 +161,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
 		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
+		sfsO.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
 
 		boolean isSpectator = player.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
@@ -170,6 +172,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putUtfString("name", g.player.nickName);
 			p.putInt("point", g.player.get_point());
 			p.putSFSArray("deck", SFSDataModel.toSFSArray(roomClass.battleField.decks.get(i)));
+			p.putInt("score", roomClass.endCalculator.scores[i]);
 
 			if( isSpectator )
 				sfsO.putSFSObject( i == 0 ? "allis" : "axis", p );

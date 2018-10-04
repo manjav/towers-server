@@ -5,7 +5,10 @@ import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.factories.EndCalculator;
 import com.gerantech.towers.sfs.battle.factories.Outcome;
 import com.gerantech.towers.sfs.battle.factories.TouchDownEndCalculator;
-import com.gerantech.towers.sfs.battle.handlers.*;
+import com.gerantech.towers.sfs.battle.handlers.BattleDeployRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleStickerRequestHandler;
 import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
@@ -34,7 +37,9 @@ import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -132,7 +137,8 @@ public class BattleRoom extends SFSExtension
 				if( battleField.now - buildingsUpdatedAt >= 1000 )
 				{
 					updateReservesData(battleDuration);
-					pokeBot();
+					if( battleDuration > 4 )
+						pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
 				battleField.update(battleField.deltaTime);
@@ -155,7 +161,7 @@ public class BattleRoom extends SFSExtension
 		{
 			unit = iterator.next().getValue();
 
-			if( !reservedUnits.containsKey(unit.id)|| (*//* reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y ||*//* reservedUnits.get(unit.id).health != unit.health) )
+			if( *//*!reservedUnits.containsKey(unit.id)|| ( reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y ||*//* (reservedUnits.get(unit.id).health != unit.health) )
 			{
 				if( reservedUnits.containsKey(unit.id) )
 				{
@@ -183,28 +189,51 @@ public class BattleRoom extends SFSExtension
 		sfsApi.setRoomVariables(null, room, listOfVars);
 	}
 
-	private void pokeBot()
+
+	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public int deployUnit(int side, int type, double x, double y)
 	{
-		//trace("pokeBot", singleMode,  getState());
-		if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
+		if( getState() == STATE_CREATED )
+			setState( STATE_BATTLE_STARTED );
+		if( getState() != STATE_BATTLE_STARTED )
+			return MessageTypes.RESPONSE_NOT_ALLOWED;
+		int id = battleField.deployUnit(type, side, x, y);
+		if( id > -1 )
 		{
-			// send answer of sticker from bot
-			if( stickerParams != null )
+			Unit unit = battleField.units.get(id);
+
+			SFSArray units = new SFSArray();
+			SFSObject params = new SFSObject();
+
+			for (int i = id; i > id - unit.card.quantity; i--)
 			{
-				if( stickerParams.getInt("wait") < 4 )
-				{
-					stickerParams.putInt("wait", stickerParams.getInt("wait") + 1);
-				}
-				else
-				{
-					stickerParams.removeElement("wait");
-					send("ss", stickerParams, room.getUserList());
-					stickerParams = null;
-				}
+				unit = battleField.units.get(i);
+				unit.eventCallback = eventCallback;
+
+				SFSObject u = new SFSObject();
+				u.putInt("s", side);
+				u.putInt("t", type);
+				u.putDouble("x", side == 0 ? unit.x : BattleField.WIDTH - unit.x);
+				u.putDouble("y", side == 0 ? unit.y : BattleField.HEIGHT - unit.y);
+				u.putInt("l", unit.card.level);
+				u.putInt("i", unit.id);
+				units.addSFSObject(u);
 			}
-			bot.update();
+			params.putSFSArray("units", units);
+			send(Commands.BATTLE_DEPLOY_UNIT, params, room.getUserList());
 		}
+		return id;
 	}
+
+	public void hitUnit(int bulletId, double damage, List<Integer> targets)
+	{
+		SFSObject params = new SFSObject();
+		params.putInt("b", bulletId);
+		params.putDouble("d", damage);
+		params.putIntArray("t", targets);
+		send(Commands.BATTLE_HIT, params, room.getUserList());
+	}
+
 
 	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void sendSticker(User sender, ISFSObject params)
@@ -219,39 +248,6 @@ public class BattleRoom extends SFSExtension
 		}
 	}
 
-	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public int deployUnit(int side, int type, double x, double y)
-	{
-		if( getState() == STATE_CREATED )
-			setState( STATE_BATTLE_STARTED );
-		if( getState() != STATE_BATTLE_STARTED )
-			return MessageTypes.RESPONSE_NOT_ALLOWED;
-		int id = battleField.deployUnit(type, side, x, y);
-		if( id > -1)
-		{
-			battleField.units.get(id).eventCallback = eventCallback;
-			Unit unit = battleField.units.get(id);
-
-			SFSObject params = new SFSObject();
-			params.putInt("s", side);
-			params.putInt("t", type);
-			params.putDouble("x", x);
-			params.putDouble("y", y);
-			params.putInt("l", unit.card.level);
-			params.putInt("id", id);
-			send(Commands.BATTLE_DEPLOY_UNIT, params, room.getUserList());
-		}
-		return id;
-	}
-
-	public void sendAttackResponse(int offenderId, int targetId)
-	{
-		SFSObject params = new SFSObject();
-		params.putInt("o", offenderId);
-		params.putInt("t", targetId);
-		params.putDouble("d", battleField.units.get(offenderId).card.bulletDamage);
-		send(Commands.BATTLE_ATTACK, params, room.getUserList());
-	}
 
 	// leave =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void leave(User user, boolean retryMode)
@@ -287,6 +283,30 @@ public class BattleRoom extends SFSExtension
 		}
 
 	}
+
+	private void pokeBot()
+	{
+		//trace("pokeBot", singleMode,  getState());
+		if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
+		{
+			// send answer of sticker from bot
+			if( stickerParams != null )
+			{
+				if( stickerParams.getInt("wait") < 4 )
+				{
+					stickerParams.putInt("wait", stickerParams.getInt("wait") + 1);
+				}
+				else
+				{
+					stickerParams.removeElement("wait");
+					send("ss", stickerParams, room.getUserList());
+					stickerParams = null;
+				}
+			}
+			bot.update();
+		}
+	}
+
 	private void checkEnding(double battleDuration)
 	{
 		if( battleDuration < 3 )
@@ -328,7 +348,7 @@ public class BattleRoom extends SFSExtension
 			SFSObject outcomeSFS = new SFSObject();
 			outcomeSFS.putInt("id", game.player.id);
 			outcomeSFS.putText("name", game.player.nickName);
-			outcomeSFS.putInt("scores", endCalculator.scores[i]);
+			outcomeSFS.putInt("score", endCalculator.scores[i]);
 
 			outcomesList[i] = Outcome.get( game, battleField.map, endCalculator.scores[i], (float)endCalculator.scores[i] / (float)endCalculator.scores[i==0?1:0], now );
 			//trace("i:", i, "scores:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
@@ -357,7 +377,7 @@ public class BattleRoom extends SFSExtension
 					updateMap.set(r, outcomesList[i].get(r));
 				else
 					insertMap.set(r, outcomesList[i].get(r));
-				trace(r, outcomesList[i].get(r) );
+				trace(game.player.id + ": (", r, outcomesList[i].get(r) , ")" );
 
 				// update exchange
 				if( ResourceType.isBook(r) && !game.player.isBot() )

@@ -1,15 +1,12 @@
 package com.gerantech.towers.sfs.callbacks;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gt.towers.battle.units.Unit;
 import com.gt.towers.events.EventCallback;
-import com.gt.towers.events.UnitEvent;
 import haxe.root.Array;
 
 public class BattleEventCallback implements EventCallback
 {
     private final BattleRoom battleRoom;
-
     public BattleEventCallback(BattleRoom battleRoom)
     {
         this.battleRoom = battleRoom;
@@ -18,10 +15,10 @@ public class BattleEventCallback implements EventCallback
     @Override
     public void dispatch(int id, String type, Object data)
     {
-        if( type == UnitEvent.ATTACK )
+        /*if( type == BattleEvent.ATTACK )
         {
             battleRoom.sendAttackResponse(id, (Integer) data);
-        }
+        }*/
     }
 
     @Override

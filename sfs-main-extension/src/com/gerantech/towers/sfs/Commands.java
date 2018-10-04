@@ -5,15 +5,14 @@ package com.gerantech.towers.sfs;
  */
 public class Commands
 {
-
     public static final String BATTLE_START = "battleStart";
     public static final String BATTLE_CANCEL = "battleCancel";
     public static final String BATTLE_LEAVE = "battleLeave";
     public static final String BATTLE_END = "battleEnd";
     public static final String BATTLE_SEND_STICKER = "ss";
-    public static final String BATTLE_DEPLOY_UNIT = "d";
-    public static final String BATTLE_ATTACK = "a";
     public static final String BATTLE_NEW_ROUND = "battleNewRound";
+    public static final String BATTLE_DEPLOY_UNIT = "d";
+    public static final String BATTLE_HIT = "h";
 
     public static final String PROFILE = "profile";
 

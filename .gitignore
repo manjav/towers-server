@@ -89,3 +89,6 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/intellij
 sfs-main-extension/.idea/workspace.xml
+sfs-main-extension/.idea/uiDesigner.xml
+sfs-main-extension/.idea/misc.xml
+sfs-data/.idea/workspace.xml
