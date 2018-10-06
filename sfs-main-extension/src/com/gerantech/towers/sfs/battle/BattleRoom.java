@@ -10,6 +10,7 @@ import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleStickerRequestHandler;
 import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
+import com.gerantech.towers.sfs.callbacks.HitUnitCallback;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
@@ -111,9 +112,9 @@ public class BattleRoom extends SFSExtension
 
 		trace(registeredPlayers.get(0), registeredPlayers.get(1), mapName);
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), mapName, 0, room.containsProperty("hasExtraTime"));
-		//battleField.troopHitCallback = new HitTroopCallback(getParentZone().getExtension());
 		battleField.now = Instant.now().toEpochMilli();
 		battleField.startAt = battleField.now / 1000;
+		battleField.unitsHitCallback = new HitUnitCallback(this);
 		eventCallback = new BattleEventCallback(this);
 		endCalculator = new TouchDownEndCalculator(this);
 		//reservedUnits = new ConcurrentHashMap();
