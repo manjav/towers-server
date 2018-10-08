@@ -7,6 +7,7 @@ import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -131,20 +132,11 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private void sendStartBattleResponse(Boolean opponentNotFound)
 	{
 		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
-		roomClass.createGame(getMapName((boolean) room.getProperty("isOperation")), opponentNotFound);
+		roomClass.createGame((int) room.getProperty("index"), opponentNotFound);
 
 		List<User> players = room.getPlayersList();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i), false);
-	}
-
-	private String getMapName(boolean isOperation)
-	{
-		int index = (Integer)room.getProperty("index");
-		String mapName = "battle_" + index;
-		if( isOperation )
-			mapName = "operation_" + index;
-		return mapName;
 	}
 
 	private void sendBattleData(User player, boolean containBuildings)
@@ -155,12 +147,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		Game game = (Game) player.getSession().getProperty("core");
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("side", roomClass.getPlayerGroup(player) );
-		sfsO.putInt("startAt", (Integer)room.getProperty("startAt"));
+		sfsO.putInt("index", (int) room.getProperty("index"));
+		sfsO.putInt("startAt", (int)room.getProperty("startAt"));
 		sfsO.putInt("roomId", room.getId());
+		sfsO.putText("type", (String) room.getProperty("type"));
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
 		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
-		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
 		sfsO.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
 
 		boolean isSpectator = player.isSpectator(room);
@@ -180,24 +173,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				sfsO.putSFSObject( g.player.id == game.player.id ? "allis" : "axis", p );
 
 			i ++;
-		}
-
-		// send buildings data
-		if( containBuildings )
-		{
-			SFSArray buildingData = new SFSArray();
-			/*for (int j = 0; j < roomClass.battleField.places.size(); j++)
-			{
-				Building b = roomClass.battleField.places.get(j).building;
-				SFSObject bo = new SFSObject();
-				bo.putInt("i", j);
-				bo.putInt("t", b.type);
-				bo.putInt("tt", b.troopType);
-				bo.putInt("l", b.get_level());
-				bo.putInt("p", b.get_population());
-				buildingData.addSFSObject(bo);
-			}*/
-			sfsO.putSFSArray("buildings", buildingData);
 		}
 
 		send(Commands.BATTLE_START, sfsO, player);

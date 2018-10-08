@@ -1,8 +1,14 @@
 package com.gerantech.towers.sfs.callbacks;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.battle.fieldes.FieldData;
+import com.gt.towers.battle.units.Unit;
+import com.gt.towers.events.BattleEvent;
 import com.gt.towers.events.EventCallback;
 import haxe.root.Array;
+
+import java.util.Iterator;
+import java.util.Map;
 
 public class BattleEventCallback implements EventCallback
 {
@@ -10,15 +16,29 @@ public class BattleEventCallback implements EventCallback
     public BattleEventCallback(BattleRoom battleRoom)
     {
         this.battleRoom = battleRoom;
+        Iterator<Map.Entry<Object, Unit>> iterator = battleRoom.battleField.units._map.entrySet().iterator();
+        while( iterator.hasNext() )
+        {
+            iterator.next().getValue().eventCallback = this;
+        }
     }
 
     @Override
     public void dispatch(int id, String type, Object data)
     {
-        /*if( type == BattleEvent.ATTACK )
+        if( type == BattleEvent.DISPOSE )
         {
-            battleRoom.sendAttackResponse(id, (Integer) data);
-        }*/
+            //battleRoom.trace(battleRoom.battleField.map.type, battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER));
+            if( battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER) )
+            {
+                if( battleRoom.battleField.units.get(id).card.type == 201 )
+                {
+                    //battleRoom.trace(id, type, battleRoom.battleField.map.type, battleRoom.battleField.units.get(id).card.type);
+                    battleRoom.endCalculator.scores[id] = 0;
+                    battleRoom.endCalculator.scores[id == 0 ? 1 : 0] = 1;
+                }
+            }
+        }
     }
 
     @Override

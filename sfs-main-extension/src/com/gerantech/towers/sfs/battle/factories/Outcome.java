@@ -29,7 +29,7 @@ public class Outcome
             return ret;
         }
 
-        if( field.isOperation )
+        if( field.isOperation() )
         {
             if( game.player.isBot() )
                 return ret;

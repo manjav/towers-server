@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.towers.Game;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -15,11 +16,11 @@ import java.util.List;
 public class BattleRequestStartHandler extends BaseClientRequestHandler
 {
     private int index;
-    private Boolean isOperation;
+    private String type;
+    private Room theRoom;
     private Boolean hasExtraTime;
-	private Room theRoom;
 
-	public void handleClientRequest(User sender, ISFSObject params)
+    public void handleClientRequest(User sender, ISFSObject params)
     {
         int now = (int)Instant.now().getEpochSecond();
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
@@ -29,15 +30,15 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             return;
         }
 
-        index = params.getInt("i");
-        isOperation = params.getBool("q");
-        hasExtraTime = params.containsKey("e");
-        if( params.containsKey("su") )
+        index = params.getInt("index");
+        type = params.getText("type");
+        hasExtraTime = params.containsKey("hasExtraTime");
+        if( params.containsKey("spectatedUser") )
         {
             index -= 100000;
             theRoom = getParentExtension().getParentZone().getRoomById(index);
             if( theRoom != null )
-                BattleUtils.getInstance().join (sender, theRoom, params.getText("su"));
+                BattleUtils.getInstance().join (sender, theRoom, params.getText("spectatedUser"));
             return;
         }
         joinUser(sender);
@@ -45,7 +46,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
  
 	private void joinUser(User user)
     {
-        if( !isOperation )
+        if( type != FieldData.TYPE_OPERATION)
         {
             int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
             if( joinedRoomId > -1 )
@@ -56,7 +57,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 
         BattleUtils bu = BattleUtils.getInstance();
         if( theRoom == null )
-            theRoom = bu.make(user, isOperation, index, 0, hasExtraTime);
+            theRoom = bu.make(user, type, index, 0, hasExtraTime);
 
         bu.join(user, theRoom, "");
     }
@@ -68,8 +69,9 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         int arenaIndex = ((Game) user.getSession().getProperty("core")).player.get_arena(0);
         List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         Room room = null;
-        try {
-          for(int r=0; r<rList.size(); r++)
+        try
+        {
+            for(int r=0; r<rList.size(); r++)
             {
                 room = rList.get(r);
 

@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -58,14 +59,14 @@ public class BattleUtils
         }
     }
 
-    public Room make(User owner, boolean isOperation, int index, int friendlyMode, boolean hasExtraTime)
+    public Room make(User owner, String type, int index, int friendlyMode, boolean hasExtraTime)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
         Game game = ((Game)owner.getSession().getProperty("core"));
         Map<Object, Object> roomProperties = new HashMap<>();
 
         int arena = 0;
-        if( !isOperation )
+        if( type != FieldData.TYPE_OPERATION )
         {
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
             int tutorMaps = game.appVersion >= 3200 ? 3 : 2;
@@ -76,11 +77,11 @@ public class BattleUtils
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena);// ===> is temp
         }
-        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isOperation:", isOperation, "friendlyMode:", friendlyMode, " >>>>==========---------");
+        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "type:", type, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         // temp solution
         long now = Instant.now().getEpochSecond();
-        List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
+        List<Room> rList = ext.getParentZone().getRoomListFromGroup(type);
         for (Room r : rList)
         {
             // ext.trace(">>>>>>>", r.containsProperty("startAt"), now );
@@ -94,16 +95,16 @@ public class BattleUtils
 
 
         boolean singleMode = false;//isOperation || arena == 0;
-        roomProperties.put("isOperation", isOperation);
+        roomProperties.put("type", type);
         roomProperties.put("index", index);
         if( hasExtraTime )
             roomProperties.put("hasExtraTime", true);
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
 
-        String pref = isOperation ? "o_" : "b_";
+        String pref = type.substring(0, 1);
         if( friendlyMode > 0 )
-            pref = friendlyMode == 1 ? "fl_" : "fb_";
+            pref += (friendlyMode == 1 ? "l" : "b");
 
         CreateRoomSettings rs = new CreateRoomSettings();
         rs.setGame(true);
@@ -111,16 +112,14 @@ public class BattleUtils
         rs.setDynamic(true);
         rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
         rs.setRoomProperties( roomProperties );
-        rs.setName( pref + index+ "__" + roomId.getAndIncrement() );
+        rs.setName( pref + "_" + index+ "__" + roomId.getAndIncrement() );
         rs.setMaxUsers(singleMode ? 1 : 2);
-        rs.setGroupId(isOperation?"operations":"battles");
+        rs.setGroupId(type == FieldData.TYPE_OPERATION ? type : "battles");
         rs.setExtension(res);
 
         try {
             return ext.getApi().createRoom(ext.getParentZone(), rs, owner);
-        } catch (SFSCreateRoomException e) {
-            e.printStackTrace();
-        }
+        } catch (SFSCreateRoomException e) { e.printStackTrace(); }
         return null;
     }
 

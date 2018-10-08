@@ -7,10 +7,10 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 public class BattleLeaveRequestHandler extends BaseClientRequestHandler
 {
-
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
-		roomClass.leave(sender, params.containsKey("retryMode"));
+		if( roomClass.getState() < BattleRoom.STATE_BATTLE_ENDED )
+			roomClass.leave(sender, params.containsKey("retryMode"));
 	}
 }

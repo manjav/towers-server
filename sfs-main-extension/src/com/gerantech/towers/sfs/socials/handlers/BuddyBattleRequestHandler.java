@@ -6,6 +6,7 @@ import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gerantech.towers.sfs.utils.OneSignalUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -14,7 +15,7 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 import java.util.Arrays;
 
 /**
- * Created by Babak on 9/4/2017.
+ * Created by ManJav on 9/4/2017.
  */
 public class BuddyBattleRequestHandler extends BaseClientRequestHandler
 {
@@ -34,7 +35,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             if( objectUser != null )
             {
                 BattleUtils battleUtils = BattleUtils.getInstance();
-                Room room = battleUtils.make(sender, false, 0, 2, false);
+                Room room = battleUtils.make(sender, FieldData.TYPE_TOUCHDOWN, 0, 2, false);
                 battleUtils.join(sender, room, "");
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);

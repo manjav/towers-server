@@ -7,6 +7,7 @@ import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
@@ -100,7 +101,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room = battleUtils.make(sender, false, 0, 1, false);
+            Room room = battleUtils.make(sender, FieldData.TYPE_TOUCHDOWN, 0, 1, false);
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
