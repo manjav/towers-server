@@ -34,8 +34,8 @@ public class BattleEventCallback implements EventCallback
                 if( battleRoom.battleField.units.get(id).card.type == 201 )
                 {
                     //battleRoom.trace(id, type, battleRoom.battleField.map.type, battleRoom.battleField.units.get(id).card.type);
-                    battleRoom.endCalculator.scores[id] = 0;
-                    battleRoom.endCalculator.scores[id == 0 ? 1 : 0] = 1;
+                    battleRoom.endCalculator.scores[id] = 1;
+                    battleRoom.endCalculator.scores[id == 0 ? 1 : 0] = 0;
                 }
             }
         }
