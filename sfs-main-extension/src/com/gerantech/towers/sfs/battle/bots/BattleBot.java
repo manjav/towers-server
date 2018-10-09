@@ -63,7 +63,7 @@ public class BattleBot
     {
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
         //ext.trace("deployFromDeck", cardType, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType) );
-        int id = battleRoom.deployUnit(1, cardType,
+        int id = battleRoom.summonUnit(1, cardType,
             BattleField.PADDING + Math.random() * (BattleField.WIDTH - BattleField.PADDING * 2),
             BattleField.HEIGHT * 0.66 + Math.random() * (BattleField.HEIGHT * 0.33 - BattleField.PADDING ));
         if( id >= 0 )

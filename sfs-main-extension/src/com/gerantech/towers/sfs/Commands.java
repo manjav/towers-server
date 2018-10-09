@@ -11,7 +11,7 @@ public class Commands
     public static final String BATTLE_END = "battleEnd";
     public static final String BATTLE_SEND_STICKER = "ss";
     public static final String BATTLE_NEW_ROUND = "battleNewRound";
-    public static final String BATTLE_DEPLOY_UNIT = "d";
+    public static final String BATTLE_SUMMON_UNIT = "s";
     public static final String BATTLE_HIT = "h";
 
     public static final String PROFILE = "profile";

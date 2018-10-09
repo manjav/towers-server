@@ -10,14 +10,13 @@ import com.gerantech.towers.sfs.administration.ban.InfractionsGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueReportHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueTrackHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleDeployRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeCollectRewardHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeGetAllHandler;
-import com.gerantech.towers.sfs.challenges.handlers.ChallengeUpdateHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeJoinHandler;
+import com.gerantech.towers.sfs.challenges.handlers.ChallengeUpdateHandler;
 import com.gerantech.towers.sfs.handlers.*;
 import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
 import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
@@ -26,8 +25,6 @@ import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
 import com.gerantech.towers.sfs.quests.QuestInitializeHandler;
 import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
-import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gerantech.towers.sfs.utils.BanSystem;
 import com.gerantech.towers.sfs.utils.DBUtils;
@@ -54,8 +51,6 @@ public class TowerExtension extends SFSExtension
         // Add startBattle request handler
 		addRequestHandler(Commands.BATTLE_START, BattleRequestStartHandler.class);
 		addRequestHandler(Commands.BATTLE_CANCEL, BattleRequestCancelHandler.class);
-		addRequestHandler(Commands.BATTLE_DEPLOY_UNIT, BattleDeployRequestHandler.class);
-
 
 		// Add billing upgrade handler
 		addRequestHandler(Commands.CARD_UPGRADE, CardUpgradeHandler.class);

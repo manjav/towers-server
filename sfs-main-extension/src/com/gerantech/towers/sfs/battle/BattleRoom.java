@@ -6,7 +6,7 @@ import com.gerantech.towers.sfs.battle.factories.EndCalculator;
 import com.gerantech.towers.sfs.battle.factories.HeadquarterEndCalculator;
 import com.gerantech.towers.sfs.battle.factories.Outcome;
 import com.gerantech.towers.sfs.battle.factories.TouchDownEndCalculator;
-import com.gerantech.towers.sfs.battle.handlers.BattleDeployRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleSummonRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleStickerRequestHandler;
@@ -76,7 +76,7 @@ public class BattleRoom extends SFSExtension
 		setState( STATE_WAITING );
 		
 		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
-		addRequestHandler(Commands.BATTLE_DEPLOY_UNIT, BattleDeployRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_SUMMON_UNIT, BattleSummonRequestHandler.class);
 		addRequestHandler(Commands.BATTLE_SEND_STICKER, BattleStickerRequestHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleRoomServerEventsHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleRoomServerEventsHandler.class);
@@ -192,14 +192,14 @@ public class BattleRoom extends SFSExtension
 		sfsApi.setRoomVariables(null, room, listOfVars);
 	}
 
-	// improve =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	public int deployUnit(int side, int type, double x, double y)
+	// summon unit  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	public int summonUnit(int side, int type, double x, double y)
 	{
 		if( getState() == STATE_CREATED )
 			setState( STATE_BATTLE_STARTED );
 		if( getState() != STATE_BATTLE_STARTED )
 			return MessageTypes.RESPONSE_NOT_ALLOWED;
-		int id = battleField.deployUnit(type, side, x, y);
+		int id = battleField.summonUnit(type, side, x, y);
 		if( id > -1 )
 		{
 			Unit unit = battleField.units.get(id);
@@ -222,7 +222,7 @@ public class BattleRoom extends SFSExtension
 				units.addSFSObject(u);
 			}
 			params.putSFSArray("units", units);
-			send(Commands.BATTLE_DEPLOY_UNIT, params, room.getUserList());
+			send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());
 		}
 		return id;
 	}
