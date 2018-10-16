@@ -2,12 +2,17 @@ package com.gerantech.towers.sfs.battle.bots;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
+import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by ManJav on 9/30/2018.
@@ -41,7 +46,7 @@ public class BattleBot
         //int _sampleTime = (int) (battleField.getDuration() % timeFactor);
         //ext.trace("update", battleField.getDuration(), _sampleTime, sampleTime, timeFactor);
         //if(timeFactor == 1 || ( _sampleTime == 0 && _sampleTime != sampleTime ) )
-            deployFromDeck();
+            summonCard();
 
         //this.battleRatio = battleRoom.endCalculator.scores[0] / battleRoom.endCalculator.scores[1];
        // sampleTime = _sampleTime;
@@ -54,20 +59,47 @@ public class BattleBot
     /**
      * cover for defence main places
      */
-    void cover()
-    {
+    void cover(){
     }
 
-
-    void deployFromDeck()
+    void summonCard()
     {
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
-        //ext.trace("deployFromDeck", cardType, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType) );
-        int id = battleRoom.summonUnit(1, cardType,
-            BattleField.PADDING + Math.random() * (BattleField.WIDTH - BattleField.PADDING * 2),
-            BattleField.HEIGHT * 0.66 + Math.random() * (BattleField.HEIGHT * 0.33 - BattleField.PADDING ));
+        double xPosition = Math.random() * BattleField.WIDTH;
+
+        Map<Integer, Double> healths = new HashMap();
+        Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
+        Unit unit;
+        double health;
+        while( iterator.hasNext() )
+        {
+            unit = iterator.next().getValue();
+            health = unit.health * (unit.side == 1 ? 1 : -1);
+            int key = (int) (unit.x % 100);
+            healths.put(key, (healths.containsKey(key) ? healths.get(key) : 0) + health);
+        }
+
+        health = 0;
+        Map.Entry<Integer, Double> step;
+        Iterator<Map.Entry<Integer, Double>> healthsIterator = healths.entrySet().iterator();
+        while( healthsIterator.hasNext() )
+        {
+            step = healthsIterator.next();
+            if( health < step.getValue())
+            {
+                health = step.getValue();
+                xPosition = step.getKey() * 100;
+            }
+        }
+
+        xPosition = Math.min(BattleField.WIDTH - BattleField.PADDING, Math.max(BattleField.PADDING, xPosition));
+        int id = battleRoom.summonUnit(1, cardType, xPosition,
+        BattleField.HEIGHT * 0.66 + Math.random() * (BattleField.HEIGHT * 0.33 - BattleField.PADDING ));
         if( id >= 0 )
+        {
+            //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
             lastCardIndexUsed = lastCardIndexUsed == 3 ? 0 : lastCardIndexUsed + 1;
+        }
     }
 
     void chatStarting(int battleRatio)

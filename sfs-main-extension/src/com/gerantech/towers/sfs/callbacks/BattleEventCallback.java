@@ -28,12 +28,10 @@ public class BattleEventCallback implements EventCallback
     {
         if( type == BattleEvent.DISPOSE )
         {
-            //battleRoom.trace(battleRoom.battleField.map.type, battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER));
             if( battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER) )
             {
                 if( battleRoom.battleField.units.get(id).card.type == 201 )
                 {
-                    //battleRoom.trace(id, type, battleRoom.battleField.map.type, battleRoom.battleField.units.get(id).card.type);
                     battleRoom.endCalculator.scores[id] = 1;
                     battleRoom.endCalculator.scores[id == 0 ? 1 : 0] = 0;
                 }
