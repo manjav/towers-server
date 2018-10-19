@@ -21,7 +21,9 @@ import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.fieldes.FieldData;
+import com.gt.towers.battle.units.Card;
 import com.gt.towers.battle.units.Unit;
+import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -194,31 +196,46 @@ public class BattleRoom extends SFSExtension
 		if( getState() != BattleField.STATE_2_STARTED )
 			return MessageTypes.RESPONSE_NOT_ALLOWED;
 		int id = battleField.summonUnit(type, side, x, y);
+
+
 		if( id > -1 )
 		{
-			Unit unit = battleField.units.get(id);
-
 			SFSArray units = new SFSArray();
 			SFSObject params = new SFSObject();
 
+			if( CardTypes.isSpell(type) )
+			{
+				Card card = battleField.games.get(side).player.cards.get(type);
+				units.addSFSObject(getSFSUnit(type, id, side, card.level, side == 0 ? x : BattleField.WIDTH - x, side == 0 ? y : BattleField.HEIGHT - y));
+				params.putSFSArray("units", units);
+				send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());
+				return id;
+			}
+
+			Unit unit = battleField.units.get(id);
 			for (int i = id; i > id - unit.card.quantity; i--)
 			{
 				unit = battleField.units.get(i);
 				unit.eventCallback = eventCallback;
 
-				SFSObject u = new SFSObject();
-				u.putInt("s", side);
-				u.putInt("t", type);
-				u.putDouble("x", side == 0 ? unit.x : BattleField.WIDTH - unit.x);
-				u.putDouble("y", side == 0 ? unit.y : BattleField.HEIGHT - unit.y);
-				u.putInt("l", unit.card.level);
-				u.putInt("i", unit.id);
-				units.addSFSObject(u);
+				units.addSFSObject(getSFSUnit(type, unit.id, side, unit.card.level, side == 0 ? unit.x : BattleField.WIDTH - unit.x, side == 0 ? unit.y : BattleField.HEIGHT - unit.y));
 			}
 			params.putSFSArray("units", units);
 			send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());
 		}
 		return id;
+	}
+
+	private ISFSObject getSFSUnit(int type, int id, int side, int level, double x, double y)
+	{
+		SFSObject u = new SFSObject();
+		u.putInt("t", type);
+		u.putInt("i", id);
+		u.putInt("s", side);
+		u.putInt("l", level);
+		u.putDouble("x", x);
+		u.putDouble("y", y);
+		return u;
 	}
 
 	public void hitUnit(int bulletId, double damage, List<Integer> targets)
