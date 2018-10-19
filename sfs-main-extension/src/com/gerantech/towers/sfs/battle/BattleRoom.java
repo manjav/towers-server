@@ -84,7 +84,6 @@ public class BattleRoom extends SFSExtension
 			autoJoinTimer.cancel(true);
 		autoJoinTimer = null;
 
-		setState( BattleField.STATE_1_CREATED );
 		List<User> players = getRealPlayers();
 		this.singleMode = opponentNotFound || room.getProperty("type") == FieldData.TYPE_OPERATION || players.size() == 1;
 		room.setProperty("singleMode", singleMode);
@@ -125,6 +124,7 @@ public class BattleRoom extends SFSExtension
 			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.type.equals(FieldData.TYPE_OPERATION) && !registeredPlayers.get(0).player.inTutorial() )
 				setState( BattleField.STATE_2_STARTED );
 		}
+		setState( BattleField.STATE_1_CREATED );
 
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -486,6 +486,8 @@ public class BattleRoom extends SFSExtension
 			return;
 		
 		_state = value;
+		if( battleField != null )
+			battleField.state = _state;
 		room.setProperty("state", _state);
 	}
 	public int getState()

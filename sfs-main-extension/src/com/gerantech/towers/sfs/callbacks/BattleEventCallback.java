@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.callbacks;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.battle.GameObject;
 import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
 import com.gt.towers.events.BattleEvent;
@@ -26,7 +27,7 @@ public class BattleEventCallback implements EventCallback
     @Override
     public void dispatch(int id, String type, Object data)
     {
-        if( type == BattleEvent.DISPOSE )
+        if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_4_DIPOSED )
         {
             if( battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER) )
             {
