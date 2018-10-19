@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle;
 
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.fieldes.FieldData;
 import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -128,7 +129,7 @@ public class BattleUtils
         List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room room : battles)
         {
-            if( (int) room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
+            if( (int) room.getProperty("state") == BattleField.STATE_2_STARTED )
             {
                 ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
                 if( registeredPlayers != null )

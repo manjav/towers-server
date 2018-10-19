@@ -1,11 +1,11 @@
 package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
+import com.gt.towers.battle.BattleField;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -46,7 +46,7 @@ public class SpectateRoom extends SFSExtension
 			int numRooms = 0;
 			for ( Room r : rooms )
 			{
-				if( (int)r.getProperty("state") != BattleRoom.STATE_BATTLE_STARTED )
+				if( (int)r.getProperty("state") != BattleField.STATE_2_STARTED )
 					continue;
 				battle = new SFSObject();
 				battle.putInt("id", r.getId());

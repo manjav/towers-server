@@ -48,12 +48,6 @@ import java.util.concurrent.TimeUnit;
 
 public class BattleRoom extends SFSExtension 
 {
-	public static final int STATE_WAITING = 0;
-	public static final int STATE_CREATED = 1;
-	public static final int STATE_BATTLE_STARTED = 2;
-	public static final int STATE_BATTLE_ENDED = 3;
-	public static final int STATE_DESTROYED = 4;
-
 	public ScheduledFuture<?> autoJoinTimer;
 	public BattleField battleField;
 	public EndCalculator endCalculator;
@@ -73,7 +67,7 @@ public class BattleRoom extends SFSExtension
 	public void init() 
 	{
 		room = getParentRoom();
-		setState( STATE_WAITING );
+		setState( BattleField.STATE_0_WAITING );
 		
 		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
 		addRequestHandler(Commands.BATTLE_SUMMON_UNIT, BattleSummonRequestHandler.class);
@@ -88,7 +82,7 @@ public class BattleRoom extends SFSExtension
 			autoJoinTimer.cancel(true);
 		autoJoinTimer = null;
 
-		setState( STATE_CREATED );
+		setState( BattleField.STATE_1_CREATED );
 		List<User> players = getRealPlayers();
 		this.singleMode = opponentNotFound || room.getProperty("type") == FieldData.TYPE_OPERATION || players.size() == 1;
 		room.setProperty("singleMode", singleMode);
@@ -127,14 +121,14 @@ public class BattleRoom extends SFSExtension
 
 			// sometimes auto start battle
 			if( singleMode && (battleField.difficulty > 5 || Math.random() > 0.5) && !battleField.map.type.equals(FieldData.TYPE_OPERATION) && !registeredPlayers.get(0).player.inTutorial() )
-				setState(STATE_BATTLE_STARTED);
+				setState( BattleField.STATE_2_STARTED );
 		}
 
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 
-				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
+				if( getState() < BattleField.STATE_1_CREATED || getState() > BattleField.STATE_3_ENDED )
 					return;
 				double battleDuration = battleField.getDuration();
 				if( battleField.now - buildingsUpdatedAt >= 1000 )
@@ -195,9 +189,9 @@ public class BattleRoom extends SFSExtension
 	// summon unit  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public int summonUnit(int side, int type, double x, double y)
 	{
-		if( getState() == STATE_CREATED )
-			setState( STATE_BATTLE_STARTED );
-		if( getState() != STATE_BATTLE_STARTED )
+		if( getState() == BattleField.STATE_1_CREATED )
+			setState( BattleField.STATE_2_STARTED );
+		if( getState() != BattleField.STATE_2_STARTED )
 			return MessageTypes.RESPONSE_NOT_ALLOWED;
 		int id = battleField.summonUnit(type, side, x, y);
 		if( id > -1 )
@@ -262,7 +256,7 @@ public class BattleRoom extends SFSExtension
 
 		if( battleField.map.isOperation() )
 		{
-			setState( STATE_BATTLE_ENDED );
+			setState( BattleField.STATE_3_ENDED );
 			if( retryMode )
 			{
 				close();
@@ -289,7 +283,7 @@ public class BattleRoom extends SFSExtension
 	private void pokeBot()
 	{
 		//trace("pokeBot", singleMode,  getState());
-		if( singleMode && ( getState() == STATE_BATTLE_STARTED || getState() == STATE_BATTLE_ENDED ) )
+		if( singleMode && ( getState() == BattleField.STATE_2_STARTED || getState() == BattleField.STATE_3_ENDED ) )
 		{
 			// send answer of sticker from bot
 			if( stickerParams != null )
@@ -327,7 +321,7 @@ public class BattleRoom extends SFSExtension
 
 	private void end(double battleDuration)
 	{
-		setState( STATE_BATTLE_ENDED );
+		setState( BattleField.STATE_3_ENDED );
 		trace(room.getName(), "ended duration:"+battleDuration, " ("+battleField.map.times.toString()+")");
 
 	    calculateResult();
@@ -486,9 +480,9 @@ public class BattleRoom extends SFSExtension
 	public void destroy()
 	{
 		clearAllHandlers();
-		if( getState() >= STATE_DESTROYED )
+		if( getState() >= BattleField.STATE_4_DISPOSED )
 			return;
-		setState( STATE_DESTROYED );
+		setState( BattleField.STATE_4_DISPOSED );
 
 		trace(room.getName(), "destroyed.");
 		super.destroy();

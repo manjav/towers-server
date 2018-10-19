@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.towers.Game;
+import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.fieldes.FieldData;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -75,7 +76,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             {
                 room = rList.get(r);
 
-                if (!room.isFull() && !room.containsProperty("isFriendly") && (int) room.getProperty("state") == BattleRoom.STATE_WAITING && ((int) room.getProperty("arena")) == arenaIndex)
+                if (!room.isFull() && !room.containsProperty("isFriendly") && (int) room.getProperty("state") == BattleField.STATE_0_WAITING && ((int) room.getProperty("arena")) == arenaIndex)
                     return room;
             }
         }

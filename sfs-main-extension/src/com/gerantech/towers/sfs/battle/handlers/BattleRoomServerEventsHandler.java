@@ -7,6 +7,7 @@ import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.BattleField;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -55,7 +56,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			player.inFriendlyBattle = room.containsProperty("isFriendly");
 
 		// Rejoin to previous room
-		if( (Integer)room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
+		if( (Integer)room.getProperty("state") == BattleField.STATE_2_STARTED )
 		{
 			List<User> players = room.getPlayersList();
 			for (int i=0; i < players.size(); i++)
@@ -107,7 +108,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			r.setProperty("enabled", false);
 
 			int state = (Integer)r.getProperty("state");
-			if( state < BattleRoom.STATE_CREATED )
+			if( state < BattleField.STATE_1_CREATED )
 			{
 				BattleUtils.getInstance().removeRoom(r);
 			}

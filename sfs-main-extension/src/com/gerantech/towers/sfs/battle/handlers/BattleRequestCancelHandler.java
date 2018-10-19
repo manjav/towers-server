@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.battle.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.battle.BattleField;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
@@ -20,7 +21,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
             //trace(battles.get(numBattles).getOwner().getId(), sender.getId(),  battles.get(numBattles).getProperty("state")); remove after deploy
             if( battles.get(numBattles).getOwner().equals(sender) )
             {
-                if( (Integer) battles.get(numBattles).getProperty("state") <= BattleRoom.STATE_WAITING )
+                if( (Integer) battles.get(numBattles).getProperty("state") <= BattleField.STATE_0_WAITING )
                 {
                     battles.get(numBattles).setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
                     getApi().leaveRoom(sender, battles.get(numBattles));
