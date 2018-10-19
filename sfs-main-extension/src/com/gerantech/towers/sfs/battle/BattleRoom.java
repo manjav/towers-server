@@ -108,6 +108,7 @@ public class BattleRoom extends SFSExtension
 		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), (String) room.getProperty("type"), index, 0);
 		battleField.now = Instant.now().toEpochMilli();
 		battleField.startAt = battleField.now / 1000;
+		battleField.extraTime = room.containsProperty("hasExtraTime") ? battleField.map.times.get(3) : 0;
 		battleField.unitsHitCallback = new HitUnitCallback(this);
 		eventCallback = new BattleEventCallback(this);
 		if( battleField.map.type.equals(FieldData.TYPE_TOUCHDOWN) )
@@ -328,12 +329,11 @@ public class BattleRoom extends SFSExtension
 		boolean haveWinner = endCalculator.check();
 		if( haveWinner )
 			end(battleDuration);
-
-		if( battleDuration > battleField.getTime(2) && (endCalculator.ratio() != 1 || battleField.map.isOperation()) )
+		else if( battleDuration > battleField.getTime(2) && (endCalculator.ratio() != 1 || battleField.map.isOperation()) )
 			end(battleDuration);
-
-		if( ( battleDuration > battleField.getTime(3) && !battleField.map.isOperation()) )
+		else if( ( battleDuration > battleField.getTime(3) && !battleField.map.isOperation()) )
 			end(battleDuration);
+		//trace("duration:" + battleDuration, "t2:" + battleField.getTime(2), "t3:" + battleField.getTime(3), "ratio:" + endCalculator.ratio());
 	}
 
 	private void end(double battleDuration)
