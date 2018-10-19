@@ -134,7 +134,7 @@ public class BattleRoom extends SFSExtension
 				if( getState() < BattleField.STATE_1_CREATED || getState() > BattleField.STATE_3_ENDED )
 					return;
 				double battleDuration = battleField.getDuration();
-				if( battleField.now - buildingsUpdatedAt >= 1000 )
+				if( battleField.now - buildingsUpdatedAt >= 500 )
 				{
 					updateReservesData(battleDuration);
 					if( battleDuration > 4 )
