@@ -207,7 +207,7 @@ public class BattleRoom extends SFSExtension
 			if( CardTypes.isSpell(type) )
 			{
 				Card card = battleField.games.get(side).player.cards.get(type);
-				units.addSFSObject(getSFSUnit(type, id, side, card.level, side == 0 ? x : BattleField.WIDTH - x, side == 0 ? y : BattleField.HEIGHT - y));
+				units.addSFSObject(getSFSUnit(type, id, side, card.level, x, y));
 				params.putSFSArray("units", units);
 				send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());
 				return id;
