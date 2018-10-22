@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.battle.bots;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.units.Unit;
+import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -66,8 +67,10 @@ public class BattleBot
     {
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
         double xPosition = Math.random() * BattleField.WIDTH;
+        double yPosition = 0;
 
         Map<Integer, Double> healths = new HashMap();
+        Map<Integer, Double> ys = new HashMap();
         Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
         Unit unit;
         double health;
@@ -77,6 +80,7 @@ public class BattleBot
             health = unit.health * (unit.side == 1 ? 1 : -1);
             int key = (int) (unit.x % 100);
             healths.put(key, (healths.containsKey(key) ? healths.get(key) : 0) + health);
+            ys.put(key, unit.y);
         }
 
         health = 0;
@@ -89,12 +93,13 @@ public class BattleBot
             {
                 health = step.getValue();
                 xPosition = step.getKey() * 100;
+                yPosition = BattleField.HEIGHT - ys.get(step.getKey());
             }
         }
 
-        xPosition = Math.min(BattleField.WIDTH - BattleField.PADDING, Math.max(BattleField.PADDING, xPosition));
+        xPosition = BattleField.WIDTH - Math.min(BattleField.WIDTH - BattleField.PADDING, Math.max(BattleField.PADDING, xPosition));
         int id = battleRoom.summonUnit(1, cardType, xPosition,
-        BattleField.HEIGHT * 0.66 + Math.random() * (BattleField.HEIGHT * 0.33 - BattleField.PADDING ));
+        BattleField.HEIGHT * 0.66 + Math.random() * (CardTypes.isSpell(cardType) ? yPosition : BattleField.HEIGHT * 0.33) - BattleField.PADDING );
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
