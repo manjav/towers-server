@@ -10,6 +10,8 @@ import java.util.Map;
 
 public class TouchDownEndCalculator extends EndCalculator
 {
+    private int round = 1;
+
     public TouchDownEndCalculator(BattleRoom roomClass)
     {
         super(roomClass);
@@ -22,23 +24,26 @@ public class TouchDownEndCalculator extends EndCalculator
         if( unit == null )
             return false;
         roomClass.trace("unit passed " + unit.id);
+        round ++;
         scores[unit.side] ++;
-
-        sendNewRoundResponse();
-        for (int g : scores)
-            if( g > 2 )
+        roomClass.battleField.requestReset();
+        sendNewRoundResponse(unit.side, unit.id);
+        for (int s : scores)
+            if( s > 2 )
                 return true;
 
         return false;
     }
 
-    void sendNewRoundResponse()
+    void sendNewRoundResponse(int winner, int unitId)
     {
         SFSObject params = new SFSObject();
+        params.putInt("unitId", unitId);
+        params.putInt("round", round);
+        params.putInt("winner", winner);
         params.putInt("0", scores[0]);
         params.putInt("1", scores[1]);
         roomClass.send(Commands.BATTLE_NEW_ROUND, params, roomClass.getParentRoom().getUserList());
-        roomClass.battleField.reset();
     }
 
     Unit checkUnitPassed()

@@ -56,7 +56,6 @@ public class BattleRoom extends SFSExtension
 	public BattleEventCallback eventCallback;
 
 	private Room room;
-	private int _state = -1;
 	private ScheduledFuture<?> timer;
 
 	private BattleBot bot;
@@ -69,6 +68,7 @@ public class BattleRoom extends SFSExtension
 	public void init() 
 	{
 		room = getParentRoom();
+		battleField = new BattleField();
 		setState( BattleField.STATE_0_WAITING );
 		
 		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
@@ -105,10 +105,7 @@ public class BattleRoom extends SFSExtension
         room.setProperty("registeredPlayers", registeredPlayers);
 
 		trace(registeredPlayers.get(0), registeredPlayers.get(1), room.getProperty("type"), index);
-		battleField = new BattleField(registeredPlayers.get(0), registeredPlayers.get(1), (String) room.getProperty("type"), index, 0);
-		battleField.now = Instant.now().toEpochMilli();
-		battleField.startAt = battleField.now / 1000;
-		battleField.extraTime = room.containsProperty("hasExtraTime") ? battleField.map.times.get(3) : 0;
+		battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), (String) room.getProperty("type"), index, 0, Instant.now().toEpochMilli(), room.containsProperty("hasExtraTime"));
 		battleField.unitsHitCallback = new HitUnitCallback(this);
 		eventCallback = new BattleEventCallback(this);
 		if( battleField.map.type.equals(FieldData.TYPE_TOUCHDOWN) )
@@ -131,7 +128,7 @@ public class BattleRoom extends SFSExtension
 			@Override
 			public void run() {
 
-				if( getState() < BattleField.STATE_1_CREATED || getState() > BattleField.STATE_3_ENDED )
+				if( getState() < BattleField.STATE_1_CREATED || getState() > BattleField.STATE_4_ENDED )
 					return;
 				double battleDuration = battleField.getDuration();
 				if( battleField.now - buildingsUpdatedAt >= 500 )
@@ -274,7 +271,7 @@ public class BattleRoom extends SFSExtension
 
 		if( battleField.map.isOperation() )
 		{
-			setState( BattleField.STATE_3_ENDED );
+			setState( BattleField.STATE_4_ENDED );
 			if( retryMode )
 			{
 				close();
@@ -288,8 +285,10 @@ public class BattleRoom extends SFSExtension
 		}
 		else
 		{
-			/*
-			int side = battleField.getSide(((Game) user.getSession().getProperty("core")).player.id);
+			close();
+			getApi().leaveRoom(user, room);
+
+			/*int side = battleField.getSide(((Game) user.getSession().getProperty("core")).player.id);
 			int[] numBuildings = new int[2];
 			numBuildings[side] = 0;
 			numBuildings[side == 0 ? 1 : 0] = battleField.places.size();
@@ -301,7 +300,7 @@ public class BattleRoom extends SFSExtension
 	private void pokeBot()
 	{
 		//trace("pokeBot", singleMode,  getState());
-		if( singleMode && ( getState() == BattleField.STATE_2_STARTED || getState() == BattleField.STATE_3_ENDED ) )
+		if( singleMode && ( getState() == BattleField.STATE_2_STARTED || getState() == BattleField.STATE_4_ENDED ) )
 		{
 			// send answer of sticker from bot
 			if( stickerParams != null )
@@ -323,7 +322,7 @@ public class BattleRoom extends SFSExtension
 
 	private void checkEnding(double battleDuration)
 	{
-		if( battleDuration < 3 )
+		if( getState() > BattleField.STATE_2_STARTED || battleDuration < 3 )
 			return;
 
 		boolean haveWinner = endCalculator.check();
@@ -338,7 +337,7 @@ public class BattleRoom extends SFSExtension
 
 	private void end(double battleDuration)
 	{
-		setState( BattleField.STATE_3_ENDED );
+		setState( BattleField.STATE_4_ENDED );
 		trace(room.getName(), "ended duration:"+battleDuration, " ("+battleField.map.times.toString()+")");
 
 	    calculateResult();
@@ -456,7 +455,7 @@ public class BattleRoom extends SFSExtension
 
 		if( battleField != null )
 			battleField.dispose();
-		battleField = null;
+		//battleField = null;
 	}
 
 	public List<User> getRealPlayers()
@@ -482,26 +481,24 @@ public class BattleRoom extends SFSExtension
 
 	private void setState(int value)
 	{
-		if( _state == value )
+		if( battleField.state == value )
 			return;
-		
-		_state = value;
-		if( battleField != null )
-			battleField.state = _state;
-		room.setProperty("state", _state);
+
+		battleField.state = value;
+		room.setProperty("state", value);
 	}
 	public int getState()
 	{
-		return _state;
+		return battleField.state;
 	}
 
 	@Override
 	public void destroy()
 	{
 		clearAllHandlers();
-		if( getState() >= BattleField.STATE_4_DISPOSED )
+		if( getState() >= BattleField.STATE_5_DISPOSED )
 			return;
-		setState( BattleField.STATE_4_DISPOSED );
+		setState( BattleField.STATE_5_DISPOSED );
 
 		trace(room.getName(), "destroyed.");
 		super.destroy();

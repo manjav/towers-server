@@ -89,10 +89,10 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
 				@Override
 				public void run() {
-					cancel();
-					roomClass.autoJoinTimer.cancel(true);
-					room.setMaxUsers(1);
-					sendStartBattleResponse(true);
+				cancel();
+				roomClass.autoJoinTimer.cancel(true);
+				room.setMaxUsers(1);
+				sendStartBattleResponse(true);
 				}
 			}, delay, TimeUnit.MILLISECONDS);
 		}

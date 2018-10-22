@@ -102,6 +102,8 @@ public class BattleUtils
             roomProperties.put("hasExtraTime", true);
         if( friendlyMode > 0 )
             roomProperties.put("isFriendly", true);
+        roomProperties.put("state", BattleField.STATE_0_WAITING);
+
 
         String pref = type.substring(0, 1);
         if( friendlyMode > 0 )
