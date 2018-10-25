@@ -21,11 +21,7 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         if( params.containsKey("id") )
         {
-            LobbyData lobbyData = null;
-            if( params.getInt("id") > 10000 )
-                lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
-            else
-                lobbyData = (LobbyData)getParentExtension().getParentZone().getRoomById(params.getInt("id")).getProperty("data");
+            LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
             if( lobbyData != null )
                 LobbyDataUtils.getInstance().fillRoomData(lobbyData, params, users, true , false);
         }

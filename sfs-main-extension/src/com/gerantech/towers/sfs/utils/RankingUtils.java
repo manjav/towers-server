@@ -225,35 +225,32 @@ public class RankingUtils
         return names[(int) (names.length * Math.random())];
     }
 
-    /*public void fillStatistics()
-    public void fillStatistics()
+/*    public void fillStatistics()
     {
         String time = "'2018-09-09 00:00:00' AND '2018-09-16 00:00:00'";
         Map<Integer, Map<Integer, Object>> statistics = new HashMap();
-        getResourceStats(statistics, ResourceType.XP, time);
-        getResourceStats(statistics, ResourceType.POINT, time);
-        getResourceStats(statistics, ResourceType.CURRENCY_SOFT, time);
-        getResourceStats(statistics, ResourceType.CURRENCY_HARD, time);
-        getResourceStats(statistics, ResourceType.BATTLES, time);
-        getResourceStats(statistics, ResourceType.BATTLES_WINS, time);
-        getResourceStats(statistics, ResourceType.BOOK_OPENED_BATTLE, time);
-        getResourceStats(statistics, ResourceType.BOOK_OPENED_FREE, time);
-        getCardStats(statistics, BuildingType.B11_BARRACKS, time);
-        getCardStats(statistics, BuildingType.B12_BARRACKS, time);
-        getCardStats(statistics, BuildingType.B13_BARRACKS, time);
-        getCardStats(statistics, BuildingType.B14_BARRACKS, time);
-        getCardStats(statistics, BuildingType.B21_RAPID, time);
-        getCardStats(statistics, BuildingType.B22_RAPID, time);
-        getCardStats(statistics, BuildingType.B23_RAPID, time);
-        getCardStats(statistics, BuildingType.B24_RAPID, time);
-        getCardStats(statistics, BuildingType.B31_HEAVY, time);
-        getCardStats(statistics, BuildingType.B32_HEAVY, time);
-        getCardStats(statistics, BuildingType.B33_HEAVY, time);
-        getCardStats(statistics, BuildingType.B34_HEAVY, time);
-        getCardStats(statistics, BuildingType.B41_CRYSTAL, time);
-        getCardStats(statistics, BuildingType.B42_CRYSTAL, time);
-        getCardStats(statistics, BuildingType.B43_CRYSTAL, time);
-        getCardStats(statistics, BuildingType.B44_CRYSTAL, time);
+        getResourceStats(statistics, ResourceType.R1_XP, time);
+        getResourceStats(statistics, ResourceType.R2_POINT, time);
+        getResourceStats(statistics, ResourceType.R3_CURRENCY_SOFT, time);
+        getResourceStats(statistics, ResourceType.R4_CURRENCY_HARD, time);
+        getResourceStats(statistics, ResourceType.R12_BATTLES, time);
+        getResourceStats(statistics, ResourceType.R13_BATTLES_WINS, time);
+        getResourceStats(statistics, ResourceType.R21_BOOK_OPENED_BATTLE, time);
+        getResourceStats(statistics, ResourceType.R22_BOOK_OPENED_FREE, time);
+        getCardStats(statistics, CardTypes.C101, time);
+        getCardStats(statistics, CardTypes.C102, time);
+        getCardStats(statistics, CardTypes.C103, time);
+        getCardStats(statistics, CardTypes.C104, time);
+        getCardStats(statistics, CardTypes.C105, time);
+        getCardStats(statistics, CardTypes.C106, time);
+        getCardStats(statistics, CardTypes.C107, time);
+        getCardStats(statistics, CardTypes.C108, time);
+        getCardStats(statistics, CardTypes.C109, time);
+        getCardStats(statistics, CardTypes.C110, time);
+        getCardStats(statistics, CardTypes.C111, time);
+
+        getCardStats(statistics, CardTypes.C151, time);
+        getCardStats(statistics, CardTypes.C152, time);
         getOperationStats(statistics, time);
 
         String stats = "";
@@ -262,33 +259,31 @@ public class RankingUtils
             stats += entry.getKey() + ",";
             Map<Integer, Object> d = entry.getValue();
 
-            stats += (   d.containsKey(ResourceType.XP)                  ? d.get(ResourceType.XP) : 0 )+","+
-            (   d.containsKey(ResourceType.POINT)               ? d.get(ResourceType.POINT) : 0 )+","+
-            (   d.containsKey(ResourceType.CURRENCY_SOFT)       ? d.get(ResourceType.CURRENCY_SOFT) : 0 )+","+
-            (   d.containsKey(ResourceType.CURRENCY_HARD)       ? d.get(ResourceType.CURRENCY_HARD) : 0 )+","+
-            (   d.containsKey(ResourceType.BATTLES)             ? d.get(ResourceType.BATTLES) : 0 )+","+
-            (   d.containsKey(ResourceType.BATTLES_WINS)        ? d.get(ResourceType.BATTLES_WINS) : 0 )+","+
-            (   d.containsKey(ResourceType.BOOK_OPENED_BATTLE)  ? d.get(ResourceType.BOOK_OPENED_BATTLE) : 0 )+","+
-            (   d.containsKey(ResourceType.BOOK_OPENED_FREE)    ? d.get(ResourceType.BOOK_OPENED_FREE) : 0 )+","+
+            stats += (   d.containsKey(ResourceType.R1_XP)         ? d.get(ResourceType.R1_XP) : 0 )+","+
+            (   d.containsKey(ResourceType.R2_POINT)               ? d.get(ResourceType.R2_POINT) : 0 )+","+
+            (   d.containsKey(ResourceType.R3_CURRENCY_SOFT)       ? d.get(ResourceType.R3_CURRENCY_SOFT) : 0 )+","+
+            (   d.containsKey(ResourceType.R4_CURRENCY_HARD)       ? d.get(ResourceType.R4_CURRENCY_HARD) : 0 )+","+
+            (   d.containsKey(ResourceType.R12_BATTLES)             ? d.get(ResourceType.R12_BATTLES) : 0 )+","+
+            (   d.containsKey(ResourceType.R13_BATTLES_WINS)        ? d.get(ResourceType.R13_BATTLES_WINS) : 0 )+","+
+            (   d.containsKey(ResourceType.R21_BOOK_OPENED_BATTLE)  ? d.get(ResourceType.R21_BOOK_OPENED_BATTLE) : 0 )+","+
+            (   d.containsKey(ResourceType.R22_BOOK_OPENED_FREE)    ? d.get(ResourceType.R22_BOOK_OPENED_FREE) : 0 )+","+
             (   d.containsKey(201)                              ? d.get(201) : 0 )+","+
             (   d.containsKey(202)                              ? d.get(202) : 0 )+",,,";
 
-            stats += getCardValues(entry, d,  BuildingType.B11_BARRACKS, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B12_BARRACKS, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B13_BARRACKS, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B14_BARRACKS, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B21_RAPID, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B22_RAPID, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B23_RAPID, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B24_RAPID, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B31_HEAVY, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B32_HEAVY, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B33_HEAVY, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B34_HEAVY, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B41_CRYSTAL, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B42_CRYSTAL, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B43_CRYSTAL, ",,");
-            stats += getCardValues(entry, d,  BuildingType.B44_CRYSTAL, ",\n");
+            stats += getCardValues(entry, d,  CardTypes.C101, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C102, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C103, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C104, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C105, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C106, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C107, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C108, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C109, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C110, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C111, ",,");
+
+            stats += getCardValues(entry, d,  CardTypes.C151, ",,");
+            stats += getCardValues(entry, d,  CardTypes.C152, ",\n");
         }
 
         ext.trace(stats);

@@ -39,7 +39,7 @@ public class BattleBot
         chatPatams = new SFSObject();
         chatPatams.putDouble("ready", battleField.now + 15000);
 
-        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.POINT), " winStreak:" + battleField.games.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty);
+        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.R2_POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.R2_POINT), " winRate:" + battleField.games.get(0).player.resources.get(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
     }
 
     public void update()

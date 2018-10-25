@@ -79,7 +79,7 @@ public class DBUtils
         for (int i = 0; i < keyLen; i++)
         {
             if( !hasRankFields )
-                hasRankFields = res.get(i) == ResourceType.POINT || res.get(i) == ResourceType.BATTLES_WEEKLY;
+                hasRankFields = res.get(i) == ResourceType.R2_POINT || res.get(i) == ResourceType.R14_BATTLES_WEEKLY;
 
             query += "WHEN type = " + res.get(i) + " AND player_id = " + player.id + " THEN " + player.resources.get(res.get(i)) + " ";
         }
@@ -103,8 +103,8 @@ public class DBUtils
         if( hasRankFields )
         {
             IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-            RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.resources.get(ResourceType.BATTLES_WEEKLY));
-            query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.BATTLES_WEEKLY);
+            RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.resources.get(ResourceType.R14_BATTLES_WEEKLY));
+            query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.R14_BATTLES_WEEKLY);
 
             if( users.containsKey(player.id))
                 users.replace(player.id, rd);
@@ -317,7 +317,7 @@ public class DBUtils
         Collection<User> users = ext.getParentZone().getUserList();
         for (User u : users)
         {
-            ((Game)u.getSession().getProperty("core")).player.resources.set(ResourceType.BATTLES_WEEKLY, 0);
+            ((Game)u.getSession().getProperty("core")).player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
             result += u.getName() + " weekly battle reset to '0'.\n";
         }
 

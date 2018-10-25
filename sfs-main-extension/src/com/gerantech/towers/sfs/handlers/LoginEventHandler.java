@@ -4,7 +4,7 @@ import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
-import com.gt.data.RankData;;
+import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
@@ -158,7 +158,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 				so.putInt("type", i);
 				so.putInt("count", loginData.resources.get(i));
-				so.putInt("level", i < 1000 ? 1 : 0);
+				so.putInt("level", ResourceType.isCard(i) ? 1 : 0);
 
 				resources.addSFSObject( so );
 			}
@@ -304,7 +304,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					break;
 				}
 			}
-			if( !contained && ( initData.appVersion < 3200 || ExchangeType.getCategory(loginData.exchanges.get(l)) != ExchangeType.C20_SPECIALS || initData.resources.get(ResourceType.POINT) > 100 ))// add special after arena 2
+			if( !contained && ( initData.appVersion < 3200 || ExchangeType.getCategory(loginData.exchanges.get(l)) != ExchangeType.C20_SPECIALS || initData.resources.get(ResourceType.R2_POINT) > 100 ))// add special after arena 2
 				addExchangeToDB(loginData.exchanges.get(l), exchanges, newExchanges);
 		}
 
@@ -371,7 +371,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// init and update hazel data
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY));
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.R14_BATTLES_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

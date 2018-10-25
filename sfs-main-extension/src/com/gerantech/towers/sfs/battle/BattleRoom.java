@@ -97,7 +97,7 @@ public class BattleRoom extends SFSExtension
 			InitData data = new InitData();
 			data.id = (int) (Math.random() * 9999);
 			data.nickName = RankingUtils.getInstance().getRandomName();
-			data.resources.set(ResourceType.POINT, 0);
+			data.resources.set(ResourceType.R2_POINT, 0);
 			Game botGame = new Game();
 			botGame.init(data);
 			registeredPlayers.add( botGame );
@@ -428,7 +428,7 @@ public class BattleRoom extends SFSExtension
 		for (int i=0; i < battleField.games.size(); i++)
 		{
 			Game game = battleField.games.get(i);    // update active challenges
-			if( !game.player.isBot() && !battleField.map.isOperation() && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.POINT) > 0 )
+			if( !game.player.isBot() && !battleField.map.isOperation() && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.R2_POINT) > 0 )
 			{
 				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
 				for (int c = 0; c < challenges.size(); c++)

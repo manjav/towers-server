@@ -24,7 +24,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
-		String query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type=1000 OR type=1001 OR type=1201 OR type=1202);") ;
+		String query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type<13);") ;
 		try {
 			params.putSFSArray("resources", dbManager.executeQuery(query, new Object[]{}));
 		} catch (SQLException e) { e.printStackTrace(); }

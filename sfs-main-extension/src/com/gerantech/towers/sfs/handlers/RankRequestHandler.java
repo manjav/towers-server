@@ -32,7 +32,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY));
+		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.R14_BATTLES_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

@@ -253,7 +253,7 @@ public class LobbyUtils
             ext.getParentZone().getDBManager().executeUpdate("UPDATE resources SET count= 0 WHERE type=1204 AND count != 0 AND player_id = " + game.player.id, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-        game.player.resources.set(ResourceType.BATTLES_WEEKLY, 0);
+        game.player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
         RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), 0);
         if( users.containsKey(game.player.id) )
             users.replace(game.player.id, rd);
