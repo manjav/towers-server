@@ -70,8 +70,7 @@ public class BattleUtils
         if( type != FieldData.TYPE_OPERATION )
         {
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
-            int tutorMaps = game.appVersion >= 3200 ? 3 : 2;
-            boolean tutorMode = game.player.get_battleswins() < tutorMaps;
+            boolean tutorMode = game.player.get_battleswins() < 3;
             //List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
             index = 1;//tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 

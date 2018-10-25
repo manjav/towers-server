@@ -267,7 +267,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			element = resources.getSFSObject(i);
 			initData.resources.set(element.getInt("type"), element.getInt("count"));
-			if( element.getInt("type") < 1000 )
+			if( ResourceType.isCard(element.getInt("type")) )
 				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
@@ -376,9 +376,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
-
-		if( initData.appVersion < 3700 )
-			return game;
 
 		// insert quests in registration or get in next time
 		ISFSArray quests = QuestsUtils.getInstance().getAll(game.player.id);
