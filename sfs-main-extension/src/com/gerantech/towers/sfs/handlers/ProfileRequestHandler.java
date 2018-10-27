@@ -53,6 +53,14 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
 		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
 
+		//  -=-=-=-=-=-=-=-=-  add player deck  -=-=-=-=-=-=-=-=-
+		try {
+			params.putSFSArray("decks", dbManager.executeQuery("SELECT decks.`type`, resources.`level` FROM decks INNER JOIN resources ON decks.player_id = resources.player_id AND decks.`type` = resources.`type` WHERE decks.player_id = "+ playerId +" AND decks.deck_index = 0", new Object[]{}));
+		} catch (SQLException e) { trace(e.getMessage()); }
+
+
+
+
 		//trace(params.getDump());
 		send(Commands.PROFILE, params, sender);
     }
