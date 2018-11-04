@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.TowerExtension;
 import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.HttpTool.Data;
@@ -32,7 +31,7 @@ import java.util.Map;
 public class PurchaseVerificationHandler extends BaseClientRequestHandler
 {
 
-	private static String packageName = "air.com.grantech.towers";
+	private static String packageName = "air.com.grantech.k2k";
 	private static String accessToken_cafebazaar = "riN8RxzQMsC9x05kCz8EWscxwjSu7r";
 
 	public PurchaseVerificationHandler() {}
@@ -57,7 +56,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
         ISFSObject resObj = SFSObject.newInstance();
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
+		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.R4_CURRENCY_HARD) );
 		if( !game.market.equals("cafebazaar") && !game.market.equals("myket") )
 		{
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());
