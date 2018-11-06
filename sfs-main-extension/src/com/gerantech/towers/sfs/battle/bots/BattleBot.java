@@ -60,12 +60,16 @@ public class BattleBot
     /**
      * cover for defence main places
      */
-    void cover(){
-    }
+    void cover(){    }
 
     void summonCard()
     {
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
+        if( CardTypes.isSpell(cardType) )
+        {
+            lastCardIndexUsed = lastCardIndexUsed == 7 ? 0 : lastCardIndexUsed + 1;
+            return;
+        }
         double xPosition = Math.random() * BattleField.WIDTH;
         double yPosition = 0;
 
@@ -103,7 +107,7 @@ public class BattleBot
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
-            lastCardIndexUsed = lastCardIndexUsed == 3 ? 0 : lastCardIndexUsed + 1;
+            lastCardIndexUsed = lastCardIndexUsed == 7 ? 0 : lastCardIndexUsed + 1;
         }
     }
 
