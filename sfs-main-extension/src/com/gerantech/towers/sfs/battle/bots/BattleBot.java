@@ -70,40 +70,31 @@ public class BattleBot
             lastCardIndexUsed = lastCardIndexUsed == 7 ? 0 : lastCardIndexUsed + 1;
             return;
         }
-        double xPosition = Math.random() * BattleField.WIDTH;
-        double yPosition = 0;
 
-        Map<Integer, Double> healths = new HashMap();
-        Map<Integer, Double> ys = new HashMap();
         Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
-        Unit unit;
-        double health;
+        Unit unit, hotest = null;
+        double x = BattleField.WIDTH * Math.random(), y = BattleField.HEIGHT;
         while( iterator.hasNext() )
         {
             unit = iterator.next().getValue();
-            health = unit.health * (unit.side == 1 ? 1 : -1);
-            int key = (int) (unit.x % 100);
-            healths.put(key, (healths.containsKey(key) ? healths.get(key) : 0) + health);
-            ys.put(key, unit.y);
-        }
-
-        health = 0;
-        Map.Entry<Integer, Double> step;
-        Iterator<Map.Entry<Integer, Double>> healthsIterator = healths.entrySet().iterator();
-        while( healthsIterator.hasNext() )
-        {
-            step = healthsIterator.next();
-            if( health < step.getValue())
+            if( unit.side != 0 )
+                continue;
+            if( y > unit.y )
             {
-                health = step.getValue();
-                xPosition = step.getKey() * 100;
-                yPosition = BattleField.HEIGHT - ys.get(step.getKey());
+                hotest = unit;
+                y = hotest.y;
             }
         }
 
-        xPosition = BattleField.WIDTH - Math.min(BattleField.WIDTH - BattleField.PADDING, Math.max(BattleField.PADDING, xPosition));
-        int id = battleRoom.summonUnit(1, cardType, xPosition,
-        BattleField.HEIGHT * 0.66 + Math.random() * (CardTypes.isSpell(cardType) ? yPosition : BattleField.HEIGHT * 0.33) - BattleField.PADDING );
+
+        if( hotest != null )
+        {
+            x = BattleField.WIDTH - hotest.x;
+            ext.trace(hotest.card.type, hotest.x, hotest.y, x, y);
+        }
+        y = BattleField.HEIGHT - Math.random() * (BattleField.HEIGHT * 0.3);
+
+        int id = battleRoom.summonUnit(1, cardType, Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, x)), y);
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
