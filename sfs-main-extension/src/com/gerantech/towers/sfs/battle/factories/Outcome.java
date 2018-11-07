@@ -17,7 +17,7 @@ import java.util.List;
 public class Outcome
 {
     public static int MIN_POINTS = 5;
-    public static int COE_POINTS = 4;
+    public static int COE_POINTS = 10;
 
     public static IntIntMap get(Game game, FieldData field, int score, float ratio, int now)
     {
