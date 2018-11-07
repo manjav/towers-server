@@ -61,8 +61,6 @@ public class BattleRoom extends SFSExtension
 	private BattleBot bot;
 	private boolean singleMode;
 	private double buildingsUpdatedAt;
-	private ISFSObject stickerParams;
-	//private long clientTimeUpdatedAt;
 	private Map<Integer, UnitData> reservedUnits;
 
 	public void init() 
@@ -134,7 +132,7 @@ public class BattleRoom extends SFSExtension
 				if( battleField.now - buildingsUpdatedAt >= 500 )
 				{
 					updateReservesData(battleDuration);
-					if( battleDuration > 4 )
+					if( singleMode && battleDuration > 4 )
 						pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
@@ -299,25 +297,9 @@ public class BattleRoom extends SFSExtension
 
 	private void pokeBot()
 	{
-		//trace("pokeBot", singleMode,  getState());
-		if( singleMode && ( getState() == BattleField.STATE_2_STARTED || getState() == BattleField.STATE_4_ENDED ) )
-		{
-			// send answer of sticker from bot
-			if( stickerParams != null )
-			{
-				if( stickerParams.getInt("wait") < 4 )
-				{
-					stickerParams.putInt("wait", stickerParams.getInt("wait") + 1);
-				}
-				else
-				{
-					stickerParams.removeElement("wait");
-					send("ss", stickerParams, room.getUserList());
-					stickerParams = null;
-				}
-			}
-			bot.update();
-		}
+		if( getState() < BattleField.STATE_1_CREATED || getState() > BattleField.STATE_4_ENDED )
+			return;
+		bot.update();
 	}
 
 	private void checkEnding(double battleDuration)

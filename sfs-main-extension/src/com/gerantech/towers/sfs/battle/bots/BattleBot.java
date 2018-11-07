@@ -11,7 +11,6 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -20,11 +19,11 @@ import java.util.Map;
  */
 public class BattleBot
 {
+    static final int SUMMON_DELAY = 3000;
     SFSExtension ext;
     BattleRoom battleRoom;
     BattleField battleField;
-   // int sampleTime;
-    //int timeFactor;
+    double lastSummonTime = 0;
     int battleRatio = 0;
     SFSObject chatPatams;
     private int lastCardIndexUsed = 0;
@@ -34,7 +33,6 @@ public class BattleBot
         this.battleRoom = battleRoom;
         this.battleField = battleRoom.battleField;
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-       // timeFactor = Math.min(8, Math.max(2, 10 - battleField.difficulty ) );
 
         chatPatams = new SFSObject();
         chatPatams.putDouble("ready", battleField.now + 15000);
@@ -44,26 +42,19 @@ public class BattleBot
 
     public void update()
     {
-        //int _sampleTime = (int) (battleField.getDuration() % timeFactor);
-        //ext.trace("update", battleField.getDuration(), _sampleTime, sampleTime, timeFactor);
-        //if(timeFactor == 1 || ( _sampleTime == 0 && _sampleTime != sampleTime ) )
-            summonCard();
-
-        //this.battleRatio = battleRoom.endCalculator.scores[0] / battleRoom.endCalculator.scores[1];
-       // sampleTime = _sampleTime;
-
-        cover();
+        if( battleField.state < BattleField.STATE_2_STARTED && Math.random() < 0.3 )
+            return;
+        summonCard();
         updateChatProcess();
-        //updateFightingProcess();
     }
-
-    /**
-     * cover for defence main places
-     */
-    void cover(){    }
 
     void summonCard()
     {
+        if( lastSummonTime == 0 )
+            lastSummonTime = battleField.now + SUMMON_DELAY;
+        if( lastSummonTime > battleField.now )
+            return;
+        lastSummonTime = battleField.now + SUMMON_DELAY;
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
         if( CardTypes.isSpell(cardType) )
         {
@@ -72,7 +63,7 @@ public class BattleBot
         }
 
         Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
-        Unit unit, hotest = null;
+        Unit unit, pioneer = null;
         double x = BattleField.WIDTH * Math.random(), y = BattleField.HEIGHT;
         while( iterator.hasNext() )
         {
@@ -81,17 +72,14 @@ public class BattleBot
                 continue;
             if( y > unit.y )
             {
-                hotest = unit;
-                y = hotest.y;
+                pioneer = unit;
+                y = pioneer.y;
             }
         }
 
-
-        if( hotest != null )
-        {
-            x = BattleField.WIDTH - hotest.x;
-            ext.trace(hotest.card.type, hotest.x, hotest.y, x, y);
-        }
+        double random = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * BattleField.PADDING);
+        if( pioneer != null )
+            x = BattleField.WIDTH - pioneer.x + random;
         y = BattleField.HEIGHT - Math.random() * (BattleField.HEIGHT * 0.3);
 
         int id = battleRoom.summonUnit(1, cardType, Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, x)), y);
