@@ -111,7 +111,7 @@ public class BattleBot
 
     public void chatAnswering(ISFSObject params)
     {
-        if( chatPatams.getDouble("ready") > battleField.now || Math.random() < 0.2 )
+        if( chatPatams.getDouble("ready") > battleField.now || Math.random() < 0.4 )
             return;
 
         int answer = StickerType.getAnswer( params.getInt("t") );
