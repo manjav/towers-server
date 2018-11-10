@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.utils;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.battle.FieldProvider;
 import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -73,8 +74,8 @@ public class BattleUtils
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
             int tutorMaps = game.appVersion >= 3200 ? 3 : 2;
             boolean tutorMode = game.player.get_battleswins() < tutorMaps;
-            List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
-            index = tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
+            List<String> fields = FieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
+            index = tutorMode ? (game.player.get_battleswins() + 1) : FieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena);// ===> is temp
