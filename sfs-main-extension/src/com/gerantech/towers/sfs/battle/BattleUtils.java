@@ -4,7 +4,6 @@ import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.fieldes.FieldData;
-import com.hazelcast.util.RandomPicker;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;

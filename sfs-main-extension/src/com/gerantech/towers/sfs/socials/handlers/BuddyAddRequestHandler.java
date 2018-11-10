@@ -101,11 +101,11 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             if( sfsArray.size() == 0 )
             {
                 // Invitee reward consumption
-                game.player.resources.increase(ResourceType.CURRENCY_HARD, Lobby.buddyInviteeReward);
+                game.player.resources.increase(ResourceType.R4_CURRENCY_HARD, Lobby.buddyInviteeReward);
                 queryStr = "UPDATE resources SET count=" + game.player.get_hards() + " WHERE type=1003 AND player_id=" + inviteeId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
-                params.putInt("rewardType", ResourceType.CURRENCY_HARD);
+                params.putInt("rewardType", ResourceType.R4_CURRENCY_HARD);
                 params.putInt("rewardCount", Lobby.buddyInviteeReward);
             }
 
