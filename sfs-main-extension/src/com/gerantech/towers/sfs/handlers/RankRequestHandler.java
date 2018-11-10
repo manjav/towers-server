@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
