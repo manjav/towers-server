@@ -92,7 +92,7 @@ public class BattleBot
 
     void chatStarting(int battleRatio)
     {
-        if( battleField.map.isOperation() || battleField.games.get(0).player.inTutorial() )
+        if( battleField.field.isOperation() || battleField.games.get(0).player.inTutorial() )
             return;
 
         // verbose bot threshold

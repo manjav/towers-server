@@ -149,6 +149,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putInt("index", (int) room.getProperty("index"));
 		sfsO.putInt("startAt", (int)room.getProperty("startAt"));
 		sfsO.putInt("roomId", room.getId());
+		sfsO.putText("map", roomClass.battleField.field.mapLayout);
 		sfsO.putText("type", (String) room.getProperty("type"));
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
 		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));

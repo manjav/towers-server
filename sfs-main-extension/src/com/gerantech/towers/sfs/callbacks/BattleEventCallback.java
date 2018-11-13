@@ -29,7 +29,7 @@ public class BattleEventCallback implements EventCallback
     {
         if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_4_DIPOSED )
         {
-            if( battleRoom.battleField.map.type.equals(FieldData.TYPE_HEADQUARTER) )
+            if( battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
             {
                 if( battleRoom.battleField.units.get(id).card.type == 201 )
                 {
