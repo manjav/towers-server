@@ -149,24 +149,24 @@ public class BattleRoom extends SFSExtension
 				double battleDuration = battleField.getDuration();
 				if( battleField.now - buildingsUpdatedAt >= 500 )
 				{
-					updateReservesData(battleDuration);
+					updateReservesData();
 					if( singleMode && battleDuration > 4 )
 						pokeBot();
 					buildingsUpdatedAt = battleField.now;
 				}
-				battleField.update(battleField.deltaTime);
+				battleField.update((int) (Instant.now().toEpochMilli() - battleField.now));
 				checkEnding(battleDuration);
 
 			}
-		}, 0, battleField.deltaTime, TimeUnit.MILLISECONDS);
+		}, 0, BattleField.DELTA_TIME, TimeUnit.MILLISECONDS);
 
 		trace(room.getName(), "created.");
 	}
 
-	private void updateReservesData(double battleDuration)
+	private void updateReservesData()
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
-		SFSArray units = SFSArray.newInstance();
+		/*SFSArray units = SFSArray.newInstance();
 		Unit unit;
 		UnitData ud;
 		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
@@ -174,8 +174,8 @@ public class BattleRoom extends SFSExtension
 		{
 			unit = iterator.next().getValue();
 
-			if( !reservedUnits.containsKey(unit.id) || ( reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y || (reservedUnits.get(unit.id).health != unit.health) ) )
-			{
+		//	if( !reservedUnits.containsKey(unit.id) || ( reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y || (reservedUnits.get(unit.id).health != unit.health) ) )
+		//	{
 				if( reservedUnits.containsKey(unit.id) )
 				{
 					ud = reservedUnits.get(unit.id);
@@ -188,10 +188,10 @@ public class BattleRoom extends SFSExtension
 				{
 					reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.health));
 				}
-				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health);
+				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side);
 			}
-		}
-		listOfVars.add(new SFSRoomVariable("units", units));
+		//}
+		listOfVars.add(new SFSRoomVariable("units", units));*/
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
