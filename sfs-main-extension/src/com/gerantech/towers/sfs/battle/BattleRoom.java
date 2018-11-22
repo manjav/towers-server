@@ -232,7 +232,7 @@ public class BattleRoom extends SFSExtension
 				unit = battleField.units.get(i);
 				unit.eventCallback = eventCallback;
 
-				units.addSFSObject(getSFSUnit(type, unit.id, side, unit.card.level, side == 0 ? unit.x : BattleField.WIDTH - unit.x, side == 0 ? unit.y : BattleField.HEIGHT - unit.y));
+				units.addSFSObject(getSFSUnit(type, unit.id, side, unit.card.level, unit.x, unit.y));
 			}
 			params.putSFSArray("units", units);
 			send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());

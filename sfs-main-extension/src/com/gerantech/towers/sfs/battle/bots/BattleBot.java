@@ -64,7 +64,8 @@ public class BattleBot
 
         Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
         Unit unit, pioneer = null;
-        double x = BattleField.WIDTH * Math.random(), y = BattleField.HEIGHT;
+        double x = BattleField.WIDTH * Math.random(), y = 0
+                ;
         while( iterator.hasNext() )
         {
             unit = iterator.next().getValue();
@@ -79,9 +80,8 @@ public class BattleBot
 
         double random = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * BattleField.PADDING);
         if( pioneer != null )
-            x = BattleField.WIDTH - pioneer.x + random;
-        y = BattleField.HEIGHT - Math.random() * (BattleField.HEIGHT * 0.3);
-
+            x = pioneer.x + random;
+        y = Math.random() * (BattleField.HEIGHT * 0.3);
         int id = battleRoom.summonUnit(1, cardType, Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, x)), y);
         if( id >= 0 )
         {
