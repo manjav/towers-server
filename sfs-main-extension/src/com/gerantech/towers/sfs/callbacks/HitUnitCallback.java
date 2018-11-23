@@ -18,12 +18,12 @@ public class HitUnitCallback implements IUnitHitCallback
     }
 
     @Override
-    public void hit(int bulletId, double damage, List<Integer> list)
+    public void hit(int bulletId, List<Integer> list)
     {
     /*String log = "hit bulletId:" + bulletId;
     for (int i = 0; i <units.size() ; i++)
         log += "[ troopId:" + units.get(i).id + " troopHealth:" + units.get(i).card.health  +(i == units.size()-1 ? " ]":" ,  ");*/
-        battleRoom.hitUnit(bulletId, damage, list);
+        battleRoom.hitUnit(bulletId, list);
     }
 
     @Override

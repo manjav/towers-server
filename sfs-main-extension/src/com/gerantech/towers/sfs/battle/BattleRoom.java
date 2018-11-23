@@ -17,6 +17,7 @@ import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.google.common.base.Charsets;
 import com.gt.data.ChallengeSFS;
+import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -166,7 +167,7 @@ public class BattleRoom extends SFSExtension
 	private void updateReservesData()
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
-		/*SFSArray units = SFSArray.newInstance();
+		SFSArray units = SFSArray.newInstance();
 		Unit unit;
 		UnitData ud;
 		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
@@ -191,7 +192,7 @@ public class BattleRoom extends SFSExtension
 				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side);
 			}
 		//}
-		listOfVars.add(new SFSRoomVariable("units", units));*/
+		listOfVars.add(new SFSRoomVariable("units", units));
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
@@ -252,12 +253,22 @@ public class BattleRoom extends SFSExtension
 		return u;
 	}
 
-	public void hitUnit(int bulletId, double damage, List<Integer> targets)
+	public void hitUnit(int bulletId, List<Integer> targets)
 	{
 		SFSObject params = new SFSObject();
 		params.putInt("b", bulletId);
-		params.putDouble("d", damage);
-		params.putIntArray("t", targets);
+
+		ISFSObject _target;
+		ISFSArray _targets = new SFSArray();
+		for (int i = 0; i < targets.size(); i++)
+		{
+			_target = new SFSObject();
+			_target.putInt("i", targets.get(i));
+			_target.putDouble("h", battleField.units.get(targets.get(i)).health);
+			_targets.addSFSObject(_target);
+		}
+		params.putSFSArray("t", _targets);
+
 		send(Commands.BATTLE_HIT, params, room.getUserList());
 	}
 
