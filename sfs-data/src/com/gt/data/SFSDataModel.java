@@ -17,13 +17,28 @@ public class SFSDataModel extends SFSObject
         super();
     }
 
+    public static ISFSArray toSFSArray(ISFSObject[] list)
+    {
+        // add to sfs array
+        int i = 0;
+        int size = list.length;
+        ISFSArray ret = new SFSArray();
+        while( i < size )
+        {
+            ret.addSFSObject(list[i]);
+            i ++;
+        }
+        return  ret;
+    }
+
     public static ISFSArray toSFSArray(IntIntMap map)
     {
         ISFSObject sfs;
-        ISFSArray ret = new SFSArray();
-        int[] keys = map.keys();
         int i = 0;
-        while ( i < keys.length )
+        int[] keys = map.keys();
+        int size = keys.length;
+        ISFSArray ret = new SFSArray();
+        while ( i < size )
         {
             sfs = new SFSObject();
             sfs.putInt("key", keys[i]);
