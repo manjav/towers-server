@@ -50,6 +50,9 @@ public class BattleBot
 
     void summonCard()
     {
+        if( battleField.games.get(0).player.get_battleswins() < 1 )
+            return;
+
         if( lastSummonTime == 0 )
             lastSummonTime = battleField.now + SUMMON_DELAY;
         if( lastSummonTime > battleField.now )
