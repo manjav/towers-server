@@ -312,7 +312,7 @@ public class BattleRoom extends SFSExtension
 		}
 		else
 		{
-			close();
+			//close();
 			getApi().leaveRoom(user, room);
 
 			/*int side = battleField.getSide(((Game) user.getSession().getProperty("core")).player.id);
