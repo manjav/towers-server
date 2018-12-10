@@ -83,9 +83,9 @@ public class Outcome
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1);
-                if( game.player.get_battleswins() > 0 && emptySlotsType.size() > 0 )
+                if( emptySlotsType.size() > 0 )
                 {
-                    int randomEmptySlotIndex = game.player.get_battleswins() == 1 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
+                    int randomEmptySlotIndex = game.player.get_battleswins() == 0 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
                     game.exchanger.findRandomOutcome(emptySlot, now);
                     ret.set(emptySlot.outcome, emptySlot.type);
