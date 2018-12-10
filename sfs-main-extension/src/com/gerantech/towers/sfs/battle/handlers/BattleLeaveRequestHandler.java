@@ -11,7 +11,7 @@ public class BattleLeaveRequestHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
-		if( roomClass.getState() < BattleField.STATE_5_DISPOSED )
+		if( roomClass.getState() <= BattleField.STATE_5_DISPOSED )
 			roomClass.leave(sender, params.containsKey("retryMode"));
 	}
 }
