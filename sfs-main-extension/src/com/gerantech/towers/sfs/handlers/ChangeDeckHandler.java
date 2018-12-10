@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gerantech.towers.sfs.Commands;
+import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -31,24 +32,7 @@ public class ChangeDeckHandler extends BaseClientRequestHandler
             sendResponse(MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
             return;
         }
-        sendResponse(change(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")), params, sender);
-    }
-
-    public int change(Player player, int deckIndex, int index, int type)
-    {
-        player.decks.get(deckIndex).set(index, type);
-        try {
-            String query = "UPDATE decks SET decks.`type` = "+ type +" WHERE " +
-                    "NOT EXISTS (SELECT 1 FROM (" +
-                    "SELECT 1 FROM decks WHERE decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
-                    "AND decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`index` = " + index;
-
-            trace(query);
-            getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[]{});
-            return MessageTypes.RESPONSE_SUCCEED;
-        }
-        catch (SQLException e) { e.printStackTrace(); }
-        return -1;
+        sendResponse(DBUtils.getInstance().updateDeck(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")), params, sender);
     }
 
     private void sendResponse(int response, ISFSObject params, User sender)

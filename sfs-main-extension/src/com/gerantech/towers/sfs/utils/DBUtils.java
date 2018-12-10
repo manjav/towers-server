@@ -5,6 +5,7 @@ import com.gt.towers.Game;
 import com.gt.towers.LoginData;
 import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
+import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.hazelcast.config.Config;
@@ -232,6 +233,22 @@ public class DBUtils
         return ret;
     }
 
+    public int updateDeck(Player player, int deckIndex, int index, int type)
+    {
+        player.decks.get(deckIndex).set(index, type);
+        try {
+            String query = "UPDATE decks SET decks.`type` = "+ type +" WHERE " +
+                    "NOT EXISTS (SELECT 1 FROM (" +
+                    "SELECT 1 FROM decks WHERE decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`type` = "+ type +") as c1)" +
+                    "AND decks.player_id = "+ player.id +" AND decks.deck_index = "+ deckIndex +" AND decks.`index` = " + index;
+
+            ext.trace(query);
+            db.executeUpdate(query, new Object[]{});
+            return MessageTypes.RESPONSE_SUCCEED;
+        }
+        catch (SQLException e) { e.printStackTrace(); }
+        return -1;
+    }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OTHERS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public void upgradeBuilding(Player player, int type, int level) throws SQLException

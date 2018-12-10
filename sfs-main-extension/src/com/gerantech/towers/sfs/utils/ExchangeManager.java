@@ -44,6 +44,7 @@ public class ExchangeManager
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
+		int deckLen = game.player.getSelectedDeck().keys().length;
         mapChangeCallback = new MapChangeCallback();
         game.player.resources.changeCallback = mapChangeCallback;
         int response = -10;
@@ -53,6 +54,7 @@ public class ExchangeManager
         game.player.resources.changeCallback = null;
         if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
+
 
         // logs .....
 		/*int[] inserts = mapChangeCallback.inserts.keys();
@@ -72,8 +74,16 @@ public class ExchangeManager
             dbUtils.insertResources(game.player, mapChangeCallback.inserts);
             if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
                 dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+
+            // add new card into selected deck
+            if( deckLen < game.player.getSelectedDeck().keys().length )
+            {
+                String query = "INSERT INTO decks (`player_id`, `deck_index`, `index`, `type`) VALUES (" + game.player.id + ", " + game.player.selectedDeckIndex + ", " + deckLen + ",  " + game.player.getSelectedDeck().get(deckLen) + ");";
+                ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
+            }
         }
         catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
+
         return response;
     }
 
