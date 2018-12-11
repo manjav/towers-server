@@ -42,7 +42,7 @@ public class BattleBot
 
     public void update()
     {
-        if( battleField.state < BattleField.STATE_2_STARTED && Math.random() < 0.3 )
+        if( battleField.state < BattleField.STATE_2_STARTED && (battleField.games.get(0).player.get_battleswins() < 3 || Math.random() < 0.3) )
             return;
         summonCard();
         updateChatProcess();
