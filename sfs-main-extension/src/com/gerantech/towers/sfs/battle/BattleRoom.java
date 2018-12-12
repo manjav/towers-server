@@ -168,6 +168,7 @@ public class BattleRoom extends SFSExtension
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
 		SFSArray units = SFSArray.newInstance();
+/*
 		Unit unit;
 		UnitData ud;
 		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
@@ -193,6 +194,7 @@ public class BattleRoom extends SFSExtension
 			}
 		//}
 		listOfVars.add(new SFSRoomVariable("units", units));
+*/
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
