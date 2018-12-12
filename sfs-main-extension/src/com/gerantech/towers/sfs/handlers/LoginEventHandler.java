@@ -4,11 +4,13 @@ import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
+import com.google.common.base.Charsets;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
 import com.gt.towers.Player;
+import com.gt.towers.battle.units.ScriptEngine;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -30,10 +32,12 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.Instant;
 
@@ -316,6 +320,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
 		}*/
 
+		if( ScriptEngine.script == null )
+		{
+			try {
+				InputStream stream = HttpClients.createDefault().execute(new HttpGet("http://localhost:8080/maps/features.js")).getEntity().getContent();
+				ScriptEngine.initialize(IOUtils.toString(stream, String.valueOf(Charsets.UTF_8)));
+				trace("http://localhost:8080/maps/features.js loaded.");
+			} catch (IOException e) { e.printStackTrace(); }
+        }
+        outData.putText("script", ScriptEngine.script);
+
 		// init core
 		Game game = new Game();
 		game.init(initData);
@@ -352,8 +366,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addExchangeItem(game, exchanges, ExchangeType.C43_ADS,		"",	"51:" + arena,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		IntIntMap sdsd = Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE, arena, game.player.splitTestCoef);
-		trace(sdsd, Exchanger.toHard(sdsd), Exchanger.fixedRound(Exchanger.toHard(sdsd)));
+		IntIntMap magics = Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE, arena, game.player.splitTestCoef);
 		addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_55_PIRATE	+ ":" + arena, 0, 0, true);
 		addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_56_JUNGLE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_56_JUNGLE	+ ":" + arena, 0, 0, true);
 		addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_58_AMBER,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_58_AMBER	+ ":" + arena, 0, 0, true);
