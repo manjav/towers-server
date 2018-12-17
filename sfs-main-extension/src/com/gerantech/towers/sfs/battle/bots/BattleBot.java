@@ -57,11 +57,10 @@ public class BattleBot
             lastSummonTime = battleField.now + SUMMON_DELAY;
         if( lastSummonTime > battleField.now )
             return;
-        lastSummonTime = battleField.now + SUMMON_DELAY;
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
         if( CardTypes.isSpell(cardType) )
         {
-            lastCardIndexUsed = lastCardIndexUsed == 7 ? 0 : lastCardIndexUsed + 1;
+            lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
             return;
         }
 
@@ -88,7 +87,8 @@ public class BattleBot
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
-            lastCardIndexUsed = lastCardIndexUsed == 7 ? 0 : lastCardIndexUsed + 1;
+            lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
+            lastSummonTime = battleField.now + SUMMON_DELAY;
         }
     }
 

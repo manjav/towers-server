@@ -214,7 +214,6 @@ public class BattleRoom extends SFSExtension
 			return MessageTypes.RESPONSE_NOT_ALLOWED;
 		int id = battleField.summonUnit(type, side, x, y);
 
-
 		if( id > -1 )
 		{
 			SFSArray units = new SFSArray();
