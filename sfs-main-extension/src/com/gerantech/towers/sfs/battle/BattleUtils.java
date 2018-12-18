@@ -69,7 +69,7 @@ public class BattleUtils
         if( type != FieldData.TYPE_OPERATION )
         {
             arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
-            boolean tutorMode = game.player.get_battleswins() < 3;
+            //boolean tutorMode = game.player.get_battleswins() < 3;
             //List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
             index = 1;//tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
 
@@ -93,7 +93,7 @@ public class BattleUtils
         }
 
 
-        boolean singleMode = false;//isOperation || arena == 0;
+        boolean singleMode = arena == 0;
         roomProperties.put("type", type);
         roomProperties.put("index", index);
         if( hasExtraTime )
