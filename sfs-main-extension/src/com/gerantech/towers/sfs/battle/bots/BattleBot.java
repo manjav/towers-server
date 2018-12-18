@@ -81,7 +81,7 @@ public class BattleBot
 
         double random = 0;//(Math.random() > 0.5 ? 1 : -1) * (Math.random() * BattleField.PADDING);
         if( pioneer != null )
-            x = BattleField.WIDTH - pioneer.x + random;
+            x = /*BattleField.WIDTH - */pioneer.x + random;
         y = Math.random() * (BattleField.HEIGHT * 0.3);
         int id = battleRoom.summonUnit(1, cardType, Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, x)), y);
         if( id >= 0 )
