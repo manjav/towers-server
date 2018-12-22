@@ -44,12 +44,14 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+import com.smartfoxserver.v2.extensions.js.IntArray;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -167,8 +169,15 @@ public class BattleRoom extends SFSExtension
 	private void updateReservesData()
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
-		SFSArray units = SFSArray.newInstance();
-/*
+
+		ArrayList<Integer> keys = new ArrayList();
+		for( Object k : battleField.units._map.keySet() )
+			keys.add((Integer) k);
+		ISFSObject units = new SFSObject();
+		units.putIntArray("keys", keys);
+		listOfVars.add(new SFSRoomVariable("units", units));
+
+		/*SFSArray units = SFSArray.newInstance();
 		Unit unit;
 		UnitData ud;
 		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
@@ -193,8 +202,7 @@ public class BattleRoom extends SFSExtension
 				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side);
 			}
 		//}
-		listOfVars.add(new SFSRoomVariable("units", units));
-*/
+		listOfVars.add(new SFSRoomVariable("units", units));*/
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();

@@ -320,6 +320,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			try { getParentExtension().getParentZone().getDBManager().executeInsert(query, new Object[] {}); } catch (SQLException e) { e.printStackTrace(); }
 		}*/
 
+		// load script
 		if( ScriptEngine.script == null )
 		{
 			try {
