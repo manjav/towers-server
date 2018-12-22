@@ -6,10 +6,10 @@ import com.gerantech.towers.sfs.battle.factories.EndCalculator;
 import com.gerantech.towers.sfs.battle.factories.HeadquarterEndCalculator;
 import com.gerantech.towers.sfs.battle.factories.Outcome;
 import com.gerantech.towers.sfs.battle.factories.TouchDownEndCalculator;
-import com.gerantech.towers.sfs.battle.handlers.BattleSummonRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomServerEventsHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleStickerRequestHandler;
+import com.gerantech.towers.sfs.battle.handlers.BattleSummonRequestHandler;
 import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
 import com.gerantech.towers.sfs.callbacks.HitUnitCallback;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
@@ -17,7 +17,6 @@ import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.google.common.base.Charsets;
 import com.gt.data.ChallengeSFS;
-import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -44,16 +43,17 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-import com.smartfoxserver.v2.extensions.js.IntArray;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +72,7 @@ public class BattleRoom extends SFSExtension
 	private boolean singleMode;
 	private double buildingsUpdatedAt;
 	private Map<Integer, UnitData> reservedUnits;
+	private List<Integer> reservedUnitIds;
 
 	public void init() 
 	{
@@ -170,13 +171,17 @@ public class BattleRoom extends SFSExtension
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
 
-		ArrayList<Integer> keys = new ArrayList();
-		for( Object k : battleField.units._map.keySet() )
-			keys.add((Integer) k);
-		ISFSObject units = new SFSObject();
-		units.putIntArray("keys", keys);
-		listOfVars.add(new SFSRoomVariable("units", units));
 
+		int[] keys = getChangedUints();
+		if( keys != null )
+		{
+			reservedUnitIds = new ArrayList();
+			for( int k : keys )
+				reservedUnitIds.add(k);
+			ISFSObject units = new SFSObject();
+			units.putIntArray("keys", reservedUnitIds);
+			listOfVars.add(new SFSRoomVariable("units", units));
+		}
 		/*SFSArray units = SFSArray.newInstance();
 		Unit unit;
 		UnitData ud;
@@ -211,6 +216,22 @@ public class BattleRoom extends SFSExtension
 		listOfVars.add(new SFSRoomVariable("bars", bars));
 
 		sfsApi.setRoomVariables(null, room, listOfVars);
+	}
+
+	private int[] getChangedUints()
+	{
+		int[] keys = battleField.units.keys();
+		if( reservedUnitIds == null )
+			return keys;
+
+		if( reservedUnitIds.size() != keys.length )
+			return keys;
+
+		for( int i=0; i < keys.length; i ++ )
+			if( keys[i] != reservedUnitIds.get(i) )
+				return keys;
+
+		return null;
 	}
 
 	// summon unit  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
