@@ -46,7 +46,7 @@ import java.time.Instant;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1532599247;
+	public static int UNTIL_MAINTENANCE = 1545769843;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
 	private DBUtils dbUtils;

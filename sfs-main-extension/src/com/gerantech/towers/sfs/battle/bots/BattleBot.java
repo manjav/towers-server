@@ -6,12 +6,12 @@ import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
+import com.gt.towers.utils.CoreUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -24,6 +24,7 @@ public class BattleBot
     BattleRoom battleRoom;
     BattleField battleField;
     double lastSummonTime = 0;
+    double lastHelpTime = 0;
     int battleRatio = 0;
     SFSObject chatPatams;
     private int lastCardIndexUsed = 0;
@@ -55,41 +56,77 @@ public class BattleBot
 
         if( lastSummonTime == 0 )
             lastSummonTime = battleField.now + SUMMON_DELAY;
+        if( lastHelpTime == 0 )
+            lastHelpTime = battleField.now + SUMMON_DELAY * 2;
         if( lastSummonTime > battleField.now )
             return;
         int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
-        if( CardTypes.isSpell(cardType) )
+        Unit playerHeader = null, botHeader = null;
+        double x = BattleField.WIDTH * Math.random();
+        for( Map.Entry<Object, Unit> entry : battleField.units._map.entrySet() )
+        {
+            if( CardTypes.isBuilding((Integer) entry.getKey()) )
+                continue;
+            if( entry.getValue().side == 0 )
+            {
+                // top of player troops
+                if( playerHeader == null || playerHeader.y > entry.getValue().y )
+                    playerHeader = entry.getValue();
+            }
+            else
+            {
+                // bottom of bot troops
+                if( botHeader == null || botHeader.y < entry.getValue().y )
+                    botHeader = entry.getValue();
+            }
+        }
+
+        double y = Math.random() * (BattleField.HEIGHT * 0.3);
+
+        // when battlefield is empty
+        if( (playerHeader == null && CardTypes.isSpell(cardType)) || (botHeader == null && cardType == 109) )// skip spells and healer
         {
             lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
             return;
         }
 
-        Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
-        Unit unit, pioneer = null;
-        double x = BattleField.WIDTH * Math.random(), y = 0;
-        while( iterator.hasNext() )
+        if( playerHeader == null )
         {
-            unit = iterator.next().getValue();
-            if( unit.side != 0 )
-                continue;
-            if( y > unit.y )
+            if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.5, 4, 9.7) )// waiting for more elixir to create waves
+                return;
+        }
+        else
+        {
+            double random = (Math.random() > 0.5 ? 33 : -33) * Math.random();
+            x = Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, playerHeader.x + random));
+           // ext.trace("playerHeader:"+ playerHeader.card.type, "x:"+ x, "y:"+ y, "e:"+ battleField.elixirBar.get(1), "ratio:" + battleRoom.endCalculator.ratio());
+
+            if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
+                y = playerHeader.y - (CardTypes.isBuilding(playerHeader.card.type) ? 0 : 200);
+            else if( cardType == 109 && botHeader != null )//summon healer for covering
+                y = botHeader.y - 400;
+
+            // fake stronger bot
+            if( battleField.games.get(0).player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
             {
-                pioneer = unit;
-                y = pioneer.y;
+                ext.trace("help:", battleField.elixirBar.get(1), battleField.difficulty * 0.3);
+                battleField.elixirBar.set(1, battleField.elixirBar.get(1) + battleField.difficulty * 0.3 );
+                lastHelpTime = battleField.now + SUMMON_DELAY * 2;
             }
         }
 
-        double random = 0;//(Math.random() > 0.5 ? 1 : -1) * (Math.random() * BattleField.PADDING);
-        if( pioneer != null )
-            x = /*BattleField.WIDTH - */pioneer.x + random;
-        y = Math.random() * (BattleField.HEIGHT * 0.3);
-        int id = battleRoom.summonUnit(1, cardType, Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, x)), y);
+        int id = battleRoom.summonUnit(1, cardType, x, y);
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
             lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
             lastSummonTime = battleField.now + SUMMON_DELAY;
+            return;
         }
+
+        // fake stronger bot
+        if( battleField.games.get(0).player.get_battleswins() > 3 )
+            battleField.elixirSpeeds.set(1, battleRoom.endCalculator.ratio() > 1 ? 1 + battleField.difficulty * 0.03 : 1);
     }
 
     void chatStarting(int battleRatio)
