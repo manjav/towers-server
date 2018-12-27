@@ -134,7 +134,7 @@ public class BattleUtils
                 ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
                 if( registeredPlayers != null )
                     for (Game g : registeredPlayers)
-                        if ( g.player.id == playerId )
+                        if( g.player.id == playerId )
                             return room;
             }
         }

@@ -50,13 +50,11 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class BattleRoom extends SFSExtension 
 {
@@ -125,7 +123,7 @@ public class BattleRoom extends SFSExtension
 			} catch (IOException e) { e.printStackTrace(); }
 		}
 
-		battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), field, 0, Instant.now().toEpochMilli(), room.containsProperty("hasExtraTime"));
+		battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), field, 0, Instant.now().toEpochMilli(), room.containsProperty("hasExtraTime"), room.containsProperty("isFriendly"));
 		battleField.unitsHitCallback = new HitUnitCallback(this);
 		eventCallback = new BattleEventCallback(this);
 		if( battleField.field.type.equals(FieldData.TYPE_TOUCHDOWN) )
@@ -175,9 +173,7 @@ public class BattleRoom extends SFSExtension
 		int[] keys = getChangedUints();
 		if( keys != null )
 		{
-			reservedUnitIds = new ArrayList();
-			for( int k : keys )
-				reservedUnitIds.add(k);
+			reservedUnitIds = Arrays.stream(keys).boxed().collect(Collectors.toList());
 			ISFSObject units = new SFSObject();
 			units.putIntArray("keys", reservedUnitIds);
 			listOfVars.add(new SFSRoomVariable("units", units));
@@ -403,7 +399,7 @@ public class BattleRoom extends SFSExtension
 			outcomeSFS.putText("name", game.player.nickName);
 			outcomeSFS.putInt("score", endCalculator.scores[i]);
 
-			outcomesList[i] = Outcome.get( game, battleField.field, endCalculator.scores[i], (float)endCalculator.scores[i] / (float)endCalculator.scores[i==0?1:0], now );
+			outcomesList[i] = Outcome.get( game, battleField, endCalculator.scores[i], (float)endCalculator.scores[i] / (float)endCalculator.scores[i==0?1:0], now );
 			//trace("i:", i, "scores:"+scores[i], "ratio:"+(float)numBuildings[i] / (float)numBuildings[i==0?1:0] );
 			if( battleField.field.isOperation() )
 			{

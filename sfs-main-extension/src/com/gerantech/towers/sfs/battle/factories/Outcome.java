@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.battle.factories;
 
 import com.gt.towers.Game;
-import com.gt.towers.battle.fieldes.FieldData;
+import com.gt.towers.battle.BattleField;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -19,22 +19,22 @@ public class Outcome
     public static int MIN_POINTS = 5;
     public static int COE_POINTS = 10;
 
-    public static IntIntMap get(Game game, FieldData field, int score, float ratio, int now)
+    public static IntIntMap get(Game game, BattleField battleField, int score, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();
-        if( game.player.inFriendlyBattle )
+        if( battleField.friendlyMode )
         {
             ret.set(ResourceType.R15_BATTLES_FRIENDLY, 1);
             ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
             return ret;
         }
 
-        if( field.isOperation() )
+        if( battleField.field.isOperation() )
         {
             if( game.player.isBot() )
                 return ret;
 
-            int diffScore = score - game.player.operations.get(field.index);
+            int diffScore = score - game.player.operations.get(battleField.field.index);
             boolean newRecord = diffScore > 0;
 
             if( game.player.inTutorial() )
@@ -46,7 +46,7 @@ public class Outcome
                 ret.set(ResourceType.R1_XP, diffScore + 1);
 
                 // soft-currency
-                ret.set(ResourceType.R3_CURRENCY_SOFT, 10 * diffScore + field.index * 2);
+                ret.set(ResourceType.R3_CURRENCY_SOFT, 10 * diffScore + battleField.field.index * 2);
             }
         }
         else

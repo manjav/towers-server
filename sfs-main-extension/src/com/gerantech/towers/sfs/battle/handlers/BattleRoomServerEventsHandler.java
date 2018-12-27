@@ -6,7 +6,6 @@ import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
-import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
@@ -21,9 +20,11 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -50,10 +51,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			sendBattleData(user, true);
 			return;
 		}
-
-		Player player = ((Game) user.getSession().getProperty("core")).player;
-		if( !user.isNpc() )
-			player.inFriendlyBattle = room.containsProperty("isFriendly");
 
 		// Rejoin to previous room
 		if( (Integer)room.getProperty("state") == BattleField.STATE_2_STARTED )
@@ -165,7 +162,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putUtfString("name", g.player.nickName);
 			p.putInt("xp", g.player.get_xp());
 			p.putInt("point", g.player.get_point());
-			p.putSFSArray("deck", SFSDataModel.toSFSArray(roomClass.battleField.decks.get(i)));
+			p.putIntArray("deck", Arrays.stream(roomClass.battleField.decks.get(i).keys()).boxed().collect(Collectors.toList()));
 			p.putInt("score", roomClass.endCalculator.scores[i]);
 
 			if( isSpectator )

@@ -60,7 +60,7 @@ public class BattleBot
             lastHelpTime = battleField.now + SUMMON_DELAY * 2;
         if( lastSummonTime > battleField.now )
             return;
-        int cardType = battleField.decks.get(1).get(lastCardIndexUsed);
+        int cardType = battleField.decks.get(1).get(lastCardIndexUsed).type;
         Unit playerHeader = null, botHeader = null;
         double x = BattleField.WIDTH * Math.random();
         for( Map.Entry<Object, Unit> entry : battleField.units._map.entrySet() )
