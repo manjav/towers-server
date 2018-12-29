@@ -20,6 +20,7 @@ import java.util.Map;
 public class BattleBot
 {
     static final int SUMMON_DELAY = 3000;
+    final int[] botDeck;
     SFSExtension ext;
     BattleRoom battleRoom;
     BattleField battleField;
@@ -37,6 +38,7 @@ public class BattleBot
 
         chatPatams = new SFSObject();
         chatPatams.putDouble("ready", battleField.now + 15000);
+        botDeck = battleField.decks.get(1).keys();
 
         ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.R2_POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.R2_POINT), " winRate:" + battleField.games.get(0).player.resources.get(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
     }
@@ -60,7 +62,7 @@ public class BattleBot
             lastHelpTime = battleField.now + SUMMON_DELAY * 2;
         if( lastSummonTime > battleField.now )
             return;
-        int cardType = battleField.decks.get(1).get(lastCardIndexUsed).type;
+        int cardType = botDeck[lastCardIndexUsed];
         Unit playerHeader = null, botHeader = null;
         double x = BattleField.WIDTH * Math.random();
         for( Map.Entry<Object, Unit> entry : battleField.units._map.entrySet() )
@@ -86,7 +88,7 @@ public class BattleBot
         // when battlefield is empty
         if( (playerHeader == null && CardTypes.isSpell(cardType)) || (botHeader == null && cardType == 109) )// skip spells and healer
         {
-            lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
+            lastCardIndexUsed = lastCardIndexUsed == botDeck.length - 1 ? 0 : lastCardIndexUsed + 1;
             return;
         }
 
@@ -119,7 +121,7 @@ public class BattleBot
         if( id >= 0 )
         {
             //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
-            lastCardIndexUsed = lastCardIndexUsed == battleField.decks.get(1).keys().length - 1 ? 0 : lastCardIndexUsed + 1;
+            lastCardIndexUsed = lastCardIndexUsed == botDeck.length - 1 ? 0 : lastCardIndexUsed + 1;
             lastSummonTime = battleField.now + SUMMON_DELAY;
             return;
         }
