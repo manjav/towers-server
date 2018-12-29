@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.battle.handlers;
 import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.battle.BattleUtils;
 import com.gt.towers.Game;
@@ -36,7 +35,6 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         hasExtraTime = params.containsKey("hasExtraTime");
         if( params.containsKey("spectatedUser") )
         {
-            index -= 100000;
             theRoom = getParentExtension().getParentZone().getRoomById(index);
             if( theRoom != null )
                 BattleUtils.getInstance().join (sender, theRoom, params.getText("spectatedUser"));
@@ -53,7 +51,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             if( joinedRoomId > -1 )
                 theRoom = getParentExtension().getParentZone().getRoomById(joinedRoomId);
             else
-                theRoom = findWaitingBattlsRoom(user);
+                theRoom = findWaitingBattleRoom(user);
         }
 
         BattleUtils bu = BattleUtils.getInstance();
@@ -63,7 +61,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         bu.join(user, theRoom, "");
     }
 
-    private Room findWaitingBattlsRoom(User user)
+    private Room findWaitingBattleRoom(User user)
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
