@@ -164,11 +164,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putInt("point", g.player.get_point());
 			p.putIntArray("deck", Arrays.stream(roomClass.battleField.decks.get(i).keys()).boxed().collect(Collectors.toList()));
 			p.putInt("score", roomClass.endCalculator.scores[i]);
-
-			if( isSpectator )
-				sfsO.putSFSObject( i == 0 ? "allis" : "axis", p );
-			else
-				sfsO.putSFSObject( g.player.id == game.player.id ? "allis" : "axis", p );
+			sfsO.putSFSObject( i == 0 ? "p0" : "p1", p );
 
 			i ++;
 		}
