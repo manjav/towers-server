@@ -162,7 +162,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putUtfString("name", g.player.nickName);
 			p.putInt("xp", g.player.get_xp());
 			p.putInt("point", g.player.get_point());
-			p.putIntArray("deck", Arrays.stream(roomClass.battleField.decks.get(i).keys()).boxed().collect(Collectors.toList()));
+			p.putIntArray("deck", (List<Integer>)(List<?>) roomClass.battleField.decks.get(i)._queue);
 			p.putInt("score", roomClass.endCalculator.scores[i]);
 			sfsO.putSFSObject( i == 0 ? "p0" : "p1", p );
 
