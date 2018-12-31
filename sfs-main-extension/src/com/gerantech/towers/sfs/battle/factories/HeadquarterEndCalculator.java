@@ -13,6 +13,8 @@ public class HeadquarterEndCalculator extends EndCalculator
     public boolean check()
     {
        // roomClass.trace("check", scores[0] + scores[1]);
-        return( scores[0] + scores[1] > 0 );
+        if( scores[0] == 3 || scores[1] == 3 )
+            return true;
+        return false;
     }
 }

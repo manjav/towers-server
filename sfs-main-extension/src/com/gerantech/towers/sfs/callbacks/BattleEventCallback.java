@@ -14,7 +14,7 @@ import java.util.Map;
 public class BattleEventCallback implements EventCallback
 {
     private final BattleRoom battleRoom;
-    private boolean waitForConquest = true;
+//    private boolean waitForConquest = true;
 
     public BattleEventCallback(BattleRoom battleRoom)
     {
@@ -31,14 +31,13 @@ public class BattleEventCallback implements EventCallback
     {
         if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_4_DIPOSED )
         {
-            if( waitForConquest && battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
+            if( battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
             {
+                int other = battleRoom.battleField.units.get(id).side == 0 ? 1 : 0;
                 if( battleRoom.battleField.units.get(id).card.type == 201 )
-                {
-                    waitForConquest = false;
-                    battleRoom.endCalculator.scores[id] = 0;
-                    battleRoom.endCalculator.scores[id == 0 ? 1 : 0] = 1;
-                }
+                    battleRoom.endCalculator.scores[other] = Math.min(3, battleRoom.endCalculator.scores[other] + 3);
+                if( battleRoom.battleField.units.get(id).card.type == 221 )
+                    battleRoom.endCalculator.scores[other] ++;
             }
         }
     }
