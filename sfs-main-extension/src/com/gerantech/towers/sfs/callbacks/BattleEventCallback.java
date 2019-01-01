@@ -29,7 +29,7 @@ public class BattleEventCallback implements EventCallback
     @Override
     public void dispatch(int id, String type, Object data)
     {
-        if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_4_DIPOSED )
+        if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_8_DIPOSED )
         {
             if( battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
             {

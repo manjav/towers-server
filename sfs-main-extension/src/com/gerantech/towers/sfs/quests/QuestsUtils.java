@@ -67,8 +67,8 @@ public class QuestsUtils
     public void updateAll(Player player, ISFSArray quests)
     {
 
-        ISFSObject q = null;
-        Quest quest = null;
+        ISFSObject q;
+        Quest quest;
         player.quests = new Array();
         for(int i = 0; i < quests.size(); i++ )
         {

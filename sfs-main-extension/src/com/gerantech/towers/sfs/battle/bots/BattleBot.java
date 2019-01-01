@@ -64,7 +64,7 @@ public class BattleBot
         double x = BattleField.WIDTH * Math.random();
         for( Map.Entry<Object, Unit> entry : battleField.units._map.entrySet() )
         {
-            if( CardTypes.isBuilding((Integer) entry.getKey()) )
+            if( !CardTypes.isTroop((Integer) entry.getKey()) )
                 continue;
             if( entry.getValue().side == 0 )
             {
@@ -101,7 +101,7 @@ public class BattleBot
             cardType = battleField.decks.get(1).queue_get(cardIndex);
 
             if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
-                y = playerHeader.y - (CardTypes.isBuilding(playerHeader.card.type) ? 0 : 200);
+                y = playerHeader.y - (CardTypes.isTroop(playerHeader.card.type) ? 200 : 0);
             else if( cardType == 109 && botHeader != null )//summon healer for covering
                 y = botHeader.y - 300;
 
