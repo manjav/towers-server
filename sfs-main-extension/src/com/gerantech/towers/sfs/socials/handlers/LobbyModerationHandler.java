@@ -39,7 +39,8 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
         modMember = null;
         Short action = params.getShort("pr");
         int allSize = members.size();
-        for (int i = 0; i < allSize; i++) {
+        for (int i = 0; i < allSize; i++)
+        {
             if( members.getSFSObject(i).getInt("id").equals(params.getInt("id")) )
                 targetMember = members.getSFSObject(i);
             else if( members.getSFSObject(i).getInt("id").equals(game.player.id) )

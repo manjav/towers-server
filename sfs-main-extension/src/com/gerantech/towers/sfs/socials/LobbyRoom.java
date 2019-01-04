@@ -101,7 +101,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room = battleUtils.make(sender, FieldData.TYPE_TOUCHDOWN, 0, 1, false);
+            Room room = battleUtils.make(sender, params.containsKey("bt") ? FieldData.TYPE_TOUCHDOWN : FieldData.TYPE_HEADQUARTER, 0, 1, false);
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
