@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.battle.factories;
 
+import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.constants.ExchangeType;
@@ -19,22 +20,22 @@ public class Outcome
     public static int MIN_POINTS = 5;
     public static int COE_POINTS = 8;
 
-    public static IntIntMap get(Game game, BattleField battleField, int score, float ratio, int now)
+    public static IntIntMap get(Game game, BattleRoom battleRoom, int star, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();
-        if( battleField.friendlyMode )
+        if( battleRoom.battleField.friendlyMode )
         {
             ret.set(ResourceType.R15_BATTLES_FRIENDLY, 1);
             ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
             return ret;
         }
 
-        if( battleField.field.isOperation() )
+        if( battleRoom.battleField.field.isOperation() )
         {
             if( game.player.isBot() )
                 return ret;
 
-            int diffScore = score - game.player.operations.get(battleField.field.index);
+            int diffScore = star - game.player.operations.get(battleRoom.battleField.field.index);
             boolean newRecord = diffScore > 0;
 
             if( game.player.inTutorial() )
@@ -46,7 +47,7 @@ public class Outcome
                 ret.set(ResourceType.R1_XP, diffScore + 1);
 
                 // soft-currency
-                ret.set(ResourceType.R3_CURRENCY_SOFT, 10 * diffScore + battleField.field.index * 2);
+                ret.set(ResourceType.R3_CURRENCY_SOFT, 10 * diffScore + battleRoom.battleField.field.index * 2);
             }
         }
         else
@@ -54,7 +55,7 @@ public class Outcome
             // points
             int point = 0;
             if( ratio > 1 )
-                point = (int) (MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
+                point = (int) (MIN_POINTS + star * COE_POINTS + Math.round(Math.random() * 8 - 4));
             else if( ratio < 1 )
                 point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
@@ -71,12 +72,12 @@ public class Outcome
             // battle stats
             ret.set(ResourceType.R12_BATTLES, 1);
             ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
-            ret.set(ResourceType.R16_WIN_RATE, getWinStreak(game, arena, score));
+            ret.set(ResourceType.R16_WIN_RATE, getWinRate(game, arena, star, ratio));
 
             if( point > 0 )
             {
                 // soft-currency
-                ret.set(ResourceType.R3_CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                ret.set(ResourceType.R3_CURRENCY_SOFT, 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
                 // num wins
                 ret.set(ResourceType.R13_BATTLES_WINS, 1);
@@ -95,18 +96,19 @@ public class Outcome
         return ret;
     }
 
-    private static int getWinStreak(Game game, int arena, int score)
+    private static int getWinRate(Game game, int arena, int star, float ratio)
     {
-        int ret = score > 0 ? 1 : -1;
+        int ret = star > 0 ? 1 : -1;
         if( arena == 0 )
             return ret;
 
-        int winStreak = game.player.resources.get(ResourceType.R16_WIN_RATE);
-        if( winStreak > 3 || winStreak < -3 )
-            ret *= (int)Math.ceil(winStreak / 2);
-
+        int winRate = game.player.getResource(ResourceType.R16_WIN_RATE);
+        //if( winRate > 3 || winRate < -3 )
+        //    ret *= (int) Math.abs(winRate * 0.5);
+        if( ratio > 1 )
+            ret *= star;
         Arena a = game.arenas.get(arena);
-        if( ret < 0 && winStreak < a.minWinStreak )
+        if( ret < 0 && winRate < a.minWinStreak )
             ret = 0;
         return ret;
     }

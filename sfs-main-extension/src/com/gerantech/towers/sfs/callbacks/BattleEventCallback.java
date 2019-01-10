@@ -6,6 +6,7 @@ import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.GameObject;
 import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
+import com.gt.towers.constants.CardTypes;
 import com.gt.towers.events.BattleEvent;
 import com.gt.towers.events.EventCallback;
 import com.smartfoxserver.v2.entities.data.SFSObject;
@@ -39,12 +40,12 @@ public class BattleEventCallback implements EventCallback
         // when units disposed
         if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_8_DIPOSED )
         {
-            if( battleRoom.battleField.units.get(id).card.type == 201 || battleRoom.battleField.units.get(id).card.type == 221 )
+            if( battleRoom.battleField.units.get(id).card.type >= 201 )
             {
                 int other = battleRoom.battleField.units.get(id).side == 0 ? 1 : 0;
                 if( battleRoom.battleField.units.get(id).card.type == 201 )
                     battleRoom.endCalculator.scores[other] = Math.min(3, battleRoom.endCalculator.scores[other] + 3);
-                if( battleRoom.battleField.units.get(id).card.type == 221 )
+                if( CardTypes.isHero(battleRoom.battleField.units.get(id).card.type) )
                     battleRoom.endCalculator.scores[other] ++;
 
                 SFSObject params = new SFSObject();

@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.battle.bots;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
+import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.ResourceType;
@@ -86,9 +87,13 @@ public class BattleBot
         if( playerHeader == null )
         {
             cardType = battleField.decks.get(1).queue_get(0);
-            if( CardTypes.isSpell(cardType) )
+            if( CardTypes.isSpell(cardType) && battleField.field.type == FieldData.TYPE_TOUCHDOWN )
                 return;
-            if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.7) )// waiting for more elixir to create waves
+
+            if( cardType == 109 )
+                return;
+
+            if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
                 return;
         }
         else
