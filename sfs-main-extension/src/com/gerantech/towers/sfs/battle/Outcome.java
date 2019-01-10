@@ -19,7 +19,7 @@ public class Outcome
     public static int MIN_POINTS = 5;
     public static int COE_POINTS = 4;
 
-    public static IntIntMap get(Game game, FieldData field, int score, float ratio, int now)
+    public static IntIntMap get(Game game, FieldData field, int star, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();
         if( game.player.inFriendlyBattle )
@@ -34,7 +34,7 @@ public class Outcome
             if( game.player.isBot() )
                 return ret;
 
-            int diffScore = score - game.player.operations.get(field.index);
+            int diffScore = star - game.player.operations.get(field.index);
             boolean newRecord = diffScore > 0;
 
             if( game.player.inTutorial() )
@@ -54,7 +54,7 @@ public class Outcome
             // points
             int point = 0;
             if( ratio > 1 )
-                point = (int) (MIN_POINTS + score * COE_POINTS + Math.round(Math.random() * 8 - 4));
+                point = (int) (MIN_POINTS + star * COE_POINTS + Math.round(Math.random() * 8 - 4));
             else if( ratio < 1 )
                 point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
@@ -71,12 +71,14 @@ public class Outcome
             // battle stats
             ret.set(ResourceType.BATTLES, 1);
             ret.set(ResourceType.BATTLES_WEEKLY, 1);
-            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, score));
+            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, star));
+            ret.set(ResourceType.STARS, star);
+            ret.set(ResourceType.STARS_WEEKLY, star);
 
             if( point > 0 )
             {
                 // soft-currency
-                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, score) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
                 // num wins
                 ret.set(ResourceType.BATTLES_WINS, 1);
