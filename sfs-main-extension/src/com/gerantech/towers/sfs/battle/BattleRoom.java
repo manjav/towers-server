@@ -26,6 +26,7 @@ import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Card;
 import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.CardTypes;
+import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
@@ -429,12 +430,25 @@ public class BattleRoom extends SFSExtension
 					insertMap.set(r, outcomesList[i].get(r));
 				trace(game.player.id + ": (", r, outcomesList[i].get(r) , ")" );
 
+				if( game.player.isBot() )
+					continue;
+
 				// update exchange
-				if( ResourceType.isBook(r) && !game.player.isBot() )
+				if( ResourceType.isBook(r) )
 				{
 					earnedBook = game.exchanger.items.get(outcomesList[i].get(r));
 					earnedBook.outcomesStr = r + ":" + game.player.get_arena(0);
 					earnedBook.expiredAt = 0;
+				}
+
+				if( r == ResourceType.R17_STARS && game.player.get_battleswins() > 3 )
+				{
+					int res = game.exchanger.collectStars(outcomesList[i].get(r), (int) (battleField.now / 1000));
+					try {
+						ExchangeItem stars = game.exchanger.items.get(ExchangeType.C104_STARS);
+						if( res == MessageTypes.RESPONSE_SUCCEED )
+							dbUtils.updateExchange(ExchangeType.C104_STARS, game.player.id, stars.expiredAt, stars.numExchanges, "", "");
+					} catch (Exception e) { e.printStackTrace(); }
 				}
 
 				outcomeSFS.putInt(r + "", outcomesList[i].get(r));

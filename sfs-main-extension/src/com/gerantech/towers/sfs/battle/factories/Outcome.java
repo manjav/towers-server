@@ -73,6 +73,8 @@ public class Outcome
             ret.set(ResourceType.R12_BATTLES, 1);
             ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
             ret.set(ResourceType.R16_WIN_RATE, getWinRate(game, arena, star, ratio));
+            ret.set(ResourceType.R17_STARS, star);
+            ret.set(ResourceType.R18_STARS_WEEKLY, star);
 
             if( point > 0 )
             {

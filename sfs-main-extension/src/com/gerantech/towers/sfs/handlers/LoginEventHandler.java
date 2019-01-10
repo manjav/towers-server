@@ -342,7 +342,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		for(int i=0; i<exchanges.size(); i++)
 		{
 			element = exchanges.getSFSObject(i);
-			element.putInt("num_exchanges", ExchangeType.getCategory(element.getInt("type")) == ExchangeType.C100_FREES && element.getInt("expired_at") < now ? 0 : element.getInt("num_exchanges"));
+
+			element.putInt("num_exchanges", element.getInt("type") > 100 && element.getInt("type") < 104 && element.getInt("expired_at") < now ? 0 : element.getInt("num_exchanges"));
 			addExchangeItem(game, exchanges, element.getInt("type"), element.getText("reqs"), element.getText("outcome"), element.getInt("num_exchanges"), element.getInt("expired_at"), false);
 		}
 
@@ -365,6 +366,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			addExchangeItem(game, exchanges, ExchangeType.C42_RENAME,	"",	"" ,				0, 0, true);
 		if( !game.exchanger.items.exists(ExchangeType.C43_ADS) )
 			addExchangeItem(game, exchanges, ExchangeType.C43_ADS,		"",	"51:" + arena,	0, 0, true);
+		if( !game.exchanger.items.exists(ExchangeType.C104_STARS) )
+			addExchangeItem(game, exchanges, ExchangeType.C104_STARS,	"",	"",				0,		now,	 true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MAGIC -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		IntIntMap magics = Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE, arena, game.player.splitTestCoef);
