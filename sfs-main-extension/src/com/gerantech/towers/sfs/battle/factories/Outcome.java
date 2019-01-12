@@ -2,12 +2,12 @@ package com.gerantech.towers.sfs.battle.factories;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Game;
-import com.gt.towers.battle.BattleField;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.others.Arena;
 import com.gt.towers.utils.maps.IntIntMap;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,7 @@ import java.util.List;
 public class Outcome
 {
     public static int MIN_POINTS = 5;
-    public static int COE_POINTS = 8;
-
+    public static int COE_POINTS = 7;
     public static IntIntMap get(Game game, BattleRoom battleRoom, int star, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();

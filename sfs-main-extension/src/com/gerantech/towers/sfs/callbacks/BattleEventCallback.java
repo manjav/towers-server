@@ -33,7 +33,7 @@ public class BattleEventCallback implements EventCallback
     @Override
     public void dispatch(int id, String type, Object data)
     {
-        // only headquarter battle is allive
+        // only headquarter battle is alive
         if( battleRoom.battleField.state >= BattleField.STATE_4_ENDED || !battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
             return;
 

@@ -140,12 +140,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		if( player.isNpc() )
 			return;
 
-		Game game = (Game) player.getSession().getProperty("core");
 		SFSObject sfsO = new SFSObject();
 		sfsO.putInt("side", roomClass.getPlayerGroup(player) );
 		sfsO.putInt("index", (int) room.getProperty("index"));
-		sfsO.putInt("startAt", (int)room.getProperty("startAt"));
+		sfsO.putInt("startAt", roomClass.battleField.startAt);
 		sfsO.putInt("roomId", room.getId());
+		sfsO.putDouble("now", roomClass.battleField.now);
 		sfsO.putText("map", roomClass.battleField.field.mapLayout);
 		sfsO.putText("type", (String) room.getProperty("type"));
 		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));

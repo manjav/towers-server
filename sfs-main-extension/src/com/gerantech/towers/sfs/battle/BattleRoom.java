@@ -124,7 +124,8 @@ public class BattleRoom extends SFSExtension
 			} catch (IOException e) { e.printStackTrace(); }
 		}
 
-		battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), field, 0, Instant.now().toEpochMilli(), room.containsProperty("hasExtraTime"), room.containsProperty("isFriendly"));
+		Instant instant = Instant.now();
+		battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), field, 0, instant.getEpochSecond(), instant.toEpochMilli(), room.containsProperty("hasExtraTime"), room.containsProperty("isFriendly"));
 		battleField.unitsHitCallback = new HitUnitCallback(this);
 		eventCallback = new BattleEventCallback(this);
 		if( battleField.field.type.equals(FieldData.TYPE_TOUCHDOWN) )
@@ -441,7 +442,7 @@ public class BattleRoom extends SFSExtension
 					earnedBook.expiredAt = 0;
 				}
 
-				if( r == ResourceType.R17_STARS && game.player.get_battleswins() > 3 )
+				if( r == ResourceType.R17_STARS && game.player.get_arena(0) > 0 )
 				{
 					int res = game.exchanger.collectStars(outcomesList[i].get(r), (int) (battleField.now / 1000));
 					try {
