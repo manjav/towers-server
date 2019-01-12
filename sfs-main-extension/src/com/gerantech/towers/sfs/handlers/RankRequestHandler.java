@@ -31,7 +31,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-		RankData rd = new RankData(game.player.id, game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY));
+		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY), game.player.getResource(ResourceType.STARS_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else
@@ -61,7 +61,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		while( true )
 		{
 			RankData r = iterator.next();
-			players.addSFSObject(toSFS(r));
+			players.addSFSObject(toSFS(game.player.id, r));
 			if( !iterator.hasNext() )
 			{
 				lastHeroPoint = r.point;
@@ -72,7 +72,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		// find near me
 		allUsers = new ArrayList();
 		allUsers.addAll(result);
-		int index = indexOf(result, playerRD.id, playerRD.point);
+		int index = indexOf(result, game.player.id, playerRD.point);
 		/*if( index > PAGE_SIZE - 1 )
 		{
 			players.addSFSObject( new SFSObject() );
@@ -84,7 +84,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			
 			/*if( arenaIndex < 3 )
 			{*/
-				addFakeRankData(players, users, playerRD, lastHeroPoint);//, game, arenaIndex);
+				addFakeRankData(players, users, game.player.id, playerRD, lastHeroPoint);//, game, arenaIndex);
 		/*	}
 			else
 			{
@@ -98,14 +98,14 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		send("rank", params, sender);
 	}
 
-	private void addFakeRankData(SFSArray players, IMap<Integer, RankData> users, RankData playerRD, int lastHeroPoint)
+	private void addFakeRankData(SFSArray players, IMap<Integer, RankData> users, int id,  RankData playerRD, int lastHeroPoint)
 	{
 		//List<RankData> fakedRanks = RankingUtils.getInstance().getFakedNearMeRanking(users, playerRD.id, 0, 0);
 		float rankingRatio = (float) (1 - Math.log( 1 + ( 1.7183 * ( (float)playerRD.point / (float)lastHeroPoint) ) ));
 		int playerFakeRanking = Math.round(rankingRatio * users.size() * 0.5f) + PAGE_SIZE;
 		//fakedRanks.add(fakedRanks.size()/2, playerRD);
 
-		ISFSObject p = toSFS(playerRD);
+		ISFSObject p = toSFS(id, playerRD);
 		p.putInt("s", playerFakeRanking);
 		players.addSFSObject(p);
 
@@ -168,16 +168,14 @@ public class RankRequestHandler extends BaseClientRequestHandler
 	}
 
 	*/
-	private ISFSObject toSFS(RankData r)
+	private ISFSObject toSFS(int id, RankData r)
 	{
 		SFSObject player = new SFSObject();
-		player.putInt("i", r.id);
+		player.putInt("i", id);
 		player.putText("n", r.name);
 		player.putInt("p", r.point);
-		//player.putInt("x", r.xp);
 		return player;
 	}
-
 
 	private int indexOf(Collection<RankData> ranks, int id, int point)
 	{
@@ -189,12 +187,13 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		if( lastElement.point > point )
 			return -1;
 
-		int i = 0;
+		/*int i = 0;
 		for (RankData r : ranks) {
 			if (r.id == id)
 				return i;
 			i ++;
 		}
-		return -1;
+		return -1;*/
+		return 0;
 	}
 }

@@ -160,7 +160,7 @@ public class BattleUtils
                 ext.getApi().leaveRoom(u, room);
                 /*if ( u.isNpc() )
                 {
-                    RankingUtils.getInstance().setXP(Integer.parseInt(u.getName()), -1);
+                    RankingUtils.getInstance().setWeeklyBattles(Integer.parseInt(u.getName()), -1);
                     ext.getApi().disconnect(u.getSession());
                 }*/
             }
