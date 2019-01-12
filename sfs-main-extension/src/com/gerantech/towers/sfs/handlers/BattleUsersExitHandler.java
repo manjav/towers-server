@@ -18,9 +18,10 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
         User user = (User) arg.getParameter(SFSEventParam.USER);
-        if( user.isNpc() ) {
+        if( user.isNpc() )
+        {
             // return npc to npc-opponents list
-            RankingUtils.getInstance().setXP(Integer.parseInt(user.getName()), -1);
+            RankingUtils.getInstance().setWeeklyBattles(Integer.parseInt(user.getName()), -1);
             return;
         }
 

@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.Game;
+import com.gt.towers.constants.ResourceType;
 import com.gt.towers.others.Arena;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -42,30 +43,6 @@ public class RankingUtils
         return _instance;
     }
 
-    public void fillByIds(IMap<Integer, RankData> users, ISFSArray members)
-    {
-        List<Integer> ids = new ArrayList();
-        for (int i = members.size()-1; i >= 0 ; i--)
-            if( !users.containsKey(members.getSFSObject(i).getInt("id")) )
-                ids.add (members.getSFSObject(i).getInt("id"));
-
-        if( ids.size() == 0 )
-            return;
-
-        String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = 1001 AND (";
-        for (int i = ids.size()-1; i >=0 ; i--)
-            query += " players.id = " + ids.get(i) + ( i==0 ? " );" : " OR ");
-
-        try {
-            ISFSArray players = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
-            for( int p=0; p<players.size(); p++ )
-            {
-                ISFSObject pp = players.getSFSObject(p);
-                users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-    }
-
     public void fillActives()
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
@@ -73,38 +50,53 @@ public class RankingUtils
             return;
         ext.trace("start in-memory filling in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         // insert real champions
-        try {
+        try
+        {
             IDBManager dbManager = ext.getParentZone().getDBManager();
 
             // fill active players
-            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1204 AND resources.count>0";
-            ISFSArray players = dbManager.executeQuery(query, new Object[] {});
-            for( int p=0; p<players.size(); p++ )
+            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.R14_BATTLES_WEEKLY + " AND resources.count > 0";
+            ISFSArray dbResult = dbManager.executeQuery(query, new Object[] {});
+            for( int p=0; p<dbResult.size(); p++ )
             {
-                ISFSObject pp = players.getSFSObject(p);
-                users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), 0, pp.getInt("count")));
+                ISFSObject pp = dbResult.getSFSObject(p);
+                users.put(pp.getInt("id"), new RankData(pp.getUtfString("name"), 0, pp.getInt("count"), 0));
             }
             ext.trace("filled in-memory actives in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
 
             // fill top players
-            query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type=1001 AND resources.count>0";
-            players = dbManager.executeQuery(query, new Object[]{});
-            for( int p=0; p<players.size(); p++ )
+            query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.R2_POINT + " AND resources.count > 0";
+            dbResult = dbManager.executeQuery(query, new Object[]{});
+            for( int p=0; p < dbResult.size(); p++ )
             {
-                ISFSObject pp = players.getSFSObject(p);
+                ISFSObject pp = dbResult.getSFSObject(p);
                 if( users.containsKey(pp.getInt("id")) )
                 {
                     RankData rd = users.get(pp.getInt("id"));
                     rd.point = pp.getInt("count");
-                    users.replace(rd.id, rd);
+                    users.replace(pp.getInt("id"), rd);
                 }
                 else
                 {
-                    users.put(pp.getInt("id"), new RankData(pp.getInt("id"), pp.getUtfString("name"), pp.getInt("count"), 0));
+                    users.put(pp.getInt("id"), new RankData(pp.getUtfString("name"), pp.getInt("count"), 0, 0));
                 }
-
             }
             ext.trace("filled in-memory tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
+
+            // fill stars of players
+            query = "SELECT resources.player_id, resources.count FROM resources WHERE resources.type = " + ResourceType.R18_STARS_WEEKLY + " AND resources.count > 0";
+            dbResult = dbManager.executeQuery(query, new Object[]{});
+            for( int p=0; p < dbResult.size(); p++ )
+            {
+                ISFSObject pp = dbResult.getSFSObject(p);
+                if( users.containsKey(pp.getInt("player_id")) )
+                {
+                    RankData rd = users.get(pp.getInt("player_id"));
+                    rd.weeklyStars = pp.getInt("count");
+                    users.replace(pp.getInt("player_id"), rd);
+                }
+            }
+            ext.trace("filled in-memory stars in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
         } catch (SQLException e) { e.printStackTrace(); }
 
         // insert npcs
@@ -114,7 +106,7 @@ public class RankingUtils
         {
             int len = points.length;
             for ( int i=0;  i<len; i++,start++ )
-                users.put(start , new RankData(start, names[i], points[i], -1));
+                users.put(start , new RankData(names[i], points[i], -1, -1));
         }
         ext.trace("filled in-memory bots in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
@@ -153,12 +145,12 @@ public class RankingUtils
         return result;
     }
 
-    public void setXP(int id, int xp)
+    public void setWeeklyBattles(int id, int battles)
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
         RankData opponent = users.get(id);
-        opponent.xp = xp;
-        users.replace(opponent.id, opponent);
+        opponent.weeklyBattles = battles;
+        users.replace(id, opponent);
     }
 
 
@@ -175,7 +167,7 @@ public class RankingUtils
     {
         EntryObject eo = new PredicateBuilder().getEntryObject();
         int point = users.get(myId).point;
-        Predicate sqlQuery = eo.get("id").notEqual(myId).and(eo.get("point").between(point-to, point-from).or(eo.get("point").between(point+from, point+to)));
+        Predicate sqlQuery = eo.key().notEqual(myId).and(eo.get("point").between(point-to, point-from).or(eo.get("point").between(point+from, point+to)));
 
         //PagingPredicate pagingPredicate = new PagingPredicate(sqlQuery, 20);
         returnList.addAll(users.values(sqlQuery));

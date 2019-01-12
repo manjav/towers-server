@@ -104,7 +104,7 @@ public class DBUtils
         if( hasRankFields )
         {
             IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-            RankData rd = new RankData(player.id, player.nickName,  player.get_point(), player.resources.get(ResourceType.R14_BATTLES_WEEKLY));
+            RankData rd = new RankData(player.nickName,  player.get_point(), player.resources.get(ResourceType.R14_BATTLES_WEEKLY), player.resources.get(ResourceType.R18_STARS_WEEKLY));
             query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.R14_BATTLES_WEEKLY);
 
             if( users.containsKey(player.id))

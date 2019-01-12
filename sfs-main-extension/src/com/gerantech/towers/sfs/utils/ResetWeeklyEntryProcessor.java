@@ -13,18 +13,22 @@ import java.util.Map;
 public class ResetWeeklyEntryProcessor implements EntryProcessor<Integer, RankData>, Serializable
 {
     @Override
-    public Object process(Map.Entry<Integer, RankData> entry) {
+    public Object process(Map.Entry<Integer, RankData> entry)
+    {
         RankData value = entry.getValue();
-        if( value.xp > -1 ) {
-            value.xp = 0;
+ //       if( value.weeklyBattles > 0 || value.weeklyStars > 0 )
+ //       {
+                value.weeklyBattles = 0;
+                value.weeklyStars = 0;
             entry.setValue(value);
-            System.out.print("id:" + value.id + " xp:" + value.xp +"\n");
-        }
+//        System.out.print("id:" + entry.getKey() + " weekly-battles:" + value.weeklyBattles +"\n");
+//        }
         return value;
     }
 
     @Override
-    public EntryBackupProcessor<Integer, RankData> getBackupProcessor() {
+    public EntryBackupProcessor<Integer, RankData> getBackupProcessor()
+    {
         return null;
     }
 }
