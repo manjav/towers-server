@@ -110,7 +110,7 @@ public class BattleBot
             cardType = battleField.decks.get(1).queue_get(cardIndex);
 
             if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
-                y = playerHeader.y - (CardTypes.isTroop(playerHeader.card.type) ? 200 : 0);
+                y = playerHeader.y - (CardTypes.isTroop(playerHeader.card.type) && playerHeader.state == GameObject.STATE_4_MOVING ? 200 : 0);
             else if( cardType == 109 && botHeader != null )//summon healer for covering
                 y = botHeader.y - 300;
 
