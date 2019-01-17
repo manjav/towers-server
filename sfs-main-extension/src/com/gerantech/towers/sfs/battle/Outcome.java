@@ -72,8 +72,11 @@ public class Outcome
             ret.set(ResourceType.BATTLES, 1);
             ret.set(ResourceType.BATTLES_WEEKLY, 1);
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, star));
-            ret.set(ResourceType.STARS, star);
-            ret.set(ResourceType.STARS_WEEKLY, star);
+            if( game.player.get_arena(0) > 0 )
+            {
+                ret.set(ResourceType.STARS, star);
+                ret.set(ResourceType.STARS_WEEKLY, star);
+            }
 
             if( point > 0 )
             {
