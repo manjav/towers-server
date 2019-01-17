@@ -1,7 +1,9 @@
 package com.gerantech.towers.sfs.battle.bots;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
+import com.gt.towers.battle.GameObject;
 import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.CardTypes;
@@ -22,6 +24,7 @@ import java.util.Map;
 public class BattleBot
 {
     static final int SUMMON_DELAY = 3000;
+    Player player;
     SFSExtension ext;
     BattleRoom battleRoom;
     BattleField battleField;
@@ -39,12 +42,13 @@ public class BattleBot
         chatPatams = new SFSObject();
         chatPatams.putDouble("ready", battleField.now + 15000);
 
-        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.R2_POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.R2_POINT), " winRate:" + battleField.games.get(0).player.resources.get(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
+        player = battleField.games.__get(0).player;
+        ext.trace("p-point:" + player.getResource(ResourceType.R2_POINT), "b-point:"+ battleField.games.__get(1).player.getResource(ResourceType.R2_POINT), " winRate:" + player.getResource(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
     }
 
     public void update()
     {
-        if( battleField.state < BattleField.STATE_2_STARTED && (battleField.games.get(0).player.get_battleswins() < 3 || Math.random() < 0.3) )
+        if( battleField.state < BattleField.STATE_2_STARTED && (player.get_battleswins() < 3 || Math.random() < 0.3) )
             return;
         summonCard();
         updateChatProcess();
@@ -52,7 +56,7 @@ public class BattleBot
 
     void summonCard()
     {
-        if( battleField.games.get(0).player.get_battleswins() < 1 )
+        if( player.get_battleswins() < 1 )
             return;
 
         if( lastSummonTime == 0 )
@@ -111,7 +115,7 @@ public class BattleBot
                 y = botHeader.y - 300;
 
             // fake stronger bot
-            if( battleField.games.get(0).player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
+            if( player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
             {
                 ext.trace("help:", battleField.elixirBar.get(1), battleField.difficulty * 0.3);
                 battleField.elixirBar.set(1, battleField.elixirBar.get(1) + battleField.difficulty * 0.3 );
@@ -126,13 +130,13 @@ public class BattleBot
         int id = battleRoom.summonUnit(1, cardType, x, y);
         if( id >= 0 )
         {
-            //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, battleField.games.get(0).player.cards.exists(cardType), xPosition );
+            //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, player.cards.exists(cardType), xPosition );
             lastSummonTime = battleField.now + SUMMON_DELAY;
             return;
         }
 
         // fake stronger bot
-        if( battleField.games.get(0).player.get_battleswins() > 3 )
+        if( player.get_battleswins() > 3 )
             battleField.elixirSpeeds.set(1, battleRoom.endCalculator.ratio() > 1 ? 1 + battleField.difficulty * 0.04 : 1);
     }
 
@@ -152,7 +156,7 @@ public class BattleBot
 
     void chatStarting(int battleRatio)
     {
-        if( battleField.field.isOperation() || battleField.games.get(0).player.inTutorial() )
+        if( battleField.field.isOperation() || player.inTutorial() )
             return;
 
         // verbose bot threshold
@@ -162,7 +166,7 @@ public class BattleBot
         //ext.trace(this.battleRatio, battleRatio);
         if( battleRatio != this.battleRatio )
         {
-            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.get(0)));
+            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.__get(0)));
             chatPatams.putInt("tt", 1);
             chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 500);
         }

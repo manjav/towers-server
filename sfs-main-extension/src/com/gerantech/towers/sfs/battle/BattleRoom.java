@@ -248,7 +248,7 @@ public class BattleRoom extends SFSExtension
 
 			if( CardTypes.isSpell(type) )
 			{
-				Card card = battleField.games.get(side).player.cards.get(type);
+				Card card = battleField.games.__get(side).player.cards.get(type);
 				units.addSFSObject(getSFSUnit(type, id, side, card.level, x, y));
 				params.putSFSArray("units", units);
 				send(Commands.BATTLE_SUMMON_UNIT, params, room.getUserList());
@@ -391,10 +391,10 @@ public class BattleRoom extends SFSExtension
 		SFSArray outcomesSFSData = new SFSArray();
 		int now = (int) Instant.now().getEpochSecond();
 
-		IntIntMap[] outcomesList = new IntIntMap[battleField.games.size()];
-	    for (int i=0; i < battleField.games.size(); i++)
+		IntIntMap[] outcomesList = new IntIntMap[battleField.games.length];
+	    for (int i=0; i < battleField.games.length; i++)
 	    {
-			Game game = battleField.games.get(i);
+			Game game = battleField.games.__get(i);
 
 			SFSObject outcomeSFS = new SFSObject();
 			outcomeSFS.putInt("id", game.player.id);
@@ -477,9 +477,9 @@ public class BattleRoom extends SFSExtension
 		for (int i=0; i < users.size(); i++)
 			send( Commands.BATTLE_END, params, users.get(i) );
 
-		for (int i=0; i < battleField.games.size(); i++)
+		for (int i=0; i < battleField.games.length; i++)
 		{
-			Game game = battleField.games.get(i);    // update active challenges
+			Game game = battleField.games.__get(i);    // update active challenges
 			if( !game.player.isBot() && !battleField.field.isOperation() && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.R2_POINT) > 0 )
 			{
 				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
