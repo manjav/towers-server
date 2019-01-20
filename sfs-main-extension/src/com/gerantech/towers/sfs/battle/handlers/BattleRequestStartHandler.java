@@ -74,7 +74,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             {
                 room = rList.get(r);
 
-                if (!room.isFull() && !room.containsProperty("isFriendly") && (int) room.getProperty("state") == BattleField.STATE_0_WAITING && ((int) room.getProperty("arena")) == arenaIndex)
+                if( !room.isFull() && !room.containsProperty("isFriendly") && (int) room.getProperty("state") == BattleField.STATE_0_WAITING && ((int) room.getProperty("arena")) == arenaIndex )
                     return room;
             }
         }
@@ -82,7 +82,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         {
             e.printStackTrace();
             if( room != null )
-                trace("isFriendly:"+room.containsProperty("isFriendly"),  "state:"+room.getProperty("state"), "arena:"+room.getProperty("arena"));
+                trace("isFriendly:"+room.containsProperty("isFriendly"),  "state:" + room.getProperty("state"), "arena:" + room.getProperty("arena"));
         }
         return null;
     }
