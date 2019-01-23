@@ -69,7 +69,7 @@ public class BattleBot
         double x = BattleField.WIDTH * Math.random();
         for( Map.Entry<Object, Unit> entry : battleField.units._map.entrySet() )
         {
-            if( !CardTypes.isTroop((Integer) entry.getKey()) )
+            if( !CardTypes.isTroop((Integer) entry.getKey()) || entry.getValue().state < GameObject.STATE_2_MORTAL )
                 continue;
             if( entry.getValue().side == 0 )
             {
