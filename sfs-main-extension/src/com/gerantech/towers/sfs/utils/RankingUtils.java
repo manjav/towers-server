@@ -37,7 +37,6 @@ public class RankingUtils
     public void fillActives()
     {
         IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-        ext.trace("names.length:", names.length, "users.size():", users.size());
         if( users.size() > 0 )
             return;
 
