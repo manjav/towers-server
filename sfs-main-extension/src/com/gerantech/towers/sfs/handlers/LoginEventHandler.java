@@ -383,8 +383,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
-		for ( ExchangeItem ex : game.exchanger.items.values() )
-			_exchanges.addSFSObject(ExchangeManager.toSFS(ex));
+		for( int t : game.exchanger.items.keys() )
+			_exchanges.addSFSObject(ExchangeManager.toSFS(game.exchanger.items.get(t)));
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data

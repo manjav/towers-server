@@ -122,9 +122,10 @@ public class Outcome
         int now = (int) Instant.now().getEpochSecond();
         List<Integer> ret = new ArrayList<>();
 
-        for (ExchangeItem ei : game.exchanger.items.values() )
-            if( ei.category == ExchangeType.C110_BATTLES && (forced || ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
-                ret.add(ei.type);
+        int[] keys = game.exchanger.items.keys();
+        for (int k : keys )
+            if( game.exchanger.items.get(k).category == ExchangeType.C110_BATTLES && (forced || game.exchanger.items.get(k).getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
+                ret.add(game.exchanger.items.get(k).type);
         return ret;
     }
 }
