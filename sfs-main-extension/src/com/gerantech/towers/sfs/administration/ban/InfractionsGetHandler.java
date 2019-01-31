@@ -18,7 +18,7 @@ public class InfractionsGetHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		if( !game.player.admin )
 			return;
-		params.putSFSArray("data", BanSystem.getInstance().getInfractions(params.containsKey("id") ? params.getInt("id") : -1, -1, 200, null));
+		params.putSFSArray("data", BanSystem.getInstance().getInfractions(params.containsKey("id") ? params.getInt("id") : 0, -1, 200, null));
 		send(Commands.INFRACTIONS_GET, params, sender);
     }
 }

@@ -128,13 +128,7 @@ public class BanSystem
 
 	public ISFSObject checkBan(int playerId, String udid, long now)
 	{
-		ISFSArray bannedUsers = null;
-		String query = "SELECT message, expire_at, mode FROM banneds WHERE expire_at > FROM_UNIXTIME(" + now + ") AND mode >= 2 AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
-		ext.trace(query);
-		try {
-			bannedUsers = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
-		} catch (SQLException e) { e.printStackTrace(); }
-
+		ISFSArray bannedUsers = getBannedUsers(playerId, udid, 2, now, "message, expire_at, mode");
 		if( bannedUsers == null || bannedUsers.size() == 0 )
 			return null;
 
@@ -144,22 +138,37 @@ public class BanSystem
 		return bannedUsers.getSFSObject(0);
 	}
 
+	public ISFSArray getBannedUsers(int playerId, String udid, int mode, long now, String requestFields)
+	{
+		ISFSArray ret = null;
+		if( requestFields == null )
+			requestFields = "message, expire_at, mode";
+		String timeQuery = now > 0 ? "expire_at > FROM_UNIXTIME(" + now + ")  AND" : "";
+		String query = "SELECT " + requestFields + " FROM banneds WHERE " + timeQuery + " mode >= " + mode + " AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
+		try {
+			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
+		} catch (SQLException e) { e.printStackTrace();}
+		return ret;
+	}
+
 	public ISFSArray getInfractions(int selectedPlayer, int proceed, int size, String requestFields)
 	{
 		if( requestFields == null )
 			requestFields = "players.name, infractions.id, infractions.reporter, infractions.offender, infractions.content, infractions.lobby, infractions.offend_at, infractions.proceed";
+
 		String query = "SELECT " + requestFields + " FROM ";
 		if( requestFields.indexOf("players") > -1 )
 			query += "players INNER JOIN infractions ON players.id = infractions.offender";
 		else
 			query += "infractions";
 
-		if( selectedPlayer > -1 )
-			query += " WHERE infractions.offender=" + selectedPlayer;
+		if( selectedPlayer != 0 )
+			query += " WHERE " + (selectedPlayer > 0 ? "infractions.offender" : "infractions.reporter") + " = " + Math.abs(selectedPlayer);
 		if( proceed > -1 )
-			query += (selectedPlayer > -1 ? " AND" : " WHERE") + " infractions.proceed=" + proceed;
-		query += " ORDER BY infractions.offend_at DESC LIMIT " + size;
-		//ext.trace(query);
+			query += (selectedPlayer != 0 ? " AND" : " WHERE") + " infractions.proceed=" + proceed;
+		query += " ORDER BY infractions.offend_at DESC";
+		if( size > -1 )
+			query += " LIMIT " + size;
 		ISFSArray ret = new SFSArray();
 		try {
 			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
