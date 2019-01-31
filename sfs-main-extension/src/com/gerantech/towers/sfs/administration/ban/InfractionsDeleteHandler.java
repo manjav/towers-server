@@ -18,7 +18,10 @@ public class InfractionsDeleteHandler extends BaseClientRequestHandler
 	{
 		Game game = (Game) sender.getSession().getProperty("core");
 		if( !game.player.admin )
+		{
+			sendResponse(sender, params, MessageTypes.RESPONSE_NOT_ALLOWED);
 			return;
+		}
 
 		try {
 			getParentExtension().getParentZone().getDBManager().executeUpdate("DELETE FROM infractions WHERE id=" + params.getInt("id"), new Object[]{});

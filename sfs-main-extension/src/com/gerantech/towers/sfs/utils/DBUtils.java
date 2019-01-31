@@ -354,4 +354,16 @@ public class DBUtils
             return "Player";
         }
     }
+
+    public String getUDID(int id)
+    {
+        String query = "SELECT udid FROM devices WHERE player_id=" + id;
+        ISFSArray udids = null;
+        try {
+            udids = db.executeQuery(query, new Object[]{});
+        } catch (SQLException e) { e.printStackTrace(); }
+        if( udids != null && udids.size() > 0 )
+            return udids.getSFSObject(0).getText("udid");
+        return null;
+    }
 }
