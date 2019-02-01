@@ -72,7 +72,7 @@ public class Outcome
             ret.set(ResourceType.BATTLES, 1);
             ret.set(ResourceType.BATTLES_WEEKLY, 1);
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, star));
-            if( game.player.get_arena(0) > 0 )
+            if( game.player.get_battleswins() > 4 )
             {
                 ret.set(ResourceType.STARS, star);
                 ret.set(ResourceType.STARS_WEEKLY, star);
@@ -81,7 +81,8 @@ public class Outcome
             if( point > 0 )
             {
                 // soft-currency
-                ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                if( game.player.get_battleswins() > 1 )
+                    ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
 
                 // num wins
                 ret.set(ResourceType.BATTLES_WINS, 1);
