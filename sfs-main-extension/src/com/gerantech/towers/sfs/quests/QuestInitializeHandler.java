@@ -17,7 +17,6 @@ public class QuestInitializeHandler extends BaseClientRequestHandler
     	Game game = (Game) sender.getSession().getProperty("core");
 		QuestsUtils.getInstance().insertNewQuests(game.player);
 		params.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
-		trace(params.getDump());
 		send(Commands.QUEST_INIT, params, sender);
     }
 }
