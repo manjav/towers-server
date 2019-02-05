@@ -124,7 +124,7 @@ public class Outcome
 
         int[] keys = game.exchanger.items.keys();
         for (int k : keys )
-            if( game.exchanger.items.get(k).category == ExchangeType.C110_BATTLES && (forced || game.exchanger.items.get(k).getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
+            if( game.exchanger.items.get(k).category == ExchangeType.C110_BATTLES && game.exchanger.items.get(k).getState(now) == ExchangeItem.CHEST_STATE_EMPTY )
                 ret.add(game.exchanger.items.get(k).type);
         return ret;
     }
