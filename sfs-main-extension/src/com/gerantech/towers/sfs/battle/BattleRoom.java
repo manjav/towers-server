@@ -459,8 +459,19 @@ public class BattleRoom extends SFSExtension
 			// update DB
 			if( !game.player.isBot() )
 			{
-				game.player.addResources(outcomesList[i]);
 				try {
+					// increase daily battles
+					if( game.player.get_battleswins() > 0 )
+					{
+						ExchangeItem dailyBattles = game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES);
+						if( dailyBattles == null )
+							dailyBattles = new ExchangeItem(ExchangeType.C29_DAILY_BATTLES, 0, 0, "", "");
+						dailyBattles.numExchanges ++;
+						dbUtils.updateExchange(ExchangeType.C29_DAILY_BATTLES, game.player.id, dailyBattles.expiredAt, dailyBattles.numExchanges, "", "");
+					}
+
+					// add rewards
+					game.player.addResources(outcomesList[i]);
 					if( earnedBook != null )
 						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr, "");
 					dbUtils.updateResources(game.player, updateMap);
