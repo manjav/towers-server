@@ -18,7 +18,7 @@ import java.util.List;
 public class Outcome
 {
     public static int MIN_POINTS = 5;
-    public static int COE_POINTS = 7;
+    public static int COE_POINTS = 6;
     public static IntIntMap get(Game game, BattleRoom battleRoom, int star, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();
@@ -87,10 +87,10 @@ public class Outcome
                 ret.set(ResourceType.R13_BATTLES_WINS, 1);
 
                 // random book
-                List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1);
+                List<Integer> emptySlotsType = getEmptySlots(game);
                 if( emptySlotsType.size() > 0 )
                 {
-                    int randomEmptySlotIndex = game.player.get_battleswins() == 0 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
+                    int randomEmptySlotIndex = game.player.get_battleswins() == 0 ? 0 : (int) Math.floor(Math.random() * emptySlotsType.size());
                     ExchangeItem emptySlot = game.exchanger.items.get(emptySlotsType.get(randomEmptySlotIndex));
                     game.exchanger.findRandomOutcome(emptySlot, now);
                     ret.set(emptySlot.outcome, emptySlot.type);
@@ -117,7 +117,7 @@ public class Outcome
         return ret;
     }
 
-    private static List<Integer> getEmptySlots(Game game, boolean forced)
+    private static List<Integer> getEmptySlots(Game game)
     {
         int now = (int) Instant.now().getEpochSecond();
         List<Integer> ret = new ArrayList<>();
