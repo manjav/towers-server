@@ -342,14 +342,7 @@ public class BattleRoom extends SFSExtension
 		{
 			//close();
 			getApi().leaveRoom(user, room);
-
-			/*int side = battleField.getSide(((Game) user.getSession().getProperty("core")).player.id);
-			int[] numBuildings = new int[2];
-			numBuildings[side] = 0;
-			numBuildings[side == 0 ? 1 : 0] = battleField.places.size();
-			end(numBuildings, battleField.getDuration());*/
 		}
-
 	}
 
 	private void pokeBot()
@@ -433,7 +426,7 @@ public class BattleRoom extends SFSExtension
 				if( game.player.isBot() )
 					continue;
 
-				// update exchange
+				// set battle book outcome
 				if( ResourceType.isBook(r) )
 				{
 					earnedBook = game.exchanger.items.get(outcomesList[i].get(r));
@@ -441,9 +434,10 @@ public class BattleRoom extends SFSExtension
 					earnedBook.expiredAt = 0;
 				}
 
+				// update stars
 				if( r == ResourceType.R17_STARS && game.player.get_arena(0) > 0 )
 				{
-					int res = game.exchanger.collectStars(outcomesList[i].get(r), (int) (battleField.now / 1000));
+					int res = game.exchanger.collectStars(outcomesList[i].get(r), now);
 					try {
 						ExchangeItem stars = game.exchanger.items.get(ExchangeType.C104_STARS);
 						if( res == MessageTypes.RESPONSE_SUCCEED )
