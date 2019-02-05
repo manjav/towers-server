@@ -7,7 +7,6 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.others.Arena;
 import com.gt.towers.utils.maps.IntIntMap;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,12 +60,13 @@ public class Outcome
             // for novice
             if( point < 0 && game.player.resources.get(ResourceType.POINT) < -point)
                 point = 0;
-            ret.set(ResourceType.POINT, point );
+            ret.set(ResourceType.POINT, point);
 
             if( game.player.isBot() )
                 return ret;
 
             int arena = game.player.get_arena(0);
+            int dailyBattles = game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) ? game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges : 0;
 
             // battle stats
             ret.set(ResourceType.BATTLES, 1);
@@ -81,14 +81,20 @@ public class Outcome
             if( point > 0 )
             {
                 // soft-currency
-                if( game.player.get_battleswins() > 1 )
-                    ret.set(ResourceType.CURRENCY_SOFT, 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs())));
+                int soft = 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs()));
+                if( dailyBattles > 10 )
+                {
+                    point = (int) (point * (10f / dailyBattles));
+                    soft = (int) (soft * (5f / dailyBattles));
+                }
+                ret.set(ResourceType.CURRENCY_SOFT, soft);
+                ret.set(ResourceType.POINT, point );
 
                 // num wins
                 ret.set(ResourceType.BATTLES_WINS, 1);
 
                 // random book
-                List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1);
+                List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1, now);
                 if( game.player.get_battleswins() > 0 && emptySlotsType.size() > 0 )
                 {
                     int randomEmptySlotIndex = game.player.get_battleswins() == 1 ? 3 : (int) Math.floor(Math.random() * emptySlotsType.size());
@@ -117,14 +123,13 @@ public class Outcome
         return ret;
     }
 
-    private static List<Integer> getEmptySlots(Game game, boolean forced)
+    private static List<Integer> getEmptySlots(Game game, boolean forced, int now)
     {
-        int now = (int) Instant.now().getEpochSecond();
         List<Integer> ret = new ArrayList<>();
-
-        for (ExchangeItem ei : game.exchanger.items.values() )
-            if( ei.category == ExchangeType.C110_BATTLES && (forced || ei.getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
-                ret.add(ei.type);
+        int[] keys = game.exchanger.items.keys();
+        for ( int k : keys )
+            if( game.exchanger.items.get(k).category == ExchangeType.C110_BATTLES && (forced || game.exchanger.items.get(k).getState(now) == ExchangeItem.CHEST_STATE_EMPTY) )
+                ret.add(game.exchanger.items.get(k).type);
         return ret;
     }
 }
