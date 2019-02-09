@@ -300,6 +300,24 @@ public class BattleRoom extends SFSExtension
 		send(Commands.BATTLE_HIT, params, room.getUserList());
 	}
 
+	public void sendNewRoundResponse(int winner, int unitId)
+	{
+		SFSObject params = new SFSObject();
+		params.putInt("winner", winner);
+		if( battleField.field.type.equals(FieldData.TYPE_TOUCHDOWN) )
+		{
+			params.putInt("unitId", unitId);
+			params.putInt("round", ((TouchDownEndCalculator)endCalculator).round);
+		}
+		params.putInt("0", endCalculator.scores[0]);
+		params.putInt("1", endCalculator.scores[1]);
+		send(Commands.BATTLE_NEW_ROUND, params, getParentRoom().getUserList());
+
+		//bot chat starting
+		if( singleMode )
+			bot.chatStarting(endCalculator.ratio());
+	}
+
 
 	// stickers =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	public void sendSticker(User sender, ISFSObject params)

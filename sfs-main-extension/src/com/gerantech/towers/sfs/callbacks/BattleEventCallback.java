@@ -48,11 +48,7 @@ public class BattleEventCallback implements EventCallback
                 if( CardTypes.isHero(battleRoom.battleField.units.get(id).card.type) )
                     battleRoom.endCalculator.scores[other] ++;
 
-                SFSObject params = new SFSObject();
-                params.putInt("winner", other);
-                params.putInt("0", battleRoom.endCalculator.scores[0]);
-                params.putInt("1", battleRoom.endCalculator.scores[1]);
-                battleRoom.send(Commands.BATTLE_NEW_ROUND, params, battleRoom.getParentRoom().getUserList());
+                battleRoom.sendNewRoundResponse(other, 0);
             }
         }
     }

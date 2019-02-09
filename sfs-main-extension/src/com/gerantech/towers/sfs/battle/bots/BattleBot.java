@@ -30,8 +30,9 @@ public class BattleBot
     BattleField battleField;
     double lastSummonTime = 0;
     double lastHelpTime = 0;
-    int battleRatio = 0;
+    float battleRatio = 0;
     SFSObject chatPatams;
+    private int defaultIndex = 0;
 
     public BattleBot(BattleRoom battleRoom)
     {
@@ -90,15 +91,23 @@ public class BattleBot
         int cardType;
         if( playerHeader == null )
         {
-            cardType = battleField.decks.get(1).queue_get(0);
+            cardType = battleField.decks.get(1).queue_get(defaultIndex);
             if( CardTypes.isSpell(cardType) && battleField.field.type == FieldData.TYPE_TOUCHDOWN )
+            {
+                skipCard(cardType);
                 return;
+            }
 
             if( cardType == 109 )
+            {
+                skipCard(cardType);
                 return;
-
+            }
             if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
+            {
+                ext.trace("wait for", battleField.elixirBar.get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
                 return;
+            }
         }
         else
         {
@@ -110,9 +119,20 @@ public class BattleBot
             cardType = battleField.decks.get(1).queue_get(cardIndex);
 
             if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
+            {
+                if( CardTypes.isSpell(cardType) )
+                    ext.trace("isSpell", cardType);
                 y = playerHeader.y - (CardTypes.isTroop(playerHeader.card.type) && playerHeader.state == GameObject.STATE_4_MOVING ? 200 : 0);
-            else if( cardType == 109 && botHeader != null )//summon healer for covering
-                y = botHeader.y - 300;
+            }
+            else if( cardType == 109 )
+            {
+                if( botHeader == null )
+                {
+                    skipCard(cardType);
+                    return;
+                }
+                y = botHeader.y - 300;//summon healer for covering
+            }
 
             // fake stronger bot
             if( player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
@@ -127,6 +147,9 @@ public class BattleBot
         if( botHeader == null && cardType == 109 )// skip spells and healer
             return;
 
+        if( defaultIndex  != 0 )
+            defaultIndex = 0;
+
         int id = battleRoom.summonUnit(1, cardType, x, y);
         if( id >= 0 )
         {
@@ -140,21 +163,29 @@ public class BattleBot
             battleField.elixirSpeeds.set(1, battleRoom.endCalculator.ratio() > 1 ? 1 + battleField.difficulty * 0.04 : 1);
     }
 
+    void skipCard(int cardType)
+    {
+        defaultIndex ++;
+        if( defaultIndex >= battleField.decks.get(1).keys().length )
+            defaultIndex = 0;
+        ext.trace("skipCard", cardType, "index:", defaultIndex);
+    }
+
     int getCandidateCardIndex(int type)
     {
         haxe.root.Array candidates = (haxe.root.Array) ScriptEngine.get(-3, type, 0);
         int len = candidates.length;
-        for (int i = 0; i < len; i++)
+        for (int i = defaultIndex; i < len; i++)
         {
             int index = battleField.decks.get(1).queue_indexOf((int) candidates.__get(i));
             //ext.trace("queue_indexOf", i, candidates.__get(i), index);
             if( index > 0 && index < 4 )
-                return  index;
+                return index;
         }
         return 0;
     }
 
-    void chatStarting(int battleRatio)
+    public void chatStarting(float battleRatio)
     {
         if( battleField.field.isOperation() || player.inTutorial() )
             return;
