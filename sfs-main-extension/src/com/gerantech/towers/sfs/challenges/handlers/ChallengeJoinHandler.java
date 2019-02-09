@@ -26,7 +26,7 @@ public class ChallengeJoinHandler extends BaseClientRequestHandler
         }
 
         // check player has requirements
-        int response = ExchangeManager.getInstance().process(game, Challenge.getExchangeItem(params.getInt("type"), game.player.get_arena(0)), 0, 0);
+        int response = ExchangeManager.getInstance().process(game, Challenge.getJoinExchangeItem(params.getInt("type"), game.player.get_arena(0)), 0, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )
         {
             sendResponse(sender, params, response);
