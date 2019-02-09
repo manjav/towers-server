@@ -53,7 +53,7 @@ public class Outcome
             // points
             int point = 0;
             if( ratio > 1 )
-                point = (int) (MIN_POINTS + star * COE_POINTS + Math.round(Math.random() * 8 - 4));
+                point = (int) (MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * 8 - 4));
             else if( ratio < 1 )
                 point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
