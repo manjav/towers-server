@@ -335,6 +335,14 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, "1003:" + Exchanger.softToHard(5000) * 1.0, 	"1002:5000",		0, 0, true);
 		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
 
+		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+		if( game.appVersion >= 1700 )
+		{
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(2000)		* 0.750,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(10000)	* 0.875,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(20000)	* 1.000,	0, 0, true);
+		}
+
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		if( !game.exchanger.items.exists(ExchangeType.C42_RENAME) )
 			addExchangeItem(game, exchanges, ExchangeType.C42_RENAME,	"",	"" ,				0, 0, true);

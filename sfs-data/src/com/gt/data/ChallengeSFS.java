@@ -35,7 +35,7 @@ public class ChallengeSFS extends SFSDataModel
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
         setRewards(Challenge.getRewards(type));
-        setRequirements(Challenge.getRequiements(type));
+        setRequirements(Challenge.getJoinRequiements(type));
         setAttendees(attendees);
     }
 
