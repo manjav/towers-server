@@ -3,7 +3,6 @@ package com.gerantech.towers.sfs.battle.handlers;
 import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.BattleUtils;
-import com.gt.data.SFSDataModel;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
@@ -20,11 +19,9 @@ import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 {
@@ -154,6 +151,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		sfsO.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
 
 		boolean isSpectator = player.isSpectator(room);
+		Game receiver = (Game) player.getSession().getProperty("core");
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
 		int i = 0;
 		for ( Game g : registeredPlayers )
@@ -162,7 +160,17 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putUtfString("name", g.player.nickName);
 			p.putInt("xp", g.player.get_xp());
 			p.putInt("point", g.player.get_point());
-			p.putIntArray("deck", (List<Integer>)(List<?>) roomClass.battleField.decks.get(i)._queue);
+			if( receiver.appVersion >= 1700 )
+			{
+				SFSObject deck = new SFSObject();
+				for (Object c : roomClass.battleField.decks.get(i)._queue)
+					deck.putInt(c.toString(), roomClass.battleField.decks.get(i).get((int) c).level);
+				p.putSFSObject("deck", deck);
+			}
+			else
+			{
+				p.putIntArray("deck", (List<Integer>)(List<?>) roomClass.battleField.decks.get(i)._queue);
+			}
 			p.putInt("score", roomClass.endCalculator.scores[i]);
 			sfsO.putSFSObject( i == 0 ? "p0" : "p1", p );
 

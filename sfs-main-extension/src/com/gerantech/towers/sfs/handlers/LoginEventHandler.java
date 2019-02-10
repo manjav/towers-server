@@ -272,7 +272,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			element = resources.getSFSObject(i);
 			initData.resources.set(element.getInt("type"), element.getInt("count"));
 			if( ResourceType.isCard(element.getInt("type")) )
-				initData.buildingsLevel.set(element.getInt("type"), element.getInt("level"));
+				initData.cardsLevel.set(element.getInt("type"), element.getInt("level"));
 		}
 
 		// create decks init data
