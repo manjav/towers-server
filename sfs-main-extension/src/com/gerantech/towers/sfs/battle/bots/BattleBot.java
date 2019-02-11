@@ -24,6 +24,7 @@ import java.util.Map;
 public class BattleBot
 {
     static final int SUMMON_DELAY = 3000;
+    static final boolean DEBUG_MODE = false;
     Player player;
     SFSExtension ext;
     BattleRoom battleRoom;
@@ -105,7 +106,7 @@ public class BattleBot
             }
             if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
             {
-                ext.trace("wait for", battleField.elixirBar.get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
+                trace("wait for", battleField.elixirBar.get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
                 return;
             }
         }
@@ -121,7 +122,7 @@ public class BattleBot
             if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
             {
                 if( CardTypes.isSpell(cardType) )
-                    ext.trace("isSpell", cardType);
+                    trace("isSpell", cardType);
                 y = playerHeader.y - (CardTypes.isTroop(playerHeader.card.type) && playerHeader.state == GameObject.STATE_4_MOVING ? 200 : 0);
             }
             else if( cardType == 109 )
@@ -137,7 +138,7 @@ public class BattleBot
             // fake stronger bot
             if( player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
             {
-                ext.trace("help:", battleField.elixirBar.get(1), battleField.difficulty * 0.3);
+                trace("help:", battleField.elixirBar.get(1), battleField.difficulty * 0.3);
                 battleField.elixirBar.set(1, battleField.elixirBar.get(1) + battleField.difficulty * 0.3 );
                 lastHelpTime = battleField.now + SUMMON_DELAY * 2;
             }
@@ -168,7 +169,7 @@ public class BattleBot
         defaultIndex ++;
         if( defaultIndex >= battleField.decks.get(1).keys().length )
             defaultIndex = 0;
-        ext.trace("skipCard", cardType, "index:", defaultIndex);
+        trace("skipCard", cardType, "index:", defaultIndex);
     }
 
     int getCandidateCardIndex(int type)
@@ -227,5 +228,10 @@ public class BattleBot
         battleRoom.sendSticker(null, chatPatams);
         chatPatams.removeElement("t");
         chatPatams.putDouble("ready", battleField.now + 10000);
+    }
+    void trace(Object... args)
+    {
+        if( DEBUG_MODE )
+            ext.trace(args);
     }
 }
