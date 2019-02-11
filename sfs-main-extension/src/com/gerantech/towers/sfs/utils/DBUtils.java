@@ -201,12 +201,12 @@ public class DBUtils
     {
         SFSArray decks = new SFSArray();
         //for (int di=0; di<loginData.deckSize; di++)
-        for (int i=0; i<loginData.deck.size(); i++)
+        for (int i=0; i<loginData.deck.length; i++)
         {
             ISFSObject so = new SFSObject();
             so.putInt("index", i);
             so.putInt("deck_index", 0);
-            so.putInt("type", loginData.deck.get(i));
+            so.putInt("type", (int) loginData.deck.__get(i));
             decks.addSFSObject(so);
         }
 

@@ -13,12 +13,14 @@ import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -162,10 +164,14 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putInt("point", g.player.get_point());
 			if( receiver.appVersion >= 1700 )
 			{
-				SFSObject deck = new SFSObject();
-				for (Object c : roomClass.battleField.decks.get(i)._queue)
-					deck.putInt(c.toString(), roomClass.battleField.decks.get(i).get((int) c).level);
-				p.putSFSObject("deck", deck);
+				String deck = "";
+				Iterator<Object> iter = roomClass.battleField.decks.get(i)._queue.iterator();
+				while( iter.hasNext() )
+				{
+					int type = (int) iter.next();
+					deck += (type + ":" + roomClass.battleField.decks.get(i).get(type).level + (iter.hasNext() ? "," : ""));
+				}
+				p.putText("deck", deck);
 			}
 			else
 			{
