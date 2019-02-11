@@ -55,7 +55,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class BattleRoom extends SFSExtension 
 {
@@ -65,13 +64,12 @@ public class BattleRoom extends SFSExtension
 	public BattleEventCallback eventCallback;
 
 	private Room room;
-	private ScheduledFuture<?> timer;
-
 	private BattleBot bot;
 	private boolean singleMode;
 	private double buildingsUpdatedAt;
-	private Map<Integer, UnitData> reservedUnits;
+	private ScheduledFuture<?> timer;
 	private List<Integer> reservedUnitIds;
+	private Map<Integer, UnitData> reservedUnits;
 
 	public void init() 
 	{
@@ -171,41 +169,23 @@ public class BattleRoom extends SFSExtension
 	{
 		List<RoomVariable> listOfVars = new ArrayList();
 
-
 		int[] keys = getChangedUints();
-		if( keys != null )
+		/*if( keys != null )
 		{
 			reservedUnitIds = Arrays.stream(keys).boxed().collect(Collectors.toList());
 			ISFSObject units = new SFSObject();
 			units.putIntArray("keys", reservedUnitIds);
-			listOfVars.add(new SFSRoomVariable("units", units));
-		}
-		/*SFSArray units = SFSArray.newInstance();
-		Unit unit;
-		UnitData ud;
-		Iterator<Map.Entry<Object, Unit>> iterator = battleField.units._map.entrySet().iterator();
-		while( iterator.hasNext() )
-		{
-			unit = iterator.next().getValue();
 
-		//	if( !reservedUnits.containsKey(unit.id) || ( reservedUnits.get(unit.id).x != unit.x || reservedUnits.get(unit.id).y != unit.y || (reservedUnits.get(unit.id).health != unit.health) ) )
-		//	{
-				if( reservedUnits.containsKey(unit.id) )
-				{
-					ud = reservedUnits.get(unit.id);
-					ud.x = unit.x;
-					ud.y = unit.y;
-					ud.health = unit.health;
-					reservedUnits.replace(unit.id, ud);
-				}
-				else
-				{
-					reservedUnits.put(unit.id, new UnitData(unit.x, unit.y, unit.health));
-				}
-				units.addText(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side);
+			List<String> testData = new ArrayList<>();
+			for ( int k:reservedUnitIds )
+			{
+				Unit unit = battleField.units.get(k);
+				testData.add(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side + "," + unit.card.level);
 			}
-		//}
-		listOfVars.add(new SFSRoomVariable("units", units));*/
+			units.putUtfStringArray("testData", testData);
+
+			listOfVars.add(new SFSRoomVariable("units", units));
+		}*/
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
