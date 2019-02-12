@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class BattleRoom extends SFSExtension 
 {
@@ -69,7 +70,6 @@ public class BattleRoom extends SFSExtension
 	private double buildingsUpdatedAt;
 	private ScheduledFuture<?> timer;
 	private List<Integer> reservedUnitIds;
-	private Map<Integer, UnitData> reservedUnits;
 
 	public void init() 
 	{
@@ -130,7 +130,6 @@ public class BattleRoom extends SFSExtension
 			endCalculator = new TouchDownEndCalculator(this);
 		else
 			endCalculator = new HeadquarterEndCalculator(this);
-		reservedUnits = new ConcurrentHashMap();
 
 		if( singleMode )
 		{
@@ -170,22 +169,22 @@ public class BattleRoom extends SFSExtension
 		List<RoomVariable> listOfVars = new ArrayList();
 
 		int[] keys = getChangedUints();
-		/*if( keys != null )
+		if( keys != null )
 		{
 			reservedUnitIds = Arrays.stream(keys).boxed().collect(Collectors.toList());
 			ISFSObject units = new SFSObject();
 			units.putIntArray("keys", reservedUnitIds);
 
-			List<String> testData = new ArrayList<>();
+/*			List<String> testData = new ArrayList<>();
 			for ( int k:reservedUnitIds )
 			{
 				Unit unit = battleField.units.get(k);
 				testData.add(unit.id + "," + unit.x + "," + unit.y + "," + unit.health + "," + unit.card.type + "," + unit.side + "," + unit.card.level);
 			}
 			units.putUtfStringArray("testData", testData);
-
+*/
 			listOfVars.add(new SFSRoomVariable("units", units));
-		}*/
+		}
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
