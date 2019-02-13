@@ -364,9 +364,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		if( game.appVersion >= 1700 )
 		{
-			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(2000)		* 0.750,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(10000)	* 0.875,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",		ResourceType.R6_TICKET + ":" + Exchanger.realToHard(20000)	* 1.000,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
 		}
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_

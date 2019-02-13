@@ -35,7 +35,8 @@ public class ChallengeSFS extends SFSDataModel
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
         setRewards(Challenge.getRewards(type));
-        setRequirements(Challenge.getJoinRequiements(type));
+        setRequirements(0, Challenge.getJoinRequiements(type));
+        setRequirements(1, Challenge.getRunRequiements(type));
         setAttendees(attendees);
     }
 
@@ -129,10 +130,19 @@ public class ChallengeSFS extends SFSDataModel
     {
         return getSFSArray("requirements");
     }*/
-    private void setRequirements(IntIntMap requirements)
+    private void setRequirements(int type, IntIntMap requirements)
     {
-        setMap("requirements", requirements);
-        base.requirements = requirements;
+        if( type == 0 )
+        {
+            setMap("joinRequirements", requirements);
+            setMap("requirements", requirements);
+            base.joinRequirements = requirements;
+        }
+        else if( type == 1 )
+        {
+            setMap("runRequirements", requirements);
+            base.runRequirements = requirements;
+        }
     }
 
     /**

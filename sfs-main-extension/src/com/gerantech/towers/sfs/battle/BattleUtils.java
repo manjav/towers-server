@@ -39,8 +39,9 @@ public class BattleUtils
         return new BattleUtils();
     }
 
-    public void join(User user, Room theRoom, String spectatedUser)
+    public void join(User user, Room theRoom, String spectatedUser, int challengeType)
     {
+        user.getSession().setProperty("challengeType", challengeType);
         Player player = ((Game)user.getSession().getProperty("core")).player;
         ext.trace("---------=========<<<<  JOIN user:"+user.getName()+" theRoom:"+theRoom.getName()+" spectatedUser:"+spectatedUser+" >>>>==========---------");
         List<UserVariable> vars = new ArrayList();
@@ -53,10 +54,7 @@ public class BattleUtils
         {
             ext.getApi().joinRoom(user, theRoom, null, spectatedUser!="", null);
         }
-        catch (SFSJoinRoomException e)
-        {
-            e.printStackTrace();
-        }
+        catch (SFSJoinRoomException e) { e.printStackTrace(); }
     }
 
     public Room make(User owner, String type, int index, int friendlyMode, boolean hasExtraTime)
