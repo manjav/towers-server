@@ -134,7 +134,7 @@ public class ChallengeUtils
             ChallengeSFS challenge = iterator.next().getValue();
             if( type > -1 && challenge.base.type != type )
                 continue;
-            for(int i=0; i<challenge.getAttendees().size(); i++)
+            for(int i=0; i < challenge.getAttendees().size(); i++)
             {
                 attendee = challenge.getAttendees().getSFSObject(i);
                 if( attendee.getInt("id").equals(player.id) && attendee.getInt("updateAt") > -1 )

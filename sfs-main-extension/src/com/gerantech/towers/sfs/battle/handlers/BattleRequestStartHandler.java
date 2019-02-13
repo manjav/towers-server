@@ -3,7 +3,10 @@ import com.gerantech.towers.sfs.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
 import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gt.towers.Game;
+import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.socials.Challenge;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -15,11 +18,12 @@ import java.util.List;
 public class BattleRequestStartHandler extends BaseClientRequestHandler
 {
     private int index;
+    private Room theRoom;
+    private int challengeType;
     private Boolean isOperation;
     private Boolean hasExtraTime;
-	private Room theRoom;
 
-	public void handleClientRequest(User sender, ISFSObject params)
+    public void handleClientRequest(User sender, ISFSObject params)
     {
         int now = (int)Instant.now().getEpochSecond();
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
@@ -32,12 +36,26 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         index = params.getInt("i");
         isOperation = params.getBool("q");
         hasExtraTime = params.containsKey("e");
+        challengeType = params.containsKey("challengeType") ? params.getInt("challengeType") : -1;
+
+        if( challengeType > -1 )
+        {
+            Game game = (Game)sender.getSession().getProperty("core");
+            int response = ExchangeManager.getInstance().process(game, Challenge.getExchangeItem(challengeType, Challenge.getRunRequiements(challengeType), game.player.get_arena(0)), (int) Instant.now().getEpochSecond(),0);
+            if( response != MessageTypes.RESPONSE_SUCCEED )
+            {
+                params.putInt("response", response);
+                send(Commands.START_BATTLE, params, sender);
+                return;
+            }
+        }
+
         if( params.containsKey("su") )
         {
             index -= 100000;
             theRoom = getParentExtension().getParentZone().getRoomById(index);
             if( theRoom != null )
-                BattleUtils.getInstance().join (sender, theRoom, params.getText("su"));
+                BattleUtils.getInstance().join (sender, theRoom, params.getText("su"), challengeType);
             return;
         }
         joinUser(sender);
@@ -58,7 +76,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         if( theRoom == null )
             theRoom = bu.make(user, isOperation, index, 0, hasExtraTime);
 
-        bu.join(user, theRoom, "");
+        bu.join(user, theRoom, "", challengeType);
     }
 
     private Room findWaitingBattlsRoom(User user)

@@ -95,7 +95,12 @@ public class BattleRoom extends SFSExtension
 		// reserve player data
 		registeredPlayers = new ArrayList();
 		for (User u: players)
-			registeredPlayers.add( ((Game)u.getSession().getProperty("core")) );
+		{
+			Game g = (Game)u.getSession().getProperty("core");
+			g.inBattleChallengMode = (int) u.getSession().getProperty("challengeType");
+			registeredPlayers.add(g);
+		}
+
 		if( singleMode )
 		{
 			InitData data = new InitData();
@@ -523,7 +528,7 @@ public class BattleRoom extends SFSExtension
 				for (int c = 0; c < challenges.size(); c++)
 				{
 					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(c);
-					if( challenge.base.getState(now) != Challenge.STATE_STARTED )
+					if( challenge.base.getState(now) != Challenge.STATE_STARTED || (game.appVersion >= 1700 && game.inBattleChallengMode != challenge.base.type) )
 						continue;
 					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
 					attendee.putInt("point", attendee.getInt("point") + 1);
