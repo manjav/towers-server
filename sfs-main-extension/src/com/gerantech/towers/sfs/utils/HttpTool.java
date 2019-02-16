@@ -16,7 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 
 public class HttpTool
 {
-	public static Data get(String url, Map<String, String> headers)
+	public static Data get(String url, Map<String, String> headers, boolean serializeToJSON)
 	{
         HttpGet request = new HttpGet(url);
 		if( headers != null )
@@ -27,24 +27,24 @@ public class HttpTool
 		try
         {
 			HttpResponse response = client.execute(request);
-			return new Data(response.getStatusLine().getStatusCode(), convertStreamToString(response.getEntity().getContent()));
+			return new Data(response.getStatusLine().getStatusCode(), convertStreamToString(response.getEntity().getContent()), serializeToJSON);
 		} catch (Exception e) {
-			return new Data(e.hashCode(), e.getMessage());
+			return new Data(e.hashCode(), e.getMessage(), serializeToJSON);
 		}
 	}
 	
-	public static Data post(String url, List <NameValuePair> params)
+	public static Data post(String url, List <NameValuePair> params, boolean serializeToJSON)
 	{
 		HttpPost request = new HttpPost(url);
         CloseableHttpClient client = HttpClients.createDefault();
         try
         {
-        	if(params != null)
+        	if( params != null )
         		request.setEntity(new UrlEncodedFormEntity(params));
 			HttpResponse response = client.execute(request);
-			return new Data(response.getStatusLine().getStatusCode(), convertStreamToString(response.getEntity().getContent()));
+			return new Data(response.getStatusLine().getStatusCode(), convertStreamToString(response.getEntity().getContent()), serializeToJSON);
 		} catch (Exception e) {
-			return new Data(e.hashCode(), e.getMessage());
+			return new Data(e.hashCode(), e.getMessage(), serializeToJSON);
 		}
 	}
 	static String convertStreamToString(java.io.InputStream is) {
@@ -52,17 +52,18 @@ public class HttpTool
 		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 	    return s.hasNext() ? s.next() : "";
 	}
-	
+
 	public static class Data extends Object
 	{
 		public int statusCode;
 		public String text;
 		public JSONObject json;
-		public Data(int statusCode, String text) 
+		public Data(int statusCode, String text, boolean serializeToJSON)
 		{
 			this.statusCode = statusCode;
 			this.text= text;
-	        json = (JSONObject) JSONSerializer.toJSON(text);
+			if( serializeToJSON )
+		        json = (JSONObject) JSONSerializer.toJSON(text);
 		}
 
 		@Override
