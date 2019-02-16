@@ -544,9 +544,8 @@ public class BattleRoom extends SFSExtension
 	public void destroy()
 	{
 		clearAllHandlers();
-		if( getState() >= BattleField.STATE_5_DISPOSED )
-			return;
-		setState( BattleField.STATE_5_DISPOSED );
+		if( getState() < BattleField.STATE_5_DISPOSED )
+			setState( BattleField.STATE_5_DISPOSED );
 
 		trace(room.getName(), "destroyed.");
 		super.destroy();
