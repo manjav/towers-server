@@ -10,19 +10,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://C:/SmartFoxServer_2X/SFS2X-5000/lib" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://C:/SmartFoxServer_2X/SFS2X-5000/lib/Lib" />
-          <root url="file://C:/SmartFoxServer_2X/SFS2X-5000/lib/Lib/test" />
-        </SOURCES>
-        <jarDirectory url="file://C:/SmartFoxServer_2X/SFS2X-5000/lib" recursive="false" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://C:/SmartFoxServer_2X/SFS2X-5000/extensions/__lib__/core.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -38,6 +25,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="libs" level="project" />
+    <orderEntry type="library" exported="" name="libs" level="project" />
   </component>
 </module>

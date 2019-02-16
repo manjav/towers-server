@@ -4,7 +4,6 @@ import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
-import com.google.common.base.Charsets;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -29,12 +28,10 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
@@ -234,7 +231,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
 
-		Game game = initiateCore(session, inData, outData, loginData);
+		initiateCore(session, inData, outData, loginData);
 //		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
 		//trace("initData", outData.getDump());
 	}
@@ -321,11 +318,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// load script
 		if( ScriptEngine.script == null )
 		{
-			try {
-				InputStream stream = HttpClients.createDefault().execute(new HttpGet("http://localhost:8080/maps/features.js")).getEntity().getContent();
-				ScriptEngine.initialize(IOUtils.toString(stream, String.valueOf(Charsets.UTF_8)));
-				trace("http://localhost:8080/maps/features.js loaded.");
-			} catch (IOException e) { e.printStackTrace(); }
+            ScriptEngine.initialize(HttpTool.post("http://localhost:8080/maps/features.js", null, false).text);
+            trace("http://localhost:8080/maps/features.js loaded.");
         }
         outData.putText("script", ScriptEngine.script);
 

@@ -14,8 +14,8 @@ import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
 import com.gerantech.towers.sfs.callbacks.HitUnitCallback;
 import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.RankingUtils;
-import com.google.common.base.Charsets;
 import com.gt.data.ChallengeSFS;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
@@ -44,15 +44,8 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -120,11 +113,8 @@ public class BattleRoom extends SFSExtension
 		FieldData field = FieldProvider.getField((String)room.getProperty("type"), index);
 		if( field.mapLayout == null )
 		{
-			try {
-				InputStream stream = HttpClients.createDefault().execute(new HttpGet("http://localhost:8080/maps/" + field.mapName + ".json")).getEntity().getContent();
-				field.mapLayout = IOUtils.toString(stream, String.valueOf(Charsets.UTF_8));
-				trace("http://localhost:8080/maps/" + field.mapName + ".json loaded.");
-			} catch (IOException e) { e.printStackTrace(); }
+			field.mapLayout = HttpTool.post("http://localhost:8080/maps/" + field.mapName + ".json", null, false).text;
+			trace("http://localhost:8080/maps/" + field.mapName + ".json loaded.");
 		}
 
 		Instant instant = Instant.now();

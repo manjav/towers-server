@@ -185,7 +185,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
 		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
 		argus.add(new BasicNameValuePair("redirect_uri", "http://www.gerantech.com/tanks/test.php?a=b"));
-		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus);
+		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
 		trace("request_AccessToken", data.statusCode, data.text);
 		return(data.text);
     }
@@ -207,7 +207,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
 		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
 		argus.add(new BasicNameValuePair("refresh_token", "7Q3ZAgkZyDTd5Iftdpbvq09IPF2iyh"));
-		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus);
+		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
 		trace("refresh_token", data.statusCode, data.text);
 		if(data.statusCode != HttpStatus.SC_OK || !data.json.containsKey("access_token") )
 			return false;
@@ -241,7 +241,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			url = "https://pardakht.cafebazaar.ir/devapi/v2/api/validate/"+packageName+"/inapp/"+productID+"/purchases/"+purchaseToken+"/?access_token="+ accessToken_cafebazaar;
 
 		//trace("purchase url:", url);
-		Data data = HttpTool.get(url, headers);
+		Data data = HttpTool.get(url, headers, true);
 		trace("verify", data.statusCode, data.text);
 		return data;
 	}	
