@@ -3,7 +3,6 @@ package com.gerantech.towers.sfs.socials;
 import com.gt.data.LobbyData;
 import com.gt.data.RankData;
 import com.gt.data.SFSDataModel;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -12,6 +11,7 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 ;
 
@@ -29,7 +29,7 @@ public class LobbyDataUtils
         return _instance;
     }
 
-    public void searchRooms(ISFSObject params, IMap<Integer, RankData> users)
+    public void searchRooms(ISFSObject params, ConcurrentHashMap<Integer, RankData> users)
     {
         String roomName = params.containsKey("name") ? params.getUtfString("name").toLowerCase() : null;
         if( roomName != null && roomName.equals("!@#$") )
@@ -54,10 +54,7 @@ public class LobbyDataUtils
 
         // sort rooms on mode by ascending order
         String[] modes = {"sum", "num", "act"};
-        Collections.sort(roomsList, new Comparator<SFSObject>() {
-            @Override
-            public int compare(SFSObject rhs, SFSObject lhs) { return lhs.getInt(modes[mode]) - rhs.getInt(modes[mode]); }
-        });
+        Collections.sort(roomsList, (rhs, lhs) -> lhs.getInt(modes[mode]) - rhs.getInt(modes[mode]));
 
         int roomIndex = 0;
         int numRooms = Math.min(50, roomsList.size());
@@ -74,7 +71,7 @@ public class LobbyDataUtils
         params.removeElement("name");
     }
 
-    public void fillRoomData(LobbyData data, ISFSObject params, IMap<Integer, RankData> users, boolean includeMembers, boolean includeMessages)
+    public void fillRoomData(LobbyData data, ISFSObject params, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers, boolean includeMessages)
     {
         ISFSObject[] all = getMembers(data.getMembers(), users, includeMembers);
         params.putInt("id", data.getId());
@@ -110,10 +107,7 @@ public class LobbyDataUtils
     private static float[] RANK_COEFS = {0.50f, 0.25f, 0.12f, 0.10f, 0.03f};
     private int getLobbyPoint( ISFSObject[] members, String attribute)
     {
-        Arrays.sort(members, new Comparator<ISFSObject>() {
-            @Override
-            public int compare(ISFSObject rhs, ISFSObject lhs) { return lhs.getInt(attribute) - rhs.getInt(attribute); }
-        });
+        Arrays.sort(members, (rhs, lhs) -> lhs.getInt(attribute) - rhs.getInt(attribute));
         float sum = 0;
         int index = 0;
         float rankRatio;
@@ -130,7 +124,7 @@ public class LobbyDataUtils
         return Math.round(sum) ;
     }
 
-    private ISFSObject[] getMembers(ISFSArray all, IMap<Integer, RankData> users, boolean includeMembers)
+    private ISFSObject[] getMembers(ISFSArray all, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers)
     {
         // fill hazelcast data to members
         int index = 0;

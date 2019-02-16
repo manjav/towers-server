@@ -1,19 +1,20 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
-import com.hazelcast.query.PagingPredicate;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author ManJav
@@ -21,20 +22,20 @@ import java.util.*;
  */
 public class RankRequestHandler extends BaseClientRequestHandler 
 {
-	public static int PAGE_SIZE = 50;
+	public static int PAGE_SIZE = 100;
 
 	public RankRequestHandler() {}
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+		Map<Integer, RankData> users = RankingUtils.getInstance().getUsers();
 		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY), game.player.getResource(ResourceType.STARS_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
-		
+
 		RankData playerRD = users.get(game.player.id);
 		SFSArray players = new SFSArray();
 		if( users.size() == 0 )
@@ -44,20 +45,17 @@ public class RankRequestHandler extends BaseClientRequestHandler
 			return;
 		}
 
-        // a comparator which helps to sort in descending order of point field
-        Comparator<Map.Entry> descendingComparator = (e1, e2) -> {
-			RankData s1 = (RankData) e1.getValue();
-			RankData s2 = (RankData) e2.getValue();
-			return s2.point - s1.point;
-		};
 
-        PagingPredicate pagingPredicate = new PagingPredicate(descendingComparator, PAGE_SIZE);
-		Set<Map.Entry<Integer, RankData>> result = users.entrySet(pagingPredicate);
+		// a comparator which helps to sort in descending order of point field
+		Comparator<? super Map.Entry<Integer, RankData>> descendingComparator2 = (e1, e2) -> e2.getValue().point - e1.getValue().point;
+		List<Map.Entry<Integer, RankData>> result = users.entrySet().stream().parallel().sorted(descendingComparator2).limit(PAGE_SIZE).collect(Collectors.toList());
+
+		long milis = Instant.now().toEpochMilli();
 
 		int i = 0;
 		int playerIndex = -1;
 		int lastHeroPoint = -1;
-		for (Map.Entry<Integer, RankData> p: result)
+		for (Map.Entry<Integer, RankData> p : result)
 		{
 			players.addSFSObject(toSFS(p.getKey(), p.getValue()));
 			lastHeroPoint = p.getValue().point;
@@ -66,6 +64,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 				playerIndex = i;
 			i++;
 		}
+		// trace("===>", Instant.now().toEpochMilli() - milis);
 
 		// fake ranking if not exists in tops
 		if( playerIndex == -1 )
@@ -92,5 +91,4 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		player.putInt("p", r.point);
 		return player;
 	}
-
 }

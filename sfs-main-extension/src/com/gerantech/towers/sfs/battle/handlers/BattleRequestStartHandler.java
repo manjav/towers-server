@@ -36,7 +36,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         index = params.getInt("i");
         isOperation = params.getBool("q");
         hasExtraTime = params.containsKey("e");
-        challengeType = params.containsKey("challengeType") ? params.getInt("challengeType") : -1;
+        challengeType = params.containsKey("ct") ? params.getInt("ct") : -1;
 
         if( challengeType > -1 )
         {

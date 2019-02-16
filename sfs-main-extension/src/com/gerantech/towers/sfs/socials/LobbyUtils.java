@@ -1,15 +1,13 @@
 package com.gerantech.towers.sfs.socials;
 
 import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.LobbyData;
-import com.gt.data.RankData;;
+import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
@@ -29,7 +27,11 @@ import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ManJav on 10/15/2017.
@@ -252,7 +254,8 @@ public class LobbyUtils
         try {
             ext.getParentZone().getDBManager().executeUpdate("UPDATE resources SET count= 0 WHERE type=1204 AND count != 0 AND player_id = " + game.player.id, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+
+        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         game.player.resources.set(ResourceType.BATTLES_WEEKLY, 0);
         game.player.resources.set(ResourceType.STARS_WEEKLY, 0);
         RankData rd = new RankData(game.player.nickName,  game.player.get_point(), 0, 0);
@@ -316,7 +319,7 @@ public class LobbyUtils
 
     private void migrateToLobbies()
     {
-        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
         dbRoomStorageConfig.storeInactiveRooms = true;
         dbRoomStorageConfig.tableName = "rooms";
