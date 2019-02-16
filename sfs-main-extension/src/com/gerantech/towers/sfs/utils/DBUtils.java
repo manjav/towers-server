@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.utils;
 
-import com.gt.data.RankData;;
+import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.LoginData;
 import com.gt.towers.Player;
@@ -8,9 +8,6 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
@@ -25,6 +22,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+;
 
 /**
  * Created by ManJav on 12/4/2017.
@@ -103,7 +104,7 @@ public class DBUtils
         // update hazelcast map
         if( hasRankFields )
         {
-            IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+            ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
             RankData rd = new RankData(player.nickName,  player.get_point(), player.resources.get(ResourceType.R14_BATTLES_WEEKLY), player.resources.get(ResourceType.R18_STARS_WEEKLY));
             query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.R14_BATTLES_WEEKLY);
 
@@ -329,16 +330,22 @@ public class DBUtils
 
         // update online users
         Collection<User> users = ext.getParentZone().getUserList();
+        Game game;
         for (User u : users)
         {
-            ((Game)u.getSession().getProperty("core")).player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
+            game = (Game) u.getSession().getProperty("core");
+            game.player.resources.set(ResourceType.R18_STARS_WEEKLY, 0);
+            game.player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
             result += u.getName() + " weekly battle reset to '0'.\n";
         }
 
         // update hazelcast
-        IMap<Integer, RankData> usersMap = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-        ResetWeeklyEntryProcessor entryProcessor = new ResetWeeklyEntryProcessor();
-        usersMap.executeOnEntries( entryProcessor );
+        ConcurrentHashMap<Integer, RankData> usersMap = RankingUtils.getInstance().getUsers();
+        for (Map.Entry<Integer, RankData> entry : usersMap.entrySet())
+        {
+            entry.getValue().weeklyBattles = 0;
+            entry.getValue().weeklyStars = 0;
+        }
 
         return "Query succeeded.\n" + result;
     }

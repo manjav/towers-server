@@ -2,9 +2,6 @@ package com.gerantech.towers.sfs.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.constants.ResourceType;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -12,6 +9,7 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ManJav on 7/22/2017.
@@ -34,11 +32,16 @@ public class RankingUtils
         return _instance;
     }
 
+    public ConcurrentHashMap<Integer, RankData> getUsers() {
+        return (ConcurrentHashMap<Integer, RankData>) ext.getParentZone().getProperty("ranking");
+    }
+
     public void fillActives()
     {
-        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
-        if( users.size() > 0 )
+        if( ext.getParentZone().containsProperty("ranking") )
             return;
+
+        ConcurrentHashMap<Integer, RankData> users = new ConcurrentHashMap();
         ext.trace("start in-memory filling in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         // insert real champions
         try
@@ -97,11 +100,14 @@ public class RankingUtils
         for ( int n = start, i = points.length-1;  n < RankRequestHandler.PAGE_SIZE + start;  n++, i-=2 )
             users.put(n - start , new RankData(names[n], points[i], -1, -1));
         ext.trace("filled in-memory bots in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");*/
+
+
+        ext.getParentZone().setProperty("ranking", users);
     }
 
     public void setWeeklyBattles(int id, int battles)
     {
-        IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+        ConcurrentHashMap<Integer, RankData> users = getUsers();
         RankData opponent = users.get(id);
         opponent.weeklyBattles = battles;
         users.replace(id, opponent);

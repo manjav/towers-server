@@ -8,7 +8,6 @@
       <root url="jar://$PROJECT_DIR$/libs/sfs2x-core.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/slf4j-log4j12-1.7.5.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/log4j-1.2.15.jar!/" />
-      <root url="jar://$PROJECT_DIR$/libs/hazelcast-3.8.3.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/sfs2x.jar!/" />
     </CLASSES>
     <JAVADOC />

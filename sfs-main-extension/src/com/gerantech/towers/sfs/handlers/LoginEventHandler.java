@@ -17,9 +17,6 @@ import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
 import com.gt.towers.scripts.ScriptEngine;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.IMap;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSConstants;
@@ -40,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author ManJav
@@ -396,7 +394,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data
-		IMap<Integer, RankData> users = Hazelcast.getOrCreateHazelcastInstance(new Config("aaa")).getMap("users");
+		ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
 		RankData rd = new RankData(game.player.nickName, game.player.get_point(), game.player.getResource(ResourceType.R14_BATTLES_WEEKLY), game.player.getResource(ResourceType.R18_STARS_WEEKLY));
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
