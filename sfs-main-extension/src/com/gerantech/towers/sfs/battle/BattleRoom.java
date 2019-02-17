@@ -17,7 +17,6 @@ import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
-import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
@@ -46,6 +45,10 @@ import com.smartfoxserver.v2.entities.variables.SFSRoomVariable;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
+import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -545,7 +548,7 @@ public class BattleRoom extends SFSExtension
 	{
 		clearAllHandlers();
 		if( getState() < BattleField.STATE_5_DISPOSED )
-			setState( BattleField.STATE_5_DISPOSED );
+			setState(BattleField.STATE_5_DISPOSED);
 
 		trace(room.getName(), "destroyed.");
 		BattleUtils.getInstance().removeReferences(room);
