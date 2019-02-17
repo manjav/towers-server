@@ -594,6 +594,7 @@ public class BattleRoom extends SFSExtension
 			setState(STATE_DESTROYED);
 
 		trace(room.getName(), "destroyed.");
+		BattleUtils.getInstance().removeReferences(room);
 		super.destroy();
 	}
 }

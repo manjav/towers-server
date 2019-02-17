@@ -9,7 +9,6 @@ import com.gerantech.towers.sfs.administration.issues.IssueReportHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueTrackHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattlesRemovedHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeCollectRewardHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeGetAllHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeUpdateHandler;
@@ -45,7 +44,6 @@ public class TowerExtension extends SFSExtension
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
 		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersExitHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersExitHandler.class);
-		addEventHandler(SFSEventType.ROOM_REMOVED, BattlesRemovedHandler.class);
 
         // Add startBattle request handler
 		addRequestHandler(Commands.START_BATTLE, BattleRequestStartHandler.class);
