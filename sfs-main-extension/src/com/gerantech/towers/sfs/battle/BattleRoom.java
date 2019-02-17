@@ -290,9 +290,10 @@ public class BattleRoom extends SFSExtension
 		params.putInt("1", endCalculator.scores[1]);
 		send(Commands.BATTLE_NEW_ROUND, params, getParentRoom().getUserList());
 
+		bot.reset();
 		//bot chat starting
 		if( singleMode )
-			bot.chatStarting(endCalculator.ratio());
+			bot.chatStarting(1/endCalculator.ratio());
 	}
 
 

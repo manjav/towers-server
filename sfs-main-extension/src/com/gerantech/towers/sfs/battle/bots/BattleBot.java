@@ -48,6 +48,11 @@ public class BattleBot
         ext.trace("p-point:" + player.getResource(ResourceType.R2_POINT), "b-point:"+ battleField.games.__get(1).player.getResource(ResourceType.R2_POINT), " winRate:" + player.getResource(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
     }
 
+    public void reset()
+    {
+        lastSummonTime = 0;
+    }
+
     public void update()
     {
         if( battleField.state < BattleField.STATE_2_STARTED && (player.get_battleswins() < 3 || Math.random() < 0.3) )
