@@ -31,7 +31,8 @@ public class LobbyRoom extends BaseLobbyRoom
         super.init();
         savedAt = (int) Instant.now().getEpochSecond();
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
-        addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
+        addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
+        addEventHandler(SFSEventType.USER_DISCONNECT, LobbyRoomServerEventsHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
         addRequestHandler(Commands.LOBBY_EDIT, LobbyEditHandler.class);
         addRequestHandler(Commands.LOBBY_MODERATION, LobbyModerationHandler.class);
@@ -53,19 +54,20 @@ public class LobbyRoom extends BaseLobbyRoom
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE )
         {
             // cancel requested battle by owner
-            ISFSObject message = getMyRequestedBattle(params, game.player);
-            if( message != null )
+            int battleMsgIndex = getMyRequestedBattle(params, game.player);
+            if( battleMsgIndex > -1 )
             {
                 params.putShort("st", (short) 3);
-                message.putShort("st", (short) 3);
-                Room room = getParentZone().getRoomById(message.getInt("bid"));
+                messages.getSFSObject(battleMsgIndex).putShort("st", (short) 3);
+                Room room = getParentZone().getRoomById(messages.getSFSObject(battleMsgIndex).getInt("bid"));
                 if( room != null )
                     BattleUtils.getInstance().removeRoom(room);
+                messages.removeElementAt(battleMsgIndex);
                 return;
             }
 
             // join to an available battle
-            message = getAvailableBattle(params);
+            ISFSObject message = getAvailableBattle(params);
             if( message != null )
             {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
@@ -139,7 +141,7 @@ public class LobbyRoom extends BaseLobbyRoom
         return -1;
     }
 
-    private ISFSObject getMyRequestedBattle(ISFSObject params, Player player)
+    private int getMyRequestedBattle(ISFSObject params, Player player)
     {
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
@@ -148,9 +150,9 @@ public class LobbyRoom extends BaseLobbyRoom
         {
             message = messages.getSFSObject(i);
             if( message.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && message.getShort("st") == 0 && message.getInt("i") == player.id )
-                return  message;
+                return i;
         }
-        return null;
+        return -1;
     }
     private ISFSObject getAvailableBattle(ISFSObject params)
     {

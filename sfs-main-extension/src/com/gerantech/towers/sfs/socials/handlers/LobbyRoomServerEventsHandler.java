@@ -7,16 +7,31 @@ import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
+import com.smartfoxserver.v2.core.SFSEventSysParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 
+import java.util.LinkedList;
+
 public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 {
 	public void handleServerEvent(ISFSEvent arg)
 	{
+		if( arg.getType().equals(SFSEventType.USER_DISCONNECT) )
+		{
+			LinkedList<Room> joinedRooms = (LinkedList<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
+			for ( Room r : joinedRooms )
+			{
+				if( r.getGroupId() == "lobbies" )
+					LobbyUtils.getInstance().removeEmptyRoom(r);
+
+			}
+			return;
+		}
+
 		Room lobby = (Room) arg.getParameter(SFSEventParam.ROOM);
 		LobbyRoom lobbyClass = (LobbyRoom) lobby.getExtension();
 		User user = (User)arg.getParameter(SFSEventParam.USER);
@@ -36,6 +51,8 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 			// broadcast leave message
 			lobbyClass.sendComment((short) MessageTypes.M11_COMMENT_LEAVE, player, "", (short)-1);
 			LobbyUtils.getInstance().removeUser(lobbyClass.getData(), player.id);
+			LobbyUtils.getInstance().removeEmptyRoom(lobby);
+
 		}
 	}
 }
