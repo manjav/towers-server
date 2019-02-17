@@ -1,5 +1,7 @@
 package com.gerantech.towers.sfs.battle;
 
+import com.gerantech.towers.sfs.Commands;
+import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
@@ -9,6 +11,8 @@ import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
@@ -162,6 +166,37 @@ public class BattleUtils
         else
         {
             ext.getApi().removeRoom(room, false, false);
+        }
+    }
+
+    public void removeReferences(Room room)
+    {
+        List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
+        int msgIndex = -1;
+        for (int i = 0; i < lobbies.size(); i++)
+        {
+            Room lobby = lobbies.get(i);
+            if( lobby.containsProperty(room.getName()) )
+            {
+                ISFSArray messageQueue = ((LobbyData)lobby.getProperty("data")).getMessages();
+                int msgSize = messageQueue.size();
+                for (int j = msgSize-1; j >= 0; j--)
+                {
+                    ISFSObject msg = messageQueue.getSFSObject(j);
+                    Short battleState = msg.getShort("st");
+                    if( msg.containsKey("bid") && msg.getInt("bid") == room.getId() && battleState < 2 )
+                    {
+                        msg.putShort("st", (short) (battleState == 0 ? 3 : 2));
+                        if( battleState == 0 )
+                            msgIndex = j;
+                        if( lobby.getUserList().size() > 0 )
+                            ext.getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, lobby.getUserList(), lobby, false);
+                    }
+                }
+                //trace(room.getName(), lobby.getName());
+                if( msgIndex > -1 )
+                    messageQueue.removeElementAt(msgIndex);
+            }
         }
     }
 }
