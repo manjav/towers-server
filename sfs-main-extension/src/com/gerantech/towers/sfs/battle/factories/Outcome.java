@@ -79,6 +79,9 @@ public class Outcome
 
             if( point > 0 )
             {
+                // num wins
+                ret.set(ResourceType.R13_BATTLES_WINS, 1);
+
                 // soft-currency
                 int soft = 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs()));
                 if( dailyBattles > 10 )
@@ -86,11 +89,11 @@ public class Outcome
                     point = (int) (point * (10f / dailyBattles));
                     soft = (int) (soft * (5f / dailyBattles));
                 }
-                ret.set(ResourceType.R3_CURRENCY_SOFT, soft);
                 ret.set(ResourceType.R2_POINT, point );
+                if( game.inBattleChallengMode > -1 )
+                    return  ret;
 
-                // num wins
-                ret.set(ResourceType.R13_BATTLES_WINS, 1);
+                ret.set(ResourceType.R3_CURRENCY_SOFT, soft);
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game, now);
