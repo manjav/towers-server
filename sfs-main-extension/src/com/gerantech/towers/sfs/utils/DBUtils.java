@@ -250,18 +250,14 @@ public class DBUtils
     {
         String result = "";
         try {
-            db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=41 AND `num_exchanges` != 0;", new Object[] {});
-        }
-        catch (SQLException e)
-        {
-            //e.printStackTrace();
-            return "Query failed";
-        }
+            db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
+        } catch (SQLException e) { return "Query failed"; }
 
         Collection<User> users = ext.getParentZone().getUserList();
         for (User u : users)
         {
-            ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C41_KEYS).numExchanges = 0;
+
+            ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
             result += u.getName() + " key limit reset to '0'.\n";
         }
 
@@ -286,7 +282,7 @@ public class DBUtils
             result += u.getName() + " weekly battle reset to '0'.\n";
         }
 
-        // update hazelcast
+        // update users
         ConcurrentHashMap<Integer, RankData> usersMap = RankingUtils.getInstance().getUsers();
         for (Map.Entry<Integer, RankData> entry : usersMap.entrySet())
         {
