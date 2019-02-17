@@ -366,7 +366,7 @@ public class BattleRoom extends SFSExtension
 
 	    calculateResult();
 		close();
-		if( battleField.field.isOperation() )
+		if( battleField.field.isOperation() || room.getPlayersList().size() == 0 )
 			BattleUtils.getInstance().removeRoom(room);
 	}
 
