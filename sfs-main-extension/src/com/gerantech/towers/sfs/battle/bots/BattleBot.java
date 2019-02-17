@@ -87,7 +87,7 @@ public class BattleBot
             else
             {
                 // bottom of bot troops
-                if( botHeader == null || botHeader.y < entry.getValue().y )
+                if( botHeader == null || botHeader.y < entry.getValue().y || botHeader.health > entry.getValue().health )
                     botHeader = entry.getValue();
             }
         }
