@@ -504,6 +504,13 @@ public class LobbyUtils
         return result;
     }
 
+    public void removeEmptyRoom(Room r)
+    {
+        if( r.isEmpty() )
+            ext.getApi().removeRoom(r);
+//        ext.trace(r.getName(),  "l players:", r.getPlayersList().size(), r.getUserList().size(), r.isEmpty());
+    }
+
 
     /*
     public Room getLobbyOfOfflineUser(int id)
