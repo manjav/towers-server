@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BattleBot
 {
+    private static final boolean DEBUG_MODE = false;
     public int coverPoint = -1;
     public ISFSArray offenders;
     protected double targetHealth;
@@ -142,7 +143,7 @@ public class BattleBot
         }
         if( criticalPlace > -1 && isNeighbor(allPlaces.get(step), false) )
         {
-            ext.trace("cp", criticalPlace, "  =>", criticalState);
+            trace("cp", criticalPlace, "  =>", criticalState);
 
           if(  criticalState < 0 )
                 fightToPlace(allPlaces.get(criticalPlace), -criticalState, 200);
@@ -169,7 +170,7 @@ public class BattleBot
             coverPoint = -1;
             return;
         }
-        fightToPlace(target, totalPowers, target.building.troopType == TroopType.T_1 ? 500 : 3500);//ext.trace(target.index, "covered by", totalPowers);
+        fightToPlace(target, totalPowers, target.building.troopType == TroopType.T_1 ? 500 : 3500);//trace(target.index, "covered by", totalPowers);
     }
 
     /**
@@ -251,7 +252,7 @@ public class BattleBot
         findingPath.clear();
 
         // if( battleField.games.get(0).player.admin )
-        // ext.trace("target:" + target.index, " target_type:" + target.building.type, " numFighters:" + candidatedfighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth );
+        // trace("target:" + target.index, " target_type:" + target.building.type, " numFighters:" + candidatedfighters.size(), " fightersPower:" + fightersPower, " targetHealth:" + targetHealth );
         boolean firstToFight = candidatedfighters.size() > 0 && ((fightersPower / targetHealth > 1.2) || forceTargetHealth > 0 || robotPlaces.size() < 2 || playerPlaces.size() < 2 );
         if( !firstToFight && repeatetiveTarget > 1000 )
             return;
@@ -264,7 +265,7 @@ public class BattleBot
         else if( improveIndex == -2 )
             improveAll(robotPlaces, true);// improve if bot have been frozen.
 
-        //ext.trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
+        //trace("target:" + target.index, "covered with " + forceTargetHealth, "numFighters:" + sceduledfighters.size(), forceTargetHealth, "improveRatio", improveRatio, "improveIndex", improveIndex);
         chatStarting(robotPlaces.size() - playerPlaces.size());
     }
 
@@ -273,12 +274,12 @@ public class BattleBot
         if( findingPath.indexOf(place.index) > -1 || (fightersPower >= targetHealth) )
             return;
         findingPath.add(place.index);
-        //ext.trace( index.building.troopType, sceduledfighters.containsKey(index.index) , index.index , coverPoint);
+        //trace( index.building.troopType, sceduledfighters.containsKey(index.index) , index.index , coverPoint);
 
         if( place.building.troopType == TroopType.T_1 && (placeRatio < 0.4 || !sceduledfighters.containsKey(place.index)) && place.index != coverPoint && (forceTargetHealth <= 0 || !hasEnemyNeighbor(place)) )
         {
             double placePower = estimatePower(place.building, troopsDivision);
-            //ext.trace(index.index, "placePower", placePower, "fightersPower", fightersPower, "troopsDivision", troopsDivision);
+            //trace(index.index, "placePower", placePower, "fightersPower", fightersPower, "troopsDivision", troopsDivision);
             fightersPower += placePower;
             candidatedfighters.add(place.index);
         }
@@ -312,7 +313,7 @@ public class BattleBot
         while ( iterator.hasNext() )
         {
             Integer p = iterator.next();
-            //ext.trace(p, battleField.now, battleField.now + maxDelay - estimateRushTime(battleField.places.get(p), target));
+            //trace(p, battleField.now, battleField.now + maxDelay - estimateRushTime(battleField.places.get(p), target));
             sceduledfighters.put(p, new ScheduledPlace(p, target.index,battleField.now + maxDelay - estimateRushTime(battleField.places.get(p), target)));
         }
         candidatedfighters.clear();
@@ -334,7 +335,7 @@ public class BattleBot
             Map.Entry<Integer, ScheduledPlace> entry = iterator.next();
             ScheduledPlace sPlace = entry.getValue();
             Place p = battleField.places.get(sPlace.index);
-            //ext.trace("index", sPlace.index, "target", sPlace.target, "troopType", p.building.troopType, "fightTime", sPlace.fightTime, "now", battleField.now);
+            //trace("index", sPlace.index, "target", sPlace.target, "troopType", p.building.troopType, "fightTime", sPlace.fightTime, "now", battleField.now);
             if( p == null )
                 continue;
             if( p.building.troopType == TroopType.T_1 )
@@ -374,7 +375,7 @@ public class BattleBot
 
         // if( index.fightTime > -1 )
         // {
-        //  ext.trace(index.index + " exists in fighters...");
+        //  trace(index.index + " exists in fighters...");
         //return false;
         // }
         int improveType = 0;
@@ -418,7 +419,7 @@ public class BattleBot
         if( chatPatams.getLong("ready") > battleField.now || Math.random() > 0.1 )
             return;
 
-        //ext.trace(this.battleRatio, battleRatio);
+        //trace(this.battleRatio, battleRatio);
         if( battleRatio != this.battleRatio )
         {
             chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.get(0)));
@@ -479,7 +480,7 @@ public class BattleBot
         double ret = (32000 / path.get(step).building.troopSpeed) * PathFinder.getDistance(fighter, path.get(step)) + fighter.building.troopRushGap;
         while ( step > 0 )
         {
-            //ext.trace("==>", path.get(step).index, path.get(step-1).index, path.get(step).building.get_troopSpeed(), PathFinder.getDistance(path.get(step), path.get(step - 1)) , path.get(step).building.get_exitGap());
+            //trace("==>", path.get(step).index, path.get(step-1).index, path.get(step).building.get_troopSpeed(), PathFinder.getDistance(path.get(step), path.get(step - 1)) , path.get(step).building.get_exitGap());
             ret += (32000 / path.get(step).building.troopSpeed) * PathFinder.getDistance(path.get(step), path.get(step - 1)) + path.get(step).building.troopRushGap;
             step --;
         }
@@ -510,4 +511,10 @@ public class BattleBot
     double priority(Place place) {
         return place.building.getPower() + (place.building.troopType + 1) * 0.5;
     }
+    void trace(Object... args)
+    {
+        if( DEBUG_MODE )
+            trace(args);
+    }
+
 }
