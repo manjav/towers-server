@@ -205,7 +205,7 @@ public class BattleBot
         {
             chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.__get(0)));
             chatPatams.putInt("tt", 1);
-            chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 500);
+            chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 1500);
         }
         this.battleRatio = battleRatio;
     }
