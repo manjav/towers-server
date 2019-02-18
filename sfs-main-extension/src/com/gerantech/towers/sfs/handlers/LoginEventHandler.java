@@ -3,7 +3,7 @@ import com.gerantech.towers.sfs.challenges.ChallengeUtils;
 import com.gerantech.towers.sfs.quests.QuestsUtils;
 import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.utils.*;
-import com.gt.data.RankData;;
+import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
@@ -13,7 +13,6 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
-import com.gt.towers.others.Quest;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -35,6 +34,8 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
+
+;
 
 /**
  * @author ManJav
@@ -221,7 +222,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
 		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
 		outData.putSFSArray("quests", new SFSArray());
-		outData.putSFSArray("prefs", dbUtils.getPrefs(id, inData.getInt("appver")));
+		outData.putSFSArray("prefs", dbUtils.getPrefs(id));
 
 		// Find active battle room
 		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
@@ -336,11 +337,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		if( game.appVersion >= 1700 )
+		if( game.appVersion >= 4000 )
 		{
-			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.CURRENCY_REAL + ":2000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.CURRENCY_REAL + ":10000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.CURRENCY_REAL + ":20000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
 		}
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -365,8 +366,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
-		for ( ExchangeItem ex : game.exchanger.items.values() )
-			_exchanges.addSFSObject(ExchangeManager.toSFS(ex));
+		int[] keys = game.exchanger.items.keys();
+		for ( int k : keys )
+			_exchanges.addSFSObject(ExchangeManager.toSFS(game.exchanger.items.get(k)));
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data
@@ -376,9 +378,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			users.replace(game.player.id, rd);
 		else
 			users.put(game.player.id, rd);
-
-		if( initData.appVersion < 3700 )
-			return game;
 
 		// insert quests in registration or get in next time
 		ISFSArray quests = QuestsUtils.getInstance().getAll(game.player.id);

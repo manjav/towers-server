@@ -222,26 +222,23 @@ public class DBUtils
     }
 
 
-    public ISFSArray getPrefs(int id, int appVersion)
+    public ISFSArray getPrefs(int id)
     {
         ISFSArray ret = null;
         try {
             ret = db.executeQuery("SELECT k,v FROM userprefs WHERE player_id=" + id, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
 
-        if( appVersion >= 2500 )
+        for( int i=0; i < ret.size(); i ++ )
         {
-            for( int i=0; i < ret.size(); i ++ )
+            if( ret.getSFSObject(i).getText("k").equals("101") )
             {
-                if( ret.getSFSObject(i).getText("k").equals("101") )
-                {
-                    if( ret.getSFSObject(i).getUtfString("v").equals("111") )
-                        ret.getSFSObject(i).putUtfString("v", "141");
-                    else if( ret.getSFSObject(i).getUtfString("v").equals("113") )
-                        ret.getSFSObject(i).putUtfString("v", "151");
-                    else if( ret.getSFSObject(i).getUtfString("v").equals("115") || ret.getSFSObject(i).getUtfString("v").equals("116") || ret.getSFSObject(i).getUtfString("v").equals("118") )
-                        ret.getSFSObject(i).putUtfString("v", "182");
-                }
+                if( ret.getSFSObject(i).getUtfString("v").equals("111") )
+                    ret.getSFSObject(i).putUtfString("v", "141");
+                else if( ret.getSFSObject(i).getUtfString("v").equals("113") )
+                    ret.getSFSObject(i).putUtfString("v", "151");
+                else if( ret.getSFSObject(i).getUtfString("v").equals("115") || ret.getSFSObject(i).getUtfString("v").equals("116") || ret.getSFSObject(i).getUtfString("v").equals("118") )
+                    ret.getSFSObject(i).putUtfString("v", "182");
             }
         }
 

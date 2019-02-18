@@ -187,10 +187,7 @@ public class BattleRoom extends SFSExtension
 		if( battleField.now - clientTimeUpdatedAt >= 5000 )
 		{
 			clientTimeUpdatedAt = battleField.now;
-			if( singleMode && battleField.games.get(0).appVersion >= 2900 )
-				vars.addLong(battleField.now);
-			else if( battleField.games.get(0).appVersion >= 2900 && battleField.games.get(1).appVersion >= 2900)
-				vars.addLong(battleField.now);
+			vars.addLong(battleField.now);
 		}
 
 		// Set variables
@@ -528,7 +525,7 @@ public class BattleRoom extends SFSExtension
 				for (int c = 0; c < challenges.size(); c++)
 				{
 					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(c);
-					if( challenge.base.getState(now) != Challenge.STATE_STARTED || (game.appVersion >= 1700 && game.inBattleChallengMode != challenge.base.type) )
+					if( challenge.base.getState(now) != Challenge.STATE_STARTED || (game.appVersion >= 4000 && game.inBattleChallengMode != challenge.base.type) )
 						continue;
 					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
 					attendee.putInt("point", attendee.getInt("point") + 1);
