@@ -31,7 +31,7 @@ public class LobbyRoom extends BaseLobbyRoom
         super.init();
         savedAt = (int) Instant.now().getEpochSecond();
         addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
-        addEventHandler(SFSEventType.USER_JOIN_ROOM, LobbyRoomServerEventsHandler.class);
+        addEventHandler(SFSEventType.USER_LEAVE_ROOM, LobbyRoomServerEventsHandler.class);
         addEventHandler(SFSEventType.USER_DISCONNECT, LobbyRoomServerEventsHandler.class);
         addRequestHandler(Commands.LOBBY_INFO, LobbyInfoHandler.class);
         addRequestHandler(Commands.LOBBY_EDIT, LobbyEditHandler.class);
