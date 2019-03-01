@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.challenges.handlers;
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
+import com.gt.Commands;
+import com.gt.utils.ChallengeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.entities.User;

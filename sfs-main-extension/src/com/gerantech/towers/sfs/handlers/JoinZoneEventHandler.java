@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.utils.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;

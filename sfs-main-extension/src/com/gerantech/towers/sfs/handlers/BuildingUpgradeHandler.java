@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.buildings.Building;
@@ -17,9 +17,6 @@ import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
  */
 public class BuildingUpgradeHandler extends BaseClientRequestHandler
 {
-
-	public BuildingUpgradeHandler() {}
-
 	public void handleClientRequest(User sender, ISFSObject params)
     {
     	int buildingType = (int)params.getInt("type");

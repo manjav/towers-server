@@ -1,5 +1,5 @@
 package com.gerantech.towers.sfs.battle.handlers;
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -25,7 +25,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
                     battles.get(numBattles).setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
                     getApi().leaveRoom(sender, battles.get(numBattles));
                     //getApi().removeRoom(battles.get(numBattles));
-                    send(Commands.CANCEL_BATTLE, null, sender);
+                    send(Commands.BATTLE_CANCEL, null, sender);
                     return;
                 }
                 break;
@@ -35,7 +35,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
 
         // not found any related battle
         if( numBattles <= -1 )
-            send(Commands.CANCEL_BATTLE, null, sender);
+            send(Commands.BATTLE_CANCEL, null, sender);
 
     }
 }

@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.inbox;
 
+import com.gt.utils.InboxUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;

@@ -1,32 +1,21 @@
-package com.gerantech.towers.sfs.socials;
+package com.gt.utils;
 
 import com.gt.data.LobbyData;
 import com.gt.data.RankData;
 import com.gt.data.SFSDataModel;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-;
-
-public class LobbyDataUtils
+public class LobbyDataUtils extends UtilBase
 {
-    private static LobbyDataUtils _instance;
-    private final SFSExtension ext;
-
-    public LobbyDataUtils() {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
-    public static LobbyDataUtils getInstance() {
-        if( _instance == null )
-            _instance = new LobbyDataUtils();
-        return _instance;
+    public static LobbyDataUtils getInstance()
+    {
+        return (LobbyDataUtils)UtilBase.get(LobbyDataUtils.class);
     }
 
     public void searchRooms(ISFSObject params, ConcurrentHashMap<Integer, RankData> users)
@@ -105,7 +94,7 @@ public class LobbyDataUtils
      * @return
      */
     private static float[] RANK_COEFS = {0.50f, 0.25f, 0.12f, 0.10f, 0.03f};
-    private int getLobbyPoint( ISFSObject[] members, String attribute)
+    private int getLobbyPoint(ISFSObject[] members, String attribute)
     {
         Arrays.sort(members, (rhs, lhs) -> lhs.getInt(attribute) - rhs.getInt(attribute));
         float sum = 0;
@@ -118,7 +107,7 @@ public class LobbyDataUtils
         {
             rankRatio = (float)index / (float)size;
             sum += members[index].getInt(attribute) * RANK_COEFS[(int)Math.floor(rankRatio * 5)];
-            //ext.trace(members[index].getInt("id"), attribute, members[index].getInt("point"), rankRatio, RANK_COEFS[(int)Math.floor(rankRatio * 5)], sum);
+            //trace(members[index].getInt("id"), attribute, members[index].getInt("point"), rankRatio, RANK_COEFS[(int)Math.floor(rankRatio * 5)], sum);
             index ++;
         }
         return Math.round(sum) ;

@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.administration;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.battle.handlers.BattleRoomLeaveRequestHandler;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.utils.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.SmartFoxServer;

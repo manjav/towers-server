@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.administration.ban;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.utils.BanSystem;
+import com.gt.Commands;
+import com.gt.utils.BanUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.User;
@@ -25,11 +25,11 @@ public class GetOffenderDataHandler extends BaseClientRequestHandler
 		}
 
 		// get ban count
-		ISFSArray bannes = BanSystem.getInstance().getBannedUsers(params.getInt("id"), null, 2, 0, "time");
+		ISFSArray bannes = BanUtils.getInstance().getBannedUsers(params.getInt("id"), null, 2, 0, "time");
 		params.putInt("time", bannes.size() > 0 ? bannes.getSFSObject(0).getInt("time") : 0);
 
 		// get all opened infractions
-		params.putSFSArray("infractions", BanSystem.getInstance().getInfractions(params.getInt("id"), 0, 5, "infractions.content, infractions.offend_at"));
+		params.putSFSArray("infractions", BanUtils.getInstance().getInfractions(params.getInt("id"), 0, 5, "infractions.content, infractions.offend_at"));
 
 		sendResponse(sender, params, MessageTypes.RESPONSE_SUCCEED);
 	}

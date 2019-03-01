@@ -20,16 +20,14 @@ import com.gerantech.towers.sfs.inbox.InboxGetHandler;
 import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
 import com.gerantech.towers.sfs.quests.QuestInitializeHandler;
 import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
 import com.gerantech.towers.sfs.socials.handlers.BuddyAddRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.BuddyRemoveRequestHandler;
 import com.gerantech.towers.sfs.socials.handlers.*;
-import com.gerantech.towers.sfs.utils.BanSystem;
-import com.gerantech.towers.sfs.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-
+import com.gt.Commands;
+import com.gt.utils.*;
 import java.time.Instant;
 
 /**
@@ -39,15 +37,17 @@ public class TowerExtension extends SFSExtension
 {
 	public void init()
     {
-		// Add user server handlers
+		UtilBase.setExtension(this);
+
+		// Add server event handlers
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
 		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersExitHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersExitHandler.class);
 
         // Add startBattle request handler
-		addRequestHandler(Commands.START_BATTLE, BattleRequestStartHandler.class);
-		addRequestHandler(Commands.CANCEL_BATTLE, BattleRequestCancelHandler.class);
+		addRequestHandler(Commands.BATTLE_START, BattleRequestStartHandler.class);
+		addRequestHandler(Commands.BATTLE_CANCEL, BattleRequestCancelHandler.class);
 
         // Add billing upgrade handler
 		addRequestHandler(Commands.BUILDING_UPGRADE, BuildingUpgradeHandler.class);
@@ -122,7 +122,7 @@ public class TowerExtension extends SFSExtension
 		if ( cmdName.equals("setumtime") )
 			return (LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params)) + ";;";
 		else if ( cmdName.equals("ban") )
-			return BanSystem.getInstance().checkOffends((String) params);
+			return BanUtils.getInstance().checkOffends((String) params);
 		else if ( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
 		else if ( cmdName.equals("resetkeylimit") )

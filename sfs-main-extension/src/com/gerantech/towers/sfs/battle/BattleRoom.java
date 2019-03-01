@@ -1,12 +1,12 @@
 package com.gerantech.towers.sfs.battle;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.handlers.*;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.utils.BattleUtils;
-import com.gerantech.towers.sfs.utils.DBUtils;
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.utils.ChallengeUtils;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.DBUtils;
+import com.gt.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -513,7 +513,7 @@ public class BattleRoom extends SFSExtension
 		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
 		List<User> users = room.getUserList();
 		for (int i=0; i < users.size(); i++)
-			send( Commands.END_BATTLE, params, users.get(i) );
+			send( Commands.BATTLE_END, params, users.get(i) );
 
 
 		for (int i=0; i < registeredPlayers.size(); i++)

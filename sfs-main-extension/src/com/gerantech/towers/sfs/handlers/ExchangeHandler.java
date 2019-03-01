@@ -1,23 +1,15 @@
 package com.gerantech.towers.sfs.handlers;
 
-import java.time.Instant;
-
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.DBUtils;
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.Commands;
 import com.gt.towers.Game;
-import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
-import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.utils.ExchangeUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
-import sun.plugin2.message.Message;
+
+import java.time.Instant;
 
 /**
  * @author ManJav
@@ -25,8 +17,6 @@ import sun.plugin2.message.Message;
  */
 public class ExchangeHandler extends BaseClientRequestHandler 
 {
-	public ExchangeHandler() {}
-
 	public void handleClientRequest(User sender, ISFSObject params)
     {
     	trace("exchange:", params.getDump());
@@ -36,7 +26,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		int now = (int)Instant.now().getEpochSecond();
 
 		// call exchanger and update database
-		ExchangeManager manager = ExchangeManager.getInstance();
+		ExchangeUtils manager = ExchangeUtils.getInstance();
 		int response = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
 		params.putInt("response", response);
 		params.putInt("now", now);

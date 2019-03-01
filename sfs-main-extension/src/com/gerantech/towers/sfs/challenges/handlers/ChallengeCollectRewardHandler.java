@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.challenges.handlers;
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.Commands;
+import com.gt.utils.ChallengeUtils;
+import com.gt.utils.ExchangeUtils;
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
@@ -33,7 +33,7 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
         ChallengeSFS challenge = ChallengeUtils.getInstance().get(params.getInt("id"));
         challenge.representAttendees();
 
-        ExchangeManager manager = ExchangeManager.getInstance();
+        ExchangeUtils manager = ExchangeUtils.getInstance();
         ExchangeItem ei = new ExchangeItem(null);
         ei.type = ExchangeType.C121_MAGIC;
         ei.requirements = new IntIntMap();

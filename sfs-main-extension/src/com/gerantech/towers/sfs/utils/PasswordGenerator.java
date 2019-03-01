@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.utils;
+import com.gt.utils.DBUtils;
 import net.sf.json.JSONObject;
 
 import java.time.Instant;
@@ -12,8 +13,7 @@ public class PasswordGenerator
 	private static final String NUM = "0123456789";
 	private static final String SPL_CHARS = "!@#$%^&*_=+-/";
 
-	
-	public static char[] generate() 
+	public static char[] generate()
 	{
 		return generate(8, 12, 1, 1, 1); 
 	}

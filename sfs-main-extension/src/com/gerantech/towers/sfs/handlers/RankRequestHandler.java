@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.utils.RankingUtils;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
@@ -24,7 +24,6 @@ public class RankRequestHandler extends BaseClientRequestHandler
 {
 	public static int PAGE_SIZE = 100;
 
-	public RankRequestHandler() {}
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
 		Game game = ((Game)sender.getSession().getProperty("core"));

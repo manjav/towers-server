@@ -1,4 +1,4 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.Game;
@@ -6,13 +6,11 @@ import com.gt.towers.Player;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -21,22 +19,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-;
-
 /**
  * Created by ManJav on 12/4/2017.
  */
-public class DBUtils
+public class DBUtils extends UtilBase
 {
-    private final SFSExtension ext;
     private final IDBManager db;
-
     public DBUtils()
     {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-        db = ext.getParentZone().getDBManager();
+        super();
+        db = this.ext.getParentZone().getDBManager();
     }
-    public static DBUtils getInstance() { return new DBUtils(); }
+    public static DBUtils getInstance()
+    {
+        return (DBUtils)UtilBase.get(DBUtils.class);
+    }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   RESOURCES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public SFSArray getResources(int playerId) throws SFSException
@@ -109,7 +106,7 @@ public class DBUtils
             else
                 users.put(player.id, rd);
         }
-        ext.trace(query);
+        trace(query);
     }
 
     public void insertResources(Player player, IntIntMap resources) throws SQLException
@@ -136,7 +133,7 @@ public class DBUtils
         if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
             return;
         db.executeInsert(query, new Object[] {});
-        ext.trace(query);
+        trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   EXCHANGES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_

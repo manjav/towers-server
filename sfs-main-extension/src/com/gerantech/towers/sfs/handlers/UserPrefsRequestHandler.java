@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.Commands;
+import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;

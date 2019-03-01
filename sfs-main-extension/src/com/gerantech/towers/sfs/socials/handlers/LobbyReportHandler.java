@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.db.IDBManager;

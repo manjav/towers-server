@@ -1,5 +1,5 @@
 package com.gerantech.towers.sfs.socials.handlers;
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;

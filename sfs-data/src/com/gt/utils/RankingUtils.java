@@ -1,12 +1,10 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.constants.ResourceType;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,23 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by ManJav on 7/22/2017.
  */
-public class RankingUtils
+public class RankingUtils extends UtilBase
 {
-    private static RankingUtils _instance;
-    private final SFSExtension ext;
-    private static final String[] names = new String[]{"بازی مصهب", "Axfourd", "رضا متری", "WilliamSctt", "یاسین مهیمنی", "SHOKIZIKA", "sajad1400", "علی با ادب", "SHAHNAM", "۱۳۳", "عليرضا قيم", "بنده حقیرخدا", "عشق بی احساس", "kamale", "mohad", "جواتی", "s@j@d", "گرگ اصبانی", "mohamad diyy", "¥uness¥", "پریا حرفه ای", "ali va kosar", "درامون", "MOHAMDREZA", "esmail خطر ", "محمدکوچولو", "MKADI0917", "میثم گرگی", "H,سردار", "mr.m", "امام ", "naz", "داش مشتیی", "ملکه تنهایی", "افلاطون", "سلامتی", "M**A", "ilia7689", "روژین جون", "ℳ¤ɦﾑℳℳﾑの ﾑℓɨ", "حسین شاه", "امیرملکی", "ثم ال یاسمسک", "دختر❤شهریوری", "پوریای قدرتم", "MF14", "MAFIA", "Saeid Mallah", "مهرگان", "امیریسن", "کوردم", "armin.mk", "نناجا", "نفیسه خانم", "افرا", "forozan", "eli ;)", "ruwshank", "حمیدر۱ا", "amir.kh", "نرگس ❤", "hananeh", "woto", "شهاب خطر", "MAHDI KHAN", "ali❤❤❤❤kosar", "شاه قله", "AMIR;Barca", "رونالدو عشق", "آرتا", "adib...m.r", "جنگاور ایران", "ariai", "a. khafan", "Տհɑժօա", "امیر سلطان", "m.r.akbari", "Hoomah", "کرخ مخوف", "mohmmd reza", "بوراک دنیز", "ali eblis", "sorooshking", "جنگجوی باهوش", "هبحی", "خنده", "میثم جوون", "لابباایدخهفف", "بولول", "توفان برزخ", "..محمد رضا..", "NEMAN", "جان نثار", "پارسا کابوی ", "✅mr. sorena✔", "نیما قوی", "지민 jimin", "hahka", "آرتینا رحمتی", "fariba", "masoudking", "آنیا", "G.g", "F16", "عادل تایسیز", "کریم خطر", "پارس باز", "⇡⇡⇡⇡⇡", "ahmad sadeqi", "گرگ‌خسته", "bahare", "SHAHRYAR", "Abdullah", "یاسیین", "amine84th", "آرای", "ققنوس وحشت", "آرین قرمان", "Soltan Hsein", "حميد", "اتش سرخ سفید", "Just me", "ali141414", "qwert", "King A", "❤parimah❤", "پارسا افشار", "pani", "جنگ ملکه", "ترمیناتور", "❤arsham ❤", "Queen.raha", "❤ سامان❤ ", "MGFIGHTER", "mehrsa", "محمدحسام", "killerdemon", "تک تاز", "امین ابرکوه", "javadaskari", "حیاط", "scorp", "امیر آریا", "yasy", "m......l", "اشکان خ", "Niliy", "امیراحمد", "باهوبابی", "HOSSIEN.M", "فرشاد10@", "حاجی ممد", "M∞N", "nafasssss", "MAMADO1385", "جوادخطر!!!", "سوگل جون", "هنزخ", "321", "aryan_si", "پورییا", "دوقلوها", "امین خطر", "تورک اوغلو", "هادی ۳۴", "Moein1382", "reرضاza", "ملکه نور", "Death horror", "مجتبى", "اژدهای‌قهرما", "فراموشم کن", "اشکان جان ", "ضحا جون", "حسین مغول زا", "پیشی پارساو", "Amir.K.H.", "hasan2", "میتا", "دنیای غم 48", "Amin gk 69", "măĥśá - af", "m.shayan", "saBaa", "استیو مک کار", "♥امیرعلی♥", "نینجا سیاه ", "ماهان قوی", "تند پا", "...", "fatem 02828", "sis", "Shawn Mendes", "جنگجو موفق", "m99", "←ساختار شکن→", "امیر محمدی ", "jack.sparrow", "amoo", "رعد اسا", "elham.jj", "ermi.badboy", "DSD", "vlad", "mis mahsa", "صاف دل", "رعد آتشین", "﷼ سجاد ﷼", "sefid.barfi❤", "★GHOGHNOOS★", "محمد بازیگر ", "بسیجی ۲", "محمد شیرمرد", "سلطان پویا ", "[/]/®$", "juanestundo", "Afra", "ahahin", "روکاه", "مستر تاریکی", "دختر آمازونی", "hossein009", "حریم سلطان", "helma eftkha", "کنعان", "sina110011", "Hoosin", "راکی", "ALI..83", "@rash", "pekka killer", "khoh", "داوود مغول ز", "H@$Ti", "سینا رمضانی", "arman .z", "حسین۲", "تتلتلل", "ρ£dﾑr £Liყﾑ", "تاج همه", "bita_and_lak", "nakhoda", "king HASSAN.", "TERESA", "عشق بی پایان", "taregh ", "امیر حسین رف", "رضا حسینی ", "SH.Victor", "مطالعاتی", "میثم پلنگ", "jrobfk", "amir hoossin", "@.s.n.h@.", "سربازان جنگج", "Fire_Cat", "سالار هیچکس", "مــــیم چ", "قاتل ابدی", "masuod", "رضا صبحی", "ihnbvbh", "تالاب", "MEHDI♠", "fireboy2000", "$$H.R.salh", "m.monster ir", "جن کوچولو", "amin.com", "❤نیلا❤", "شبح سياه", "حسین83", "ماهان لوتی", "ایمان پلنگ", "خااانوم", "عرفان لودر", "الکلاسیکو", "haripater", "سید حسام", "H. ", "مهمدمحدی ", "simin", "رئیس امیر", "YOUNG KING", ".-.-", "Moɦseŋ", "سینا خفن", "SR7", "ساسان بارسای", "**nazdar**", "علیرضا کشاور", "Nadi", "*shiva*", "باقری", "آنوبیس", "aylar9 ", "امیریگانه فر", "فاروق", "mahdikhan", "داش سام", "B KING", "کاخ ستم", "f.of.love", "مرداد", "jabaran", "Rick.Grz", "John snow", "IRIN BAD BOY", "(درسا)", "جان سینا", "عباس خان پهل", "ناشناش", "علی روشن", "mohamadkrim", "بیل", "دنیای غم48", "فرشته ی دانا", "دخترک شیطون ", "عشقم مهدی", "@امیر@", "ابوالفضل رمض", "aliraza12", "مرسانا", "یو سف", "[[[AROSHA]]]", "amir.7", "dokhtar", "sardar_a.m", "qing", "ARSHIA. ", "خشم تاریکی", "صنمی ریکا", "farzin.a ", "ALI SHAR SHA", "♤Lucifer♤", "مبینا ۱۳کرج", "lost in you", "...ℳﾑɦⓢﾑ....", "مهدی جووووون", "مبینا ۷۸", "ABOOLFZL ", "(king omid)", "TURNADO", "سینا۸۷", "Mohammad3728", "تنهاوعاشق", "Benyamin212", "نفس گیر", "امیر محمد یو", "❤Roya...", "* _ *", "Mahkoom", "علی و مهرداد", "LEYan.ALI", "zahra king", "هخامنش83", "ali_bit", "قصر جادو", "اسکلت آتشین", "شاه آرمان", "شاه یاشار", "عباس شیر", "مسی جون", "امیرسام خسته", "Meysam CR7", "دخی زلزله", "محمدرضا موسو", "omer jenetje", "افشین.پودرکن", "davoodd", "آتیلا", "۶اریتاب", "گردبادمرگ", "پرنسس (ماریا", "شب زده", "ادیس", "قاتل توی پر ", "*nazanin*", "من خیلی خوبم", "alirezaجی ام", "JAFAR1383", "لیوال", "arezoo.s", "A.M.E.8228", "JOKKER", "کوثر ملایی", "yeghane", "death angel", "Aarsh", "ستاره ی سیاه", "m.a.tiractur", "ali.ni", "محمد اصغری", "1383317", "فانوس", "MrMetti", "sam tiam", "آنا جوون", "rahman62", "❤Łove❤", "علی اصغر صبا", "King Diako", "kamibil", "مهیار خطر", "۱۲۴۳", "dada", "MoRiS√H", "M.dodo", "VENOM", "شخله پخله", "more16za", "god of koche", "shahab khan", "یلدا خطری", "xX maj Xx", "سلطان سلیمان", "mo.shoja", "درندگان", "فا نو س سبز", "omid 250", "Anyderx", "گرگان GG", "King abol", "Javad_Sry", "ژاکلین", "(amir.kimia)", "یوهانا", "amirali144", "Saber1385", "رل چت", "Caspian", "AMINP", "ɦﾑsｲɨ★", "Abrhim", "FSMAHDi", "F.C.M", "queen negin", "KIMIA BOROOS", "ویکتور۱۱۱", "kalara", "Carazy!", "ɦ£ŁŁ❤giЯŁ", "شمیرساز", "❤ارمیتا❤", "اسکلت سیاه", "فقط شاهزاده", "mobina joon", "عاشق دلشکسته", "❤Melika❤", "HÂĶĔŔ", "taregh.k", "جک۱۸ساله", "جمالو ", "آیهان پور اس", "amir zd", "کنیتا جون", "دختر آریایی", "$فرنوش$", "پرسپولیس ام", "moha", "yuyuile", "ehsan._.11", "جهنم", "Mahak", "S.A", "شاهین سیاه", "احسان راوی", "saeghe", "دیدی", "zeynab14", "گادفادر", "اژدربلا", "amir hosen:)", "میتراعشقه", "سفید برفی ", "❤رومینا❤", "خطر خطر خطر ", "○●●ZEUS●●○", "عرفان ...خان", "اژدهای قرمز", "مهدیه زیبا", "شهرزاد خانم❤", "سجاد خوشگله", "bolbol", "乙ﾑみrﾑ", "برنده شاهین", "فوجی", "ممد باحال", "شادی ابلیش", "ROKSANA", "داخافه", "فرمانده ی قا", "sleader32", "ارباب بازی", "ali1910", "nemikham", "little moon", "KING W KOEEN", "کشتی گیران", "زخمی.", "ghazal❤", "امیرشهریار", "amkes", "رادوین..", "nora", "♤AMIN♤", "mohtbs", "ATA TURK", "{فهیم}©", "سرزمین خوبا", "الیار میرزای", "matinmahla", "shokolati3", "سوشا", "MH.ESTEGHLAL", "مهراب داغون", "Sofea", "باران خطر", "BMA", "محکوم", "احسان007", "علیرضا پلنگ", "طوفان عظیم", "SAKO", "courtois", "BORHAN.J", "₩yasin₩", "ktce", "فرمانده جاک", "❤ماریا❤", "محمدامین ناب", "گرگ دل", "AMIR BAX", "Omid.me", "گلنار ۱۴", "m.khademi83", "M.J.P", "meshki", "بازمانده#", "ŃÁÚĞĤŤŶ", "پارسا خسروی", "tokchin", "S$T$A$R", "J.O.K.E.R", "IR#MAD.MAX", "فرهین", "KevinSpacy1", "کاشفی", "Zari_goli", "♥♡ραяოiԃα♡♥~", "عشقم OMID", "eliiika", "فلسطین", "اقای ایکس", "spider_man", "خسرو", "چیتای گمشده", "×♡×ƏŁÏÝÆß×♡×", "J.A", "آرین واهورا", "khosh_andam", "goli", "♠bad_boy♠", "DicTatoR", "Pouria_m12", "حاکم جنگ ", "amirabbas86", "michael", "رعد آسمانی", "ali.gh.78", "Mahammad", "پارسا بغدبا", "داش سینا", "persian kill", "black down", "MHA1381", "مبارزه ابدی", "♥Giяℓعاشق", "theat angel", "mjsh", "Ali1386", "amir.r.t", "رضا یادگاری", "mohammad ebz", "A.KH.W", "شکییا", "خدابخش ", "اژدهای جهنمی", "@arezoo.s", "مریم گل", "ملکه ی عشق", "melodi", "fazi cyrus", "Aryats", "V•R", "×{MR}×CRAZY×", "حرفه ای منم", "سحر زمانیان", "❤TaRa❤", "ARIA.021"};
-
-
-    public RankingUtils()
-    {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
     public static RankingUtils getInstance()
     {
-        if( _instance == null )
-            _instance = new RankingUtils();
-        return _instance;
+        return (RankingUtils)UtilBase.get(RankingUtils.class);
     }
+    private static final String[] names = new String[]{"بازی مصهب", "Axfourd", "رضا متری", "WilliamSctt", "یاسین مهیمنی", "SHOKIZIKA", "sajad1400", "علی با ادب", "SHAHNAM", "۱۳۳", "عليرضا قيم", "بنده حقیرخدا", "عشق بی احساس", "kamale", "mohad", "جواتی", "s@j@d", "گرگ اصبانی", "mohamad diyy", "¥uness¥", "پریا حرفه ای", "ali va kosar", "درامون", "MOHAMDREZA", "esmail خطر ", "محمدکوچولو", "MKADI0917", "میثم گرگی", "H,سردار", "mr.m", "امام ", "naz", "داش مشتیی", "ملکه تنهایی", "افلاطون", "سلامتی", "M**A", "ilia7689", "روژین جون", "ℳ¤ɦﾑℳℳﾑの ﾑℓɨ", "حسین شاه", "امیرملکی", "ثم ال یاسمسک", "دختر❤شهریوری", "پوریای قدرتم", "MF14", "MAFIA", "Saeid Mallah", "مهرگان", "امیریسن", "کوردم", "armin.mk", "نناجا", "نفیسه خانم", "افرا", "forozan", "eli ;)", "ruwshank", "حمیدر۱ا", "amir.kh", "نرگس ❤", "hananeh", "woto", "شهاب خطر", "MAHDI KHAN", "ali❤❤❤❤kosar", "شاه قله", "AMIR;Barca", "رونالدو عشق", "آرتا", "adib...m.r", "جنگاور ایران", "ariai", "a. khafan", "Տհɑժօա", "امیر سلطان", "m.r.akbari", "Hoomah", "کرخ مخوف", "mohmmd reza", "بوراک دنیز", "ali eblis", "sorooshking", "جنگجوی باهوش", "هبحی", "خنده", "میثم جوون", "لابباایدخهفف", "بولول", "توفان برزخ", "..محمد رضا..", "NEMAN", "جان نثار", "پارسا کابوی ", "✅mr. sorena✔", "نیما قوی", "지민 jimin", "hahka", "آرتینا رحمتی", "fariba", "masoudking", "آنیا", "G.g", "F16", "عادل تایسیز", "کریم خطر", "پارس باز", "⇡⇡⇡⇡⇡", "ahmad sadeqi", "گرگ‌خسته", "bahare", "SHAHRYAR", "Abdullah", "یاسیین", "amine84th", "آرای", "ققنوس وحشت", "آرین قرمان", "Soltan Hsein", "حميد", "اتش سرخ سفید", "Just me", "ali141414", "qwert", "King A", "❤parimah❤", "پارسا افشار", "pani", "جنگ ملکه", "ترمیناتور", "❤arsham ❤", "Queen.raha", "❤ سامان❤ ", "MGFIGHTER", "mehrsa", "محمدحسام", "killerdemon", "تک تاز", "امین ابرکوه", "javadaskari", "حیاط", "scorp", "امیر آریا", "yasy", "m......l", "اشکان خ", "Niliy", "امیراحمد", "باهوبابی", "HOSSIEN.M", "فرشاد10@", "حاجی ممد", "M∞N", "nafasssss", "MAMADO1385", "جوادخطر!!!", "سوگل جون", "هنزخ", "321", "aryan_si", "پورییا", "دوقلوها", "امین خطر", "تورک اوغلو", "هادی ۳۴", "Moein1382", "reرضاza", "ملکه نور", "Death horror", "مجتبى", "اژدهای‌قهرما", "فراموشم کن", "اشکان جان ", "ضحا جون", "حسین مغول زا", "پیشی پارساو", "Amir.K.H.", "hasan2", "میتا", "دنیای غم 48", "Amin gk 69", "măĥśá - af", "m.shayan", "saBaa", "استیو مک کار", "♥امیرعلی♥", "نینجا سیاه ", "ماهان قوی", "تند پا", "...", "fatem 02828", "sis", "Shawn Mendes", "جنگجو موفق", "m99", "←ساختار شکن→", "امیر محمدی ", "jack.sparrow", "amoo", "رعد اسا", "elham.jj", "ermi.badboy", "DSD", "vlad", "mis mahsa", "صاف دل", "رعد آتشین", "﷼ سجاد ﷼", "sefid.barfi❤", "★GHOGHNOOS★", "محمد بازیگر ", "بسیجی ۲", "محمد شیرمرد", "سلطان پویا ", "[/]/®$", "juanestundo", "Afra", "ahahin", "روکاه", "مستر تاریکی", "دختر آمازونی", "hossein009", "حریم سلطان", "helma eftkha", "کنعان", "sina110011", "Hoosin", "راکی", "ALI..83", "@rash", "pekka killer", "khoh", "داوود مغول ز", "H@$Ti", "سینا رمضانی", "arman .z", "حسین۲", "تتلتلل", "ρ£dﾑr £Liყﾑ", "تاج همه", "bita_and_lak", "nakhoda", "king HASSAN.", "TERESA", "عشق بی پایان", "taregh ", "امیر حسین رف", "رضا حسینی ", "SH.Victor", "مطالعاتی", "میثم پلنگ", "jrobfk", "amir hoossin", "@.s.n.h@.", "سربازان جنگج", "Fire_Cat", "سالار هیچکس", "مــــیم چ", "قاتل ابدی", "masuod", "رضا صبحی", "ihnbvbh", "تالاب", "MEHDI♠", "fireboy2000", "$$H.R.salh", "m.monster ir", "جن کوچولو", "amin.com", "❤نیلا❤", "شبح سياه", "حسین83", "ماهان لوتی", "ایمان پلنگ", "خااانوم", "عرفان لودر", "الکلاسیکو", "haripater", "سید حسام", "H. ", "مهمدمحدی ", "simin", "رئیس امیر", "YOUNG KING", ".-.-", "Moɦseŋ", "سینا خفن", "SR7", "ساسان بارسای", "**nazdar**", "علیرضا کشاور", "Nadi", "*shiva*", "باقری", "آنوبیس", "aylar9 ", "امیریگانه فر", "فاروق", "mahdikhan", "داش سام", "B KING", "کاخ ستم", "f.of.love", "مرداد", "jabaran", "Rick.Grz", "John snow", "IRIN BAD BOY", "(درسا)", "جان سینا", "عباس خان پهل", "ناشناش", "علی روشن", "mohamadkrim", "بیل", "دنیای غم48", "فرشته ی دانا", "دخترک شیطون ", "عشقم مهدی", "@امیر@", "ابوالفضل رمض", "aliraza12", "مرسانا", "یو سف", "[[[AROSHA]]]", "amir.7", "dokhtar", "sardar_a.m", "qing", "ARSHIA. ", "خشم تاریکی", "صنمی ریکا", "farzin.a ", "ALI SHAR SHA", "♤Lucifer♤", "مبینا ۱۳کرج", "lost in you", "...ℳﾑɦⓢﾑ....", "مهدی جووووون", "مبینا ۷۸", "ABOOLFZL ", "(king omid)", "TURNADO", "سینا۸۷", "Mohammad3728", "تنهاوعاشق", "Benyamin212", "نفس گیر", "امیر محمد یو", "❤Roya...", "* _ *", "Mahkoom", "علی و مهرداد", "LEYan.ALI", "zahra king", "هخامنش83", "ali_bit", "قصر جادو", "اسکلت آتشین", "شاه آرمان", "شاه یاشار", "عباس شیر", "مسی جون", "امیرسام خسته", "Meysam CR7", "دخی زلزله", "محمدرضا موسو", "omer jenetje", "افشین.پودرکن", "davoodd", "آتیلا", "۶اریتاب", "گردبادمرگ", "پرنسس (ماریا", "شب زده", "ادیس", "قاتل توی پر ", "*nazanin*", "من خیلی خوبم", "alirezaجی ام", "JAFAR1383", "لیوال", "arezoo.s", "A.M.E.8228", "JOKKER", "کوثر ملایی", "yeghane", "death angel", "Aarsh", "ستاره ی سیاه", "m.a.tiractur", "ali.ni", "محمد اصغری", "1383317", "فانوس", "MrMetti", "sam tiam", "آنا جوون", "rahman62", "❤Łove❤", "علی اصغر صبا", "King Diako", "kamibil", "مهیار خطر", "۱۲۴۳", "dada", "MoRiS√H", "M.dodo", "VENOM", "شخله پخله", "more16za", "god of koche", "shahab khan", "یلدا خطری", "xX maj Xx", "سلطان سلیمان", "mo.shoja", "درندگان", "فا نو س سبز", "omid 250", "Anyderx", "گرگان GG", "King abol", "Javad_Sry", "ژاکلین", "(amir.kimia)", "یوهانا", "amirali144", "Saber1385", "رل چت", "Caspian", "AMINP", "ɦﾑsｲɨ★", "Abrhim", "FSMAHDi", "F.C.M", "queen negin", "KIMIA BOROOS", "ویکتور۱۱۱", "kalara", "Carazy!", "ɦ£ŁŁ❤giЯŁ", "شمیرساز", "❤ارمیتا❤", "اسکلت سیاه", "فقط شاهزاده", "mobina joon", "عاشق دلشکسته", "❤Melika❤", "HÂĶĔŔ", "taregh.k", "جک۱۸ساله", "جمالو ", "آیهان پور اس", "amir zd", "کنیتا جون", "دختر آریایی", "$فرنوش$", "پرسپولیس ام", "moha", "yuyuile", "ehsan._.11", "جهنم", "Mahak", "S.A", "شاهین سیاه", "احسان راوی", "saeghe", "دیدی", "zeynab14", "گادفادر", "اژدربلا", "amir hosen:)", "میتراعشقه", "سفید برفی ", "❤رومینا❤", "خطر خطر خطر ", "○●●ZEUS●●○", "عرفان ...خان", "اژدهای قرمز", "مهدیه زیبا", "شهرزاد خانم❤", "سجاد خوشگله", "bolbol", "乙ﾑみrﾑ", "برنده شاهین", "فوجی", "ممد باحال", "شادی ابلیش", "ROKSANA", "داخافه", "فرمانده ی قا", "sleader32", "ارباب بازی", "ali1910", "nemikham", "little moon", "KING W KOEEN", "کشتی گیران", "زخمی.", "ghazal❤", "امیرشهریار", "amkes", "رادوین..", "nora", "♤AMIN♤", "mohtbs", "ATA TURK", "{فهیم}©", "سرزمین خوبا", "الیار میرزای", "matinmahla", "shokolati3", "سوشا", "MH.ESTEGHLAL", "مهراب داغون", "Sofea", "باران خطر", "BMA", "محکوم", "احسان007", "علیرضا پلنگ", "طوفان عظیم", "SAKO", "courtois", "BORHAN.J", "₩yasin₩", "ktce", "فرمانده جاک", "❤ماریا❤", "محمدامین ناب", "گرگ دل", "AMIR BAX", "Omid.me", "گلنار ۱۴", "m.khademi83", "M.J.P", "meshki", "بازمانده#", "ŃÁÚĞĤŤŶ", "پارسا خسروی", "tokchin", "S$T$A$R", "J.O.K.E.R", "IR#MAD.MAX", "فرهین", "KevinSpacy1", "کاشفی", "Zari_goli", "♥♡ραяოiԃα♡♥~", "عشقم OMID", "eliiika", "فلسطین", "اقای ایکس", "spider_man", "خسرو", "چیتای گمشده", "×♡×ƏŁÏÝÆß×♡×", "J.A", "آرین واهورا", "khosh_andam", "goli", "♠bad_boy♠", "DicTatoR", "Pouria_m12", "حاکم جنگ ", "amirabbas86", "michael", "رعد آسمانی", "ali.gh.78", "Mahammad", "پارسا بغدبا", "داش سینا", "persian kill", "black down", "MHA1381", "مبارزه ابدی", "♥Giяℓعاشق", "theat angel", "mjsh", "Ali1386", "amir.r.t", "رضا یادگاری", "mohammad ebz", "A.KH.W", "شکییا", "خدابخش ", "اژدهای جهنمی", "@arezoo.s", "مریم گل", "ملکه ی عشق", "melodi", "fazi cyrus", "Aryats", "V•R", "×{MR}×CRAZY×", "حرفه ای منم", "سحر زمانیان", "❤TaRa❤", "ARIA.021"};
 
     public ConcurrentHashMap<Integer, RankData> getUsers() {
         return (ConcurrentHashMap<Integer, RankData>) ext.getParentZone().getProperty("ranking");
@@ -42,7 +30,7 @@ public class RankingUtils
             return;
 
         ConcurrentHashMap<Integer, RankData> users = new ConcurrentHashMap();
-        ext.trace("start in-memory filling in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace("start in-memory filling in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
         // insert real champions
         try {
             IDBManager dbManager = ext.getParentZone().getDBManager();
@@ -54,7 +42,7 @@ public class RankingUtils
                 ISFSObject pp = dbResult.getSFSObject(p);
                 users.put(pp.getInt("id"), new RankData(pp.getUtfString("name"), 0, pp.getInt("count"), 0));
             }
-            ext.trace("filled in-memory actives in " + (System.currentTimeMillis() - (long) ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+            trace("filled in-memory actives in " + (System.currentTimeMillis() - (long) ext.getParentZone().getProperty("startTime")) + " milliseconds.");
 
             // fill top players
             query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.POINT + " AND resources.count > 0";
@@ -69,7 +57,7 @@ public class RankingUtils
                     users.put(pp.getInt("id"), new RankData(pp.getUtfString("name"), pp.getInt("count"), 0, 0));
                 }
             }
-            ext.trace("filled in-memory tops in " + (System.currentTimeMillis() - (long) ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
+            trace("filled in-memory tops in " + (System.currentTimeMillis() - (long) ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
 
             // fill stars of players
             query = "SELECT resources.player_id, resources.count FROM resources WHERE resources.type = " + ResourceType.STARS_WEEKLY + " AND resources.count > 0";
@@ -82,7 +70,7 @@ public class RankingUtils
                     users.replace(pp.getInt("player_id"), rd);
                 }
             }
-            ext.trace("filled in-memory stars in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
+            trace("filled in-memory stars in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.", users.size());
         } catch (SQLException e) { e.printStackTrace(); }
 
         // fill fake tops
@@ -91,7 +79,7 @@ public class RankingUtils
         int start = 12;
         for ( int n = start, i = points.length-1;  n < RankRequestHandler.PAGE_SIZE + start;  n++, i-=2 )
             users.put(n - start , new RankData(names[n], points[i], -1, -1));
-        ext.trace("filled in-memory bots in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");*/
+        trace("filled in-memory bots in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");*/
 
 
         ext.getParentZone().setProperty("ranking", users);
@@ -176,7 +164,7 @@ public class RankingUtils
             stats += getCardValues(entry, d,  BuildingType.B44_CRYSTAL, ",\n");
         }
 
-        ext.trace(stats);
+        trace(stats);
     }
 
     private String getCardValues(Map.Entry<Integer,Map<Integer,Object>> entry, Map<Integer, Object> d, int type, String post)
@@ -201,7 +189,7 @@ public class RankingUtils
                 statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
             statistics.get(players.getSFSObject(i).getInt("id")).put(key, new RankData(0,"", players.getSFSObject(i).getInt("count"), players.getSFSObject(i).getInt("level")));
         }
-        ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
     private void getResourceStats(Map<Integer, Map<Integer, Object>> statistics, int key, String time)
@@ -218,7 +206,7 @@ public class RankingUtils
                 statistics.put(players.getSFSObject(i).getInt("id"), new HashMap());
             statistics.get(players.getSFSObject(i).getInt("id")).put(key, players.getSFSObject(i).getInt("count"));
         }
-        ext.trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace(key + " get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
     private void getOperationStats(Map<Integer,Map<Integer,Object>> statistics, String time)
@@ -236,7 +224,7 @@ public class RankingUtils
             statistics.get(players.getSFSObject(i).getInt("id")).put(201, players.getSFSObject(i).getInt("i"));
             statistics.get(players.getSFSObject(i).getInt("id")).put(202, (int) (players.getSFSObject(i).getDouble("s")*10));
         }
-        ext.trace("operations get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace("operations get in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }*/
 }
 

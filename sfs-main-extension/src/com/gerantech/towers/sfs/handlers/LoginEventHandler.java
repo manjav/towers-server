@@ -1,7 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.quests.QuestsUtils;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.utils.*;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
@@ -62,7 +60,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			getParentExtension().getParentZone().setProperty("startTime", System.currentTimeMillis());
 
 		// check ban
-		ISFSObject banData = BanSystem.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
+		ISFSObject banData = BanUtils.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
 		if( banData != null )
 		{
 			outData.putSFSObject("ban", banData);
@@ -363,7 +361,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		SFSArray _exchanges = new SFSArray();
 		int[] keys = game.exchanger.items.keys();
 		for ( int k : keys )
-			_exchanges.addSFSObject(ExchangeManager.toSFS(game.exchanger.items.get(k)));
+			_exchanges.addSFSObject(ExchangeUtils.toSFS(game.exchanger.items.get(k)));
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data
@@ -402,6 +400,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.exchanger.items.set(type, item);
 		game.exchanger.updater.update(item);
 		if( addSFS )
-			exchanges.addSFSObject( ExchangeManager.toSFS(item) );
+			exchanges.addSFSObject( ExchangeUtils.toSFS(item) );
 	}
 }

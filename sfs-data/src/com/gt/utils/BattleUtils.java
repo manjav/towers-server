@@ -1,12 +1,10 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.FieldProvider;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -17,7 +15,6 @@ import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,25 +26,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by ManJav on 9/23/2017.
  */
-public class BattleUtils
+public class BattleUtils extends UtilBase
 {
-    private final SFSExtension ext;
-    private static AtomicInteger roomId = new AtomicInteger();
-
-    public BattleUtils()
-    {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
     public static BattleUtils getInstance()
     {
-        return new BattleUtils();
+        return (BattleUtils)UtilBase.get(BattleUtils.class);
     }
-
+    private AtomicInteger roomId = new AtomicInteger();
     public void join(User user, Room theRoom, String spectatedUser, int challengeType)
     {
         user.getSession().setProperty("challengeType", challengeType);
         Player player = ((Game)user.getSession().getProperty("core")).player;
-        ext.trace("---------=========<<<<  JOIN user:"+user.getName()+" theRoom:"+theRoom.getName()+" spectatedUser:"+spectatedUser+" >>>>==========---------");
+        trace("---------=========<<<<  JOIN user:"+user.getName()+" theRoom:"+theRoom.getName()+" spectatedUser:"+spectatedUser+" >>>>==========---------");
         List<UserVariable> vars = new ArrayList();
         vars.add(new SFSUserVariable("name", player.nickName));
         vars.add(new SFSUserVariable("point", player.get_point()));
@@ -81,19 +71,19 @@ public class BattleUtils
             //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
             roomProperties.put("arena", arena);// ===> is temp
         }
-        ext.trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isOperation:", isOperation, "friendlyMode:", friendlyMode, " >>>>==========---------");
+        trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "isOperation:", isOperation, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         // temp solution
         long now = Instant.now().getEpochSecond();
         List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList)
         {
-            // ext.trace(">>>>>>>", r.containsProperty("startAt"), now );
+            // trace(">>>>>>>", r.containsProperty("startAt"), now );
             if ( r.containsProperty("startAt") && now - (Integer)r.getProperty("startAt") > 400 )
             {
-                ext.trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
+                trace("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY!!!    BATTLE KHARAB SHOOOOOD!!!!");
                 removeRoom(r);
-                ext.trace("** battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
+                trace("** battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
             }
         }
 
@@ -134,7 +124,7 @@ public class BattleUtils
         List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room room : battles)
         {
-            if( (int) room.getProperty("state") == BattleRoom.STATE_BATTLE_STARTED )
+            if( (int) room.getProperty("state") == 2 )//BattleRoom.STATE_BATTLE_STARTED
             {
                 ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
                 if( registeredPlayers != null )

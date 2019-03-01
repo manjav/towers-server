@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.Commands;
+import com.gt.utils.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.data.LobbyData;
 import com.smartfoxserver.v2.db.IDBManager;

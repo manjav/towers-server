@@ -1,9 +1,9 @@
 package com.gerantech.towers.sfs.battle.handlers;
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
-import com.gerantech.towers.sfs.utils.BattleUtils;
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.ExchangeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.socials.Challenge;
@@ -29,7 +29,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
             params.putInt("umt", LoginEventHandler.UNTIL_MAINTENANCE - now);
-            send(Commands.START_BATTLE, params, sender);
+            send(Commands.BATTLE_START, params, sender);
             return;
         }
 
@@ -41,11 +41,11 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         if( challengeType > -1 )
         {
             Game game = (Game)sender.getSession().getProperty("core");
-            int response = ExchangeManager.getInstance().process(game, Challenge.getExchangeItem(challengeType, Challenge.getRunRequiements(challengeType), game.player.get_arena(0)), (int) Instant.now().getEpochSecond(),0);
+            int response = ExchangeUtils.getInstance().process(game, Challenge.getExchangeItem(challengeType, Challenge.getRunRequiements(challengeType), game.player.get_arena(0)), (int) Instant.now().getEpochSecond(),0);
             if( response != MessageTypes.RESPONSE_SUCCEED )
             {
                 params.putInt("response", response);
-                send(Commands.START_BATTLE, params, sender);
+                send(Commands.BATTLE_START, params, sender);
                 return;
             }
         }

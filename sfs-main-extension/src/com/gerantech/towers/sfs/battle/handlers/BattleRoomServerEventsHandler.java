@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.utils.BattleUtils;
+import com.gt.utils.BattleUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.buildings.Building;

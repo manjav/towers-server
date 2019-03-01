@@ -1,33 +1,25 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.inbox.InboxUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
+import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.extensions.ISFSExtension;
-import com.smartfoxserver.v2.extensions.SFSExtension;
-import org.apache.http.util.TextUtils;
-
-import java.sql.SQLException;
 
 /**
  * Created by ManJav on 8/20/2017.
  */
-public class OneSignalUtils
+public class OneSignalUtils extends UtilBase
 {
-    public OneSignalUtils()
-    {
-    }
     public static OneSignalUtils getInstance()
     {
-        return new OneSignalUtils();
+        return (OneSignalUtils)UtilBase.get(OneSignalUtils.class);
     }
 
     public String getPushId(int playerId)
