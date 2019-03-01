@@ -23,9 +23,6 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	private static int CORE_SIZE = 0;
 	public static int UNTIL_MAINTENANCE = 1545769843;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
@@ -78,16 +74,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			outData.putInt("umt", 15);
 			return;
-		}
-
-
-		if( CORE_SIZE == 0 )
-		{
-			try {
-				CORE_SIZE = (int) HttpClients.createDefault().execute(new HttpGet("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf")).getEntity().getContentLength();
-				//CORE_SIZE = new URL("http://localhost:8080/swfcores/core-" + loginData.coreVersion + ".swf").openStream().available();
-			} catch (IOException e) { e.printStackTrace(); }
-			trace("LoginData  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>> version:", loginData.coreVersion + "coreSize:", CORE_SIZE);
 		}
 
 		DBUtils dbUtils = DBUtils.getInstance();
@@ -219,7 +205,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("noticeVersion", loginData.noticeVersion);
 		outData.putInt("forceVersion", loginData.forceVersion);
 		outData.putText("coreVersion", loginData.coreVersion);
-		outData.putInt("coreSize", CORE_SIZE);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
 		outData.putBool("hasQuests", true);
 		outData.putBool("hasOperations", true);
