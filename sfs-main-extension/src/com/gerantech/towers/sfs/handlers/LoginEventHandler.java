@@ -38,7 +38,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 	public static int UNTIL_MAINTENANCE = 1532599247;
 	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
-	private DBUtils dbUtils;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
@@ -106,7 +105,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( LoginEventHandler.STARTING_STATE == 1 )
 			LoginEventHandler.STARTING_STATE = 2;
 
-		dbUtils = DBUtils.getInstance();
+		DBUtils dbUtils = DBUtils.getInstance();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		// Create new user ============================================================
 		if( inData.getInt("id") < 0 )
@@ -354,7 +353,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		try {
 		for( ExchangeItem item : game.exchanger.updater.changes )
-			dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+			DBUtils.getInstance().updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
 		} catch (Exception e) { e.printStackTrace(); }
 
 		// create exchange data
