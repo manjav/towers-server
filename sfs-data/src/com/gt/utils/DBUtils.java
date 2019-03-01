@@ -243,19 +243,21 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    public String resetKeyExchanges()
+    public String resetDailyBattlesExchanges()
     {
         String result = "";
         try {
             db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
         } catch (SQLException e) { return "Query failed"; }
 
+        Game g;
         Collection<User> users = ext.getParentZone().getUserList();
         for (User u : users)
         {
-
-            ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
-            result += u.getName() + " key limit reset to '0'.\n";
+            g = ((Game)u.getSession().getProperty("core"));
+            if( g.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) )
+                ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
+            result += g.player.id + " daily battles reset to '0'.\n";
         }
 
         return "Query succeeded.\n" + result;
