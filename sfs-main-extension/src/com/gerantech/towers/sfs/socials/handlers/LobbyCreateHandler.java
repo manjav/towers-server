@@ -1,14 +1,14 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.Commands;
+import com.gt.callbacks.MapChangeCallback;
+import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.utils.LobbyUtils;
 
 /**
  * Created by ManJav on 8/24/2017.

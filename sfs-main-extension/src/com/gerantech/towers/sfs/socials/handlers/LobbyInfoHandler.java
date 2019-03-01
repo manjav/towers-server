@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.socials.LobbyDataUtils;
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.Commands;
+import com.gt.utils.LobbyDataUtils;
+import com.gt.utils.RankingUtils;
 import com.gt.data.LobbyData;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;

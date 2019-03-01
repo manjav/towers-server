@@ -2,8 +2,8 @@ package com.gerantech.towers.sfs.handlers;
 
 import java.sql.SQLException;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.Commands;
+import com.gt.utils.ExchangeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
@@ -44,7 +44,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 
 		if( !game.player.nickName.equals("guest") )
 		{
-			int res = ExchangeManager.getInstance().process(game, game.exchanger.items.get(ExchangeType.C42_RENAME), 0, 0);
+			int res = ExchangeUtils.getInstance().process(game, game.exchanger.items.get(ExchangeType.C42_RENAME), 0, 0);
 			if( res != MessageTypes.RESPONSE_SUCCEED )
 			{
 				params.putInt("response", MessageTypes.RESPONSE_NOT_ENOUGH_REQS);

@@ -1,14 +1,11 @@
-package com.gerantech.towers.sfs.socials;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.utils.DBUtils;
-import com.gerantech.towers.sfs.utils.RankingUtils;
 import com.gt.data.LobbyData;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -20,7 +17,6 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
 import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
 import com.smartfoxserver.v2.persistence.room.SFSStorageException;
@@ -36,20 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by ManJav on 10/15/2017.
  */
-public class LobbyUtils
+public class LobbyUtils extends UtilBase
 {
-    private static LobbyUtils _instance;
-    private final SFSExtension ext;
-    public LobbyUtils() {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
     public static LobbyUtils getInstance()
     {
-        if( _instance == null )
-            _instance = new LobbyUtils();
-        return _instance;
+        return (LobbyUtils)UtilBase.get(LobbyUtils.class);
     }
-
 
     public Map<Integer, LobbyData> getAllData()
     {
@@ -90,7 +78,7 @@ public class LobbyUtils
         }
 
         ext.getParentZone().setProperty("lobbiesData", lobbiesData);
-        ext.trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
 
     public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
@@ -177,7 +165,7 @@ public class LobbyUtils
             query += ( i < changes.size() - 1 ) ? ", " : " ";
         }
         query += "WHERE id = " + lobbyData.getId() + ";";
-        //ext.trace(query);
+        //trace(query);
 
         List<Object> arguments = new ArrayList();
         if( members != null ) arguments.add(members);
@@ -223,7 +211,7 @@ public class LobbyUtils
         ISFSArray members = lobbyData.getMembers();
         for(int i=0; i<members.size(); i++)
             if( members.getSFSObject(i).getInt("id").equals(memberId) ){
-            ext.trace(lobbyData.getId(), i, members.getSFSObject(i).getInt("id"), memberId, members.size());
+                trace(lobbyData.getId(), i, members.getSFSObject(i).getInt("id"), memberId, members.size());
                 return i;}
         return -1;
     }
@@ -237,7 +225,7 @@ public class LobbyUtils
             ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
         getAllData().remove(lobbyId);
-        ext.trace(lobbyId + " removed.");
+        trace(lobbyId + " removed.");
     }
 
 
@@ -269,7 +257,7 @@ public class LobbyUtils
         LobbyData oldLobby =  getDataByMember(userId);
         if( oldLobby != null )
         {
-            ext.trace(userId, "already joint in", oldLobby.getName());
+            trace(userId, "already joint in", oldLobby.getName());
             return false;
         }
 
@@ -341,7 +329,7 @@ public class LobbyUtils
 
             if( activeness <= 0 )
             {
-                //ext.trace(crs.getName(), "is inactive.");
+                //trace(crs.getName(), "is inactive.");
                 continue;
             }
 
@@ -352,7 +340,7 @@ public class LobbyUtils
             {
                 if( reservedPlayers.containsKey(members.getSFSObject(i).getInt("id")) )
                 {
-                    ext.trace(members.getSFSObject(i).getInt("id"), "already joint in other lobby");
+                    trace(members.getSFSObject(i).getInt("id"), "already joint in other lobby");
                 }
                 else
                 {
@@ -365,7 +353,7 @@ public class LobbyUtils
 
             if( mems.size() < 2 )
             {
-                ext.trace(crs.getName(), "is too small.");
+                trace(crs.getName(), "is too small.");
                 continue;
             }
 
@@ -377,7 +365,7 @@ public class LobbyUtils
 
             String query = "INSERT INTO lobbies (name, bio, emblem, capacity, min_point, privacy, members, messages) VALUES ('"
                     + ld.getName() + "', '" + ld.getBio() + "', " + ld.getEmblem() + ", " + ld.getCapacity() + ", " + ld.getMinPoint() + ", " + ld.getPrivacy() + ", ?, ?);";
-            //ext.trace(ld.getName());
+            //trace(ld.getName());
             try {
                 ext.getParentZone().getDBManager().executeInsert(query, new Object[]{ld.getMembersBytes(), ld.getMessagesBytes()});
             } catch (SQLException e) {  e.printStackTrace(); }
@@ -390,7 +378,7 @@ public class LobbyUtils
         for( RoomVariable lv : lobbyVariables )
             if( lv.getName().equals(name) )
                 return lv;
-        ext.trace(name , "not found  in", setting.getName());
+        trace(name , "not found  in", setting.getName());
         return null;
     }
 
@@ -508,7 +496,7 @@ public class LobbyUtils
     {
         if( r.isEmpty() )
             ext.getApi().removeRoom(r);
-//        ext.trace(r.getName(),  "l players:", r.getPlayersList().size(), r.getUserList().size(), r.isEmpty());
+//        trace(r.getName(),  "l players:", r.getPlayersList().size(), r.getUserList().size(), r.isEmpty());
     }
 
 
@@ -566,7 +554,7 @@ public class LobbyUtils
                 Room lobby = ext.getApi().createRoom(zone, crs, null);
                 save(zone, lobby);
                 ext.getApi().removeRoom(lobby);
-                ext.trace("vars of " + crs.getName() + " cleaned.");
+                trace("vars of " + crs.getName() + " cleaned.");
                 result += "\n vars of " + crs.getName() + " cleaned.";
             }
         }
@@ -625,3 +613,6 @@ public class LobbyUtils
         return CryptoUtils.getHexFileName(new StringBuilder(String.valueOf(theRoom.getGroupId())).append(theRoom.getName()).toString()) + ".room";
     }*/
 }
+
+
+

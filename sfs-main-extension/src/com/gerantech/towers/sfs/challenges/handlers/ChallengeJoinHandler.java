@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.challenges.handlers;
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.Commands;
+import com.gt.utils.ChallengeUtils;
+import com.gt.utils.ExchangeUtils;
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
@@ -26,7 +26,7 @@ public class ChallengeJoinHandler extends BaseClientRequestHandler
         }
 
         // check player has requirements
-        int response = ExchangeManager.getInstance().process(game, Challenge.getExchangeItem(params.getInt("type"), Challenge.getJoinRequiements(params.getInt("type")), game.player.get_arena(0)), 0, 0);
+        int response = ExchangeUtils.getInstance().process(game, Challenge.getExchangeItem(params.getInt("type"), Challenge.getJoinRequiements(params.getInt("type")), game.player.get_arena(0)), 0, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )
         {
             sendResponse(sender, params, response);

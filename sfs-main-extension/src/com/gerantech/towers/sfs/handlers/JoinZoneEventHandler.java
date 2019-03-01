@@ -1,7 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gt.data.LobbyData;
+import com.gt.utils.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -11,7 +10,6 @@ import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.Zone;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.exceptions.SFSException;

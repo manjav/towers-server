@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.utils.RankingUtils;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ResourceType;
@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author ManJav

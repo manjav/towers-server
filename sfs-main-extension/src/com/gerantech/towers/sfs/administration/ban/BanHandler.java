@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.administration.ban;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.utils.BanSystem;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.Commands;
+import com.gt.utils.BanUtils;
+import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.db.IDBManager;
@@ -45,7 +45,7 @@ public class BanHandler extends BaseClientRequestHandler
 		String udid = DBUtils.getInstance().getUDID(params.getInt("id"));
 
 		long now = Instant.now().getEpochSecond();
-		BanSystem.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
+		BanUtils.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
 		sendResponse(sender, params, MessageTypes.RESPONSE_SUCCEED);
 
 		if( params.getInt("mode") >= 2 )

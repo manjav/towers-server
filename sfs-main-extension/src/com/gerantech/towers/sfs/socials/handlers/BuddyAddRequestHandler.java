@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.inbox.InboxUtils;
-import com.gerantech.towers.sfs.utils.OneSignalUtils;
+import com.gt.Commands;
+import com.gt.utils.InboxUtils;
+import com.gt.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;

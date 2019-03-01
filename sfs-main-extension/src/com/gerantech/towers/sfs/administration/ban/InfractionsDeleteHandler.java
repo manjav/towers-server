@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.administration.ban;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.User;

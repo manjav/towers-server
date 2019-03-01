@@ -1,12 +1,10 @@
-package com.gerantech.towers.sfs.inbox;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.Commands;
-import com.smartfoxserver.v2.SmartFoxServer;
+import com.gt.Commands;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -14,16 +12,11 @@ import java.time.Instant;
 /**
  * Created by ManJav on 9/23/2017.
  */
-public class InboxUtils
+public class InboxUtils extends UtilBase
 {
-    private final SFSExtension ext;
-    public InboxUtils()
-    {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
     public static InboxUtils getInstance()
     {
-        return new InboxUtils();
+        return (InboxUtils)UtilBase.get(InboxUtils.class);
     }
 
     public int send(int type, String text, String sender, int senderId, int receiverId, String data)

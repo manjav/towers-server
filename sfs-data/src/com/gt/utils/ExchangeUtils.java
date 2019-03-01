@@ -1,36 +1,31 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
+import com.gt.callbacks.MapChangeCallback;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.exchanges.ExchangeItem;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 /**
  * Created by ManJav on 4/27/2018.
  */
-public class ExchangeManager
+public class ExchangeUtils extends UtilBase
 {
-    private final SFSExtension ext;
-    public MapChangeCallback mapChangeCallback;
-
-    public ExchangeManager() {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
+    public static ExchangeUtils getInstance()
+    {
+        return (ExchangeUtils)UtilBase.get(ExchangeUtils.class);
     }
-    public static ExchangeManager getInstance() { return new ExchangeManager(); }
-
+    public MapChangeCallback mapChangeCallback;
     public int process(Game game, int type, int now, int hardsConfimed)
     {
         ExchangeItem item = game.exchanger.items.get(type);
         if( item == null )
         {
-            ext.trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
+            trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
             return MessageTypes.RESPONSE_NOT_FOUND;
         }
         return process(game, item, now, hardsConfimed);
@@ -64,7 +59,7 @@ public class ExchangeManager
 		for(int o = 0; o<updates.length; o++)
 			trace("updates", updates[o], mapChangeCallback.inserts.get(updates[o]));*/
 
-        ext.trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.toString(), " ,hardsConfimed:", hardsConfimed, " ,response:", response, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
+        trace("Exchange => type:", item.type, " ,expiredAt:", item.expiredAt, " ,now:", now, " ,outcomes:", item.outcomes==null?"":item.outcomes.toString(), " ,hardsConfimed:", hardsConfimed, " ,response:", response, " ,numExchanges:", item.numExchanges, " ,outcome:", item.outcome);
 
         // Run db queries
         DBUtils dbUtils = DBUtils.getInstance();

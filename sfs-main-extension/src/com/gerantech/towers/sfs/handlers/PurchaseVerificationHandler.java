@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.ExchangeManager;
+import com.gt.utils.ExchangeUtils;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
@@ -114,7 +114,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		int item = Integer.parseInt(productID.split("_")[1]);
 		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD )
 		{
-			int res = ExchangeManager.getInstance().process(game, item, 0, 0);
+			int res = ExchangeUtils.getInstance().process(game, item, 0, 0);
 			if( res != MessageTypes.RESPONSE_SUCCEED )
 			{
 				resObj.putBool("success", false);

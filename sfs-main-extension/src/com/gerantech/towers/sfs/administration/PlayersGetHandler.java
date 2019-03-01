@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.administration;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.User;

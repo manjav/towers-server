@@ -1,9 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gerantech.towers.sfs.battle.BattleUtils;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.quests.QuestsUtils;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
-import com.gerantech.towers.sfs.utils.*;
+import com.gerantech.towers.sfs.utils.HttpTool;
+import com.gerantech.towers.sfs.utils.LoginErrors;
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -16,6 +14,7 @@ import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
 import com.gt.towers.scripts.ScriptEngine;
 import com.gt.towers.utils.maps.IntIntMap;
+import com.gt.utils.*;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSConstants;
@@ -66,7 +65,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			getParentExtension().getParentZone().setProperty("startTime", System.currentTimeMillis());
 
 		// check ban
-		ISFSObject banData = BanSystem.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
+		ISFSObject banData = BanUtils.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
 		if( banData != null )
 		{
 			outData.putSFSObject("ban", banData);
@@ -384,7 +383,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
 		for( int t : game.exchanger.items.keys() )
-			_exchanges.addSFSObject(ExchangeManager.toSFS(game.exchanger.items.get(t)));
+			_exchanges.addSFSObject(ExchangeUtils.toSFS(game.exchanger.items.get(t)));
 		outData.putSFSArray("exchanges", _exchanges);
 
 		// init and update hazel data
@@ -423,6 +422,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.exchanger.items.set(type, item);
 		game.exchanger.updater.update(item);
 		if( addSFS )
-			exchanges.addSFSObject( ExchangeManager.toSFS(item) );
+			exchanges.addSFSObject( ExchangeUtils.toSFS(item) );
 	}
 }

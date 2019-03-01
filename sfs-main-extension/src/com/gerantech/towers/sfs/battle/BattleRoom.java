@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.battle;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.bots.BattleBot;
 import com.gerantech.towers.sfs.battle.factories.EndCalculator;
 import com.gerantech.towers.sfs.battle.factories.HeadquarterEndCalculator;
@@ -12,10 +12,11 @@ import com.gerantech.towers.sfs.battle.handlers.BattleStickerRequestHandler;
 import com.gerantech.towers.sfs.battle.handlers.BattleSummonRequestHandler;
 import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
 import com.gerantech.towers.sfs.callbacks.HitUnitCallback;
-import com.gerantech.towers.sfs.challenges.ChallengeUtils;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.utils.ChallengeUtils;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.HttpTool;
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;

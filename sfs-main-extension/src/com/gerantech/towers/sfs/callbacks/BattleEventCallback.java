@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.GameObject;

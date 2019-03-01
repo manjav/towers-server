@@ -1,15 +1,14 @@
-package com.gerantech.towers.sfs.challenges;
+package com.gt.utils;
 
 import com.gt.data.ChallengeSFS;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.socials.Challenge;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.extensions.SFSExtension;
+
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -20,20 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by ManJav on 8/2/2018.
  */
-public class ChallengeUtils
+public class ChallengeUtils extends UtilBase
 {
-    private static ChallengeUtils _instance;
-    private final SFSExtension ext;
-    public ChallengeUtils() {
-        ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-    }
     public static ChallengeUtils getInstance()
     {
-        if( _instance == null )
-            _instance = new ChallengeUtils();
-        return _instance;
+        return (ChallengeUtils)UtilBase.get(ChallengeUtils.class);
     }
-
     public void loadAll()
     {
         if( ext.getParentZone().containsProperty("allChallenges") )
@@ -61,7 +52,7 @@ public class ChallengeUtils
 
         ext.getParentZone().setProperty("allChallenges", allChallenges);
         ext.getParentZone().setProperty("waitingChallenges", waitingChallenges);
-        ext.trace("loaded challenges data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+        trace("loaded challenges data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
     public ConcurrentHashMap<Integer, ChallengeSFS> getAll()
     {
@@ -170,7 +161,7 @@ public class ChallengeUtils
         if( challenge == null )
             return MessageTypes.RESPONSE_NOT_FOUND;
 
-        if( challenge.base.getState(now) != com.gt.towers.socials.Challenge.STATE_END )
+        if( challenge.base.getState(now) != Challenge.STATE_END )
             return MessageTypes.RESPONSE_MUST_WAIT;
 
         ISFSObject attendee = getAttendee(playerId, challenge);

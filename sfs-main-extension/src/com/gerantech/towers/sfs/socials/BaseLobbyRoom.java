@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.socials;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gt.data.LobbyData;

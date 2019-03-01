@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.battle.handlers;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
-import com.gerantech.towers.sfs.battle.BattleUtils;
+import com.gt.utils.BattleUtils;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
@@ -13,7 +13,6 @@ import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;

@@ -1,8 +1,8 @@
 package com.gerantech.towers.sfs.administration;
 
-import com.gerantech.towers.sfs.Commands;
+import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
-import com.gerantech.towers.sfs.socials.LobbyUtils;
+import com.gt.utils.LobbyUtils;
 import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;

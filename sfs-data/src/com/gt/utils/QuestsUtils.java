@@ -1,20 +1,14 @@
-package com.gerantech.towers.sfs.quests;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.utils.ExchangeManager;
 import com.gt.data.SFSDataModel;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
-import com.gt.towers.constants.ResourceType;
-import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.others.Quest;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 import haxe.root.Array;
 
 import java.sql.SQLException;
@@ -22,12 +16,12 @@ import java.sql.SQLException;
 /**
  * Created by ManJav on 8/27/2018.
  */
-public class QuestsUtils
+public class QuestsUtils extends UtilBase
 {
-    private final SFSExtension ext;
-
-    public QuestsUtils() { ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension(); }
-    public static QuestsUtils getInstance() { return new QuestsUtils(); }
+    public static QuestsUtils getInstance()
+    {
+        return (QuestsUtils)UtilBase.get(QuestsUtils.class);
+    }
 
     public void insertNewQuests(Player player)
     {
@@ -89,7 +83,7 @@ public class QuestsUtils
         quest.current = Quest.getCurrent(game.player, quest.type, quest.key);
 
         // exchange
-        int response = ExchangeManager.getInstance().process(game, Quest.getExchangeItem(quest.type, quest.nextStep), 0, 0);
+        int response = ExchangeUtils.getInstance().process(game, Quest.getExchangeItem(quest.type, quest.nextStep), 0, 0);
         if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
         game.player.quests.remove(quest);
@@ -99,7 +93,7 @@ public class QuestsUtils
 
         // update DB
         String query = "UPDATE quests SET `type`=" + quest.type + ", `key`=" + quest.key + ", step=" + quest.nextStep + " WHERE `id`=" + quest.id;
-        ext.trace(query);
+        trace(query);
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, new Object[]{});
         } catch (SQLException e) {e.printStackTrace();}

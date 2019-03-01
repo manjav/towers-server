@@ -45,7 +45,7 @@ public class BattleBot
         chatPatams.putDouble("ready", battleField.now + 15000);
 
         player = battleField.games.__get(0).player;
-        ext.trace("p-point:" + player.getResource(ResourceType.R2_POINT), "b-point:"+ battleField.games.__get(1).player.getResource(ResourceType.R2_POINT), " winRate:" + player.getResource(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
+        trace("p-point:" + player.getResource(ResourceType.R2_POINT), "b-point:"+ battleField.games.__get(1).player.getResource(ResourceType.R2_POINT), " winRate:" + player.getResource(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
     }
 
     public void reset()
@@ -121,7 +121,7 @@ public class BattleBot
 
             double random = (Math.random() > 0.5 ? 33 : -33) * Math.random();
             x = Math.max(BattleField.PADDING, Math.min(BattleField.WIDTH - BattleField.PADDING, playerHeader.x + random));
-           // ext.trace("playerHeader:"+ playerHeader.card.type, "x:"+ x, "y:"+ y, "e:"+ battleField.elixirBar.get(1), "ratio:" + battleRoom.endCalculator.ratio());
+           // trace("playerHeader:"+ playerHeader.card.type, "x:"+ x, "y:"+ y, "e:"+ battleField.elixirBar.get(1), "ratio:" + battleRoom.endCalculator.ratio());
             cardType = battleField.decks.get(1).queue_get(cardIndex);
 
             if( CardTypes.isSpell(cardType) || playerHeader.y < BattleField.HEIGHT * 0.4 )// drop spell
@@ -159,7 +159,7 @@ public class BattleBot
         int id = battleRoom.summonUnit(1, cardType, x, y);
         if( id >= 0 )
         {
-            //ext.trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, player.cards.exists(cardType), xPosition );
+            //trace("summonCard  type:", cardType, "id:", id, lastCardIndexUsed, player.cards.exists(cardType), xPosition );
             lastSummonTime = battleField.now + SUMMON_DELAY;
             return;
         }
@@ -184,7 +184,7 @@ public class BattleBot
         for (int i = defaultIndex; i < len; i++)
         {
             int index = battleField.decks.get(1).queue_indexOf((int) candidates.__get(i));
-            //ext.trace("queue_indexOf", i, candidates.__get(i), index);
+            //trace("queue_indexOf", i, candidates.__get(i), index);
             if( index > 0 && index < 4 )
                 return index;
         }
@@ -200,7 +200,7 @@ public class BattleBot
         if( chatPatams.getDouble("ready") > battleField.now || Math.random() > 0.1 )
             return;
 
-        //ext.trace(this.battleRatio, battleRatio);
+        //trace(this.battleRatio, battleRatio);
         if( battleRatio != this.battleRatio )
         {
             chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.__get(0)));
@@ -237,6 +237,6 @@ public class BattleBot
     void trace(Object... args)
     {
         if( DEBUG_MODE )
-            ext.trace(args);
+            trace(args);
     }
 }

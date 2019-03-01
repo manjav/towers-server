@@ -1,12 +1,9 @@
-package com.gerantech.towers.sfs.utils;
+package com.gt.utils;
 
-import com.gerantech.towers.sfs.inbox.InboxUtils;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -15,20 +12,12 @@ import java.time.Instant;
  * @author ManJav
  *
  */
-public class BanSystem
+public class BanUtils extends UtilBase
 {
-	private static BanSystem _instance;
-	private final SFSExtension ext;
-
-	public BanSystem()	{
-		ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
-	}
-	public static BanSystem getInstance()
-	{
-		if( _instance == null )
-			_instance = new BanSystem();
-		return _instance;
-	}
+	public static BanUtils getInstance()
+		{
+			return (BanUtils)UtilBase.get(BanUtils.class);
+		}
 
 	public String checkOffends(String params)
 	{
@@ -61,15 +50,15 @@ public class BanSystem
 			udidQuery += ("player_id = " + offenders.getSFSObject(i).getInt("offender") ) + (last ? " OR " : "");
 
 		}
-		ext.trace(bannedQuery);
-		ext.trace(udidQuery);
+		trace(bannedQuery);
+		trace(udidQuery);
 		try {
 			banneds = db.executeQuery(bannedQuery, new Object[]{});
 			udids = db.executeQuery(udidQuery, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace(); }
 
-		ext.trace(banneds.getDump());
-		ext.trace(udids.getDump());
+		trace(banneds.getDump());
+		trace(udids.getDump());
 
 		for( int i = 0; i < offenders.size(); i ++ )
 		{
@@ -86,7 +75,7 @@ public class BanSystem
 			// add udid
 			for( int k = 0; k < udids.size(); k ++ )
 			{
-				ext.trace(k, udids.getSFSObject(k).getUtfString("udid"));
+				trace(k, udids.getSFSObject(k).getUtfString("udid"));
 				if( offenders.getSFSObject(i).getInt("offender").equals(udids.getSFSObject(k).getInt("player_id")) )
 				{
 					offenders.getSFSObject(i).putUtfString("udid", udids.getSFSObject(k).getUtfString("udid"));
@@ -108,7 +97,7 @@ public class BanSystem
 			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
 		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at), time = time+1;" +
 				";";
-		ext.trace(q);
+		trace(q);
 		try {
 			db.executeUpdate(q, new Object[]{});
 		} catch (SQLException e) {e.printStackTrace();}
@@ -119,7 +108,7 @@ public class BanSystem
 		else if( banMode > 1 )
 		{
 			q = "UPDATE infractions SET proceed = 1 WHERE offender = " + offender;
-			ext.trace(q);
+			trace(q);
 			try {
 				db.executeUpdate(q, new Object[]{});
 			} catch (SQLException e) {e.printStackTrace();}
@@ -134,7 +123,7 @@ public class BanSystem
 
 		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at") / 1000 - now);
 		bannedUsers.getSFSObject(0).removeElement("expire_at");
-		ext.trace(bannedUsers.getSFSObject(0).getDump());
+		trace(bannedUsers.getSFSObject(0).getDump());
 		return bannedUsers.getSFSObject(0);
 	}
 

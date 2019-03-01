@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.administration.ban;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.utils.BanSystem;
+import com.gt.Commands;
+import com.gt.utils.BanUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -18,7 +18,7 @@ public class InfractionsGetHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		if( !game.player.admin )
 			return;
-		params.putSFSArray("data", BanSystem.getInstance().getInfractions(params.containsKey("id") ? params.getInt("id") : 0, -1, 200, null));
+		params.putSFSArray("data", BanUtils.getInstance().getInfractions(params.containsKey("id") ? params.getInt("id") : 0, -1, 200, null));
 		send(Commands.INFRACTIONS_GET, params, sender);
     }
 }

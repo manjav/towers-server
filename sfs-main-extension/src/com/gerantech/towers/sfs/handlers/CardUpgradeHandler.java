@@ -1,9 +1,9 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.Commands;
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
-import com.gerantech.towers.sfs.utils.DBUtils;
+import com.gt.Commands;
+import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
+import com.gt.callbacks.MapChangeCallback;
 import com.gt.towers.Player;
 import com.gt.towers.battle.units.Card;
 import com.smartfoxserver.v2.entities.User;

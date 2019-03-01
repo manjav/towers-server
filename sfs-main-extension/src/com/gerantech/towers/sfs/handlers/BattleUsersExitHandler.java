@@ -1,6 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gerantech.towers.sfs.utils.RankingUtils;
+import com.gt.utils.RankingUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
