@@ -35,9 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1532599247;
-	public static int STARTING_STATE = 0;
 	private static int CORE_SIZE = 0;
+	public static int UNTIL_MAINTENANCE = 1545769843;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
@@ -54,9 +53,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			outData.putInt("umt", UNTIL_MAINTENANCE - now );
 			return;
 		}
-
-		if( !getParentExtension().getParentZone().containsProperty("startTime") )
-			getParentExtension().getParentZone().setProperty("startTime", System.currentTimeMillis());
 
 		// check ban
 		ISFSObject banData = BanUtils.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
@@ -78,20 +74,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 			return;
 		}
 
-		if( STARTING_STATE == 1 && inData.getInt("id") != 10412 )
+		if( getParentExtension().getParentZone().containsProperty("startTime") )
 		{
 			outData.putInt("umt", 15);
 			return;
 		}
 
-		if( STARTING_STATE == 0 )
-			STARTING_STATE = 1;
-
-		// load all settings
-		//RankingUtils.getInstance().fillStatistics();
-		RankingUtils.getInstance().fillActives();
-		LobbyUtils.getInstance().loadAll();
-		ChallengeUtils.getInstance().loadAll();
 
 		if( CORE_SIZE == 0 )
 		{
@@ -101,9 +89,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			} catch (IOException e) { e.printStackTrace(); }
 			trace("LoginData  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- >>>>>>>>>>>>>> version:", loginData.coreVersion + "coreSize:", CORE_SIZE);
 		}
-
-		if( LoginEventHandler.STARTING_STATE == 1 )
-			LoginEventHandler.STARTING_STATE = 2;
 
 		DBUtils dbUtils = DBUtils.getInstance();
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
