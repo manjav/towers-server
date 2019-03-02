@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gt.utils.LobbyUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -20,7 +20,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
         Room lobby = getParentExtension().getParentRoom();
-        LobbyData lobbyData = (LobbyData)lobby.getProperty("data");
+        LobbySFS lobbyData = (LobbySFS)lobby.getProperty("data");
 
         int memberIndex = LobbyUtils.getInstance().getMemberIndex(lobbyData, game.player.id);
         if( memberIndex < 0 )

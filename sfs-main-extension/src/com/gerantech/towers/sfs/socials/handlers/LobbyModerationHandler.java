@@ -5,7 +5,7 @@ import com.gt.utils.InboxUtils;
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gt.utils.LobbyUtils;
 import com.gt.utils.OneSignalUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -26,7 +26,7 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
     private ISFSArray members;
     private ISFSObject targetMember;
     private ISFSObject modMember;
-    private LobbyData lobbyData;
+    private LobbySFS lobbyData;
 
     public void handleClientRequest(User sender, ISFSObject params)
     {

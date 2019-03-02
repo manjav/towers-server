@@ -17,7 +17,7 @@ import haxe.root.Array;
 public class ChallengeSFS extends SFSDataModel
 {
 
-    public com.gt.towers.socials.Challenge base;
+    public Challenge base;
     public int saveRequests = 0;
 
     public ChallengeSFS()

@@ -3,22 +3,18 @@ package com.gt.data;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
 
 /**
  * Created by ManJav on 8/13/2018.
  */
-public class LobbyData extends SFSObject
+public class LobbySFS extends SFSDataModel
 {
-    public LobbyData()
+    //public Lobby base;
+    public LobbySFS(ISFSObject sfsObject)
     {
         super();
-    }
-
-    public LobbyData(ISFSObject sfsObject)
-    {
-        super();
+        //base = new Lobby(null);
         setId(sfsObject.getInt("id"));
         setName(sfsObject.getUtfString("name"));
         setBio(sfsObject.getUtfString("bio"));
@@ -32,9 +28,10 @@ public class LobbyData extends SFSObject
             setMessages(sfsObject.getByteArray("messages"));
     }
 
-    public LobbyData(int id, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] message)//, int createAt
+    public LobbySFS(int id, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] message)//, int createAt
     {
         super();
+       // base = new Lobby(null);
         setId(id);
         setName(name);
         setBio(bio);
@@ -45,7 +42,6 @@ public class LobbyData extends SFSObject
         setMembers(members);
         setMessages(message);
     }
-
 
     /**
      * Id

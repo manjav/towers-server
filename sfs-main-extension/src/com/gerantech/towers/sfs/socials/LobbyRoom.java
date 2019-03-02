@@ -5,7 +5,7 @@ import com.gt.Commands;
 import com.gt.utils.InboxUtils;
 import com.gerantech.towers.sfs.socials.handlers.*;
 import com.gt.utils.BattleUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -195,9 +195,9 @@ public class LobbyRoom extends BaseLobbyRoom
         return lobby.getVariable("act").getIntValue();
     }*/
 
-    public LobbyData getData()
+    public LobbySFS getData()
     {
-        return (LobbyData) lobby.getProperty("data");
+        return (LobbySFS) lobby.getProperty("data");
     }
 
     private boolean replyRequest(Game game, ISFSObject params)

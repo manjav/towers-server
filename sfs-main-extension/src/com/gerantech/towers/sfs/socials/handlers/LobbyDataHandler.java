@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 import com.gt.utils.LobbyDataUtils;
 import com.gt.utils.LobbyUtils;
 import com.gt.utils.RankingUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.data.RankData;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -21,11 +21,11 @@ public class LobbyDataHandler extends BaseClientRequestHandler
         ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         if( params.containsKey("id") )
         {
-            LobbyData lobbyData = null;
+            LobbySFS lobbyData = null;
             if( params.getInt("id") > 10000 )
                 lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
             else
-                lobbyData = (LobbyData)getParentExtension().getParentZone().getRoomById(params.getInt("id")).getProperty("data");
+                lobbyData = (LobbySFS)getParentExtension().getParentZone().getRoomById(params.getInt("id")).getProperty("data");
             if( lobbyData != null )
                 LobbyDataUtils.getInstance().fillRoomData(lobbyData, params, users, true , false);
         }
