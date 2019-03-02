@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.socials;
 import com.gt.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -22,13 +22,13 @@ public class BaseLobbyRoom extends SFSExtension
     protected Game game;
     protected Short mode;
     protected Room lobby;
-    protected LobbyData data;
+    protected LobbySFS data;
     protected ISFSArray messages;
 
     public void init()
     {
         lobby = getParentRoom();
-        data = (LobbyData) lobby.getProperty("data");
+        data = (LobbySFS) lobby.getProperty("data");
         addRequestHandler(Commands.LOBBY_PUBLIC_MESSAGE, PublicMessageHandler.class);
         addRequestHandler(Commands.LOBBY_REPORT, LobbyReportHandler.class);
     }

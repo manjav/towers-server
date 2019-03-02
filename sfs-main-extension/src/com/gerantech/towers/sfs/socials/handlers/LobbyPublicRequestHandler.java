@@ -1,6 +1,5 @@
 package com.gerantech.towers.sfs.socials.handlers;
 import com.gt.Commands;
-import com.gt.data.LobbyData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
@@ -32,7 +31,7 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
         if( theRoom == null )
         {
             theRoom = make(sender);
-            /*LobbyData lobbyData = new LobbyData(theRoom.getId(), theRoom.getName(), "", 0,0,0,0,null, null);
+            /*LobbySFS lobbyData = new.LobbySFS(theRoom.getId(), theRoom.getName(), "", 0,0,0,0,null, null);
             lobbyData.setMessages(new SFSArray());
             theRoom.setProperty("data", lobbyData);*/
         }

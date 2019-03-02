@@ -1,6 +1,6 @@
 package com.gt.utils;
 
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -39,9 +39,9 @@ public class LobbyUtils extends UtilBase
         return (LobbyUtils)UtilBase.get(LobbyUtils.class);
     }
 
-    public Map<Integer, LobbyData> getAllData()
+    public Map<Integer, LobbySFS> getAllData()
     {
-        return (Map<Integer, LobbyData>) ext.getParentZone().getProperty("lobbiesData");
+        return (Map<Integer, LobbySFS>) ext.getParentZone().getProperty("lobbiesData");
     }
 
     /**
@@ -68,12 +68,12 @@ public class LobbyUtils extends UtilBase
         }*/
 
         ISFSObject lr;
-        LobbyData lobbySFS;
-        Map<Integer, LobbyData> lobbiesData = new HashMap();
+        LobbySFS lobbySFS;
+        Map<Integer, LobbySFS> lobbiesData = new HashMap();
         for (int i = 0; i < lobbyRows.size(); i++)
         {
             lr = lobbyRows.getSFSObject(i);
-            lobbySFS = new LobbyData(lr);
+            lobbySFS = new LobbySFS(lr);
             lobbiesData.put(lr.getInt("id"), lobbySFS);
         }
 
@@ -83,7 +83,7 @@ public class LobbyUtils extends UtilBase
 
     public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
     {
-        LobbyData lobbyData = new LobbyData(-1, name, bio, emblem, capacity, minPoint, privacy, null, null);
+        LobbySFS lobbyData = new LobbySFS(-1, name, bio, emblem, capacity, minPoint, privacy, null, null);
 
         // add member
         Player player = ((Game)owner.getSession().getProperty("core")).player;
@@ -110,7 +110,7 @@ public class LobbyUtils extends UtilBase
         return lobby;
     }
 
-    private Room createRoom(LobbyData lobbyData)
+    private Room createRoom(LobbySFS lobbyData)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
         CreateRoomSettings rs = new CreateRoomSettings();
@@ -146,7 +146,7 @@ public class LobbyUtils extends UtilBase
      * @param members (set null if you want not save)
      * @param messages (set null if you want not save)
      */
-    public void save(LobbyData lobbyData, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
+    public void save(LobbySFS lobbyData, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
     {
         String query = "UPDATE lobbies SET ";
         List<String> changes =  new ArrayList();
@@ -179,13 +179,13 @@ public class LobbyUtils extends UtilBase
 
     public Room getLobby(int memberId)
     {
-        LobbyData data = getDataByMember(memberId);
+        LobbySFS data = getDataByMember(memberId);
         if( data != null )
             return getLobby(data);
         return null;
     }
 
-    public Room getLobby(LobbyData data)
+    public Room getLobby(LobbySFS data)
     {
         Room lobby = ext.getParentZone().getRoomByName(data.getName());
         if( lobby != null )
@@ -193,20 +193,20 @@ public class LobbyUtils extends UtilBase
         return createRoom(data);
     }
 
-    public LobbyData getDataById(Integer id)
+    public LobbySFS getDataById(Integer id)
     {
         return getAllData().get(id);
     }
-    public LobbyData getDataByMember(int memberId)
+    public LobbySFS getDataByMember(int memberId)
     {
-        Map<Integer, LobbyData> lobbiesData = getAllData();
-        for (Map.Entry<Integer, LobbyData> entry : lobbiesData.entrySet())
+        Map<Integer, LobbySFS> lobbiesData = getAllData();
+        for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
             if( getMemberIndex(entry.getValue(), memberId) > -1 )
                 return entry.getValue();
         return null;
     }
 
-    public int getMemberIndex(LobbyData lobbyData, int memberId)
+    public int getMemberIndex(LobbySFS lobbyData, int memberId)
     {
         ISFSArray members = lobbyData.getMembers();
         for(int i=0; i<members.size(); i++)
@@ -252,9 +252,9 @@ public class LobbyUtils extends UtilBase
             users.put(game.player.id, rd);
     }
 
-    public boolean addUser(LobbyData lobbyData, int userId)
+    public boolean addUser(LobbySFS lobbyData, int userId)
     {
-        LobbyData oldLobby =  getDataByMember(userId);
+        LobbySFS oldLobby =  getDataByMember(userId);
         if( oldLobby != null )
         {
             trace(userId, "already joint in", oldLobby.getName());
@@ -276,7 +276,7 @@ public class LobbyUtils extends UtilBase
      * @param lobbyData
      * @param memberId
      */
-    public void removeUser(LobbyData lobbyData, int memberId)
+    public void removeUser(LobbySFS lobbyData, int memberId)
     {
         int memberIndex = getMemberIndex(lobbyData, memberId);
         ISFSArray members = lobbyData.getMembers();
@@ -359,7 +359,7 @@ public class LobbyUtils extends UtilBase
 
 
             // create lobby data
-            LobbyData ld = new LobbyData(-1, crs.getName(), getSettingsVariable(crs, "bio").getStringValue(), getSettingsVariable(crs, "pic").getIntValue(), crs.getMaxUsers(), getSettingsVariable(crs, "min").getIntValue(), getSettingsVariable(crs, "pri").getIntValue(), null, null);
+            LobbySFS ld = new LobbySFS(-1, crs.getName(), getSettingsVariable(crs, "bio").getStringValue(), getSettingsVariable(crs, "pic").getIntValue(), crs.getMaxUsers(), getSettingsVariable(crs, "min").getIntValue(), getSettingsVariable(crs, "pri").getIntValue(), null, null);
             ld.setMembers(mems);
             ld.setMessages(getSettingsVariable(crs, "msg").getSFSArrayValue());
 
@@ -386,9 +386,9 @@ public class LobbyUtils extends UtilBase
     {
         ISFSObject message;
         ISFSArray ret = new SFSArray();
-        Map<Integer, LobbyData> all = getAllData();
-        LobbyData data;
-        for (Map.Entry<Integer, LobbyData> entry : all.entrySet())
+        Map<Integer, LobbySFS> all = getAllData();
+        LobbySFS data;
+        for (Map.Entry<Integer, LobbySFS> entry : all.entrySet())
         {
             data = entry.getValue();
             for(int i = 0; i < data.getMessages().size(); i++)

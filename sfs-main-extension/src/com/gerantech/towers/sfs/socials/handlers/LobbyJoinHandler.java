@@ -2,7 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gt.Commands;
 import com.gt.utils.LobbyUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.entities.Room;
@@ -23,7 +23,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game) sender.getSession().getProperty("core"));
-        LobbyData lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
+        LobbySFS lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
         if( lobbyData.isFull() && !game.player.admin )
         {
             sendResponse( MessageTypes.RESPONSE_NOT_ALLOWED, lobbyData.getName(), params, sender);
@@ -31,7 +31,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         }
 
         // if you found lobby by member means member already joint to a lobby
-        LobbyData data = game.player.admin ? null : LobbyUtils.getInstance().getDataByMember(game.player.id);
+        LobbySFS data = game.player.admin ? null : LobbyUtils.getInstance().getDataByMember(game.player.id);
         if( data != null )
         {
             sendResponse( MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL, data.getName(), params, sender);

@@ -12,12 +12,6 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
  */
 public class SFSDataModel extends SFSObject
 {
-
-    public SFSDataModel()
-    {
-        super();
-    }
-
     public static ISFSArray toSFSArray(ISFSObject[] list)
     {
         // add to sfs array
@@ -61,7 +55,6 @@ public class SFSDataModel extends SFSObject
         }
         return ret;
     }
-
 
     protected void setMap(String name, IntIntMap requirements)
     {

@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.administration;
 import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.handlers.BattleLeaveRequestHandler;
 import com.gt.utils.LobbyUtils;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
 import com.smartfoxserver.v2.SmartFoxServer;
@@ -59,7 +59,7 @@ public class SpectateRoom extends SFSExtension
 				{
 					SFSObject p = new SFSObject();
 					p.putText("n", g.player.nickName);
-					LobbyData lobby = lobbyUtils.getDataByMember(g.player.id);
+					LobbySFS lobby = lobbyUtils.getDataByMember(g.player.id);
 					if( lobby != null )
 					{
 						p.putText("ln", lobby.getName());

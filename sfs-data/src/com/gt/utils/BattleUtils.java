@@ -1,7 +1,7 @@
 package com.gt.utils;
 
 import com.gt.Commands;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
@@ -169,7 +169,7 @@ public class BattleUtils extends UtilBase
             Room lobby = lobbies.get(i);
             if( lobby.containsProperty(room.getName()) )
             {
-                ISFSArray messageQueue = ((LobbyData)lobby.getProperty("data")).getMessages();
+                ISFSArray messageQueue = ((LobbySFS)lobby.getProperty("data")).getMessages();
                 int msgSize = messageQueue.size();
                 for (int j = msgSize-1; j >= 0; j--)
                 {

@@ -1,6 +1,6 @@
 package com.gt.utils;
 
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.gt.data.RankData;
 import com.gt.data.SFSDataModel;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -26,11 +26,11 @@ public class LobbyDataUtils extends UtilBase
         int mode = params.containsKey("mode") ? params.getInt("mode") : 0;
         //boolean rankMode = params.containsKey("rank");
 
-        Map<Integer, LobbyData> all = LobbyUtils.getInstance().getAllData();
-        LobbyData data;
+        Map<Integer, LobbySFS> all = LobbyUtils.getInstance().getAllData();
+        LobbySFS data;
         SFSObject r;
         List<SFSObject> roomsList = new ArrayList();
-        for (Map.Entry<Integer, LobbyData> entry : all.entrySet())
+        for (Map.Entry<Integer, LobbySFS> entry : all.entrySet())
         {
             data = entry.getValue();
             if( roomName != null && data.getName().toLowerCase().indexOf( roomName ) == -1 )
@@ -60,7 +60,7 @@ public class LobbyDataUtils extends UtilBase
         params.removeElement("name");
     }
 
-    public void fillRoomData(LobbyData data, ISFSObject params, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers, boolean includeMessages)
+    public void fillRoomData(LobbySFS data, ISFSObject params, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers, boolean includeMessages)
     {
         ISFSObject[] all = getMembers(data.getMembers(), users, includeMembers);
         params.putInt("id", data.getId());

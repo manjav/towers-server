@@ -26,7 +26,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         MapChangeCallback mapChangeCallback = new MapChangeCallback();
         game.player.resources.changeCallback = mapChangeCallback;
-        Boolean succeed = game.lobby.create();
+        Boolean succeed = game.lobby.create(game);
         game.player.resources.changeCallback = null;
 
         if( !succeed )

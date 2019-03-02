@@ -3,7 +3,7 @@ package com.gerantech.towers.sfs.handlers;
 import com.gt.Commands;
 import com.gt.utils.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
-import com.gt.data.LobbyData;
+import com.gt.data.LobbySFS;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -41,7 +41,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		}
 
 		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
-		LobbyData lobbyData = null;
+		LobbySFS lobbyData = null;
 		if( params.containsKey("lp") )
 			lobbyData = LobbyUtils.getInstance().getDataByMember(playerId);
 		if( lobbyData != null )
