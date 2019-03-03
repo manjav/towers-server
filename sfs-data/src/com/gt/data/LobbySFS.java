@@ -10,11 +10,9 @@ import com.smartfoxserver.v2.protocol.serialization.DefaultSFSDataSerializer;
  */
 public class LobbySFS extends SFSDataModel
 {
-    //public Lobby base;
     public LobbySFS(ISFSObject sfsObject)
     {
         super();
-        //base = new Lobby(null);
         setId(sfsObject.getInt("id"));
         setName(sfsObject.getUtfString("name"));
         setBio(sfsObject.getUtfString("bio"));
@@ -31,7 +29,6 @@ public class LobbySFS extends SFSDataModel
     public LobbySFS(int id, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] message)//, int createAt
     {
         super();
-       // base = new Lobby(null);
         setId(id);
         setName(name);
         setBio(bio);

@@ -372,6 +372,26 @@ public class LobbyUtils extends UtilBase
         }
     }
 
+    public void moveActiiveness()
+    {
+        ISFSArray members;
+        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
+        Map<Integer, LobbySFS> lobbiesData = getAllData();
+        for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
+        {
+            members = entry.getValue().getMembers();
+            int index = 0;
+            int size = members.size();
+            ISFSObject member;
+            while( index < size )
+            {
+                member = members.getSFSObject(index);
+                member.putInt("ac", users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).weeklyBattles : 0);
+                index ++;
+            }
+        }
+    }
+
     public RoomVariable getSettingsVariable(CreateRoomSettings setting, String name)
     {
         List<RoomVariable> lobbyVariables = setting.getRoomVariables();
