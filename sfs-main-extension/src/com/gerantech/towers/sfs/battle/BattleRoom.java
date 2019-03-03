@@ -456,7 +456,6 @@ public class BattleRoom extends SFSExtension
 					updateMap.set(r, outcomesList[i].get(r));
 				else
 					insertMap.set(r, outcomesList[i].get(r));
-				trace(r, outcomesList[i].get(r) );
 
 				if( game.player.isBot() )
 					continue;
@@ -487,9 +486,10 @@ public class BattleRoom extends SFSExtension
 			// update DB
 			if( !game.player.isBot() )
 			{
+				trace(outcomesList);
 				try {
 					// increase daily battles
-					if( game.player.get_battleswins() > 0 )
+					if( game.player.get_battleswins() > 0 && !game.player.inFriendlyBattle && !battleField.map.isOperation )
 					{
 						ExchangeItem dailyBattles = game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES);
 						if( dailyBattles == null )
