@@ -7,6 +7,7 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -250,17 +251,31 @@ public class DBUtils extends UtilBase
             db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
         } catch (SQLException e) { return "Query failed"; }
 
-        Game g;
+        // reset connected players
         Collection<User> users = ext.getParentZone().getUserList();
-        for (User u : users)
+        for( User u : users )
+            result += resetDailyBattlesOfUsers((Game)u.getSession().getProperty("core"), "");
+
+        // reset disconnected in-battle players
+        List<Room> battles = ext.getParentZone().getRoomManager().getRoomListFromGroup("battles");
+        for( Room r : battles )
         {
-            g = ((Game)u.getSession().getProperty("core"));
-            if( g.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) )
-                ((Game)u.getSession().getProperty("core")).exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
-            result += g.player.id + " daily battles reset to '0'.\n";
+            List<Game> registeredPlayers = (List<Game>) r.getProperty("registeredPlayers");
+            for( Game game : registeredPlayers )
+                result += resetDailyBattlesOfUsers(game,  "in game " + r.getName());
         }
 
         return "Query succeeded.\n" + result;
+    }
+
+    private String resetDailyBattlesOfUsers(Game game, String comment)
+    {
+        if( game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) )
+        {
+            game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
+            return game.player.id + " daily battles reset to '0'" + comment + ".\n";
+        }
+        return "";
     }
 
     public String resetWeeklyBattles()
