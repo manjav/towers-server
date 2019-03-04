@@ -97,7 +97,7 @@ public class DBUtils extends UtilBase
         if( hasRankFields )
         {
             ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-            RankData rd = new RankData(player.nickName, player.get_point(), 0, 0);
+            RankData rd = new RankData(player.nickName, player.get_point());
             query += "\ralso changed hazel map for id:" + player.id + " => point:" + player.get_point();
 
             if( users.containsKey(player.id))

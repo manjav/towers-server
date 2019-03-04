@@ -305,30 +305,6 @@ public class LobbyUtils extends UtilBase
         return log;
     }
 
-    public String moveActiveness()
-    {
-        String log = "";
-        ISFSArray members;
-        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-        Map<Integer, LobbySFS> lobbiesData = getAllData();
-        for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
-        {
-            members = entry.getValue().getMembers();
-            int index = 0;
-            int size = members.size();
-            ISFSObject member;
-            while( index < size )
-            {
-                member = members.getSFSObject(index);
-                member.putInt("ac", users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).weeklyBattles : 0);
-                index ++;
-            }
-            save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
-            log += (entry.getValue().getName() + "set weeklyBattles\n");
-        }
-        return log;
-    }
-
     public RoomVariable getSettingsVariable(CreateRoomSettings setting, String name)
     {
         List<RoomVariable> lobbyVariables = setting.getRoomVariables();
