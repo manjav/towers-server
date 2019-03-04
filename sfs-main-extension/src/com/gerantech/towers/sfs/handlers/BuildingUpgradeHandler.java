@@ -19,8 +19,8 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-    	int buildingType = (int)params.getInt("type");
-    	int confirmedHards = (int)params.getInt("confirmedHards");
+    	int buildingType = params.getInt("type");
+    	int confirmedHards = params.getInt("confirmedHards");
 		Player player = ((Game)sender.getSession().getProperty("core")).player;
 		Building building = player.buildings.get(buildingType);
 
@@ -38,13 +38,8 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 			return;
 		}
 		DBUtils dbUtils = DBUtils.getInstance();
-		try {
-			dbUtils.upgradeBuilding(player, buildingType, building.get_level());
-			dbUtils.updateResources(player, mapChangeCallback.updates);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
+		dbUtils.upgradeBuilding(player, buildingType, building.get_level());
+		dbUtils.updateResources(player, mapChangeCallback.updates);
 		trace(ExtensionLogLevel.INFO, "building " + buildingType + " upgraded to " + building.get_level() );
 		send(Commands.BUILDING_UPGRADE, params, sender);
     }
