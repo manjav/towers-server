@@ -8,7 +8,6 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
-import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -17,13 +16,11 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.extensions.SFSExtension;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -81,7 +78,7 @@ public class DBUtils extends UtilBase
         for (int i = 0; i < keyLen; i++)
         {
             if( !hasRankFields )
-                hasRankFields = res.get(i) == ResourceType.R2_POINT || res.get(i) == ResourceType.R14_BATTLES_WEEKLY;
+                hasRankFields = res.get(i) == ResourceType.R2_POINT;
 
             query += "WHEN type = " + res.get(i) + " AND player_id = " + player.id + " THEN " + player.resources.get(res.get(i)) + " ";
         }
@@ -105,8 +102,8 @@ public class DBUtils extends UtilBase
         if( hasRankFields )
         {
             ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-            RankData rd = new RankData(player.nickName,  player.get_point(), player.resources.get(ResourceType.R14_BATTLES_WEEKLY), player.resources.get(ResourceType.R18_STARS_WEEKLY));
-            query += "\ralso changed hazel map for id:"+player.id+" => point:"+ player.get_point()+", weeklyBattles:"+player.resources.get(ResourceType.R14_BATTLES_WEEKLY);
+            RankData rd = new RankData(player.nickName, player.get_point(), 0, 0);
+            query += "\ralso changed hazel map for id:" + player.id + " => point:" + player.get_point();
 
             if( users.containsKey(player.id))
                 users.replace(player.id, rd);
@@ -331,35 +328,6 @@ public class DBUtils extends UtilBase
             return game.player.id + " daily battles reset to '0'" + comment + ".\n";
         }
         return "";
-    }
-
-    public String resetWeeklyBattles()
-    {
-        String result = "\n";
-        try {
-            db.executeUpdate("UPDATE `resources` SET `count`= 0 WHERE `type`=1204 AND `count` != 0;", new Object[]{});
-        } catch (SQLException e) { return "Query failed";}
-
-        // update online users
-        Collection<User> users = ext.getParentZone().getUserList();
-        Game game;
-        for (User u : users)
-        {
-            game = (Game) u.getSession().getProperty("core");
-            game.player.resources.set(ResourceType.R18_STARS_WEEKLY, 0);
-            game.player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
-            result += u.getName() + " weekly battle reset to '0'.\n";
-        }
-
-        // update users
-        ConcurrentHashMap<Integer, RankData> usersMap = RankingUtils.getInstance().getUsers();
-        for (Map.Entry<Integer, RankData> entry : usersMap.entrySet())
-        {
-            entry.getValue().weeklyBattles = 0;
-            entry.getValue().weeklyStars = 0;
-        }
-
-        return "Query succeeded.\n" + result;
     }
 
     public String getPlayerNameById(int id)

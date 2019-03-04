@@ -35,7 +35,7 @@ public class RankingUtils extends UtilBase
             IDBManager dbManager = ext.getParentZone().getDBManager();
 
             // fill active players
-            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.R14_BATTLES_WEEKLY + " AND resources.count > 0";
+            String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + 14 + " AND resources.count > 0";
             ISFSArray dbResult = dbManager.executeQuery(query, new Object[] {});
             for( int p=0; p<dbResult.size(); p++ )
             {
@@ -64,7 +64,7 @@ public class RankingUtils extends UtilBase
             trace("filled in-memory tops in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds. -> uers:", users.size());
 
             // fill stars of players
-            query = "SELECT resources.player_id, resources.count FROM resources WHERE resources.type = " + ResourceType.R18_STARS_WEEKLY + " AND resources.count > 0";
+            query = "SELECT resources.player_id, resources.count FROM resources WHERE resources.type = " + 18 + " AND resources.count > 0";
             dbResult = dbManager.executeQuery(query, new Object[]{});
             for( int p=0; p < dbResult.size(); p++ )
             {
@@ -89,14 +89,6 @@ public class RankingUtils extends UtilBase
 
 
         ext.getParentZone().setProperty("ranking", users);
-    }
-
-    public void setWeeklyBattles(int id, int battles)
-    {
-        ConcurrentHashMap<Integer, RankData> users = getUsers();
-        RankData opponent = users.get(id);
-        opponent.weeklyBattles = battles;
-        users.replace(id, opponent);
     }
 
     public String getRandomName()

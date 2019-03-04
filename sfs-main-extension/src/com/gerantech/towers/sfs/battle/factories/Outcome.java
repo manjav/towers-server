@@ -24,7 +24,6 @@ public class Outcome
         if( battleRoom.battleField.friendlyMode )
         {
             ret.set(ResourceType.R15_BATTLES_FRIENDLY, 1);
-            ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
             return ret;
         }
 
@@ -69,13 +68,9 @@ public class Outcome
 
             // battle stats
             ret.set(ResourceType.R12_BATTLES, 1);
-            ret.set(ResourceType.R14_BATTLES_WEEKLY, 1);
             ret.set(ResourceType.R16_WIN_RATE, getWinRate(game, arena, star, ratio));
             if( game.player.get_arena(0) > 0 )
-            {
                 ret.set(ResourceType.R17_STARS, star);
-                ret.set(ResourceType.R18_STARS_WEEKLY, star);
-            }
 
             if( point > 0 )
             {

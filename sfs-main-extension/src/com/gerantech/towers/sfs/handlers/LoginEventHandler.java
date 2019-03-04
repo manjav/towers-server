@@ -357,7 +357,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// init and update hazel data
 		ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-		RankData rd = new RankData(game.player.nickName, game.player.get_point(), game.player.getResource(ResourceType.R14_BATTLES_WEEKLY), game.player.getResource(ResourceType.R18_STARS_WEEKLY));
+		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), 0, 0);
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

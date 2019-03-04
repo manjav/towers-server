@@ -5,7 +5,6 @@ import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
-import com.gt.towers.constants.ResourceType;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -17,9 +16,6 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.entities.variables.RoomVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
-import com.smartfoxserver.v2.persistence.room.DBRoomStorageConfig;
-import com.smartfoxserver.v2.persistence.room.RoomStorageMode;
-import com.smartfoxserver.v2.persistence.room.SFSStorageException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
 import java.sql.SQLException;
@@ -60,12 +56,6 @@ public class LobbyUtils extends UtilBase
         try {
             lobbyRows = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM lobbies;", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        /*if( lobbyRows.size() == 0 )
-        {
-            migrateToLobbies();
-            loadAll();
-            return;
-        }*/
 
         ISFSObject lr;
         LobbySFS lobbySFS;
@@ -200,7 +190,7 @@ public class LobbyUtils extends UtilBase
     public LobbySFS getDataByMember(int memberId)
     {
         Map<Integer, LobbySFS> lobbiesData = getAllData();
-        for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
+        for( Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet() )
             if( getMemberIndex(entry.getValue(), memberId) > -1 )
                 return entry.getValue();
         return null;
@@ -209,10 +199,9 @@ public class LobbyUtils extends UtilBase
     public int getMemberIndex(LobbySFS lobbyData, int memberId)
     {
         ISFSArray members = lobbyData.getMembers();
-        for(int i=0; i<members.size(); i++)
-            if( members.getSFSObject(i).getInt("id").equals(memberId) ){
-                trace(lobbyData.getId(), i, members.getSFSObject(i).getInt("id"), memberId, members.size());
-                return i;}
+        for( int i=0; i<members.size(); i++ )
+            if( members.getSFSObject(i).getInt("id").equals(memberId) )
+                return i;
         return -1;
     }
 
@@ -237,19 +226,6 @@ public class LobbyUtils extends UtilBase
         try {
             ext.getApi().joinRoom(user, room, null, false, null);
         } catch (SFSJoinRoomException e) { e.printStackTrace(); }
-
-        // reset weekly battles
-        try {
-            ext.getParentZone().getDBManager().executeUpdate("UPDATE resources SET count= 0 WHERE type=1204 AND count != 0 AND player_id = " + game.player.id, new Object[]{});
-        } catch (SQLException e) { e.printStackTrace(); }
-        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-        game.player.resources.set(ResourceType.R14_BATTLES_WEEKLY, 0);
-        game.player.resources.set(ResourceType.R18_STARS_WEEKLY, 0);
-        RankData rd = new RankData(game.player.nickName,  game.player.get_point(), 0, 0);
-        if( users.containsKey(game.player.id) )
-            users.replace(game.player.id, rd);
-        else
-            users.put(game.player.id, rd);
     }
 
     public boolean addUser(LobbySFS lobbyData, int userId)
@@ -263,6 +239,7 @@ public class LobbyUtils extends UtilBase
 
         SFSObject member = new SFSObject();
         member.putInt("id", userId);
+        member.putInt("ac", 0);
         member.putShort("pr", (lobbyData.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
         lobbyData.getMembers().addSFSObject(member);
         save(lobbyData, null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
@@ -304,76 +281,33 @@ public class LobbyUtils extends UtilBase
 
 
 
-    private void migrateToLobbies()
+    public String resetActivities()
     {
+        String log = "reset activities:\n";
+        ISFSArray members;
         ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-        DBRoomStorageConfig dbRoomStorageConfig = new DBRoomStorageConfig();
-        dbRoomStorageConfig.storeInactiveRooms = true;
-        dbRoomStorageConfig.tableName = "rooms";
-        ext.getParentZone().initRoomPersistence(RoomStorageMode.DB_STORAGE, dbRoomStorageConfig);
-
-        Map<Integer, ISFSObject> reservedPlayers = new HashMap();
-        List<CreateRoomSettings> lobbies = null;
-        try {
-            lobbies = ext.getParentZone().getRoomPersistenceApi().loadAllRooms("lobbies");
-        } catch (SFSStorageException e) { e.printStackTrace(); }
-
-        for( CreateRoomSettings crs : lobbies )
+        Map<Integer, LobbySFS> lobbiesData = getAllData();
+        for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
         {
-            ISFSArray members = getSettingsVariable(crs, "all").getSFSArrayValue();
-
-            // remove inactive lobbies
-            int activeness = 0;
-            for(int i=0; i<members.size(); i++)
-                activeness += (users.containsKey(members.getSFSObject(i).getInt("id")) ? users.get(members.getSFSObject(i).getInt("id")).weeklyBattles : 0);
-
-            if( activeness <= 0 )
+            members = entry.getValue().getMembers();
+            int index = 0;
+            int size = members.size();
+            ISFSObject member;
+            while( index < size )
             {
-                //trace(crs.getName(), "is inactive.");
-                continue;
+                member = members.getSFSObject(index);
+                member.putInt("ac", 0);
+                index ++;
             }
-
-
-            // remove duplicate player
-            ISFSArray mems = new SFSArray();
-            for(int i=0; i<members.size(); i++)
-            {
-                if( reservedPlayers.containsKey(members.getSFSObject(i).getInt("id")) )
-                {
-                    trace(members.getSFSObject(i).getInt("id"), "already joint in other lobby");
-                }
-                else
-                {
-                    if( members.getSFSObject(i).containsKey("na") ) members.getSFSObject(i).removeElement("na");
-                    if( members.getSFSObject(i).containsKey("po") ) members.getSFSObject(i).removeElement("po");
-                    mems.addSFSObject(members.getSFSObject(i));
-                    reservedPlayers.put(members.getSFSObject(i).getInt("id"), members.getSFSObject(i));
-                }
-            }
-
-            if( mems.size() < 2 )
-            {
-                trace(crs.getName(), "is too small.");
-                continue;
-            }
-
-
-            // create lobby data
-            LobbySFS ld = new LobbySFS(-1, crs.getName(), getSettingsVariable(crs, "bio").getStringValue(), getSettingsVariable(crs, "pic").getIntValue(), crs.getMaxUsers(), getSettingsVariable(crs, "min").getIntValue(), getSettingsVariable(crs, "pri").getIntValue(), null, null);
-            ld.setMembers(mems);
-            ld.setMessages(getSettingsVariable(crs, "msg").getSFSArrayValue());
-
-            String query = "INSERT INTO lobbies (name, bio, emblem, capacity, min_point, privacy, members, messages) VALUES ('"
-                    + ld.getName() + "', '" + ld.getBio() + "', " + ld.getEmblem() + ", " + ld.getCapacity() + ", " + ld.getMinPoint() + ", " + ld.getPrivacy() + ", ?, ?);";
-            //trace(ld.getName());
-            try {
-                ext.getParentZone().getDBManager().executeInsert(query, new Object[]{ld.getMembersBytes(), ld.getMessagesBytes()});
-            } catch (SQLException e) {  e.printStackTrace(); }
+            save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
+            log += (entry.getValue().getName() + "=> 0\n");
         }
+        return log;
     }
 
-    public void moveActiiveness()
+    public String moveActiveness()
     {
+        String log = "";
         ISFSArray members;
         ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         Map<Integer, LobbySFS> lobbiesData = getAllData();
@@ -389,7 +323,10 @@ public class LobbyUtils extends UtilBase
                 member.putInt("ac", users.containsKey(member.getInt("id")) ? users.get(member.getInt("id")).weeklyBattles : 0);
                 index ++;
             }
+            save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
+            log += (entry.getValue().getName() + "set weeklyBattles\n");
         }
+        return log;
     }
 
     public RoomVariable getSettingsVariable(CreateRoomSettings setting, String name)
@@ -492,25 +429,6 @@ public class LobbyUtils extends UtilBase
             save(lobby);
     }
 */
-    public String resetActivenessOfLobbies()
-    {
-        String result = "Reset Activeness:";
-       /* List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
-        int lobbiesLen = lobbies.size()-1;
-        while ( lobbiesLen >= 0 )
-        {
-            setActivenessVariable(lobbies.get(lobbiesLen), 0);
-            result += "\n Lobby " + lobbies.get(lobbiesLen).getName() + " activeness set to '0'";
-            lobbiesLen --;
-        }
-
-        try {
-            ext.getParentZone().getRoomPersistenceApi().saveAllRooms("lobbies");
-        } catch (SFSStorageException e) { e.printStackTrace(); }
-*/
-        result += DBUtils.getInstance().resetWeeklyBattles();
-        return result;
-    }
 
     public void removeEmptyRoom(Room r)
     {
