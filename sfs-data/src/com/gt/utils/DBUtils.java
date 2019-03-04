@@ -292,17 +292,12 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    public String resetDailyBattlesExchanges()
+    public String resetDailyBattles()
     {
         String result = "";
         try {
             db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
         } catch (SQLException e) { return "Query failed"; }
-
-        // reset connected players
-        Collection<User> users = ext.getParentZone().getUserList();
-        for( User u : users )
-            result += resetDailyBattlesOfUsers((Game)u.getSession().getProperty("core"), "");
 
         // reset disconnected in-battle players
         List<Room> battles = ext.getParentZone().getRoomManager().getRoomListFromGroup("battles");
@@ -310,15 +305,20 @@ public class DBUtils extends UtilBase
         {
             List<Game> registeredPlayers = (List<Game>) r.getProperty("registeredPlayers");
             for( Game game : registeredPlayers )
-                result += resetDailyBattlesOfUsers(game,  "in game " + r.getName());
+                result += resetDailyBattlesOfUsers(game,  " in game " + r.getName());
         }
+
+        // reset connected players
+        Collection<User> users = ext.getParentZone().getUserList();
+        for( User u : users )
+            result += resetDailyBattlesOfUsers((Game)u.getSession().getProperty("core"), "");
 
         return "Query succeeded.\n" + result;
     }
 
     private String resetDailyBattlesOfUsers(Game game, String comment)
     {
-        if( game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) )
+        if( game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) && game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges > 0 )
         {
             game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges = 0;
             return game.player.id + " daily battles reset to '0'" + comment + ".\n";

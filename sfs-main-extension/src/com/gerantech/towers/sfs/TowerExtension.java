@@ -109,17 +109,17 @@ public class TowerExtension extends SFSExtension
 	public Object handleInternalMessage(String cmdName, Object params)
 	{
 		trace(cmdName, params);
-		if ( cmdName.equals("setumtime") )
+		if( cmdName.equals("setumtime") )
 			return (LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params)) + ";;";
-		else if ( cmdName.equals("ban") )
+		else if( cmdName.equals("ban") )
 			return BanUtils.getInstance().checkOffends((String) params);
-		else if ( cmdName.equals("servercheck") )
+		else if( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
-		else if ( cmdName.equals("resetkeylimit") )
-			return DBUtils.getInstance().resetDailyBattlesExchanges();
-		else if ( cmdName.equals("resetlobbiesactiveness") )
+		else if( cmdName.equals("resetkeylimit") )
+			return DBUtils.getInstance().resetDailyBattles();
+		else if( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivities();
-		else if ( cmdName.equals("getplayernamebyic") )
+		else if( cmdName.equals("getplayernamebyic") )
 			return PasswordGenerator.getIdAndNameByInvitationCode((String) params);
 		/*else if ( cmdName.equals("getlobbynamebyid") )
 			return LobbyUtils.getInstance().getLobbyNameById((String) params);
