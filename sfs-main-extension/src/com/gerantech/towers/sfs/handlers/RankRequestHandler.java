@@ -1,9 +1,8 @@
 package com.gerantech.towers.sfs.handlers;
 
-import com.gt.utils.RankingUtils;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
-import com.gt.towers.constants.ResourceType;
+import com.gt.utils.RankingUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -29,7 +28,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		Map<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), game.player.getResource(ResourceType.BATTLES_WEEKLY), game.player.getResource(ResourceType.STARS_WEEKLY));
+		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), 0, 0);
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

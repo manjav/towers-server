@@ -24,7 +24,6 @@ public class Outcome
         if( game.player.inFriendlyBattle )
         {
             ret.set(ResourceType.BATTLES_FRIENDLY, 1);
-            ret.set(ResourceType.BATTLES_WEEKLY, 1);
             return ret;
         }
 
@@ -70,13 +69,9 @@ public class Outcome
 
             // battle stats
             ret.set(ResourceType.BATTLES, 1);
-            ret.set(ResourceType.BATTLES_WEEKLY, 1);
             ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, star));
             if( game.player.get_battleswins() > 3 )
-            {
                 ret.set(ResourceType.STARS, star);
-                ret.set(ResourceType.STARS_WEEKLY, star);
-            }
 
             if( point > 0 )
             {
