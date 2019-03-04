@@ -14,10 +14,12 @@ import com.gerantech.towers.sfs.callbacks.BattleEventCallback;
 import com.gerantech.towers.sfs.callbacks.HitUnitCallback;
 import com.gt.utils.ChallengeUtils;
 import com.gt.utils.BattleUtils;
+import com.gt.utils.LobbyUtils;
 import com.gt.utils.DBUtils;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gt.utils.RankingUtils;
 import com.gt.data.ChallengeSFS;
+import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.battle.BattleField;
@@ -471,34 +473,64 @@ public class BattleRoom extends SFSExtension
 			}
 		}
 
-		// send to all users
-		SFSObject params = new SFSObject();
-		params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
-		List<User> users = room.getUserList();
-		for (int i=0; i < users.size(); i++)
-			send( Commands.BATTLE_END, params, users.get(i) );
-
-		for (int i=0; i < battleField.games.length; i++)
-		{
-			Game game = battleField.games.__get(i);    // update active challenges
-			if( !game.player.isBot() && !battleField.field.isOperation() && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.R2_POINT) > 0 )
-			{
-				ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
-				for (int c = 0; c < challenges.size(); c++)
-				{
-					ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(c);
-					if( challenge.base.getState(now) != Challenge.STATE_STARTED || (game.appVersion >= 1700 && game.inBattleChallengMode != challenge.base.type) )
-						continue;
-					ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
-					attendee.putInt("point", attendee.getInt("point") + 1);
-					attendee.putInt("updateAt", now);
-					ChallengeUtils.getInstance().scheduleSave(challenge);
-				}
-			}
-		}
+		sendData(outcomesSFSData);
+		updateChallenges(outcomesList, now);
+		updateLobbies();
 	}
 
-	public void close()
+    private void updateChallenges(IntIntMap[] outcomesList, int now)
+    {
+        if( battleField.field.isOperation() || room.containsProperty("isFriendly") )
+            return;
+
+        for (int i=0; i < battleField.games.length; i++)
+        {
+            Game game = battleField.games.__get(i);    // update active challenges
+            if( !game.player.isBot() && !battleField.field.isOperation() && !room.containsProperty("isFriendly") && outcomesList[i].get(ResourceType.R2_POINT) > 0 )
+            {
+                ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);
+                for (int c = 0; c < challenges.size(); c++)
+                {
+                    ChallengeSFS challenge = (ChallengeSFS) challenges.getSFSObject(c);
+                    if( challenge.base.getState(now) != Challenge.STATE_STARTED || (game.appVersion >= 1700 && game.inBattleChallengMode != challenge.base.type) )
+                        continue;
+                    ISFSObject attendee = ChallengeUtils.getInstance().getAttendee(game.player.id, challenge);
+                    attendee.putInt("point", attendee.getInt("point") + 1);
+                    attendee.putInt("updateAt", now);
+                    ChallengeUtils.getInstance().scheduleSave(challenge);
+                }
+            }
+        }
+    }
+
+    private void updateLobbies()
+    {
+        if( !room.containsProperty("isFriendly") )
+            return;
+        LobbySFS lobbySFS = LobbyUtils.getInstance().getDataByMember(battleField.games.__get(0).player.id);
+        if( lobbySFS == null )
+            return;
+        for( int i=0; i < battleField.games.length; i++ )
+        {
+            Game game = battleField.games.__get(i);
+            int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
+            lobbySFS.getMembers().getSFSObject(index).putInt("ac", lobbySFS.getMembers().getSFSObject(index).getInt("ac") + 1);
+        }
+        LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
+    }
+
+    private void sendData(SFSArray outcomesSFSData)
+    {
+        SFSObject params = new SFSObject();
+        params.putSFSArray("outcomes", outcomesSFSData);//trace(outcomesSFSData.getDump());
+        List<User> users = room.getUserList();
+        for (int i=0; i < users.size(); i++)
+            send( Commands.BATTLE_END, params, users.get(i) );
+   }
+
+
+
+    public void close()
 	{
 		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 

@@ -118,7 +118,7 @@ public class TowerExtension extends SFSExtension
 		else if ( cmdName.equals("resetkeylimit") )
 			return DBUtils.getInstance().resetDailyBattlesExchanges();
 		else if ( cmdName.equals("resetlobbiesactiveness") )
-			return LobbyUtils.getInstance().resetActivenessOfLobbies();
+			return LobbyUtils.getInstance().resetActivities();
 		else if ( cmdName.equals("getplayernamebyic") )
 			return PasswordGenerator.getIdAndNameByInvitationCode((String) params);
 		/*else if ( cmdName.equals("getlobbynamebyid") )
