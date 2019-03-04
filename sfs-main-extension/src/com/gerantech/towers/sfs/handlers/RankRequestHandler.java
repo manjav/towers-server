@@ -28,7 +28,7 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
 		Map<Integer, RankData> users = RankingUtils.getInstance().getUsers();
-		RankData rd = new RankData(game.player.nickName,  game.player.get_point(), 0, 0);
+		RankData rd = new RankData(game.player.nickName,  game.player.get_point());
 		if( users.containsKey(game.player.id))
 			users.replace(game.player.id, rd);
 		else

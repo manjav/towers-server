@@ -132,8 +132,8 @@ public class TowerExtension extends SFSExtension
 			return LobbyUtils.getInstance().resetActivities();
 		else if( cmdName.equals("getplayernamebyic") )
 			return PasswordGenerator.getIdAndNameByInvitationCode((String) params);
-		else if( cmdName.equals("custom") )
-			return LobbyUtils.getInstance().moveActiveness();
+		//else if( cmdName.equals("custom") )
+		//	return LobbyUtils.getInstance().moveActiveness();
 		
 		return null;
 	}
