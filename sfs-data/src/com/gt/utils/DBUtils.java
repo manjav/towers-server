@@ -15,7 +15,6 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.exceptions.SFSException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class DBUtils extends UtilBase
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   RESOURCES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-    public SFSArray getResources(int playerId) throws SFSException
+    public SFSArray getResources(int playerId)
     {
         try
         {
@@ -51,11 +50,7 @@ public class DBUtils extends UtilBase
                 //Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", "user resources nou found.");
             }
             return ret;
-        }
-        catch (SQLException e)
-        {
-          //  Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "SQL Failed", e.toString());
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return null;
     }
 
@@ -113,7 +108,7 @@ public class DBUtils extends UtilBase
         trace(query);
     }
 
-    public void insertResources(Player player, IntIntMap resources) throws SQLException
+    public void insertResources(Player player, IntIntMap resources)
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
@@ -136,7 +131,9 @@ public class DBUtils extends UtilBase
         }
         if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
             return;
+        try{
         db.executeInsert(query, new Object[] {});
+        } catch (SQLException e) { e.printStackTrace(); }
         trace(query);
     }
 
@@ -149,10 +146,12 @@ public class DBUtils extends UtilBase
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr, String reqsStr) throws Exception
+    public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr, String reqsStr)
     {
         String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "', '" + reqsStr + "')";
+        try {
         db.executeQuery(query, new Object[] {});
+        } catch (Exception e) { e.printStackTrace(); }
 
         /*
         DROP FUNCTION IF EXISTS _func_exchanges;
@@ -186,12 +185,14 @@ public class DBUtils extends UtilBase
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void setOperationScore(Player player, int index, int score) throws SQLException
+    public void setOperationScore(Player player, int index, int score)
     {
-        if( player.operations.exists( index ) )
-            db.executeUpdate("UPDATE `operations` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
-        else
-            db.executeInsert("INSERT INTO operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
+        try {
+            if( player.operations.exists( index ) )
+                db.executeUpdate("UPDATE `operations` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
+            else
+                db.executeInsert("INSERT INTO operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   DECKS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -249,26 +250,21 @@ public class DBUtils extends UtilBase
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OTHERS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-    public void upgradeBuilding(Player player, int type, int level) throws SQLException
+    public void upgradeBuilding(Player player, int type, int level)
     {
         String query = "UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";";
+        try {
         db.executeUpdate(query, new Object[] {});
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    public ISFSArray getFriends(int playerId)throws SQLException
+    public ISFSArray getFriends(int playerId)
     {
         String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN friendship ON players.id=friendship.invitee_id OR players.id=friendship.inviter_id INNER JOIN resources ON resources.type=1001 AND players.id=resources.player_id WHERE players.id!=" + playerId + " AND friendship.inviter_id=" + playerId + " OR friendship.invitee_id=" + playerId + " ORDER BY resources.count DESC LIMIT 0,100";
-        ISFSArray result = db.executeQuery(query , new Object[] {});
-		/*ISFSArray ret = new SFSArray();
-		ISFSObject f;
-		for ( int i=0; i<result.size(); i++)
-		{
-			f = result.getSFSObject(i);
-			f.putUtfString("n", f.getUtfString("name")); f.removeElement("name");
-			f.putInt("i", f.getInt("id")); f.removeElement("id");
-			f.putInt("p", f.getInt("count")); f.removeElement("count");
-			ret.addSFSObject(f);
-		}*/
+        ISFSArray result = null;
+        try {
+            result = db.executeQuery(query, new Object[]{});
+        } catch (Exception e) { e.printStackTrace(); }
         return result;
     }
 

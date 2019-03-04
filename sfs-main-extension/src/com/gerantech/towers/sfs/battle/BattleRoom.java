@@ -402,9 +402,7 @@ public class BattleRoom extends SFSExtension
 
 				if( game.player.operations.get( battleField.field.index ) < endCalculator.scores[i] )
 				{
-					try {
-						dbUtils.setOperationScore(game.player, battleField.field.index, endCalculator.scores[i]);
-					} catch (Exception e) { e.printStackTrace(); }
+					dbUtils.setOperationScore(game.player, battleField.field.index, endCalculator.scores[i]);
 					game.player.operations.set(battleField.field.index, endCalculator.scores[i]);
 				}
 			}
@@ -437,11 +435,9 @@ public class BattleRoom extends SFSExtension
 				if( r == ResourceType.R17_STARS && game.player.get_arena(0) > 0 )
 				{
 					int res = game.exchanger.collectStars(outcomesList[i].get(r), now);
-					try {
-						ExchangeItem stars = game.exchanger.items.get(ExchangeType.C104_STARS);
-						if( res == MessageTypes.RESPONSE_SUCCEED )
-							dbUtils.updateExchange(ExchangeType.C104_STARS, game.player.id, stars.expiredAt, stars.numExchanges, "", "");
-					} catch (Exception e) { e.printStackTrace(); }
+					ExchangeItem stars = game.exchanger.items.get(ExchangeType.C104_STARS);
+					if( res == MessageTypes.RESPONSE_SUCCEED )
+						dbUtils.updateExchange(ExchangeType.C104_STARS, game.player.id, stars.expiredAt, stars.numExchanges, "", "");
 				}
 
 				outcomeSFS.putInt(r + "", outcomesList[i].get(r));
@@ -452,24 +448,22 @@ public class BattleRoom extends SFSExtension
 			// update DB
 			if( !game.player.isBot() )
 			{
-				try {
-					// increase daily battles
-					if( game.player.get_battleswins() > 0 )
-					{
-						ExchangeItem dailyBattles = game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES);
-						if( dailyBattles == null )
-							dailyBattles = new ExchangeItem(ExchangeType.C29_DAILY_BATTLES, 0, 0, "", "");
-						dailyBattles.numExchanges ++;
-						dbUtils.updateExchange(ExchangeType.C29_DAILY_BATTLES, game.player.id, dailyBattles.expiredAt, dailyBattles.numExchanges, "", "");
-					}
+				// increase daily battles
+				if( game.player.get_battleswins() > 0 )
+				{
+					ExchangeItem dailyBattles = game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES);
+					if( dailyBattles == null )
+						dailyBattles = new ExchangeItem(ExchangeType.C29_DAILY_BATTLES, 0, 0, "", "");
+					dailyBattles.numExchanges ++;
+					dbUtils.updateExchange(ExchangeType.C29_DAILY_BATTLES, game.player.id, dailyBattles.expiredAt, dailyBattles.numExchanges, "", "");
+				}
 
-					// add rewards
-					game.player.addResources(outcomesList[i]);
-					if( earnedBook != null )
-						dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr, "");
-					dbUtils.updateResources(game.player, updateMap);
-					dbUtils.insertResources(game.player, insertMap);
-				} catch (Exception e) { e.printStackTrace(); }
+				// add rewards
+				game.player.addResources(outcomesList[i]);
+				if( earnedBook != null )
+					dbUtils.updateExchange(earnedBook.type, game.player.id, 0, earnedBook.numExchanges, earnedBook.outcomesStr, "");
+				dbUtils.updateResources(game.player, updateMap);
+				dbUtils.insertResources(game.player, insertMap);
 			}
 		}
 

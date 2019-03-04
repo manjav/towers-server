@@ -38,14 +38,8 @@ public class CardUpgradeHandler extends BaseClientRequestHandler
 			send(Commands.CARD_UPGRADE, params, sender);
 			return;
 		}
-		DBUtils dbUtils = DBUtils.getInstance();
-		try {
-			dbUtils.upgradeBuilding(player, cardType, card.level);
-			dbUtils.updateResources(player, mapChangeCallback.updates);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
+		DBUtils.getInstance().upgradeBuilding(player, cardType, card.level);
+		DBUtils.getInstance().updateResources(player, mapChangeCallback.updates);
 		trace(ExtensionLogLevel.INFO, "card " + cardType + " upgraded to " + card.level );
 		send(Commands.CARD_UPGRADE, params, sender);
     }

@@ -344,10 +344,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		session.setProperty("core", game);
 
-		try {
 		for( ExchangeItem item : game.exchanger.updater.changes )
 			DBUtils.getInstance().updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
-		} catch (Exception e) { e.printStackTrace(); }
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
