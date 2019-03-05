@@ -24,7 +24,7 @@ public class BuildingUpgradeHandler extends BaseClientRequestHandler
 		Player player = ((Game)sender.getSession().getProperty("core")).player;
 		Building building = player.buildings.get(buildingType);
 
-		trace(building.improveLevel, building.get_level(), building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
+		//trace(building.improveLevel, building.get_level(), building.type, building.get_upgradeRewards().keys()[0], building.get_upgradeRewards().values()[0]);
 
   		MapChangeCallback mapChangeCallback = new MapChangeCallback();
 		player.resources.changeCallback = mapChangeCallback;
