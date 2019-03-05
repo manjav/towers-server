@@ -448,6 +448,7 @@ public class BattleRoom extends SFSExtension
 			// update DB
 			if( !game.player.isBot() )
 			{
+				trace("battle outcomes:", outcomesList[i].toString());
 				// increase daily battles
 				if( game.player.get_battleswins() > 0 )
 				{

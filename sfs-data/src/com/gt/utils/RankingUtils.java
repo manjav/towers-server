@@ -2,9 +2,7 @@ package com.gt.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.constants.ResourceType;
-import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
