@@ -82,8 +82,8 @@ public class Outcome
                 int soft = 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs()));
                 if( dailyBattles > 10 )
                 {
-                    point = (int) (point * Math.pow(10 / dailyBattles, 0.2));
-                    soft = (int) (point * Math.pow(10 / dailyBattles, 0.6));
+                    point = (int) (point * Math.pow(10f / dailyBattles, 0.2));
+                    soft = (int) (soft * Math.pow(10f / dailyBattles, 0.6));
                 }
                 ret.set(ResourceType.POINT, point );
                 if( game.inBattleChallengMode > -1 )
