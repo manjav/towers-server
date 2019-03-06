@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs.handlers;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.gt.utils.*;
 import com.gerantech.towers.sfs.utils.*;
 import com.gt.data.RankData;
@@ -241,6 +242,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
+		IntIntMap dbItems = new IntIntMap();
+		for(int i=0; i<exchanges.size(); i++)
+			dbItems.set(exchanges.getSFSObject(i).getInt("type"), 1);
+
 		boolean contained;
 		SFSArray newExchanges = new SFSArray();
 		for (int l=0; l<loginData.exchanges.size(); l++)
@@ -275,6 +280,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.player.tutorialMode = outData.getInt("tutorialMode");
 		game.player.hasOperations = outData.getBool("hasOperations");
 		game.exchanger.updater = new ExchangeUpdater(game);
+		game.exchanger.dbItems = dbItems;
 
 		for(int i=0; i<exchanges.size(); i++)
 		{
@@ -322,7 +328,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("core", game);
 
 		for( ExchangeItem item : game.exchanger.updater.changes )
-			DBUtils.getInstance().updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+			DBUtils.getInstance().updateExchange(game, item.type, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
