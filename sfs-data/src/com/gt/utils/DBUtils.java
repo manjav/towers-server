@@ -58,47 +58,32 @@ public class DBUtils extends UtilBase
     {
         int[] keys = resources.keys();
         int keyLen = keys.length;
-        List<Integer> res = new ArrayList();
-        for (int i = 0; i < keyLen; i++)
-            if( !ResourceType.isBook(keys[i]) )
-                res.add(keys[i]);
-
-        keyLen = res.size();
-        if( keyLen == 0 )
+        if( keyLen <= 0 )
             return;
 
-        String query = "Update resources SET count = CASE ";
         boolean hasRankFields = false;
-
+        String query = "UPDATE resources SET count= CASE";
         for (int i = 0; i < keyLen; i++)
         {
+            if( resources.get(keys[i]) == 0 || ResourceType.isBook(keys[i]) )
+                continue;
             if( !hasRankFields )
-                hasRankFields = res.get(i) == ResourceType.R2_POINT;
+                hasRankFields = keys[i] == ResourceType.R2_POINT;
 
-            query += "WHEN type = " + res.get(i) + " AND player_id = " + player.id + " THEN " + player.resources.get(res.get(i)) + " ";
+            query += " WHEN type= " + keys[i] + " THEN " + player.resources.get(keys[i]);
         }
-        query += "ELSE count END WHERE type IN (";
-
-        for (int i = 0; i < keyLen; i++)
-            query += res.get(i) + (i < keyLen-1 ? "," : "");
-
-        query += ") AND player_id IN (";
-
-        for (int i = 0; i < keyLen; i++)
-            query += player.id + (i < keyLen-1 ? "," : "");
-
-        query += ");";
+        query += " ELSE count END WHERE player_id= " + player.id;
 
         try {
             db.executeUpdate(query, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
 
-        // update hazelcast map
+        // update ranking table
         if( hasRankFields )
         {
             ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
             RankData rd = new RankData(player.nickName, player.get_point());
-            query += "\ralso changed hazel map for id:" + player.id + " => point:" + player.get_point();
+            query += "\n map for id:" + player.id + " => point:" + player.get_point();
 
             if( users.containsKey(player.id))
                 users.replace(player.id, rd);
