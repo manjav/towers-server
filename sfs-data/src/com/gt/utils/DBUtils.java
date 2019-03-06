@@ -239,6 +239,7 @@ public class DBUtils extends UtilBase
         for( User u : users )
             result += resetDailyBattlesOfUsers((Game)u.getSession().getProperty("core"), "");
 
+        trace("Query succeeded.\n" + result);
         return "Query succeeded.\n" + result;
     }
 
