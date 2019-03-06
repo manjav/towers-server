@@ -50,7 +50,6 @@ public class ExchangeUtils extends UtilBase
         if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
 
-
         // logs .....
 		/*int[] inserts = mapChangeCallback.inserts.keys();
 		for(int i = 0; i<inserts.length; i++)
@@ -63,22 +62,19 @@ public class ExchangeUtils extends UtilBase
 
         // Run db queries
         DBUtils dbUtils = DBUtils.getInstance();
-        try
+        dbUtils.updateResources(game.player, mapChangeCallback.updates);
+        dbUtils.insertResources(game.player, mapChangeCallback.inserts);
+        if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
+            dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+
+        // add new card into selected deck
+        if( deckLen < game.player.getSelectedDeck().keys().length )
         {
-            dbUtils.updateResources(game.player, mapChangeCallback.updates);
-            dbUtils.insertResources(game.player, mapChangeCallback.inserts);
-            if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
-                dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
-
-            // add new card into selected deck
-            if( deckLen < game.player.getSelectedDeck().keys().length )
-            {
-                String query = "INSERT INTO decks (`player_id`, `deck_index`, `index`, `type`) VALUES (" + game.player.id + ", " + game.player.selectedDeckIndex + ", " + deckLen + ",  " + game.player.getSelectedDeck().get(deckLen) + ");";
-                ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
-            }
+            String query = "INSERT INTO decks (`player_id`, `deck_index`, `index`, `type`) VALUES (" + game.player.id + ", " + game.player.selectedDeckIndex + ", " + deckLen + ",  " + game.player.getSelectedDeck().get(deckLen) + ");";
+            try {
+            ext.getParentZone().getDBManager().executeInsert(query, new Object[]{});
+            } catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
         }
-        catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
-
         return response;
     }
 
