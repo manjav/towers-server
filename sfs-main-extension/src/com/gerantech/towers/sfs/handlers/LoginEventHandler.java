@@ -273,7 +273,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}*/
 
 
-			// init core
+		// init core
 		Game game = new Game();
 		game.init(initData);
 		int arena = game.player.get_arena(0);
@@ -305,12 +305,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		if( game.appVersion >= 4000 )
-		{
-			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.CURRENCY_REAL + ":2000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.CURRENCY_REAL + ":10000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.CURRENCY_REAL + ":20000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
-		}
+		addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.CURRENCY_REAL + ":2000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.CURRENCY_REAL + ":10000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.CURRENCY_REAL + ":20000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		if( !game.exchanger.items.exists(ExchangeType.C42_RENAME) )
@@ -364,7 +361,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		element.putInt("expired_at", 1);
 		element.putText("outcome", "");
 		//newExchanges.addSFSObject( element );
-		exchanges.addSFSObject( element );
+		exchanges.addSFSObject(element);
 	}
 
 	private void addExchangeItem(Game game, ISFSArray exchanges, int type, String reqsStr, String outsStr, int numExchanges, int expiredAt, boolean addSFS)
