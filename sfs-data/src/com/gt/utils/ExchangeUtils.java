@@ -61,14 +61,10 @@ public class ExchangeUtils extends UtilBase
 
         // Run db queries
         DBUtils dbUtils = DBUtils.getInstance();
-        try
-        {
-            dbUtils.updateResources(game.player, mapChangeCallback.updates);
-            dbUtils.insertResources(game.player, mapChangeCallback.inserts);
-            if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
-                dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
-        }
-        catch (Exception e) {  e.printStackTrace(); return MessageTypes.RESPONSE_UNKNOWN_ERROR; }
+        dbUtils.updateResources(game.player, mapChangeCallback.updates);
+        dbUtils.insertResources(game.player, mapChangeCallback.inserts);
+        if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
+            dbUtils.updateExchange(game, item.type, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
         return response;
     }
 
