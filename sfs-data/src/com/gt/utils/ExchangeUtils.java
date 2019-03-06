@@ -65,7 +65,7 @@ public class ExchangeUtils extends UtilBase
         dbUtils.updateResources(game.player, mapChangeCallback.updates);
         dbUtils.insertResources(game.player, mapChangeCallback.inserts);
         if( item.isBook() || item.isIncreamental() || item.category == ExchangeType.C20_SPECIALS )
-            dbUtils.updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+            dbUtils.updateExchange(game, item.type, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
 
         // add new card into selected deck
         if( deckLen < game.player.getSelectedDeck().keys().length )

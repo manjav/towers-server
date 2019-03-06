@@ -131,34 +131,25 @@ public class DBUtils extends UtilBase
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
-    public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr, String reqsStr)
+    public void updateExchange(Game game, int type, int expireAt, int numExchanges, String outcomesStr, String reqsStr)
     {
-        String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "', '" + reqsStr + "')";
-        try {
-        db.executeQuery(query, new Object[] {});
-        } catch (Exception e) { e.printStackTrace(); }
-
-        /*
-        DROP FUNCTION IF EXISTS _func_exchanges;
-
-        DELIMITER $$
-        CREATE FUNCTION _func_exchanges (_type INT(5), _playerId INT(11), _numExchanges INT(4), _expiredAt INT(11), _outcomeStr VARCHAR(32)) RETURNS INT
-        BEGIN
-            DECLARE var_resp INT DEFAULT 0;
-
-            IF EXISTS (SELECT * FROM exchanges WHERE type=_type AND player_id=_playerId) THEN
-                UPDATE exchanges SET num_exchanges=_numExchanges, expired_at=_expiredAt, outcome=_outcomeStr WHERE type=_type AND player_id=_playerId;
-                SET var_resp = 1;
-            ELSE
-                INSERT INTO exchanges (type, player_id, num_exchanges, expired_at, outcome) VALUES (_type, _playerId, _numExchanges, _expiredAt, _outcomeStr);
-                SET var_resp = 2;
-            END IF;
-
-            RETURN var_resp;
-
-        END $$
-        DELIMITER ;
-        */
+        String query;
+        if( game.exchanger.dbItems.exists(type) )
+        {
+            query = "UPDATE exchanges SET num_exchanges=" + numExchanges + ", expired_at=" + expireAt + ", outcome='" + outcomesStr + "', reqs='" + reqsStr + "' WHERE type=" + type + " AND player_id=" + game.player.id;
+            try {
+                db.executeUpdate(query, new Object[]{});
+            } catch (SQLException e) { e.printStackTrace();}
+        }
+        else
+        {
+            query = "INSERT INTO exchanges (type, player_id, num_exchanges, expired_at, outcome, reqs) VALUES (" + type + ", " + game.player.id + ", " + numExchanges + ", " + expireAt + ", '" + outcomesStr + "', '" + reqsStr + "');";
+            try {
+                db.executeInsert(query, new Object[]{});
+            } catch (SQLException e) { e.printStackTrace();}
+            game.exchanger.dbItems.set(type, 1);
+        }
+        trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OPERATIONS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
