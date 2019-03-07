@@ -90,7 +90,7 @@ public class BattleBot
         random = Math.random();
         waitForPowerfull = random > 0.3;
 
-        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.POINT), " coveringBehaviour:", coveringBehaviour, " favoriteBuilding:", favoriteBuilding, " waitForPowerfull:", waitForPowerfull, " winStreak:" + battleField.games.get(0).player.resources.get(ResourceType.WIN_STREAK), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
+        ext.trace("p-point:" + battleField.games.get(0).player.resources.get(ResourceType.R2_POINT), "b-point:"+ battleField.games.get(1).player.resources.get(ResourceType.R2_POINT), " coveringBehaviour:", coveringBehaviour, " favoriteBuilding:", favoriteBuilding, " waitForPowerfull:", waitForPowerfull, " winStreak:" + battleField.games.get(0).player.resources.get(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty, "timeFactor:" + timeFactor, "troopsDivision:" + troopsDivision);
     }
 
     public void update()

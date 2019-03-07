@@ -260,7 +260,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 					break;
 				}
 			}
-			if( !contained && ( initData.appVersion < 3200 || ExchangeType.getCategory(loginData.exchanges.get(l)) != ExchangeType.C20_SPECIALS || initData.resources.get(ResourceType.POINT) > 100 ))// add special after arena 2
+			if( !contained && ( initData.appVersion < 3200 || ExchangeType.getCategory(loginData.exchanges.get(l)) != ExchangeType.C20_SPECIALS || initData.resources.get(ResourceType.R2_POINT) > 100 ))// add special after arena 2
 				addExchangeToDB(loginData.exchanges.get(l), exchanges, newExchanges);
 		}
 
@@ -305,9 +305,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.CURRENCY_REAL + ":2000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.CURRENCY_REAL + ":10000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.CURRENCY_REAL + ":20000",		ResourceType.TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(10000)	* 0.875,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(20000)	* 1.000,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		if( !game.exchanger.items.exists(ExchangeType.C42_RENAME) )

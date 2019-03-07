@@ -23,7 +23,7 @@ public class Outcome
         IntIntMap ret = new IntIntMap();
         if( game.player.inFriendlyBattle )
         {
-            ret.set(ResourceType.BATTLES_FRIENDLY, 1);
+            ret.set(ResourceType.R15_BATTLES_FRIENDLY, 1);
             return ret;
         }
 
@@ -41,10 +41,10 @@ public class Outcome
             if( newRecord )
             {
                 // xp
-                ret.set(ResourceType.XP, diffScore + 1);
+                ret.set(ResourceType.R1_XP, diffScore + 1);
 
                 // soft-currency
-                ret.set(ResourceType.CURRENCY_SOFT, 10 * diffScore + field.index * 2);
+                ret.set(ResourceType.R3_CURRENCY_SOFT, 10 * diffScore + field.index * 2);
             }
         }
         else
@@ -57,9 +57,9 @@ public class Outcome
                 point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
 
             // for novice
-            if( point < 0 && game.player.resources.get(ResourceType.POINT) < -point)
+            if( point < 0 && game.player.resources.get(ResourceType.R2_POINT) < -point)
                 point = 0;
-            ret.set(ResourceType.POINT, point);
+            ret.set(ResourceType.R2_POINT, point);
 
             if( game.player.isBot() )
                 return ret;
@@ -68,15 +68,15 @@ public class Outcome
             int dailyBattles = game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) ? game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges : 0;
 
             // battle stats
-            ret.set(ResourceType.BATTLES, 1);
-            ret.set(ResourceType.WIN_STREAK, getWinStreak(game, arena, star));
+            ret.set(ResourceType.R12_BATTLES, 1);
+            ret.set(ResourceType.R16_WIN_RATE, getWinStreak(game, arena, star));
             if( game.player.get_battleswins() > 3 )
-                ret.set(ResourceType.STARS, star);
+                ret.set(ResourceType.R17_STARS, star);
 
             if( point > 0 )
             {
                 // num wins
-                ret.set(ResourceType.BATTLES_WINS, 1);
+                ret.set(ResourceType.R13_BATTLES_WINS, 1);
 
                 // soft-currency
                 int soft = 2 * Math.max(0, star) + Math.min(arena * 2, Math.max(0, game.player.get_point() - game.player.get_softs()));
@@ -85,11 +85,11 @@ public class Outcome
                     point = (int) (point * Math.pow(10f / dailyBattles, 0.2));
                     soft = (int) (soft * Math.pow(10f / dailyBattles, 0.6));
                 }
-                ret.set(ResourceType.POINT, point );
+                ret.set(ResourceType.R2_POINT, point );
                 if( game.inBattleChallengMode > -1 )
                     return  ret;
 
-                ret.set(ResourceType.CURRENCY_SOFT, soft);
+                ret.set(ResourceType.R3_CURRENCY_SOFT, soft);
 
                 // random book
                 List<Integer> emptySlotsType = getEmptySlots(game, game.player.get_battleswins() == 1, now);
@@ -111,7 +111,7 @@ public class Outcome
         if( arena == 0 )
             return ret;
 
-        int winStreak = game.player.resources.get(ResourceType.WIN_STREAK);
+        int winStreak = game.player.resources.get(ResourceType.R16_WIN_RATE);
         if( winStreak > 3 || winStreak < -3 )
             ret *= (int)Math.ceil(winStreak / 2);
 

@@ -2,9 +2,7 @@ package com.gt.utils;
 
 import com.gt.data.RankData;
 import com.gt.towers.constants.ResourceType;
-import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +29,7 @@ public class RankingUtils extends UtilBase
 
         ConcurrentHashMap<Integer, RankData> users = new ConcurrentHashMap();
         // fill top players
-        String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.POINT + " AND resources.count > 0";
+        String query = "SELECT players.id, players.name, resources.count FROM players INNER JOIN resources ON players.id = resources.player_id WHERE resources.type = " + ResourceType.R2_POINT + " AND resources.count > 0";
         ISFSArray dbResult = null;
         try {
             dbResult = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});

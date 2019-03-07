@@ -108,7 +108,7 @@ public class BattleRoom extends SFSExtension
 			InitData data = new InitData();
 			data.id = (int) (Math.random() * 9999);
 			data.nickName = RankingUtils.getInstance().getRandomName();
-			data.resources.set(ResourceType.POINT, 0);
+			data.resources.set(ResourceType.R2_POINT, 0);
 			Game botGame = new Game();
 			botGame.init(data);
 			registeredPlayers.add( botGame );
@@ -470,7 +470,7 @@ public class BattleRoom extends SFSExtension
 					earnedBook.expiredAt = 0;
 				}
 
-				if( r == ResourceType.STARS && game.player.get_battleswins() > 3 )
+				if( r == ResourceType.R17_STARS && game.player.get_battleswins() > 3 )
 				{
 					int res = game.exchanger.collectStars(outcomesList[i].get(r), (int) (battleField.now / 1000));
 					ExchangeItem stars = game.exchanger.items.get(ExchangeType.C104_STARS);
@@ -517,7 +517,7 @@ public class BattleRoom extends SFSExtension
 		for( int i=0; i < registeredPlayers.size(); i++ )
 		{
 			Game game = registeredPlayers.get(i);
-			if( game.player.isBot() || outcomesList[i].get(ResourceType.POINT) <= 0 ) // update active challenges
+			if( game.player.isBot() || outcomesList[i].get(ResourceType.R2_POINT) <= 0 ) // update active challenges
 				continue;
 
 			ISFSArray challenges = ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false);

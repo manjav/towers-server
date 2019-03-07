@@ -54,7 +54,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
         ISFSObject resObj = SFSObject.newInstance();
 		Game game = ((Game)sender.getSession().getProperty("core"));
 
-		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.CURRENCY_HARD) );
+		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.R4_CURRENCY_HARD) );
 		if( !game.market.equals("cafebazaar") && !game.market.equals("myket") )
 		{
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());

@@ -64,7 +64,7 @@ public class DBUtils extends UtilBase
             if( resources.get(keys[i]) == 0 || ResourceType.isBook(keys[i]) )
                 continue;
             if( !hasRankFields )
-                hasRankFields = keys[i] == ResourceType.POINT;
+                hasRankFields = keys[i] == ResourceType.R2_POINT;
             query += " WHEN type= " + keys[i] + " THEN " + player.resources.get(keys[i]);
         }
         query += " ELSE count END WHERE player_id= " + player.id;
