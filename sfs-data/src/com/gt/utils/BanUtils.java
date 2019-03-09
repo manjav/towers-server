@@ -95,8 +95,7 @@ public class BanUtils extends UtilBase
 	public void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime, String message) {
 		if( message == null )
 			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE mode = VALUES(mode), expire_at = VALUES(expire_at), time = time+1;" +
-				";";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), expire_at = VALUES(expire_at), time = time+1;" + ";";
 		trace(q);
 		try {
 			db.executeUpdate(q, new Object[]{});
