@@ -21,7 +21,6 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-    	trace("exchange:", params.getDump());
     	// provide init data
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		int type = params.getInt("type");
