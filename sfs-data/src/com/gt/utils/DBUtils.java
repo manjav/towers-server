@@ -85,7 +85,7 @@ public class DBUtils extends UtilBase
             else
                 users.put(player.id, rd);
         }
-        trace(query);
+        //trace(query);
     }
 
     public void insertResources(Player player, IntIntMap resources)
@@ -114,7 +114,7 @@ public class DBUtils extends UtilBase
         try{
         db.executeInsert(query, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
-        trace(query);
+        //trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   EXCHANGES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -144,7 +144,7 @@ public class DBUtils extends UtilBase
             } catch (SQLException e) { e.printStackTrace();}
             game.exchanger.dbItems.set(type, 1);
         }
-        trace(query);
+        //trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OPERATIONS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
