@@ -1,7 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gt.Commands;
-import com.gerantech.towers.sfs.callbacks.MapChangeCallback;
+import com.gt.callbacks.MapChangeCallback;
 import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.Room;

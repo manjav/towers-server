@@ -19,8 +19,11 @@ public class ExchangeUtils extends UtilBase
     {
         return (ExchangeUtils)UtilBase.get(ExchangeUtils.class);
     }
-    public MapChangeCallback mapChangeCallback;
     public int process(Game game, int type, int now, int hardsConfimed)
+    {
+        return process(game, type, now, hardsConfimed, null);
+    }
+    public int process(Game game, int type, int now, int hardsConfimed, MapChangeCallback mapChangeCallback)
     {
         ExchangeItem item = game.exchanger.items.get(type);
         if( item == null )
@@ -28,10 +31,14 @@ public class ExchangeUtils extends UtilBase
             trace(ExtensionLogLevel.ERROR, "Exchange item not found in exchanger.");
             return MessageTypes.RESPONSE_NOT_FOUND;
         }
-        return process(game, item, now, hardsConfimed);
+        return process(game, item, now, hardsConfimed, mapChangeCallback);
     }
 
     public int process(Game game, ExchangeItem item, int now, int hardsConfimed)
+    {
+        return process(game, item, now, hardsConfimed, null);
+    }
+    public int process(Game game, ExchangeItem item, int now, int hardsConfimed, MapChangeCallback mapChangeCallback)
     {
 		/*String log = "";
 		int[] keys = game.player.resources.keys();
@@ -39,7 +46,8 @@ public class ExchangeUtils extends UtilBase
 			log += (keys[i] + ": " +game.player.resources.get(keys[i]) +" , " );
 		trace ( log );*/
 
-        mapChangeCallback = new MapChangeCallback();
+        if( mapChangeCallback == null )
+            mapChangeCallback = new MapChangeCallback();
         game.player.resources.changeCallback = mapChangeCallback;
         int response = -10;
         try {
@@ -72,7 +80,7 @@ public class ExchangeUtils extends UtilBase
      * Return book rewards as params and clear change callback
      * @return
      */
-    public ISFSArray getRewards()
+    public ISFSArray getRewards(MapChangeCallback mapChangeCallback)
     {
         ISFSArray ret = new SFSArray();
         int[] outKeys = mapChangeCallback.all.keys();

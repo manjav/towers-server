@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.Commands;
+import com.gt.callbacks.MapChangeCallback;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.utils.ExchangeUtils;
@@ -26,7 +27,8 @@ public class ExchangeHandler extends BaseClientRequestHandler
 
 		// call exchanger and update database
 		ExchangeUtils manager = ExchangeUtils.getInstance();
-		int response = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0);
+		MapChangeCallback mapChangeCallback = new MapChangeCallback();
+		int response = manager.process(game, type, now,  params.containsKey("hards") ?  params.getInt("hards") : 0, mapChangeCallback);
 		params.putInt("response", response);
 		params.putInt("now", now);
 		if( response != MessageTypes.RESPONSE_SUCCEED )
@@ -36,7 +38,7 @@ public class ExchangeHandler extends BaseClientRequestHandler
 		}
 
 		// return book rewards as params
-		ISFSArray sfsRewards = manager.getRewards();
+		ISFSArray sfsRewards = manager.getRewards(mapChangeCallback);
 		if( sfsRewards.size() > 0 )
 			params.putSFSArray("rewards", sfsRewards);
 
