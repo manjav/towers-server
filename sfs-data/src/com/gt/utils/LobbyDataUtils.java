@@ -125,7 +125,7 @@ public class LobbyDataUtils extends UtilBase
             member = new SFSObject();
             member.putInt("id", all.getSFSObject(index).getInt("id"));
             member.putShort("permission", all.getSFSObject(index).getShort("pr"));
-            member.putInt("activity", all.getSFSObject(index).getInt("ac"));
+            member.putInt("activity", all.getSFSObject(index).containsKey("ac") ? all.getSFSObject(index).getInt("ac") : 0);
             boolean hasCache = users.containsKey(member.getInt("id"));
             member.putText("name", hasCache ? users.get(member.getInt("id")).name : "???");
             member.putInt("point", hasCache ? users.get(member.getInt("id")).point : 0);
