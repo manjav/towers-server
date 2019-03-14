@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1545769843;
+	public static int UNTIL_MAINTENANCE = 1552519214;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
@@ -131,6 +131,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				resources.addSFSObject( so );
 			}
 
+			long id = 0;
 			String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
 			for(int i=0; i<resources.size(); i++)
 			{
@@ -138,9 +139,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 				query += i<resources.size()-1 ? ", " : ";";
 			}
 			try {
-			dbManager.executeInsert(query, new Object[] {});
+				id = (long) dbManager.executeInsert(query, new Object[] {});
 			} catch (SQLException e) { e.printStackTrace(); }
 
+			// add  Ids
+			for(int i=0; i<resources.size(); i++)
+				resources.getSFSObject(i).putLong("id", id + i);
 
 			session.setProperty("joinedRoomId", -1);
 
@@ -226,7 +230,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			initData.market = inData.containsKey("market") ? inData.getText("market") : "none";
 		}
 		initData.sessionsCount = outData.getInt("sessionsCount");
-		
+
 		// create resources init data
 		ISFSObject element;
 		ISFSArray resources = outData.getSFSArray("resources");
@@ -259,7 +263,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
 		IntIntMap dbItems = new IntIntMap();
 		for(int i=0; i<exchanges.size(); i++)
-			dbItems.set(exchanges.getSFSObject(i).getInt("type"), 1);
+			dbItems.set(exchanges.getSFSObject(i).getInt("type"), exchanges.getSFSObject(i).getInt("id"));
 
 		boolean contained;
 		SFSArray newExchanges = new SFSArray();
@@ -303,6 +307,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.player.hasOperations = outData.getBool("hasOperations");
 		game.exchanger.updater = new ExchangeUpdater(game);
 		game.exchanger.dbItems = dbItems;
+		
+		game.player.resourceIds = new ConcurrentHashMap();
+		for(int i=0; i<resources.size(); i++)
+		{
+			game.player.resourceIds.put(resources.getSFSObject(i).getInt("type"), Long.valueOf(resources.getSFSObject(i).getInt("id")));
+			resources.getSFSObject(i).removeElement("id");
+		}
 
 		for(int i=0; i<exchanges.size(); i++)
 		{

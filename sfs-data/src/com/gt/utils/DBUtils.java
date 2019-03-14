@@ -9,8 +9,6 @@ import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -18,7 +16,6 @@ import com.smartfoxserver.v2.entities.data.SFSObject;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,17 +38,11 @@ public class DBUtils extends UtilBase
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   RESOURCES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public SFSArray getResources(int playerId)
     {
-        try
-        {
-            SFSArray ret = (SFSArray) db.executeQuery("SELECT type, count, level FROM resources WHERE player_id="+playerId, new Object[] {});
-            if(ret.size() == 0)
-            {
-                //trace("name", name, "id", id, "password", password);
-                //Logger.throwLoginException(SFSErrorCode.GENERIC_ERROR, "Reterive data error!", "user resources nou found.");
-            }
-            return ret;
+        SFSArray ret = new SFSArray();
+        try {
+            ret = (SFSArray) db.executeQuery("SELECT id, type, count, level FROM resources WHERE player_id = " + playerId, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
-        return null;
+        return ret;
     }
 
     public void updateResources(Player player, IntIntMap resources)
@@ -62,35 +53,33 @@ public class DBUtils extends UtilBase
             return;
 
         boolean hasRankFields = false;
-        String query = "UPDATE resources SET count= CASE";
+        String log = "";
         for (int i = 0; i < keyLen; i++)
         {
             if( resources.get(keys[i]) == 0 || ResourceType.isBook(keys[i]) )
                 continue;
+
+            try {
+                log += "(" + keys[i] + "," + player.resourceIds.get(keys[i]) + "," + player.resources.get(keys[i]) + ")  ";
+                db.executeUpdate("UPDATE resources SET count = " + player.resources.get(keys[i]) + " WHERE id = " + player.resourceIds.get(keys[i]), new Object[] {});
+            } catch (SQLException e) { e.printStackTrace(); }
+
             if( !hasRankFields )
                 hasRankFields = keys[i] == ResourceType.R2_POINT;
-
-            query += " WHEN type= " + keys[i] + " THEN " + player.resources.get(keys[i]);
         }
-        query += " ELSE count END WHERE player_id= " + player.id;
-
-        try {
-            db.executeUpdate(query, new Object[] {});
-        } catch (SQLException e) { e.printStackTrace(); }
 
         // update ranking table
         if( hasRankFields )
         {
             ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
             RankData rd = new RankData(player.nickName, player.get_point());
-            query += "\n map for id:" + player.id + " => point:" + player.get_point();
-
-            if( users.containsKey(player.id))
+//            log += " map for id:" + player.id + " => point:" + player.get_point();
+            if( users.containsKey(player.id) )
                 users.replace(player.id, rd);
             else
                 users.put(player.id, rd);
         }
-        //trace(query);
+        trace(log);
     }
 
     public void insertResources(Player player, IntIntMap resources)
@@ -114,12 +103,14 @@ public class DBUtils extends UtilBase
             query += "('" + player.id + "', '" + res.get(i) + "', '" + player.resources.get(res.get(i)) + "', '" + (ResourceType.isCard(res.get(i))?player.cards.get(res.get(i)).level:0) + "')";
             query += i < keyLen - 1 ? ", " : ";";
         }
-        if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
-            return;
+
+        long id = 0;
         try{
-        db.executeInsert(query, new Object[] {});
+            id = (long) db.executeInsert(query, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
-        //trace(query);
+        for( int i = 0; i < keyLen; i++ )
+            player.resourceIds.put(res.get(i), id + i);
+        trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   EXCHANGES  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
@@ -127,7 +118,7 @@ public class DBUtils extends UtilBase
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT type, num_exchanges, expired_at, outcome, reqs FROM exchanges WHERE player_id=" + playerId + " OR player_id=10000", new Object[]{});
+            ret = db.executeQuery("SELECT id, type, num_exchanges, expired_at, outcome, reqs FROM exchanges WHERE player_id=" + playerId + " OR player_id=10000", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
@@ -136,20 +127,22 @@ public class DBUtils extends UtilBase
         String query;
         if( game.exchanger.dbItems.exists(type) )
         {
-            query = "UPDATE exchanges SET num_exchanges=" + numExchanges + ", expired_at=" + expireAt + ", outcome='" + outcomesStr + "', reqs='" + reqsStr + "' WHERE type=" + type + " AND player_id=" + game.player.id;
+            query = "UPDATE exchanges SET num_exchanges=" + numExchanges + ", expired_at=" + expireAt + ", outcome='" + outcomesStr + "', reqs='" + reqsStr + "' WHERE id=" + game.exchanger.dbItems.get(type);
             try {
                 db.executeUpdate(query, new Object[]{});
             } catch (SQLException e) { e.printStackTrace();}
+            query += "   t:" + type + " p:" + game.player.id;
         }
         else
         {
             query = "INSERT INTO exchanges (type, player_id, num_exchanges, expired_at, outcome, reqs) VALUES (" + type + ", " + game.player.id + ", " + numExchanges + ", " + expireAt + ", '" + outcomesStr + "', '" + reqsStr + "');";
+            long id = 0;
             try {
-                db.executeInsert(query, new Object[]{});
+                id = (long) db.executeInsert(query, new Object[]{});
             } catch (SQLException e) { e.printStackTrace();}
-            game.exchanger.dbItems.set(type, 1);
+            game.exchanger.dbItems.set(type, Math.toIntExact(id));
         }
-        //trace(query);
+        trace(query);
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OPERATIONS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
