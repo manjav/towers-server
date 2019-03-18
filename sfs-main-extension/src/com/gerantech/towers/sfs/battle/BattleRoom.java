@@ -503,9 +503,9 @@ public class BattleRoom extends SFSExtension
 		if( battleField.field.isOperation() )
 			return;
 		LobbySFS lobbySFS = null;
-		for( int i=0; i < registeredPlayers.size(); i++ )
+		for( int i=0; i < battleField.games.length; i++ )
 		{
-			Game game = registeredPlayers.get(i);
+			Game game = battleField.games.__get(i);
 			lobbySFS = LobbyUtils.getInstance().getDataByMember(game.player.id);
 			if( lobbySFS == null )
 				return;
