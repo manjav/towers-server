@@ -49,7 +49,7 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
             return;
         }
 
-        params.putSFSArray("rewards", manager.getRewards());
+        params.putSFSArray("rewards", manager.getRewards(null));
         send(Commands.CHALLENGE_COLLECT, params, sender);
     }
 }
