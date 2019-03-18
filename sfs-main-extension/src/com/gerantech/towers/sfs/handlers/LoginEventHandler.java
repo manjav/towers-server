@@ -131,7 +131,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 				resources.addSFSObject( so );
 			}
 
-			long id = 0;
+			int id = 0;
 			String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
 			for(int i=0; i<resources.size(); i++)
 			{
@@ -139,12 +139,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 				query += i<resources.size()-1 ? ", " : ";";
 			}
 			try {
-				id = (long) dbManager.executeInsert(query, new Object[] {});
+				id = Math.toIntExact((long) dbManager.executeInsert(query, new Object[] {}));
 			} catch (SQLException e) { e.printStackTrace(); }
 
 			// add  Ids
 			for(int i=0; i<resources.size(); i++)
-				resources.getSFSObject(i).putLong("id", id + i);
+				resources.getSFSObject(i).putInt("id", id + i);
 
 			session.setProperty("joinedRoomId", -1);
 
@@ -311,7 +311,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.player.resourceIds = new ConcurrentHashMap();
 		for(int i=0; i<resources.size(); i++)
 		{
-			game.player.resourceIds.put(resources.getSFSObject(i).getInt("type"), Long.valueOf(resources.getSFSObject(i).getInt("id")));
+			game.player.resourceIds.put(resources.getSFSObject(i).getInt("type"), resources.getSFSObject(i).getInt("id"));
 			resources.getSFSObject(i).removeElement("id");
 		}
 
