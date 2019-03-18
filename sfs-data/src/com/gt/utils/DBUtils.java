@@ -7,11 +7,14 @@ import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.utils.maps.IntIntMap;
 import com.smartfoxserver.v2.db.IDBManager;
+import com.smartfoxserver.v2.entities.Room;
+import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -98,9 +101,9 @@ public class DBUtils extends UtilBase
             query += i < keyLen - 1 ? ", " : ";";
         }
 
-        long id = 0;
+        int id = 0;
         try{
-            id = (long) db.executeInsert(query, new Object[] {});
+            id = Math.toIntExact((long) db.executeInsert(query, new Object[] {}));
         } catch (SQLException e) { e.printStackTrace(); }
         for( int i = 0; i < keyLen; i++ )
             player.resourceIds.put(res.get(i), id + i);
