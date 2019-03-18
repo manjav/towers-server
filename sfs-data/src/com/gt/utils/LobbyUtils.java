@@ -73,26 +73,26 @@ public class LobbyUtils extends UtilBase
 
     public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
     {
-        LobbySFS lobbyData = new LobbySFS(-1, name, bio, emblem, capacity, minPoint, privacy, null, null);
+        LobbySFS lobbySFS = new LobbySFS(-1, name, bio, emblem, capacity, minPoint, privacy, null, null);
 
         // add member
         Player player = ((Game)owner.getSession().getProperty("core")).player;
         SFSObject member = new SFSObject();
         member.putInt("id", player.id);
         member.putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
-        lobbyData.getMembers().addSFSObject(member);
+        lobbySFS.getMembers().addSFSObject(member);
 
         // insert to DB
         String query = "INSERT INTO lobbies (name, bio, emblem, capacity, min_point, privacy, members) VALUES ('"
                 + name + "', '" + bio + "', " + emblem + ", " + capacity + ", " + minPoint + ", " + privacy + ", ?);";
         try {
-            lobbyData.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{lobbyData.getMembersBytes()})));
+            lobbySFS.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{lobbySFS.getMembersBytes()})));
         } catch (SQLException e) {  e.printStackTrace(); }
 
-        getAllData().put(lobbyData.getId(), lobbyData);
+        getAllData().put(lobbySFS.getId(), lobbySFS);
 
         // create and join room
-        Room lobby = createRoom(lobbyData);
+        Room lobby = createRoom(lobbySFS);
         try {
             ext.getApi().joinRoom(owner, lobby);
         } catch (SFSJoinRoomException e) { e.printStackTrace(); }
@@ -100,7 +100,7 @@ public class LobbyUtils extends UtilBase
         return lobby;
     }
 
-    private Room createRoom(LobbySFS lobbyData)
+    private Room createRoom(LobbySFS lobbySFS)
     {
         CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.socials.LobbyRoom");
         CreateRoomSettings rs = new CreateRoomSettings();
@@ -108,13 +108,13 @@ public class LobbyUtils extends UtilBase
         rs.setAllowOwnerOnlyInvitation(false);
         rs.setDynamic(true);
         rs.setGroupId("lobbies");
-        rs.setName(lobbyData.getName());
+        rs.setName(lobbySFS.getName());
         rs.setAutoRemoveMode(SFSRoomRemoveMode.NEVER_REMOVE);
         rs.setExtension(res);
         //rs.setMaxVariablesAllowed(7);
-        rs.setMaxUsers(lobbyData.getCapacity());
+        rs.setMaxUsers(lobbySFS.getCapacity());
 
-        rs.setRoomProperties(new HashMap(){{put("data", lobbyData);}});
+        rs.setRoomProperties(new HashMap(){{put("data", lobbySFS);}});
 
         Room lobby = null;
         try {
@@ -126,7 +126,7 @@ public class LobbyUtils extends UtilBase
 
     /**
      * Save room to file for server restore rooms after resetting
-     * @param lobbyData (required)
+     * @param lobbySFS (required)
      * @param name (set null if you want not save)
      * @param bio (set null if you want not save)
      * @param emblem (set -1 if you want not save)
@@ -136,7 +136,7 @@ public class LobbyUtils extends UtilBase
      * @param members (set null if you want not save)
      * @param messages (set null if you want not save)
      */
-    public void save(LobbySFS lobbyData, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
+    public void save(LobbySFS lobbySFS, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
     {
         String query = "UPDATE lobbies SET ";
         List<String> changes =  new ArrayList();
@@ -154,7 +154,7 @@ public class LobbyUtils extends UtilBase
             query += changes.get(i);
             query += ( i < changes.size() - 1 ) ? ", " : " ";
         }
-        query += "WHERE id = " + lobbyData.getId() + ";";
+        query += "WHERE id = " + lobbySFS.getId() + ";";
         //trace(query);
 
         List<Object> arguments = new ArrayList();
@@ -163,24 +163,23 @@ public class LobbyUtils extends UtilBase
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, arguments.toArray());
         } catch (SQLException e) { e.printStackTrace(); }
-
-        getAllData().replace(lobbyData.getId(), lobbyData);
+        getAllData().replace(lobbySFS.getId(), lobbySFS);
     }
 
     public Room getLobby(int memberId)
     {
-        LobbySFS data = getDataByMember(memberId);
-        if( data != null )
-            return getLobby(data);
+        LobbySFS lobbySFS = getDataByMember(memberId);
+        if( lobbySFS != null )
+            return getLobby(lobbySFS);
         return null;
     }
 
-    public Room getLobby(LobbySFS data)
+    public Room getLobby(LobbySFS lobbySFS)
     {
-        Room lobby = ext.getParentZone().getRoomByName(data.getName());
+        Room lobby = ext.getParentZone().getRoomByName(lobbySFS.getName());
         if( lobby != null )
             return lobby;
-        return createRoom(data);
+        return createRoom(lobbySFS);
     }
 
     public LobbySFS getDataById(Integer id)
@@ -196,9 +195,9 @@ public class LobbyUtils extends UtilBase
         return null;
     }
 
-    public int getMemberIndex(LobbySFS lobbyData, int memberId)
+    public int getMemberIndex(LobbySFS lobbySFS, int memberId)
     {
-        ISFSArray members = lobbyData.getMembers();
+        ISFSArray members = lobbySFS.getMembers();
         for( int i=0; i<members.size(); i++ )
             if( members.getSFSObject(i).getInt("id").equals(memberId) )
                 return i;
@@ -228,7 +227,7 @@ public class LobbyUtils extends UtilBase
         } catch (SFSJoinRoomException e) { e.printStackTrace(); }
     }
 
-    public boolean addUser(LobbySFS lobbyData, int userId)
+    public boolean addUser(LobbySFS lobbySFS, int userId)
     {
         LobbySFS oldLobby =  getDataByMember(userId);
         if( oldLobby != null )
@@ -240,9 +239,9 @@ public class LobbyUtils extends UtilBase
         SFSObject member = new SFSObject();
         member.putInt("id", userId);
         member.putInt("ac", 0);
-        member.putShort("pr", (lobbyData.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
-        lobbyData.getMembers().addSFSObject(member);
-        save(lobbyData, null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+        member.putShort("pr", (lobbySFS.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
+        lobbySFS.getMembers().addSFSObject(member);
+        save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
         return true;
     }
 
@@ -250,13 +249,13 @@ public class LobbyUtils extends UtilBase
 
     /**
      * Remove user from room variables and save lobby. if lobby is empty then lobby removed.
-     * @param lobbyData
+     * @param lobbySFS
      * @param memberId
      */
-    public void removeUser(LobbySFS lobbyData, int memberId)
+    public void removeUser(LobbySFS lobbySFS, int memberId)
     {
-        int memberIndex = getMemberIndex(lobbyData, memberId);
-        ISFSArray members = lobbyData.getMembers();
+        int memberIndex = getMemberIndex(lobbySFS, memberId);
+        ISFSArray members = lobbySFS.getMembers();
         if( memberIndex < 0 )
             return;
 
@@ -265,9 +264,9 @@ public class LobbyUtils extends UtilBase
 
         if( members.size() == 0 )
         {
-            remove(lobbyData.getId());
-            if( ext.getParentZone().getRoomManager().containsRoom(lobbyData.getId() + "") )
-                ext.getApi().removeRoom(ext.getParentZone().getRoomManager().getRoomByName(lobbyData.getId() + ""));
+            remove(lobbySFS.getId());
+            if( ext.getParentZone().getRoomManager().containsRoom(lobbySFS.getId() + "") )
+                ext.getApi().removeRoom(ext.getParentZone().getRoomManager().getRoomByName(lobbySFS.getId() + ""));
             return;
         }
 
@@ -275,8 +274,8 @@ public class LobbyUtils extends UtilBase
         if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
             members.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
 
-        lobbyData.setMembers(members);
-        save(lobbyData, null, null, -1, -1, -1, -1, lobbyData.getMembersBytes(), null);
+        lobbySFS.setMembers(members);
+        save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
     }
 
 
