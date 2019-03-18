@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.challenges.handlers;
 import com.gt.Commands;
+import com.gt.callbacks.MapChangeCallback;
 import com.gt.utils.ChallengeUtils;
 import com.gt.utils.ExchangeUtils;
 import com.gt.data.ChallengeSFS;
@@ -42,14 +43,16 @@ public class ChallengeCollectRewardHandler extends BaseClientRequestHandler
         if( ResourceType.isBook( rewardType ) )
             ei.outcomes.set(rewardType, game.player.get_arena(0));
 
-        response =  manager.process(game, ei, now, 0);
+
+        MapChangeCallback mapChangeCallback = new MapChangeCallback();
+        response =  manager.process(game, ei, now, 0, mapChangeCallback);
         if( response != MessageTypes.RESPONSE_SUCCEED )
         {
             send(Commands.CHALLENGE_COLLECT, params, sender);
             return;
         }
 
-        params.putSFSArray("rewards", manager.getRewards(null));
+        params.putSFSArray("rewards", manager.getRewards(mapChangeCallback));
         send(Commands.CHALLENGE_COLLECT, params, sender);
     }
 }
