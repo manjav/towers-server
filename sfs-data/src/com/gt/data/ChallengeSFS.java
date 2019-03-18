@@ -23,15 +23,17 @@ public class ChallengeSFS extends SFSDataModel
     public ChallengeSFS()
     {
         super();
-        base = new com.gt.towers.socials.Challenge();
+        base = new Challenge(0, 0);
     }
-    public ChallengeSFS(int id, int type, int startAt, byte[] attendees)
+    public ChallengeSFS(int id, int type, int mode, int startAt, byte[] attendees)
     {
         super();
-        base = new Challenge();
+        base = new Challenge(0, 0);
         setId(id);
         setType(type);
+        setMode(mode);
         setStartAt(startAt);
+        setUnlockAt(Challenge.getUnlockAt(type));
         setDuration(Challenge.getDuration(type));
         setCapacity(Challenge.getCapacity(type));
         setRewards(Challenge.getRewards(type));
@@ -61,13 +63,33 @@ public class ChallengeSFS extends SFSDataModel
     }
 
     /**
+     * Mode
+     * @return
+     */
+    private void setMode(int mode)
+    {
+        putInt("mode", mode);
+        base.mode = mode;
+    }
+
+    /**
      * StartAt
      * @return
      */
     private void setStartAt(int startAt)
     {
+        putInt("start_at", startAt);
         base.startAt = startAt;
-        putInt("start_at", base.startAt);
+    }
+
+    /**
+     * UnlockAt
+     * @return
+     */
+    private void setUnlockAt(int unlockAt)
+    {
+        putInt("unlock_at", unlockAt);
+        base.unlockAt = unlockAt;
     }
 
     /**

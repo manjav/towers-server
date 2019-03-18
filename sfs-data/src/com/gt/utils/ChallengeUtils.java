@@ -43,7 +43,7 @@ public class ChallengeUtils extends UtilBase
         for( int i=0; i<challenges.size(); i++ )
         {
             ch = challenges.getSFSObject(i);
-            challengeSFS = new ChallengeSFS(ch.getInt("id"), ch.getInt("type"), Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees"));
+            challengeSFS = new ChallengeSFS(ch.getInt("id"), ch.getInt("type"), 0, Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees"));
             allChallenges.put(ch.getInt("id"), challengeSFS);
 
             if( challengeSFS.inWaiting(now) )
@@ -78,7 +78,7 @@ public class ChallengeUtils extends UtilBase
     private ChallengeSFS create(int type, int now)
     {
         int startAt = now + Challenge.getWaitTime(type);
-        ChallengeSFS challenge = new ChallengeSFS(-1, type, startAt, null);
+        ChallengeSFS challenge = new ChallengeSFS(-1, type, 0, startAt, null);
         String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (" + type + ", FROM_UNIXTIME(" + startAt + "), ?);";
         try {
             challenge.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()})));
