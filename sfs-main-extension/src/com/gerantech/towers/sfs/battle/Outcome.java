@@ -83,7 +83,7 @@ public class Outcome
                 if( dailyBattles > 10 )
                 {
                     point = (int) (point * Math.pow(10f / dailyBattles, 0.2));
-                    soft = (int) (soft * Math.pow(10f / dailyBattles, 0.6));
+                    soft = (int) (soft * Math.pow(10f / dailyBattles, 0.8));
                 }
                 ret.set(ResourceType.R2_POINT, point );
                 if( game.inBattleChallengMode > -1 )
