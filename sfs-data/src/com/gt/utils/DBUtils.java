@@ -210,7 +210,7 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    /*public String resetDailyBattles()
+    public String resetDailyBattles()
     {
         String result = "";
         try {
@@ -233,7 +233,7 @@ public class DBUtils extends UtilBase
 
         trace("Query succeeded.\n" + result);
         return "Query succeeded.\n" + result;
-    }*/
+    }
 
     private String resetDailyBattlesOfUsers(Game game, String comment)
     {
