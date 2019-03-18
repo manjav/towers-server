@@ -498,22 +498,23 @@ public class BattleRoom extends SFSExtension
         }
     }
 
-    private void updateLobbies()
-    {
-        if( !room.containsProperty("isFriendly") )
-            return;
-        LobbySFS lobbySFS = LobbyUtils.getInstance().getDataByMember(battleField.games.__get(0).player.id);
-        if( lobbySFS == null )
-            return;
-        for( int i=0; i < battleField.games.length; i++ )
-        {
-            Game game = battleField.games.__get(i);
-            int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
-            lobbySFS.getMembers().getSFSObject(index).putInt("ac", lobbySFS.getMembers().getSFSObject(index).getInt("ac") + 1);
-        }
-        LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
-    }
+	private void updateLobbies()
+	{
+		if( battleField.field.isOperation() )
+			return;
+		LobbySFS lobbySFS = null;
+		for( int i=0; i < registeredPlayers.size(); i++ )
+		{
+			Game game = registeredPlayers.get(i);
+			lobbySFS = LobbyUtils.getInstance().getDataByMember(game.player.id);
+			if( lobbySFS == null )
+				return;
 
+			int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
+			lobbySFS.getMembers().getSFSObject(index).putInt("ac", lobbySFS.getMembers().getSFSObject(index).getInt("ac") + 1);
+			LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
+		}
+	}
     private void sendData(SFSArray outcomesSFSData)
     {
         SFSObject params = new SFSObject();
