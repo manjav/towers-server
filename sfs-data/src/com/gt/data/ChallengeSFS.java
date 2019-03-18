@@ -44,10 +44,6 @@ public class ChallengeSFS extends SFSDataModel
      * Id
      * @return
      */
-/*    public int getId()
-    {
-        return getInt("id");
-    }*/
     public void setId(int id)
     {
         putInt("id", id);
@@ -58,10 +54,6 @@ public class ChallengeSFS extends SFSDataModel
      * Type
      * @return
      */
-    /*public int getType()
-    {
-        return getInt("type");
-    }*/
     private void setType(int type)
     {
         putInt("type", type);
@@ -72,10 +64,6 @@ public class ChallengeSFS extends SFSDataModel
      * StartAt
      * @return
      */
-    /*public int getStartAt()
-    {
-        return getInt("start_at");
-    }*/
     private void setStartAt(int startAt)
     {
         base.startAt = startAt;
@@ -86,10 +74,6 @@ public class ChallengeSFS extends SFSDataModel
      * Duration
      * @return
      */
-    /*public int getDuration()
-    {
-        return getInt("duration");
-    }*/
     private void setDuration(int duration)
     {
         base.duration = duration;
@@ -126,10 +110,6 @@ public class ChallengeSFS extends SFSDataModel
      * Requirements
      * @return
      */
-    /*public ISFSArray getRequirements()
-    {
-        return getSFSArray("requirements");
-    }*/
     private void setRequirements(int type, IntIntMap requirements)
     {
         if( type == 0 )
@@ -189,10 +169,6 @@ public class ChallengeSFS extends SFSDataModel
         }
     }
 
-    /*public int getCapacity()
-    {
-        return getInt("capacity");
-    }*/
     private void setCapacity(int capacity)
     {
         putInt("capacity", capacity);
