@@ -333,9 +333,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C6_HARD, ResourceType.R5_CURRENCY_REAL + ":200000",	ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.realToHard(200000)	* 1.250,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(1000) * 1.2, 	"1002:1000",		0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(5000) * 1.0, 	"1002:5000",		0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C11_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(1000) * 1.2, 	ResourceType.R3_CURRENCY_SOFT + ":1000",		0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C12_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(5000) * 1.0, 	ResourceType.R3_CURRENCY_SOFT + ":5000",		0, 0, true);
+		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, ResourceType.R4_CURRENCY_HARD + ":" + Exchanger.softToHard(50000) * 0.9,	ResourceType.R3_CURRENCY_SOFT + ":50000"	,	0, 0, true);
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- MONEY -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
         addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",		ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)	* 0.750,	0, 0, true);
