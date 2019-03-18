@@ -115,8 +115,8 @@ public class TowerExtension extends SFSExtension
 			return BanUtils.getInstance().checkOffends((String) params);
 		else if( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
-		/*else if( cmdName.equals("resetkeylimit") )
-			return DBUtils.getInstance().resetDailyBattles();*/
+		else if( cmdName.equals("resetkeylimit") )
+			return DBUtils.getInstance().resetDailyBattles();
 		else if( cmdName.equals("resetlobbiesactiveness") )
 			return LobbyUtils.getInstance().resetActivities();
 		else if( cmdName.equals("getplayernamebyic") )

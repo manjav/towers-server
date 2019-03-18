@@ -261,7 +261,7 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    /*public String resetDailyBattles()
+    public String resetDailyBattles()
     {
         String result = "";
         try {
@@ -283,7 +283,7 @@ public class DBUtils extends UtilBase
             result += resetDailyBattlesOfUsers((Game)u.getSession().getProperty("core"), "");
 
         return "Query succeeded.\n" + result;
-    }*/
+    }
 
     private String resetDailyBattlesOfUsers(Game game, String comment)
     {
