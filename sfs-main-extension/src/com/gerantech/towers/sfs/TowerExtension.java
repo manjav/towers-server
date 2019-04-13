@@ -16,7 +16,8 @@ import com.gerantech.towers.sfs.challenges.handlers.ChallengeUpdateHandler;
 import com.gerantech.towers.sfs.handlers.*;
 import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
 import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
-import com.gerantech.towers.sfs.inbox.InboxGetHandler;
+import com.gerantech.towers.sfs.inbox.InboxGetThreadsHandler;
+import com.gerantech.towers.sfs.inbox.InboxGetRelationsHandler;
 import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
 import com.gerantech.towers.sfs.quests.QuestInitializeHandler;
 import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
@@ -76,7 +77,8 @@ public class TowerExtension extends SFSExtension
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 
-		addRequestHandler(Commands.INBOX_GET, InboxGetHandler.class);
+		addRequestHandler(Commands.INBOX_GET_THREADS, InboxGetThreadsHandler.class);
+		addRequestHandler(Commands.INBOX_GET_RELATIONS, InboxGetRelationsHandler.class);
 		addRequestHandler(Commands.INBOX_OPEN, InboxOpenHandler.class);
 		addRequestHandler(Commands.INBOX_CONFIRM, InboxConfirmHandler.class);
 		addRequestHandler(Commands.INBOX_BROADCAST, InboxBroadcastMessageHandler.class);

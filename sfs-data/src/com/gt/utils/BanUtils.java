@@ -103,7 +103,7 @@ public class BanUtils extends UtilBase
 
 		//OneSignalUtils.getInstance().send(message, null, offender);
 		if( banMode == 1 )
-			InboxUtils.getInstance().send(0, message, "ادمین", 10000, offender, "");
+			InboxUtils.getInstance().send(0, message, 10000, offender, "");
 		else if( banMode > 1 )
 		{
 			q = "UPDATE infractions SET proceed = 1 WHERE offender = " + offender;

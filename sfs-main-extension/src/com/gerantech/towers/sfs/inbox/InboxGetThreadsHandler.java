@@ -11,12 +11,12 @@ import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
  * @author ManJav
  *
  */
-public class InboxGetHandler extends BaseClientRequestHandler
+public class InboxGetThreadsHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
-		Game game = ((Game)sender.getSession().getProperty("core"));
-		params.putSFSArray("data", InboxUtils.getInstance().getAll(game.player.id));
-		send(Commands.INBOX_GET, params, sender);
+    	int id = params.containsKey("id") ?  params.getInt("id") : ((Game)sender.getSession().getProperty("core")).player.id;
+		params.putSFSArray("data", InboxUtils.getInstance().getThreads(id, 50));
+		send(Commands.INBOX_GET_THREADS, params, sender);
 	}
 }

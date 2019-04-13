@@ -54,7 +54,8 @@ public class Commands
     public static final String BUDDY_REMOVE = "buddyRemove";
 
     public static final String BUDDY_BATTLE = "buddyBattle";
-    public static final String INBOX_GET = "inboxGet";
+    public static final String INBOX_GET_THREADS = "inboxGetThreads";
+    public static final String INBOX_GET_RELATIONS = "inboxGetRelations";
     public static final String INBOX_OPEN = "inboxOpen";
     public static final String INBOX_CONFIRM = "inboxConfirm";
     public static final String INBOX_SEND = "inboxSend";

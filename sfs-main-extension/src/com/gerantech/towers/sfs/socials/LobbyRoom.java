@@ -214,7 +214,7 @@ public class LobbyRoom extends BaseLobbyRoom
         }
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
-        InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.nickName, game.player.id, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
+        InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.id, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
         sendComment(params.getShort("pr"), game.player, params.getUtfString("on"), (short)-1);// mode = join
         return true;
     }
