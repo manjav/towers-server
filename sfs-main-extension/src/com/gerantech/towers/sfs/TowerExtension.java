@@ -52,7 +52,8 @@ public class TowerExtension extends SFSExtension
 
 		// Add billing upgrade handler
 		addRequestHandler(Commands.CARD_UPGRADE, CardUpgradeHandler.class);
-		
+		addRequestHandler(Commands.CARD_NEW, CardNewHandler.class);
+
         // Add rank handler
 		addRequestHandler(Commands.RANK, RankRequestHandler.class);
 		addRequestHandler(Commands.SELECT_NAME, SelectNameRequestHandler.class);

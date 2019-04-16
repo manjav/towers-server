@@ -17,6 +17,7 @@ public class Commands
     public static final String PROFILE = "profile";
 
     public static final String CARD_UPGRADE = "cardUpgrade";
+    public static final String CARD_NEW = "cardNew";
     public static final String EXCHANGE = "exchange";
     public static final String SELECT_NAME = "selectName";
     public static final String OAUTH = "oauth";
