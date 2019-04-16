@@ -1,18 +1,18 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gt.BBGClientRequestHandler;
 import com.gt.Commands;
-import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.DBUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 /**
  * Created by ManJav on 17/11/29.
  */
-public class ChangeDeckHandler extends BaseClientRequestHandler
+public class ChangeDeckHandler extends BBGClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -21,21 +21,15 @@ public class ChangeDeckHandler extends BaseClientRequestHandler
 
         if( !player.cards.exists(params.getShort("type")) )
         {
-            sendResponse(MessageTypes.RESPONSE_NOT_FOUND, params, sender);
+            send(Commands.CHANGE_DECK, MessageTypes.RESPONSE_NOT_FOUND, params, sender);
             return;
         }
 
         if( player.decks.get(params.getShort("deckIndex")).existsValue(params.getShort("type")))
         {
-            sendResponse(MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
+            send(Commands.CHANGE_DECK, MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
             return;
         }
-        sendResponse(DBUtils.getInstance().updateDeck(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")), params, sender);
-    }
-
-    private void sendResponse(int response, ISFSObject params, User sender)
-    {
-        params.putInt("response", response);
-        send(Commands.CHANGE_DECK, params, sender);
+        send(Commands.CHANGE_DECK, DBUtils.getInstance().updateDeck(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")), params, sender);
     }
 }

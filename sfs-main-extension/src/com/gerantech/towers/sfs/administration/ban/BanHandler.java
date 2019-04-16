@@ -1,17 +1,17 @@
 package com.gerantech.towers.sfs.administration.ban;
 
+import com.gt.BBGClientRequestHandler;
 import com.gt.Commands;
-import com.gt.utils.BanUtils;
-import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.BanUtils;
+import com.gt.utils.DBUtils;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -19,9 +19,8 @@ import java.util.List;
 
 /**
  * @author ManJav
- *
  */
-public class BanHandler extends BaseClientRequestHandler
+public class BanHandler extends BBGClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -37,7 +36,7 @@ public class BanHandler extends BaseClientRequestHandler
 		} catch (SQLException e) { e.printStackTrace(); }
 		if( players == null || players.size() == 0 )
 		{
-			sendResponse(sender, params, MessageTypes.RESPONSE_NOT_FOUND);
+			send(Commands.BAN, MessageTypes.RESPONSE_NOT_FOUND, params, sender);
 			return;
 		}
 
@@ -46,7 +45,7 @@ public class BanHandler extends BaseClientRequestHandler
 
 		long now = Instant.now().getEpochSecond();
 		BanUtils.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
-		sendResponse(sender, params, MessageTypes.RESPONSE_SUCCEED);
+		send(Commands.BAN, MessageTypes.RESPONSE_SUCCEED, params, sender);
 
 		if( params.getInt("mode") >= 2 )
 		{
@@ -67,11 +66,5 @@ public class BanHandler extends BaseClientRequestHandler
 				getApi().disconnectUser(u);
 			}
 		}
-	}
-
-	private void sendResponse(User sender, ISFSObject params, int responseId)
-	{
-		params.putInt("response", responseId);
-		send(Commands.BAN, params, sender);
 	}
 }

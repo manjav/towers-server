@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gt.BBGClientRequestHandler;
 import com.gt.Commands;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
@@ -8,26 +9,25 @@ import com.gt.utils.LobbyUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 /**
  * Created by ManJav on 8/24/2017.
  */
-public class LobbyRemoveHandler extends BaseClientRequestHandler
+public class LobbyRemoveHandler extends BBGClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Game game = ((Game)sender.getSession().getProperty("core"));
         if( !game.player.admin )
         {
-            sendResponse(MessageTypes.RESPONSE_NOT_ALLOWED, params, sender);
+            send(Commands.LOBBY_REMOVE, MessageTypes.RESPONSE_NOT_ALLOWED, params, sender);
             return;
         }
 
         //Map<Integer, LobbySFS> all = LobbyUtils.getInstance().getAllData();
         if( !LobbyUtils.getInstance().getAllData().containsKey(params.getInt("id")) )
         {
-            sendResponse(MessageTypes.RESPONSE_NOT_FOUND, params, sender);
+            send(Commands.LOBBY_REMOVE, MessageTypes.RESPONSE_NOT_FOUND, params, sender);
             return;
         }
 
@@ -38,12 +38,6 @@ public class LobbyRemoveHandler extends BaseClientRequestHandler
                 getApi().disconnectUser(u);
 
         LobbyUtils.getInstance().remove(params.getInt("id"));
-        sendResponse(MessageTypes.RESPONSE_SUCCEED, params, sender);
-    }
-
-    private void sendResponse(int response, ISFSObject params, User sender)
-    {
-        params.putInt("response", response);
-        send(Commands.LOBBY_REMOVE, params, sender);
+        send(Commands.LOBBY_REMOVE, MessageTypes.RESPONSE_SUCCEED, params, sender);
     }
 }
