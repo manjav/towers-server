@@ -1,9 +1,9 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.towers.constants.MessageTypes;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
@@ -25,7 +25,6 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         IDBManager db = getParentExtension().getParentZone().getDBManager();
         ISFSArray infractions = null;
 
-
         // check report exists on db
         String query = "SELECT * From infractions WHERE content = '" + params.getUtfString("t") + "' AND lobby = '" + lobby + "' AND offender = " + params.getInt("i");
         // trace(query);
@@ -34,7 +33,7 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         } catch (SQLException e) { e.printStackTrace(); }
         if( infractions != null &&  infractions.size() > 0 )
         {
-            sendResponse(sender, params, infractions.getSFSObject(0).getInt("reporter") == reporter.id ? 2 : 1);
+            send(sender, params, infractions.getSFSObject(0).getInt("reporter") == reporter.id ? 2 : 1);
             return;
         }
 
@@ -46,7 +45,7 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         } catch (SQLException e) { e.printStackTrace(); }
         if( infractions != null &&  infractions.size() > 4 )
         {
-            sendResponse(sender, params, 3);
+            send(sender, params, 3);
             return;
         }
 
@@ -56,14 +55,14 @@ public class LobbyReportHandler extends BaseClientRequestHandler
         try {
             db.executeInsert(query , new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
-        sendResponse(sender, params, 0);
+        send(sender, params, MessageTypes.RESPONSE_SUCCEED);
     }
 
-    private void sendResponse(User sender, ISFSObject params, int response)
+    protected void send(User sender, ISFSObject params, int response)
     {
         params.putInt("response", response);
         params.removeElement("t");
         params.removeElement("u");
-        send(Commands.LOBBY_REPORT, params, sender);
+        super.send(Commands.LOBBY_REPORT, params, sender);
     }
 }

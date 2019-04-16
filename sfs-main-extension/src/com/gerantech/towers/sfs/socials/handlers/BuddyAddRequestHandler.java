@@ -1,13 +1,14 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
-import com.gt.Commands;
-import com.gt.utils.InboxUtils;
-import com.gt.utils.OneSignalUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gt.BBGClientRequestHandler;
+import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.socials.Lobby;
+import com.gt.utils.InboxUtils;
+import com.gt.utils.OneSignalUtils;
 import com.smartfoxserver.v2.api.ISFSBuddyApi;
 import com.smartfoxserver.v2.buddylist.Buddy;
 import com.smartfoxserver.v2.buddylist.BuddyList;
@@ -16,31 +17,38 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.exceptions.SFSBuddyListException;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.sql.SQLException;
 
 /**
  * Created by Babak on 8/19/2017.
  */
-public class BuddyAddRequestHandler extends BaseClientRequestHandler {
+public class BuddyAddRequestHandler extends BBGClientRequestHandler
+{
+    /*private static final int zOK = 0;
+    private static final int zINVALID_INVITATION_CODE = -1;
+    private static final int zALREADY_FRIEND = -2;
+    private static final int zUSER_ADD_HIMSELF = -3;
+    private static final int zANOTHER_USER_SAME_PHONE = -4;
 
-    private static final int OK = 0;
-    private static final int INVALID_INVITATION_CODE = -1;
-    private static final int ALREADY_FRIEND = -2;
-    private static final int USER_ADD_HIMSELF = -3;
-    private static final int ANOTHER_USER_SAME_PHONE = -4;
+    public static var RESPONSE_SENT:Int = 1;
+    public static var RESPONSE_SUCCEED:Int = 0;
+    public static var RESPONSE_NOT_ALLOWED:Int = -1;
+    public static var RESPONSE_ALREADY_SENT:Int = -3;
+    public static var RESPONSE_NOT_FOUND:Int = -4;
+    public static var RESPONSE_UNKNOWN_ERROR:Int = -5;
+    public static var RESPONSE_NOT_ENOUGH_REQS:Int = -6;
+    public static var RESPONSE_MUST_WAIT:Int = -7;*/
 
-    private ISFSBuddyApi buddyApi;
-    private IDBManager dbManager;
     private ISFSArray sfsArray;
-
+    private IDBManager dbManager;
+    private ISFSBuddyApi buddyApi;
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        dbManager = getParentExtension().getParentZone().getDBManager();
+        BuddyList buddies;
         buddyApi = getParentExtension().getBuddyApi();
+        dbManager = getParentExtension().getParentZone().getDBManager();
         Game game = ((Game)sender.getSession().getProperty("core"));
-        BuddyList buddies = null;
 
         String invitationCode = params.getText("invitationCode");
         String inviteeUDID = params.containsKey("udid") ? params.getText("udid") : null;
@@ -57,13 +65,13 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         // User wants to add himself to get rewards
         if ( inviterId == inviteeId )
         {
-            sendResult(sender, params, USER_ADD_HIMSELF );
+            send(Commands.BUDDY_ADD, MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
             return;
         }
 
         // Case 3:
         // Invalid invitation code
-        if( !check(sender, params, INVALID_INVITATION_CODE, "SELECT name FROM players WHERE id="+ inviterId, true) )
+        if( !check(sender, params, MessageTypes.RESPONSE_NOT_ALLOWED, "SELECT name FROM players WHERE id="+ inviterId, true) )
             return;
         params.putText("inviter", sfsArray.getSFSObject(0).getText("name"));
 
@@ -72,7 +80,7 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         buddies = getParentExtension().getParentZone().getBuddyListManager().getBuddyList(inviteeName);
         if( buddies.containsBuddy(inviterName) )
         {
-            sendResult(sender, params, ALREADY_FRIEND );
+            send(Commands.BUDDY_ADD, -2, params, sender);
             return;
         }
 
@@ -141,7 +149,7 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
             }
         }
         catch (SQLException e) {
-            params.putText("responseCode", e.getErrorCode()+"");
+            params.putText("response", e.getErrorCode()+"");
             trace(e.getMessage());
         } catch (SFSBuddyListException e) {
             e.printStackTrace();
@@ -150,20 +158,16 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         // Send friendship notification to inviter inbox
         InboxUtils.getInstance().send(MessageTypes.M50_URL, msg, game.player.nickName, inviteeId, inviterId, "towers://open?controls=tabs&dashTab=3&socialTab=2" );
         OneSignalUtils.getInstance().getInstance().send(msg, null, inviterId);
-        sendResult(sender, params, OK);
+        send(Commands.BUDDY_ADD, MessageTypes.RESPONSE_SUCCEED, params, sender);
     }
 
-    private boolean check ( User sender, ISFSObject params, int responseCode, String queryStr )
-    {
-        return check(sender, params, responseCode, queryStr, false);
-    }
     private boolean check ( User sender, ISFSObject params, int responseCode, String queryStr, boolean shouldExist )
     {
         trace("QUERY: ", queryStr);
         try {
             sfsArray = dbManager.executeQuery(queryStr, new Object[]{});
         } catch (SQLException e) {
-            sendResult( sender, params, e.getErrorCode() );
+            send(Commands.BUDDY_ADD, e.getErrorCode(), params, sender);
             e.printStackTrace();
             return false;
         }
@@ -171,16 +175,9 @@ public class BuddyAddRequestHandler extends BaseClientRequestHandler {
         boolean failed = shouldExist ? sfsArray.size() == 0 : sfsArray.size() > 0;
         if( failed )
         {
-            sendResult( sender, params, responseCode );
+            send(Commands.BUDDY_ADD, responseCode, params, sender);
             return false;
         }
         return true;
-    }
-
-    private void sendResult(User sender, ISFSObject params, int responseCode)
-    {
-        params.putInt("responseCode", responseCode);
-        //trace(params.getDump());
-        send( Commands.BUDDY_ADD, params, sender );
     }
 }

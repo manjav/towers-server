@@ -1,24 +1,24 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gt.BBGClientRequestHandler;
 import com.gt.Commands;
-import com.gt.utils.LobbyUtils;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.LobbyUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.time.Instant;
 
 /**
  * Created by ManJav on 8/24/2017.
  */
-public class LobbyJoinHandler extends BaseClientRequestHandler
+public class LobbyJoinHandler extends BBGClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -26,7 +26,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         LobbySFS lobbyData = LobbyUtils.getInstance().getDataById(params.getInt("id"));
         if( lobbyData.isFull() && !game.player.admin )
         {
-            sendResponse( MessageTypes.RESPONSE_NOT_ALLOWED, lobbyData.getName(), params, sender);
+            send(MessageTypes.RESPONSE_NOT_ALLOWED, lobbyData.getName(), params, sender);
             return;
         }
 
@@ -34,7 +34,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         LobbySFS data = game.player.admin ? null : LobbyUtils.getInstance().getDataByMember(game.player.id);
         if( data != null )
         {
-            sendResponse( MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL, data.getName(), params, sender);
+            send(MessageTypes.JOIN_LOBBY_MULTI_LOBBY_ILLEGAL, data.getName(), params, sender);
             return;
         }
 
@@ -52,7 +52,7 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
             {
                 if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
                 {
-                    sendResponse(MessageTypes.RESPONSE_ALREADY_SENT, lobbyData.getName(), params, sender);
+                    send(MessageTypes.RESPONSE_ALREADY_SENT, lobbyData.getName(), params, sender);
                     return;
                 }
             }
@@ -72,14 +72,13 @@ public class LobbyJoinHandler extends BaseClientRequestHandler
         {
             response = MessageTypes.RESPONSE_NOT_ALLOWED;
         }
-        sendResponse(response, lobbyData.getName(), params, sender);
+        send(response, lobbyData.getName(), params, sender);
     }
 
-    private void sendResponse(int response, String name, ISFSObject params, User sender)
+    protected void send(int response, String name, ISFSObject params, User sender)
     {
-        params.putInt("response", response);
         params.putText("lobby", name);
-        send(Commands.LOBBY_JOIN, params, sender);
+        super.send(Commands.LOBBY_JOIN, response, params, sender);
         trace("Sender:", sender.getName() + "  Response: " + response + "  Lobby: " + name);
     }
 }
