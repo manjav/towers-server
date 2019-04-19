@@ -4,12 +4,12 @@ import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.GameObject;
-import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
 import com.gt.towers.constants.CardTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.constants.StickerType;
 import com.gt.towers.scripts.ScriptEngine;
+import com.gt.towers.socials.Challenge;
 import com.gt.towers.utils.CoreUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -98,7 +98,7 @@ public class BattleBot
         if( playerHeader == null )
         {
             cardType = battleField.decks.get(1).queue_get(defaultIndex);
-            if( CardTypes.isSpell(cardType) && battleField.field.type == FieldData.TYPE_TOUCHDOWN )
+            if( CardTypes.isSpell(cardType) && battleField.field.mode == Challenge.MODE_1_TOUCHDOWN )
             {
                 skipCard(cardType);
                 return;

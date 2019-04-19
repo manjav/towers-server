@@ -1,15 +1,17 @@
 package com.gerantech.towers.sfs.socials;
 
+import com.gerantech.towers.sfs.socials.handlers.LobbyEditHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyModerationHandler;
+import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
 import com.gt.Commands;
-import com.gt.utils.InboxUtils;
-import com.gt.utils.LobbyUtils;
-import com.gerantech.towers.sfs.socials.handlers.*;
-import com.gt.utils.BattleUtils;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.InboxUtils;
+import com.gt.utils.LobbyUtils;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
@@ -75,7 +77,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
                 if( room != null)
                 {
-                    BattleUtils.getInstance().join(sender, room, "", -1);
+                    BattleUtils.getInstance().join(sender, room, "");
 
                     params.putUtfString("o", game.player.nickName);
                     message.putUtfString("o", game.player.nickName);
@@ -95,7 +97,7 @@ public class LobbyRoom extends BaseLobbyRoom
             {
                 Room room = getParentZone().getRoomById(params.getInt("bid"));
                 if( room != null )
-                    BattleUtils.getInstance().join(sender, room, game.player.nickName, -1);
+                    BattleUtils.getInstance().join(sender, room, game.player.nickName);
                 return;
             }
 
@@ -104,9 +106,9 @@ public class LobbyRoom extends BaseLobbyRoom
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room = battleUtils.make(sender, params.containsKey("bt") ? FieldData.TYPE_TOUCHDOWN : FieldData.TYPE_HEADQUARTER, 0, 1, false);
+            Room room = battleUtils.make(sender, params.getShort("m"), 0, 1);
             lobby.setProperty(room.getName(), true);
-            battleUtils.join(sender, room, "", -1);
+            battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
         }
         else if( MessageTypes.isConfirm(mode) )
@@ -204,7 +206,7 @@ public class LobbyRoom extends BaseLobbyRoom
     private boolean replyRequest(Game game, ISFSObject params)
     {
         boolean accepted = params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT;
-        if ( accepted )
+        if( accepted )
         {
             if ( !LobbyUtils.getInstance().addUser(getData(), params.getInt("o")) )
                 return false;

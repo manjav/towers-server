@@ -1,17 +1,15 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gt.Commands;
-import com.gt.utils.InboxUtils;
-import com.gt.utils.BattleUtils;
-import com.gt.utils.OneSignalUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
-import com.gt.towers.battle.fieldes.FieldData;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.InboxUtils;
+import com.gt.utils.OneSignalUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-
 import java.util.Arrays;
 
 /**
@@ -21,7 +19,6 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
 {
     private static final int STATE_REQUEST = 0;
     private static final int STATE_BATTLE_STARTED = 1;
-
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -34,9 +31,8 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             User objectUser = getParentExtension().getParentZone().getUserManager().getUserByName(objectUserId + "");
             if( objectUser != null )
             {
-                BattleUtils battleUtils = BattleUtils.getInstance();
-                Room room = battleUtils.make(sender, FieldData.TYPE_TOUCHDOWN, 0, 2, false);
-                battleUtils.join(sender, room, "", -1);
+                Room room = BattleUtils.getInstance().make(sender, params.getInt("m"), 0, 2);
+                BattleUtils.getInstance().join(sender, room, "");
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);
                 params.putUtfString("sn", player.nickName);
@@ -53,23 +49,23 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
         {
             User subjectUser = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "");
             Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
-            BattleUtils.getInstance().join(sender, room, "", -1);
+            BattleUtils.getInstance().join(sender, room, "");
             if( subjectUser != null )
                 send(Commands.BUDDY_BATTLE, params, Arrays.asList(sender, subjectUser));
         }
         else
         {
             Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
-            if( room != null ) {
+            if( room != null )
+            {
                 params.putInt("c", player.id);
-
                 getApi().removeRoom(room);
             }
             sendRresponse(params);
 
             // Send requested battle to subjectUser's inbox
             if( player.id != params.getInt("o") )
-                InboxUtils.getInstance().send(0, player.nickName + " تو رو به مبارزه دعوت کرد. ", player.nickName, player.id, params.getInt("o"),"");
+                InboxUtils.getInstance().send(0, player.nickName + " تو رو به مبارزه دعوت کرد. ", player.id, params.getInt("o"),"");
         }
     }
 

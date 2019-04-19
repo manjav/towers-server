@@ -137,7 +137,6 @@ public class ChallengeSFS extends SFSDataModel
         if( type == 0 )
         {
             setMap("joinRequirements", requirements);
-            setMap("requirements", requirements);
             base.joinRequirements = requirements;
         }
         else if( type == 1 )
@@ -199,10 +198,14 @@ public class ChallengeSFS extends SFSDataModel
 
     public boolean isFull()
     {
-        return getAttendees().size() >= base.capacity;
+        return base.capacity > 0 && base.capacity <= getAttendees().size() ;
     }
-    public boolean inWaiting(int now)
+    public boolean isAvailabled(int now)
     {
-        return getAttendees().size() < base.capacity && base.getState(now) == Challenge.STATE_WAIT;
+        if( isFull() )
+            return false;
+        if( base.type == Challenge.TYPE_2_RANKING )
+            return base.getState(now) == Challenge.STATE_0_WAIT;
+        return base.getState(now) < Challenge.STATE_2_END;
     }
 }

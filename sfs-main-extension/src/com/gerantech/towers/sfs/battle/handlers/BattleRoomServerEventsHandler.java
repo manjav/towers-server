@@ -2,10 +2,15 @@ package com.gerantech.towers.sfs.battle.handlers;
 
 import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gt.towers.constants.MessageTypes;
+import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.towers.socials.Challenge;
+import com.gt.towers.utils.maps.IntIntMap;
 import com.gt.utils.BattleUtils;
 import com.gt.data.UnitData;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
+import com.gt.utils.ExchangeUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.buddylist.SFSBuddyVariable;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -76,9 +81,9 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		}
 
 		// Wait to match making ( complete battle-room`s players )
-		if( !room.containsProperty("isFriendly") )
+		if( ((Integer)room.getProperty("friendlyMode")) == 0 )
 		{
-			int delay = 3000;//Math.max(12000, player.get_arena(0) * 400 + 7000);
+			int delay = 5000;//Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
 
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
@@ -126,33 +131,48 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private void sendStartBattleResponse(Boolean opponentNotFound)
 	{
 		room.setProperty("startAt", (int) Instant.now().getEpochSecond());
-		roomClass.createGame((int) room.getProperty("index"), opponentNotFound);
+		roomClass.createGame(opponentNotFound);
 
 		List<User> players = room.getPlayersList();
 		for (int i=0; i < players.size(); i++)
 	    	sendBattleData(players.get(i), false);
 	}
 
-	private void sendBattleData(User player, boolean containBuildings)
+	private void sendBattleData(User user, boolean containBuildings)
 	{
-		if( player.isNpc() )
+		if( user.isNpc() )
 			return;
 
-		SFSObject sfsO = new SFSObject();
-		sfsO.putInt("side", roomClass.getPlayerGroup(player) );
-		sfsO.putInt("index", (int) room.getProperty("index"));
-		sfsO.putInt("startAt", roomClass.battleField.startAt);
-		sfsO.putInt("roomId", room.getId());
-		sfsO.putDouble("now", roomClass.battleField.now);
-		sfsO.putText("map", roomClass.battleField.field.mapLayout);
-		sfsO.putText("type", (String) room.getProperty("type"));
-		sfsO.putBool("isFriendly", room.containsProperty("isFriendly"));
-		sfsO.putBool("hasExtraTime", room.containsProperty("hasExtraTime"));
-		sfsO.putBool("singleMode", (boolean)room.getProperty("singleMode"));
-		sfsO.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
+		Game game = (Game) user.getSession().getProperty("core");
+		if( game.player.isBot() )
+			return;
 
-		boolean isSpectator = player.isSpectator(room);
-		Game receiver = (Game) player.getSession().getProperty("core");
+		SFSObject params = new SFSObject();
+		IntIntMap cost = Challenge.getRunRequiements((int) room.getProperty("mode"));
+		ExchangeItem exItem = Challenge.getExchangeItem((int) room.getProperty("mode"), cost, game.player.get_arena(0));
+		int response = ExchangeUtils.getInstance().process(game, exItem, (int) room.getProperty("startAt"),0);
+		if( response != MessageTypes.RESPONSE_SUCCEED )
+		{
+			params.putInt("response", response);
+			send(Commands.BATTLE_START, params, user);
+			return;
+		}
+
+		params.putInt("side", roomClass.getPlayerGroup(user));
+		params.putInt("startAt", roomClass.battleField.startAt);
+		params.putInt("roomId", room.getId());
+		params.putDouble("now", roomClass.battleField.now);
+		params.putText("map", roomClass.battleField.field.mapLayout);
+		params.putInt("mode", (int) room.getProperty("mode"));
+		params.putInt("friendlyMode", roomClass.battleField.friendlyMode);
+		params.putBool("singleMode", (boolean)room.getProperty("singleMode"));
+		params.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
+        if( game.appVersion < 1900 )
+        {
+            params.putInt("index", 1);
+            params.putText("type", (int) room.getProperty("mode") == 0 ? "headquarter" : "touchdown");
+        }
+		boolean isSpectator = user.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
 		int i = 0;
 		for ( Game g : registeredPlayers )
@@ -161,7 +181,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			p.putUtfString("name", g.player.nickName);
 			p.putInt("xp", g.player.get_xp());
 			p.putInt("point", g.player.get_point());
-			if( receiver.appVersion >= 1700 )
+			if( game.appVersion >= 1700 )
 			{
 				String deck = "";
 				Iterator<Object> iter = roomClass.battleField.decks.get(i)._queue.iterator();
@@ -177,21 +197,21 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 				p.putIntArray("deck", (List<Integer>)(List<?>) roomClass.battleField.decks.get(i)._queue);
 			}
 			p.putInt("score", roomClass.endCalculator.scores[i]);
-			sfsO.putSFSObject( i == 0 ? "p0" : "p1", p );
+			params.putSFSObject( i == 0 ? "p0" : "p1", p );
 
 			i ++;
 		}
 
-		send(Commands.BATTLE_START, sfsO, player);
+		send(Commands.BATTLE_START, params, user);
 
 		if( !isSpectator )
 		{
-			player.getBuddyProperties().setState("Occupied");
-			player.getBuddyProperties().setVariable(new SFSBuddyVariable("br", room.getId()));
-			player.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", player.getVariable("point").getIntValue()));
+			user.getBuddyProperties().setState("Occupied");
+			user.getBuddyProperties().setVariable(new SFSBuddyVariable("br", room.getId()));
+			user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
 
 			try {
-				getParentExtension().getBuddyApi().setBuddyVariables(player, player.getBuddyProperties().getVariables(), true, true);
+				getParentExtension().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, true);
 			} catch (SFSBuddyListException e) { e.printStackTrace(); }
 		}
 	}

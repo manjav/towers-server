@@ -37,8 +37,8 @@ public class ChallengeUtils extends UtilBase
         } catch (SQLException e) { e.printStackTrace(); }
 
         Map<Integer, ChallengeSFS> allChallenges = new ConcurrentHashMap();
-        Map<Integer, ChallengeSFS> waitingChallenges = new ConcurrentHashMap();
-        ISFSObject ch = null;
+        Map<Integer, ChallengeSFS> availabledChallenges = new ConcurrentHashMap();
+        ISFSObject ch;
         ChallengeSFS challengeSFS;
         for( int i=0; i<challenges.size(); i++ )
         {
@@ -46,12 +46,12 @@ public class ChallengeUtils extends UtilBase
             challengeSFS = new ChallengeSFS(ch.getInt("id"), ch.getInt("type"), 0, Math.toIntExact(ch.getLong("start_at") / 1000), ch.getByteArray("attendees"));
             allChallenges.put(ch.getInt("id"), challengeSFS);
 
-            if( challengeSFS.inWaiting(now) )
-                waitingChallenges.put(challengeSFS.base.type, challengeSFS);
+            if( challengeSFS.isAvailabled(now) )
+                availabledChallenges.put(challengeSFS.base.type, challengeSFS);
         }
 
         ext.getParentZone().setProperty("allChallenges", allChallenges);
-        ext.getParentZone().setProperty("waitingChallenges", waitingChallenges);
+        ext.getParentZone().setProperty("availabledChallenges", availabledChallenges);
         trace("loaded challenges data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
     public ConcurrentHashMap<Integer, ChallengeSFS> getAll()
@@ -66,20 +66,21 @@ public class ChallengeUtils extends UtilBase
             return null;
         return all.get(challengeId);
     }
-    private ChallengeSFS getWaiting(int type, int now)
+    private ChallengeSFS getAvailabled(int type, int now)
     {
-        ConcurrentHashMap<Integer, ChallengeSFS> ws = (ConcurrentHashMap<Integer, ChallengeSFS>) ext.getParentZone().getProperty("waitingChallenges");
+        ConcurrentHashMap<Integer, ChallengeSFS> availables = (ConcurrentHashMap<Integer, ChallengeSFS>) ext.getParentZone().getProperty("availabledChallenges");
         // if not exists any waiting challenge, then create new challenge of type requested.
-        if( !ws.containsKey(type) || !ws.get(type).inWaiting(now) )
-            ws.put(type, create(type, now));
-        return ws.get(type);
+        if( !availables.containsKey(type) || !availables.get(type).isAvailabled(now) )
+            availables.put(type, create(type, now));
+        return availables.get(type);
     }
 
     private ChallengeSFS create(int type, int now)
     {
         int startAt = now + Challenge.getWaitTime(type);
-        ChallengeSFS challenge = new ChallengeSFS(-1, type, 0, startAt, null);
-        String query = "INSERT INTO challenges (type, start_at, attendees) VALUES (" + type + ", FROM_UNIXTIME(" + startAt + "), ?);";
+        int mode = Challenge.getMode(type);
+        ChallengeSFS challenge = new ChallengeSFS(-1, type, mode, startAt, null);
+        String query = "INSERT INTO challenges (type, mode, start_at, attendees) VALUES (" + type + ", " + mode + ", FROM_UNIXTIME(" + startAt + "), ?);";
         try {
             challenge.setId(Math.toIntExact((Long) ext.getParentZone().getDBManager().executeInsert(query, new Object[]{challenge.getAttendeesBytes()})));
         } catch (SQLException e) {  e.printStackTrace(); }
@@ -90,10 +91,13 @@ public class ChallengeUtils extends UtilBase
 
     public ChallengeSFS join(int type, int playerId, String playerName, int now)
     {
-        return join(getWaiting(type, now), playerId, playerName, now);
+        return join(getAvailabled(type, now), playerId, playerName, now);
     }
     public ChallengeSFS join(ChallengeSFS challenge, int playerId, String playerName, int now)
     {
+        if( challenge.base.type != Challenge.TYPE_2_RANKING )
+            return challenge;
+
         ISFSObject attendee = new SFSObject();
         attendee.putInt("id", playerId);
         attendee.putInt("updateAt", now);
@@ -117,13 +121,14 @@ public class ChallengeUtils extends UtilBase
     public ISFSArray getChallengesOfAttendee(int type, Player player, boolean createIfNotExists)
     {
         ISFSObject attendee;
-        Map<Integer, Boolean> types = new HashMap();
+        int arena = player.get_arena(0);
+        Map<Integer, Boolean> founds = new HashMap();
         ISFSArray ret = new SFSArray();
         Iterator<Map.Entry<Integer, ChallengeSFS>> iterator = getAll().entrySet().iterator();
         while( iterator.hasNext() )
         {
             ChallengeSFS challenge = iterator.next().getValue();
-            if( type > -1 && challenge.base.type != type )
+            if( challenge.base.type != Challenge.TYPE_2_RANKING )
                 continue;
             for(int i=0; i < challenge.getAttendees().size(); i++)
             {
@@ -131,7 +136,7 @@ public class ChallengeUtils extends UtilBase
                 if( attendee.getInt("id").equals(player.id) && attendee.getInt("updateAt") > -1 )
                 {
                     ret.addSFSObject(challenge);
-                    types.put(challenge.base.type, true);
+                    founds.put(challenge.base.type, true);
                     break;
                 }
             }
@@ -139,16 +144,10 @@ public class ChallengeUtils extends UtilBase
         if( createIfNotExists )
         {
             int now = (int) Instant.now().getEpochSecond();
-
-            if( !types.containsKey(0) )
-                ret.addSFSObject(getWaiting(0, now));
-
-            if( !types.containsKey(1) )
-            {
-                ChallengeSFS ch = getWaiting(1, now);
-                join(ch, player.id, player.nickName, now );
-                ret.addSFSObject(ch);
-            }
+            if( Challenge.getUnlockAt(Challenge.TYPE_1_REWARD) <= arena )
+                ret.addSFSObject(getAvailabled(Challenge.TYPE_1_REWARD, now));
+            if( Challenge.getUnlockAt(Challenge.TYPE_2_RANKING) <= arena && !founds.containsKey(Challenge.TYPE_2_RANKING) )
+                ret.addSFSObject(getAvailabled(Challenge.TYPE_2_RANKING, now));
         }
 
         return ret;
@@ -161,7 +160,7 @@ public class ChallengeUtils extends UtilBase
         if( challenge == null )
             return MessageTypes.RESPONSE_NOT_FOUND;
 
-        if( challenge.base.getState(now) != Challenge.STATE_END )
+        if( challenge.base.getState(now) != Challenge.STATE_2_END )
             return MessageTypes.RESPONSE_MUST_WAIT;
 
         ISFSObject attendee = getAttendee(playerId, challenge);

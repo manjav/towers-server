@@ -5,7 +5,6 @@ import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.battle.BattleField;
-import com.gt.towers.battle.fieldes.FieldData;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -34,11 +33,11 @@ public class BattleUtils extends UtilBase
         return (BattleUtils)UtilBase.get(BattleUtils.class);
     }
     private AtomicInteger roomId = new AtomicInteger();
-    public void join(User user, Room theRoom, String spectatedUser, int challengeType)
+    public void join(User user, Room room, String spectatedUser)
     {
-        user.getSession().setProperty("challengeType", challengeType);
+        //user.getSession().setProperty("challengeType", challengeType);
         Player player = ((Game)user.getSession().getProperty("core")).player;
-        trace("---------=========<<<<  JOIN user:"+user.getName()+" theRoom:"+theRoom.getName()+" spectatedUser:"+spectatedUser+" >>>>==========---------");
+        trace("---------=========<<<<  JOIN user:" + user.getName() + " room:" + room.getName() + " spectatedUser:" + spectatedUser + " >>>>==========---------");
         List<UserVariable> vars = new ArrayList();
         vars.add(new SFSUserVariable("name", player.nickName));
         vars.add(new SFSUserVariable("point", player.get_point()));
@@ -47,33 +46,16 @@ public class BattleUtils extends UtilBase
 
         try
         {
-            ext.getApi().joinRoom(user, theRoom, null, spectatedUser!="", null);
+            ext.getApi().joinRoom(user, room, null, spectatedUser!="", null);
         }
         catch (SFSJoinRoomException e) { e.printStackTrace(); }
     }
 
-    public Room make(User owner, String type, int index, int friendlyMode, boolean hasExtraTime)
+    public Room make(User owner, int mode, int type, int friendlyMode)
     {
-        CreateRoomSettings.RoomExtensionSettings res = new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom");
-        Game game = ((Game)owner.getSession().getProperty("core"));
-        Map<Object, Object> roomProperties = new HashMap();
-
-        int arena = 0;
-        if( type != FieldData.TYPE_OPERATION )
-        {
-            arena = game.arenas.get(game.player.get_arena(game.player.get_point())).index;
-            //boolean tutorMode = game.player.get_battleswins() < 3;
-            //List<String> fields = game.fieldProvider.battles.getKeyRange(arena * 100 + (arena == 0 && !tutorMode ? tutorMaps : 0), (arena + 1) * 100);
-            index = game.appVersion >= 1600 ? 1 : 0;//tutorMode ? (game.player.get_battleswins() + 1) : game.fieldProvider.battles.get(fields.get(RandomPicker.getInt(0, fields.size()))).index;
-
-            //Double arenaIndex =  Math.min(BattleUtils.arenaDivider, Math.floor(arena.index/2)*2);
-            roomProperties.put("arena", arena);// ===> is temp
-        }
-        trace("---------=========<<<<  MAKE owner:", owner.getName(), "index:", index, "type:", type, "friendlyMode:", friendlyMode, " >>>>==========---------");
-
         // temp solution
         long now = Instant.now().getEpochSecond();
-        List<Room> rList = ext.getParentZone().getRoomListFromGroup(type);
+        List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList)
         {
             // trace(">>>>>>>", r.containsProperty("startAt"), now );
@@ -85,31 +67,27 @@ public class BattleUtils extends UtilBase
             }
         }
 
+        int league = ((Game)owner.getSession().getProperty("core")).player.get_arena(0);
+        boolean singleMode = league == 0;
 
-        boolean singleMode = arena == 0;
+        Map<Object, Object> roomProperties = new HashMap();
+        roomProperties.put("mode", mode);
         roomProperties.put("type", type);
-        roomProperties.put("index", index);
-        if( hasExtraTime )
-            roomProperties.put("hasExtraTime", true);
-        if( friendlyMode > 0 )
-            roomProperties.put("isFriendly", true);
+        roomProperties.put("league", league);// ===> is temp
+        roomProperties.put("friendlyMode", friendlyMode);
         roomProperties.put("state", BattleField.STATE_0_WAITING);
-
-
-        String pref = type.substring(0, 1);
-        if( friendlyMode > 0 )
-            pref += (friendlyMode == 1 ? "l" : "b");
+        trace("---------=========<<<<  MAKE owner:", owner.getName(), "mode:", mode, "type:", type, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
         CreateRoomSettings rs = new CreateRoomSettings();
-        rs.setGame(true);
+        rs.setExtension(new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom"));
+        rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
+        rs.setName( "m" + mode + "_t" + type + "_f" + friendlyMode + "_" + roomId.getAndIncrement() );
+        rs.setRoomProperties( roomProperties );
+        rs.setMaxUsers(singleMode ? 1 : 2);
+        rs.setGroupId("battles");
         rs.setMaxSpectators(50);
         rs.setDynamic(true);
-        rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
-        rs.setRoomProperties( roomProperties );
-        rs.setName( pref + "_" + index+ "__" + roomId.getAndIncrement() );
-        rs.setMaxUsers(singleMode ? 1 : 2);
-        rs.setGroupId(type == FieldData.TYPE_OPERATION ? type : "battles");
-        rs.setExtension(res);
+        rs.setGame(true);
 
         try {
             return ext.getApi().createRoom(ext.getParentZone(), rs, owner);

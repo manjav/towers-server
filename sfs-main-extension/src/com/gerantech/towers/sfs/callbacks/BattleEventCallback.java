@@ -1,15 +1,12 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gt.Commands;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.battle.GameObject;
-import com.gt.towers.battle.fieldes.FieldData;
 import com.gt.towers.battle.units.Unit;
-import com.gt.towers.constants.CardTypes;
 import com.gt.towers.events.BattleEvent;
 import com.gt.towers.events.EventCallback;
-import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.gt.towers.socials.Challenge;
 import haxe.root.Array;
 
 import java.util.Iterator;
@@ -34,7 +31,7 @@ public class BattleEventCallback implements EventCallback
     public void dispatch(int id, String type, Object data)
     {
         // only headquarter battle is alive
-        if( battleRoom.battleField.state >= BattleField.STATE_4_ENDED || !battleRoom.battleField.field.type.equals(FieldData.TYPE_HEADQUARTER) )
+        if( battleRoom.battleField.state >= BattleField.STATE_4_ENDED || battleRoom.battleField.field.mode == Challenge.MODE_1_TOUCHDOWN )
             return;
 
         // when units disposed
@@ -43,9 +40,9 @@ public class BattleEventCallback implements EventCallback
             if( battleRoom.battleField.units.get(id).card.type >= 201 )
             {
                 int other = battleRoom.battleField.units.get(id).side == 0 ? 1 : 0;
-                if( battleRoom.battleField.units.get(id).card.type == 201 )
+                if( id < 2 )
                     battleRoom.endCalculator.scores[other] = Math.min(3, battleRoom.endCalculator.scores[other] + 3);
-                if( CardTypes.isHero(battleRoom.battleField.units.get(id).card.type) )
+                else if( id < 6)
                     battleRoom.endCalculator.scores[other] ++;
 
                 battleRoom.sendNewRoundResponse(other, 0);
