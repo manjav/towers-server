@@ -204,8 +204,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
 
-		initiateCore(session, inData, outData, loginData);
-        //outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
+		Game game = initiateCore(session, inData, outData, loginData);
+		if( game.appVersion < 1900 )
+	        outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, true));
 		//trace("initData", outData.getDump());
 	}
 
