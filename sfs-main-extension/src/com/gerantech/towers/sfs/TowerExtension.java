@@ -78,7 +78,6 @@ public class TowerExtension extends SFSExtension
 
 		addRequestHandler(Commands.PROFILE, ProfileRequestHandler.class);
 
-		addRequestHandler("inboxGet", InboxGetThreadsHandler.class);
 		addRequestHandler(Commands.INBOX_GET_THREADS, InboxGetThreadsHandler.class);
 		addRequestHandler(Commands.INBOX_GET_RELATIONS, InboxGetRelationsHandler.class);
 		addRequestHandler(Commands.INBOX_OPEN, InboxOpenHandler.class);
