@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1552519214;
+	public static int UNTIL_MAINTENANCE = 1555744503;
 
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
@@ -141,8 +141,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 			try {
 				id = Math.toIntExact((long) dbManager.executeInsert(query, new Object[] {}));
 			} catch (SQLException e) { e.printStackTrace(); }
+            if( id == 0 )
+            {
+                LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error! resources id=" + id + " is wrong.", new String[]{"Login error! resources id=" + id + " is wrong."});
+                return;
+            }
 
-			// add  Ids
+            // add  Ids
 			for(int i=0; i<resources.size(); i++)
 				resources.getSFSObject(i).putInt("id", id + i);
 
