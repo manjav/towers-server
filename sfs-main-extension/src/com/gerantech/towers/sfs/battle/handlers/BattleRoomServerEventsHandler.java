@@ -167,11 +167,6 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		params.putInt("friendlyMode", roomClass.battleField.friendlyMode);
 		params.putBool("singleMode", (boolean)room.getProperty("singleMode"));
 		params.putSFSArray("units", UnitData.toSFSArray(roomClass.battleField.units));
-        if( game.appVersion < 1900 )
-        {
-            params.putInt("index", 1);
-            params.putText("type", (int) room.getProperty("mode") == 0 ? "headquarter" : "touchdown");
-        }
 		boolean isSpectator = user.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
 		int i = 0;

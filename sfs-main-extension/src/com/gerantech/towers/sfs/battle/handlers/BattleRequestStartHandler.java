@@ -45,7 +45,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         this.friendlyMode = params.containsKey("friendlyMode") ? params.getInt("friendlyMode") : 0;
         this.league = game.player.get_arena(0);
         this.type = Challenge.getType(index);
-        this.mode = game.appVersion < 1900 ? (params.getText("type").equals("touchdown") ? 1 : 0) : Challenge.getMode(index);
+        this.mode = Challenge.getMode(index);
 
         if( !game.player.has(Challenge.getRunRequiements(index)) )
         {
