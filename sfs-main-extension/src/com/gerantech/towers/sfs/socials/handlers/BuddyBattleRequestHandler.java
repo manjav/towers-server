@@ -3,6 +3,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.utils.BanUtils;
 import com.gt.utils.BattleUtils;
 import com.gt.utils.InboxUtils;
 import com.gt.utils.OneSignalUtils;
@@ -36,13 +37,13 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);
                 params.putUtfString("sn", player.nickName);
-                sendRresponse(params);
+                sendResponse(params);
             }
             else
             {
                 OneSignalUtils.getInstance().send(player.nickName + " تو رو به رقابت دوستانه دعوت می کنه ", null, objectUserId);
                 params.putShort("bs", (short) 4);
-                sendRresponse(params);
+                sendResponse(params);
             }
         }
         else if( battleState == STATE_BATTLE_STARTED )
@@ -61,15 +62,15 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
                 params.putInt("c", player.id);
                 getApi().removeRoom(room);
             }
-            sendRresponse(params);
+            sendResponse(params);
 
             // Send requested battle to subjectUser's inbox
             if( player.id != params.getInt("o") )
-                InboxUtils.getInstance().send(0, player.nickName + " تو رو به مبارزه دعوت کرد. ", player.id, params.getInt("o"),"");
+                InboxUtils.getInstance().send(0, player.nickName + " تو رو به مبارزه دعوت کرد. ", BanUtils.SYSTEM_ID, params.getInt("o"),"");
         }
     }
 
-    private void sendRresponse(ISFSObject params)
+    private void sendResponse(ISFSObject params)
     {
         User subjectUser = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "");
         if (subjectUser != null)

@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
 import com.gt.Commands;
+import com.gt.utils.BanUtils;
 import com.gt.utils.InboxUtils;
 import com.gerantech.towers.sfs.socials.LobbyRoom;
 import com.gt.utils.LobbyUtils;
@@ -77,19 +78,19 @@ public class LobbyModerationHandler extends BaseClientRequestHandler
 
         lobbyRoom.sendComment((short) MessageTypes.M12_COMMENT_KICK, game.player, targetName, (short)-1);// mode = leave
         LobbyUtils.getInstance().removeUser(lobbyData, targetId);
-        InboxUtils.getInstance().send(MessageTypes.M0_TEXT, " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", game.player.nickName, game.player.id, targetId, "");
+        InboxUtils.getInstance().send(MessageTypes.M0_TEXT, "متأسفانه از دهکده اخراج شدی.", BanUtils.SYSTEM_ID, targetId, "");
         OneSignalUtils.getInstance().send(targetName + " متأسفانه " + game.player.nickName + " تو رو از دهکده اخراج کرد.", null, targetId);
         return true;
     }
 
     private boolean promote(Integer targetId, String targetName)
     {
-         if( modMember.getShort("pr") <= targetMember.getShort("pr") + 1 || targetMember.getShort("pr") >= DefaultPermissionProfile.MODERATOR.getId() )
-             return false;
+        if( modMember.getShort("pr") <= targetMember.getShort("pr") + 1 || targetMember.getShort("pr") >= DefaultPermissionProfile.MODERATOR.getId() )
+            return false;
 
         changePermission((short) (targetMember.getShort("pr") + 1));
         lobbyRoom.sendComment((short) MessageTypes.M13_COMMENT_PROMOTE, game.player, targetName, targetMember.getShort("pr"));// mode = leave
-        InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", game.player.nickName, game.player.id, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
+        InboxUtils.getInstance().send(MessageTypes.M50_URL, "تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", BanUtils.SYSTEM_ID, targetId, "towers://open?controls=tabs&dashTab=3&socialTab=0");
         OneSignalUtils.getInstance().send("تبریک " + targetName + "، تو توسط " + game.player.nickName + " ریش سپید شدی!", null, targetId);
         return true;
     }

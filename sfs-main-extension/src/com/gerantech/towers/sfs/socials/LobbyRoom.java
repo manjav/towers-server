@@ -9,6 +9,7 @@ import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.BanUtils;
 import com.gt.utils.BattleUtils;
 import com.gt.utils.InboxUtils;
 import com.gt.utils.LobbyUtils;
@@ -54,8 +55,7 @@ public class LobbyRoom extends BaseLobbyRoom
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         super.organizeMessage(sender, params, false);
-
-        if( mode == MessageTypes.M30_FRIENDLY_BATTLE )
+        if( MessageTypes.isBattle(mode) )
         {
             // cancel requested battle by owner
             int battleMsgIndex = getMyRequestedBattle(params, game.player);
@@ -106,7 +106,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room = battleUtils.make(sender, params.getShort("m"), 0, 1);
+            Room room = battleUtils.make(sender, params.containsKey("bt")?1:0, 0, 1);
             lobby.setProperty(room.getName(), true);
             battleUtils.join(sender, room, "");
             params.putInt("bid", room.getId());
@@ -153,7 +153,7 @@ public class LobbyRoom extends BaseLobbyRoom
         for (int i = msgSize-1; i >=0; i--)
         {
             message = messages.getSFSObject(i);
-            if( message.getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && message.getShort("st") == 0 && message.getInt("i") == player.id )
+            if( MessageTypes.isBattle(message.getShort("m")) && message.getShort("st") == 0 && message.getInt("i") == player.id )
                 return i;
         }
         return -1;
@@ -163,7 +163,7 @@ public class LobbyRoom extends BaseLobbyRoom
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
         for (int i = msgSize-1; i >=0; i--)
-            if (messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 0 && messages.getSFSObject(i).getShort("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+            if (MessageTypes.isBattle(messages.getSFSObject(i).getShort("m")) && params.getShort("st") == 0 && messages.getSFSObject(i).getShort("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
                 return messages.getSFSObject(i);
 
         return null;
@@ -173,7 +173,7 @@ public class LobbyRoom extends BaseLobbyRoom
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
         for (int i = msgSize-1; i >=0; i--)
-            if( messages.getSFSObject(i).getShort("m") == MessageTypes.M30_FRIENDLY_BATTLE && params.getShort("st") == 1 && messages.getSFSObject(i).getShort("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+            if( MessageTypes.isBattle(messages.getSFSObject(i).getShort("m")) && params.getShort("st") == 1 && messages.getSFSObject(i).getShort("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
                 return messages.getSFSObject(i);
         return null;
     }
@@ -216,7 +216,7 @@ public class LobbyRoom extends BaseLobbyRoom
         }
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
-        InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, game.player.id, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
+        InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, BanUtils.SYSTEM_ID, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
         sendComment(params.getShort("pr"), game.player, params.getUtfString("on"), (short)-1);// mode = join
         return true;
     }

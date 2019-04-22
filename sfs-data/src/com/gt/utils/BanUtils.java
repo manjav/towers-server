@@ -14,7 +14,9 @@ import java.time.Instant;
  */
 public class BanUtils extends UtilBase
 {
-	public static BanUtils getInstance()
+	static public int ADMIN_ID = 10000;
+	static public int SYSTEM_ID = 10001;
+	static public BanUtils getInstance()
 		{
 			return (BanUtils)UtilBase.get(BanUtils.class);
 		}
