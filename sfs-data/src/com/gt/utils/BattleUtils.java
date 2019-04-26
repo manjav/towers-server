@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,6 +34,7 @@ public class BattleUtils extends UtilBase
         return (BattleUtils)UtilBase.get(BattleUtils.class);
     }
     private AtomicInteger roomId = new AtomicInteger();
+    public ConcurrentHashMap<Integer, String> maps = new ConcurrentHashMap();
     public void join(User user, Room room, String spectatedUser)
     {
         //user.getSession().setProperty("challengeType", challengeType);
