@@ -40,7 +40,7 @@ public class TouchDownEndCalculator extends EndCalculator
         while( iterator.hasNext() )
         {
            u = iterator.next().getValue();
-           if( (u.side == 0 && u.y <= roomClass.battleField.tileMap.tileHeight) || (u.side == 1 && u.y >= BattleField.HEIGHT - roomClass.battleField.tileMap.tileHeight) )
+           if( (u.side == 0 && u.y <= roomClass.battleField.field.tileMap.tileHeight) || (u.side == 1 && u.y >= BattleField.HEIGHT - roomClass.battleField.field.tileMap.tileHeight) )
                return u;
         }
         return null;

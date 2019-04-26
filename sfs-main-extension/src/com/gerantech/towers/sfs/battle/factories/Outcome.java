@@ -33,25 +33,21 @@ public class Outcome
         if( ratio > 1 )
         {
             if( league == 0 )
-                point = 20;
+                point = 21;
             else
-                point = ((int) (MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * 8 - 4))) * mode;
+                point = ((int) (MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * COE_POINTS - COE_POINTS * 0.5))) * mode;
         }
         else if( ratio < 1 )
         {
-            if( mode > 0 )
-                point = (int) (-MIN_POINTS - 2 * COE_POINTS + Math.round(Math.random() * 8 - 4));
+            point = ((int) (-MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * COE_POINTS - COE_POINTS * 0.5))) * mode;
         }
 
         // for novice
-        if( point < 0 && game.player.resources.get(ResourceType.R2_POINT) < -point)
+        if( point < 0 && game.player.getResource(ResourceType.R2_POINT) + point < 0 )
             point = 0;
 
-        if( game.player.isBot() ) {
+        if( game.player.isBot() )
             return ret;
-        }
-
-        int dailyBattles = game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) ? game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges : 0;
 
         // battle stats
         ret.set(ResourceType.R12_BATTLES, 1);
@@ -59,22 +55,23 @@ public class Outcome
         if( game.player.get_arena(0) > 0 )
             ret.set(ResourceType.R17_STARS, star);
 
-        if( point > 0 )
+        if( ratio > 1 )
         {
             // num wins
             ret.set(ResourceType.R13_BATTLES_WINS, 1);
+            ret.set(ResourceType.R30_CHALLENGES, mode + 1);
 
             // soft-currency
-            int soft = 2 * Math.max(0, star) + Math.min(league * 2, Math.max(0, game.player.get_point() - game.player.get_softs()));
+            int soft = 2 * Math.max(0, star) + Math.min(league * 2, Math.max(0, game.player.get_point() - game.player.get_softs())) * mode;
+            if( soft != 0 )
+                ret.set(ResourceType.R3_CURRENCY_SOFT, soft);
+
+            /*int dailyBattles = game.exchanger.items.exists(ExchangeType.C29_DAILY_BATTLES) ? game.exchanger.items.get(ExchangeType.C29_DAILY_BATTLES).numExchanges : 0;
             if( mode == 0 && dailyBattles > 10 )
             {
                 point = (int) (point * Math.pow(10f / dailyBattles, 0.2));
                 soft = (int) (soft * Math.pow(10f / dailyBattles, 0.8));
-            }
-            ret.set(ResourceType.R2_POINT, point);
-//          if( game.inBattleChallengMode > -1 )
-//              return  ret;
-
+            }*/
             ret.set(ResourceType.R3_CURRENCY_SOFT, soft);
 
             // random book
@@ -87,6 +84,8 @@ public class Outcome
                 ret.set(emptySlot.outcome, emptySlot.type);
             }
         }
+        if( point != 0 )
+            ret.set(ResourceType.R2_POINT, point);
         return ret;
     }
 

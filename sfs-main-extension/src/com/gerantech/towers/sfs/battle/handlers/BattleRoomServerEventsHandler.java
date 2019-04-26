@@ -81,7 +81,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		}
 
 		// Wait to match making ( complete battle-room`s players )
-		if( ((Integer)room.getProperty("friendlyMode")) == 0 )
+		if( ((int)room.getProperty("friendlyMode")) == 0 )
 		{
 			int delay = 5000;//Math.max(12000, player.get_arena(0) * 400 + 7000);
 			//trace(room.getName(), waitingPeak, room.getPlayersList().size(), room.getOwner().getName());
@@ -101,7 +101,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 	private void userDisconnected(ISFSEvent arg)
 	{
 		List<Room> joinedRooms = (List<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
-		for(Room r:joinedRooms)
+		for( Room r:joinedRooms )
 		{
 			if( r.getGroupId() != "battles" || r.containsProperty("enabled"))
 				continue;
@@ -162,7 +162,7 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		params.putInt("startAt", roomClass.battleField.startAt);
 		params.putInt("roomId", room.getId());
 		params.putDouble("now", roomClass.battleField.now);
-		params.putText("map", roomClass.battleField.field.mapLayout);
+		params.putText("map", roomClass.battleField.field.mapData);
 		params.putInt("mode", (int) room.getProperty("mode"));
 		params.putInt("friendlyMode", roomClass.battleField.friendlyMode);
 		params.putBool("singleMode", (boolean)room.getProperty("singleMode"));
@@ -170,12 +170,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 		boolean isSpectator = user.isSpectator(room);
 		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
 		int i = 0;
-		for ( Game g : registeredPlayers )
+		for( Game g : registeredPlayers )
 		{
 			SFSObject p = new SFSObject();
-			p.putUtfString("name", g.player.nickName);
 			p.putInt("xp", g.player.get_xp());
 			p.putInt("point", g.player.get_point());
+			p.putUtfString("name", g.player.nickName);
 			if( game.appVersion >= 1700 )
 			{
 				String deck = "";

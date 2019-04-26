@@ -113,16 +113,12 @@ public class BattleRoom extends SFSExtension
 
 		trace(registeredPlayers.get(0), registeredPlayers.get(1), room.getProperty("mode"));
 
-		FieldData field = FieldData.intantiate((Integer) room.getProperty("mode"));
-		if( field.mapLayout == null )
-		{
-			field.mapLayout = HttpTool.post("http://localhost:8080/maps/map-" + field.mode + ".json", null, false).text;
-
-			trace("http://localhost:8080/maps/map-" + field.mode + ".json loaded.");
-		}
+		int mode = (int) room.getProperty("mode");
+		if( !BattleUtils.getInstance().maps.containsKey(mode) )
+			BattleUtils.getInstance().maps.put(mode, HttpTool.post("http://localhost:8080/maps/map-" + mode + ".json", null, false).text);
 
 		Instant instant = Instant.now();
-		this.battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), field, 0, instant.getEpochSecond(), instant.toEpochMilli(), room.containsProperty("hasExtraTime"), (int) room.getProperty("friendlyMode"));
+		this.battleField.initialize(registeredPlayers.get(0), registeredPlayers.get(1), new FieldData(mode, BattleUtils.getInstance().maps.get(mode), "60,120,180,240"), 0, instant.getEpochSecond(), instant.toEpochMilli(), room.containsProperty("hasExtraTime"), (int) room.getProperty("friendlyMode"));
 		this.battleField.unitsHitCallback = new HitUnitCallback(this);
 		this.eventCallback = new BattleEventCallback(this);
 		if( this.battleField.field.mode == Challenge.MODE_1_TOUCHDOWN )
@@ -373,8 +369,6 @@ public class BattleRoom extends SFSExtension
 
 	    calculateResult();
 		close();
-		if( battleField.field.isOperation() || room.getPlayersList().size() == 0 )
-			BattleUtils.getInstance().removeRoom(room);
 	}
 
 	private void calculateResult()
@@ -500,7 +494,8 @@ public class BattleRoom extends SFSExtension
 				return;
 
 			int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
-			lobbySFS.getMembers().getSFSObject(index).putInt("ac", lobbySFS.getMembers().getSFSObject(index).getInt("ac") + 1);
+			int activity = lobbySFS.getMembers().getSFSObject(index).containsKey("ac") ? lobbySFS.getMembers().getSFSObject(index).getInt("ac") : 0;
+			lobbySFS.getMembers().getSFSObject(index).putInt("ac", activity + 1);
 			LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
 		}
 	}
@@ -518,6 +513,8 @@ public class BattleRoom extends SFSExtension
     public void close()
 	{
 		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
+		if( battleField.field.isOperation() || room.getPlayersList().size() == 0 )
+			BattleUtils.getInstance().removeRoom(room);
 
 		if( timer != null )
 			timer.cancel(true);
