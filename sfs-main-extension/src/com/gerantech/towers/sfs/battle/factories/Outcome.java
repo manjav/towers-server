@@ -33,7 +33,7 @@ public class Outcome
         if( ratio > 1 )
         {
             if( league == 0 )
-                point = 21;
+                point = 13;
             else
                 point = ((int) (MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * COE_POINTS - COE_POINTS * 0.5))) * mode;
         }
