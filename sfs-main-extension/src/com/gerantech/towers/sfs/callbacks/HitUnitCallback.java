@@ -3,7 +3,6 @@ package com.gerantech.towers.sfs.callbacks;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.interfaces.IUnitHitCallback;
 import haxe.root.Array;
-
 import java.util.List;
 
 /**
@@ -26,10 +25,6 @@ public class HitUnitCallback implements IUnitHitCallback
         battleRoom.hitUnit(bulletId, list);
     }
 
-    @Override
-    public boolean __hx_deleteField(String s) {
-        return false;
-    }
     @Override
     public Object __hx_lookupField(String s, boolean b, boolean b1) {
         return null;
@@ -63,11 +58,7 @@ public class HitUnitCallback implements IUnitHitCallback
         return 0;
     }
     @Override
-    public Object __hx_invokeField(String s, Array array) {
-        return null;
-    }
+    public Object __hx_invokeField(String s, Object[] objects) { return null; }
     @Override
-    public void __hx_getFields(Array<String> array) {
-
-    }
+    public void __hx_getFields(Array<String> array) { }
 }
