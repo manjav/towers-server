@@ -58,7 +58,6 @@ public class BattleRoom extends SFSExtension
 	public ScheduledFuture<?> autoJoinTimer;
 	public BattleField battleField;
 	public EndCalculator endCalculator;
-	public BattleEventCallback eventCallback;
 
 	private Room room;
 	private BattleBot bot;
@@ -66,6 +65,7 @@ public class BattleRoom extends SFSExtension
 	private double buildingsUpdatedAt;
 	private ScheduledFuture<?> timer;
 	private List<Integer> reservedUnitIds;
+	private BattleEventCallback eventCallback;
 
 	public void init() 
 	{
@@ -184,8 +184,11 @@ public class BattleRoom extends SFSExtension
 
 		// set elixir bars
 		SFSObject bars = new SFSObject();
-		bars.putInt("0", (int) Math.floor(battleField.elixirBar.get(0)));
-		bars.putInt("1", (int) Math.floor(battleField.elixirBar.get(1)));
+
+		try {
+			bars.putInt("0", (int) Math.floor((double) battleField.elixirBar.__get(0)));
+			bars.putInt("1", (int) Math.floor((double) battleField.elixirBar.__get(1)));
+		}catch(Exception e){ trace(e.getMessage()); }
 		listOfVars.add(new SFSRoomVariable("bars", bars));
 
 		sfsApi.setRoomVariables(null, room, listOfVars);
@@ -510,7 +513,7 @@ public class BattleRoom extends SFSExtension
 
 
 
-    public void close()
+    private void close()
 	{
 		room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
 		if( battleField.field.isOperation() || room.getPlayersList().size() == 0 )
@@ -525,7 +528,7 @@ public class BattleRoom extends SFSExtension
 		//battleField = null;
 	}
 
-	public List<User> getRealPlayers()
+	private List<User> getRealPlayers()
 	{
 		List<User> ret = new ArrayList<>();
 		List<User> players = room.getPlayersList();

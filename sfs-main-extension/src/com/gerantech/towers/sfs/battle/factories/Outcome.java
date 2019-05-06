@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class Outcome
 {
-    public static int MIN_POINTS = 3;
-    public static int COE_POINTS = 2;
+    private static int MIN_POINTS = 3;
+    private static int COE_POINTS = 3;
     public static IntIntMap get(Game game, BattleRoom battleRoom, int star, float ratio, int now)
     {
         IntIntMap ret = new IntIntMap();

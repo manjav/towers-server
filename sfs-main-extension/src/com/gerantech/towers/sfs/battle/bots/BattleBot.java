@@ -23,16 +23,16 @@ import java.util.Map;
  */
 public class BattleBot
 {
-    static final int SUMMON_DELAY = 3000;
-    static final boolean DEBUG_MODE = false;
-    Player player;
-    SFSExtension ext;
-    BattleRoom battleRoom;
-    BattleField battleField;
-    double lastSummonTime = 0;
-    double lastHelpTime = 0;
-    float battleRatio = 0;
-    SFSObject chatPatams;
+    static final private int SUMMON_DELAY = 3000;
+    static final private boolean DEBUG_MODE = false;
+    private Player player;
+    private SFSExtension ext;
+    private BattleRoom battleRoom;
+    private BattleField battleField;
+    private double lastSummonTime = 0;
+    private double lastHelpTime = 0;
+    private float battleRatio = 0;
+    private SFSObject chatPatams;
     private int defaultIndex = 0;
 
     public BattleBot(BattleRoom battleRoom)
@@ -61,7 +61,7 @@ public class BattleBot
         updateChatProcess();
     }
 
-    void summonCard()
+    private void summonCard()
     {
         if( player.get_battleswins() < 1 )
             return;
@@ -109,9 +109,9 @@ public class BattleBot
                 skipCard(cardType);
                 return;
             }
-            if( battleField.elixirBar.get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
+            if( (double)battleField.elixirBar.__get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
             {
-                trace("wait for", battleField.elixirBar.get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
+                trace("wait for", battleField.elixirBar.__get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
                 return;
             }
         }
@@ -143,8 +143,8 @@ public class BattleBot
             // fake stronger bot
             if( player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
             {
-                trace("help:", battleField.elixirBar.get(1), battleField.difficulty * 0.3);
-                battleField.elixirBar.set(1, battleField.elixirBar.get(1) + battleField.difficulty * 0.3 );
+                trace("help:", battleField.elixirBar.__get(1), battleField.difficulty * 0.3);
+                battleField.elixirBar.__set(1, (double)battleField.elixirBar.__get(1) + battleField.difficulty * 0.3 );
                 lastHelpTime = battleField.now + SUMMON_DELAY * 2;
             }
         }
@@ -163,13 +163,13 @@ public class BattleBot
             lastSummonTime = battleField.now + SUMMON_DELAY;
             return;
         }
-
-        // fake stronger bot
-        if( player.get_battleswins() > 3 )
-            battleField.elixirSpeeds.set(1, battleRoom.endCalculator.ratio() > 1 ? 1 + battleField.difficulty * 0.04 : 1);
+//
+//        // fake stronger bot
+//        if( player.get_battleswins() > 3 )
+//            battleField.elixirSpeeds.__set(1, battleRoom.endCalculator.ratio() > 1 ? 1 + battleField.difficulty * 0.04 : 1);
     }
 
-    void skipCard(int cardType)
+    private void skipCard(int cardType)
     {
         defaultIndex ++;
         if( defaultIndex >= battleField.decks.get(1).keys().length )
@@ -177,7 +177,7 @@ public class BattleBot
         trace("skipCard", cardType, "index:", defaultIndex);
     }
 
-    int getCandidateCardIndex(int type)
+    private int getCandidateCardIndex(int type)
     {
         haxe.root.Array candidates = (haxe.root.Array) ScriptEngine.get(-3, type, 0);
         int len = candidates.length;
@@ -225,7 +225,7 @@ public class BattleBot
         chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 2500);
     }
 
-    void updateChatProcess()
+    private void updateChatProcess()
     {
         if( chatPatams.getDouble("ready") > battleField.now || !chatPatams.containsKey("t") )
             return;
@@ -234,7 +234,7 @@ public class BattleBot
         chatPatams.removeElement("t");
         chatPatams.putDouble("ready", battleField.now + 10000);
     }
-    void trace(Object... args)
+    private void trace(Object... args)
     {
         if( DEBUG_MODE )
             trace(args);
