@@ -31,6 +31,8 @@ public class MapChangeCallback implements IValueChangeCallback
     }
 
     @Override
+    public boolean __hx_deleteField(String s) { return false; }
+    @Override
     public Object __hx_lookupField(String s, boolean b, boolean b1) {
         return null;
     }
@@ -63,8 +65,7 @@ public class MapChangeCallback implements IValueChangeCallback
         return 0;
     }
     @Override
-    public Object __hx_invokeField(String s, Object[] objects) { return null; }
+    public Object __hx_invokeField(String s, Array array) { return null; }
     @Override
-    public void __hx_getFields(Array<String> array) {
-    }
+    public void __hx_getFields(Array<String> array) { }
 }

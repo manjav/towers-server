@@ -9,8 +9,8 @@ import com.gt.towers.events.EventCallback;
 import com.gt.towers.socials.Challenge;
 import haxe.root.Array;
 
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 public class BattleEventCallback implements EventCallback
 {
@@ -20,11 +20,8 @@ public class BattleEventCallback implements EventCallback
     public BattleEventCallback(BattleRoom battleRoom)
     {
         this.battleRoom = battleRoom;
-        Iterator<Map.Entry<Object, Unit>> iterator = battleRoom.battleField.units._map.entrySet().iterator();
-        while( iterator.hasNext() )
-        {
-            iterator.next().getValue().eventCallback = this;
-        }
+        for (Map.Entry<Object, Unit> unitEntry : battleRoom.battleField.units._map.entrySet())
+            unitEntry.getValue().eventCallback = this;
     }
 
     @Override
@@ -35,7 +32,7 @@ public class BattleEventCallback implements EventCallback
             return;
 
         // when units disposed
-        if( type == BattleEvent.STATE_CHANGE && (int) data == GameObject.STATE_8_DIPOSED )
+        if( Objects.equals(type, BattleEvent.STATE_CHANGE) && (int) data == GameObject.STATE_8_DIPOSED )
         {
             if( battleRoom.battleField.units.get(id).card.type >= 201 )
             {
@@ -50,6 +47,8 @@ public class BattleEventCallback implements EventCallback
         }
     }
 
+    @Override
+    public boolean __hx_deleteField(String s) { return false; }
     @Override
     public Object __hx_lookupField(String s, boolean b, boolean b1) {
         return null;
@@ -83,7 +82,7 @@ public class BattleEventCallback implements EventCallback
         return 0;
     }
     @Override
-    public Object __hx_invokeField(String s, Object[] objects) { return null; }
+    public Object __hx_invokeField(String s, Array array) { return null; }
     @Override
     public void __hx_getFields(Array<String> array) { }
 }
