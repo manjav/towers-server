@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gt.BBGRoom;
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -11,6 +12,7 @@ import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+
 import java.util.Arrays;
 
 /**
@@ -31,8 +33,8 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             User objectUser = getParentExtension().getParentZone().getUserManager().getUserByName(objectUserId + "");
             if( objectUser != null )
             {
-                Room room = BattleUtils.getInstance().make(sender, params.getInt("m"), 0, 2);
-                BattleUtils.getInstance().join(sender, room, "");
+                BBGRoom room = BattleUtils.getInstance().make((Class) getParentExtension().getParentZone().getProperty("battleClass"), sender, params.getInt("m"), 0, 2);
+                BattleUtils.getInstance().join(room, sender, "");
                 params.putInt("bid", room.getId());
                 params.putInt("s", player.id);
                 params.putUtfString("sn", player.nickName);
@@ -48,8 +50,8 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
         else if( battleState == STATE_BATTLE_STARTED )
         {
             User subjectUser = getParentExtension().getParentZone().getUserManager().getUserByName(params.getInt("s") + "");
-            Room room = getParentExtension().getParentZone().getRoomById(params.getInt("bid"));
-            BattleUtils.getInstance().join(sender, room, "");
+            BBGRoom room = BattleUtils.getInstance().rooms.get(params.getInt("bid"));
+            BattleUtils.getInstance().join(room, sender, "");
             if( subjectUser != null )
                 send(Commands.BUDDY_BATTLE, params, Arrays.asList(sender, subjectUser));
         }

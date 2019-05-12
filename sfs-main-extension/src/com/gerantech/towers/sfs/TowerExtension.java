@@ -1,4 +1,5 @@
 package com.gerantech.towers.sfs;
+
 import com.gerantech.towers.sfs.administration.JoinSpectatorHandler;
 import com.gerantech.towers.sfs.administration.PlayersGetHandler;
 import com.gerantech.towers.sfs.administration.RestoreHandler;
@@ -7,24 +8,23 @@ import com.gerantech.towers.sfs.administration.ban.*;
 import com.gerantech.towers.sfs.administration.issues.IssueGetHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueReportHandler;
 import com.gerantech.towers.sfs.administration.issues.IssueTrackHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRequestCancelHandler;
-import com.gerantech.towers.sfs.battle.handlers.BattleRequestStartHandler;
+import com.gerantech.towers.sfs.battle.BattleRoom;
+import com.gerantech.towers.sfs.battle.handlers.*;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeCollectRewardHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeGetAllHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeJoinHandler;
 import com.gerantech.towers.sfs.challenges.handlers.ChallengeUpdateHandler;
 import com.gerantech.towers.sfs.handlers.*;
-import com.gerantech.towers.sfs.inbox.InboxBroadcastMessageHandler;
-import com.gerantech.towers.sfs.inbox.InboxConfirmHandler;
-import com.gerantech.towers.sfs.inbox.InboxGetThreadsHandler;
-import com.gerantech.towers.sfs.inbox.InboxGetRelationsHandler;
-import com.gerantech.towers.sfs.inbox.InboxOpenHandler;
+import com.gerantech.towers.sfs.inbox.*;
 import com.gerantech.towers.sfs.quests.QuestInitializeHandler;
 import com.gerantech.towers.sfs.quests.QuestRewardCollectHandler;
-import com.gt.utils.*;
 import com.gerantech.towers.sfs.socials.handlers.*;
-import com.gt.Commands;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gt.Commands;
+import com.gt.utils.BanUtils;
+import com.gt.utils.DBUtils;
+import com.gt.utils.LobbyUtils;
+import com.gt.utils.UtilBase;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 
@@ -38,17 +38,23 @@ public class TowerExtension extends SFSExtension
 	public void init()
     {
     	UtilBase.setExtension(this);
+		UtilBase.setBattleClass(BattleRoom.class);
 
 		// Add server event handlers
 		addEventHandler(SFSEventType.USER_LOGIN, LoginEventHandler.class);
 		addEventHandler(SFSEventType.SERVER_READY, ServerReadyHandler.class);
 		addEventHandler(SFSEventType.USER_JOIN_ZONE, JoinZoneEventHandler.class);
+		addEventHandler(SFSEventType.USER_JOIN_ROOM, BattleJointHandler.class);
 		addEventHandler(SFSEventType.USER_LEAVE_ROOM, BattleUsersExitHandler.class);
 		addEventHandler(SFSEventType.USER_DISCONNECT, BattleUsersExitHandler.class);
 
-        // Add startBattle request handler
+		// Add startBattle request handler
 		addRequestHandler(Commands.BATTLE_START, BattleRequestStartHandler.class);
 		addRequestHandler(Commands.BATTLE_CANCEL, BattleRequestCancelHandler.class);
+
+		addRequestHandler(Commands.BATTLE_LEAVE, BattleLeaveRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_SUMMON_UNIT, BattleSummonRequestHandler.class);
+		addRequestHandler(Commands.BATTLE_SEND_STICKER, BattleStickerRequestHandler.class);
 
 		// Add billing upgrade handler
 		addRequestHandler(Commands.CARD_UPGRADE, CardUpgradeHandler.class);

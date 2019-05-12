@@ -1,5 +1,8 @@
-package com.gerantech.towers.sfs.handlers;
+package com.gerantech.towers.sfs.battle.handlers;
 
+import com.gt.BBGRoom;
+import com.gt.towers.battle.BattleField;
+import com.gt.utils.BattleUtils;
 import com.smartfoxserver.v2.SmartFoxServer;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -35,5 +38,28 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
        // user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
         user.getBuddyProperties().setState("Available");
         SmartFoxServer.getInstance().getAPIManager().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, false);
+
+        BattleUtils bu = BattleUtils.getInstance();
+
+        BBGRoom room = bu.find(bu.getGame(user).player.id, BattleField.STATE_0_WAITING, BattleField.STATE_4_ENDED);
+        if( room == null )
+            return;
+        if( room.getPropertyAsInt("state") < BattleField.STATE_1_CREATED )
+        {
+            BattleUtils.getInstance().remove(room);
+        }
+        else
+        {
+            BattleUtils.getInstance().leave(room, user);
+            /*for(User u:r.getPlayersList())
+            {
+                if(!u.isNpc() && !u.equals(user))
+                {
+                    SFSObject sfsO = SFSObject.newInstance();
+                    sfsO.putText("user", ((Game) user.getSession().getProperty("core")).player.nickName);
+                    send("battleLeft", sfsO, u);
+                }
+            }*/
+        }
     }
 }

@@ -10,9 +10,9 @@ import java.util.Map;
 public class TouchDownEndCalculator extends EndCalculator
 {
     public int round = 1;
-    public TouchDownEndCalculator(BattleRoom roomClass)
+    public TouchDownEndCalculator(BattleRoom room)
     {
-        super(roomClass);
+        super(room);
     }
 
     @Override
@@ -21,11 +21,11 @@ public class TouchDownEndCalculator extends EndCalculator
         Unit unit = checkUnitPassed();
         if( unit == null )
             return false;
-        roomClass.trace("unit passed " + unit.id);
+        room.trace("unit passed " + unit.id);
         round ++;
         scores[unit.side] ++;
-        roomClass.battleField.requestReset();
-        roomClass.sendNewRoundResponse(unit.side, unit.id);
+        room.battleField.requestReset();
+        room.sendNewRoundResponse(unit.side, unit.id);
         for (int s : scores)
             if( s > 2 )
                 return true;
@@ -36,11 +36,11 @@ public class TouchDownEndCalculator extends EndCalculator
     Unit checkUnitPassed()
     {
         Unit u;
-        Iterator<Map.Entry<Object, Unit>> iterator = roomClass.battleField.units._map.entrySet().iterator();
+        Iterator<Map.Entry<Object, Unit>> iterator = room.battleField.units._map.entrySet().iterator();
         while( iterator.hasNext() )
         {
            u = iterator.next().getValue();
-           if( (u.side == 0 && u.y <= roomClass.battleField.field.tileMap.tileHeight) || (u.side == 1 && u.y >= BattleField.HEIGHT - roomClass.battleField.field.tileMap.tileHeight) )
+           if( (u.side == 0 && u.y <= room.battleField.field.tileMap.tileHeight) || (u.side == 1 && u.y >= BattleField.HEIGHT - room.battleField.field.tileMap.tileHeight) )
                return u;
         }
         return null;

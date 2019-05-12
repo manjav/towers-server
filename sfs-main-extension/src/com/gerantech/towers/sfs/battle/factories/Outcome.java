@@ -25,7 +25,7 @@ public class Outcome
             ret.set(ResourceType.R15_BATTLES_FRIENDLY, 1);
             return ret;
         }
-        int mode = (int) battleRoom.getParentRoom().getProperty("mode");
+        int mode = battleRoom.getPropertyAsInt("mode");
         int league = game.player.get_arena(0);
 
         // points

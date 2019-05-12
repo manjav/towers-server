@@ -32,7 +32,7 @@ public class BattleBot
     private double lastSummonTime = 0;
     private double lastHelpTime = 0;
     private float battleRatio = 0;
-    private SFSObject chatPatams;
+    private SFSObject chatParams;
     private int defaultIndex = 0;
 
     public BattleBot(BattleRoom battleRoom)
@@ -41,8 +41,8 @@ public class BattleBot
         this.battleField = battleRoom.battleField;
         ext = (SFSExtension) SmartFoxServer.getInstance().getZoneManager().getZoneByName("towers").getExtension();
 
-        chatPatams = new SFSObject();
-        chatPatams.putDouble("ready", battleField.now + 15000);
+        chatParams = new SFSObject();
+        chatParams.putDouble("ready", battleField.now + 15000);
 
         player = battleField.games.__get(0).player;
         trace("p-point:" + player.getResource(ResourceType.R2_POINT), "b-point:"+ battleField.games.__get(1).player.getResource(ResourceType.R2_POINT), " winRate:" + player.getResource(ResourceType.R16_WIN_RATE), "difficulty:" + battleField.difficulty);
@@ -109,9 +109,9 @@ public class BattleBot
                 skipCard(cardType);
                 return;
             }
-            if( (double)battleField.elixirBar.__get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
+            if( (double)battleField.elixirUpdater.bars.__get(1) < CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5) )// waiting for more elixir to create waves
             {
-                trace("wait for", battleField.elixirBar.__get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
+                trace("wait for", battleField.elixirUpdater.bars.__get(1), CoreUtils.clamp(battleField.difficulty * 0.7, 4, 9.5), battleField.difficulty);
                 return;
             }
         }
@@ -143,8 +143,8 @@ public class BattleBot
             // fake stronger bot
             if( player.get_battleswins() > 4 && lastHelpTime < battleField.now && !CardTypes.isSpell(cardType) && playerHeader.y < BattleField.HEIGHT * 0.3 )
             {
-                trace("help:", battleField.elixirBar.__get(1), battleField.difficulty * 0.3);
-                battleField.elixirBar.__set(1, (double)battleField.elixirBar.__get(1) + battleField.difficulty * 0.3 );
+                trace("help:", battleField.elixirUpdater.bars.__get(1), battleField.difficulty * 0.3);
+                battleField.elixirUpdater.bars.__set(1, (double)battleField.elixirUpdater.bars.__get(1) + battleField.difficulty * 0.3 );
                 lastHelpTime = battleField.now + SUMMON_DELAY * 2;
             }
         }
@@ -197,42 +197,42 @@ public class BattleBot
             return;
 
         // verbose bot threshold
-        if( chatPatams.getDouble("ready") > battleField.now || Math.random() > 0.1 )
+        if( chatParams.getDouble("ready") > battleField.now || Math.random() > 0.1 )
             return;
 
         //trace(this.battleRatio, battleRatio);
         if( battleRatio != this.battleRatio )
         {
-            chatPatams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.__get(0)));
-            chatPatams.putInt("tt", 1);
-            chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 1500);
+            chatParams.putInt("t", StickerType.getRandomStart(battleRatio, battleField.games.__get(0)));
+            chatParams.putInt("tt", 1);
+            chatParams.putDouble("ready", battleField.now + Math.random() * 2500 + 1500);
         }
         this.battleRatio = battleRatio;
     }
 
     public void chatAnswering(ISFSObject params)
     {
-        if( chatPatams.getDouble("ready") > battleField.now || Math.random() < 0.4 )
+        if( chatParams.getDouble("ready") > battleField.now || Math.random() < 0.4 )
             return;
 
         int answer = StickerType.getAnswer( params.getInt("t") );
         if( answer <= -1 )
             return;
 
-        chatPatams.putInt("t", answer);
-        chatPatams.putInt("tt", 1);
-        chatPatams.putInt("wait", 0);
-        chatPatams.putDouble("ready", battleField.now + Math.random() * 2500 + 2500);
+        chatParams.putInt("t", answer);
+        chatParams.putInt("tt", 1);
+        chatParams.putInt("wait", 0);
+        chatParams.putDouble("ready", battleField.now + Math.random() * 2500 + 2500);
     }
 
     private void updateChatProcess()
     {
-        if( chatPatams.getDouble("ready") > battleField.now || !chatPatams.containsKey("t") )
+        if( chatParams.getDouble("ready") > battleField.now || !chatParams.containsKey("t") )
             return;
 
-        battleRoom.sendSticker(null, chatPatams);
-        chatPatams.removeElement("t");
-        chatPatams.putDouble("ready", battleField.now + 10000);
+        battleRoom.sendSticker(null, chatParams);
+        chatParams.removeElement("t");
+        chatParams.putDouble("ready", battleField.now + 10000);
     }
     private void trace(Object... args)
     {

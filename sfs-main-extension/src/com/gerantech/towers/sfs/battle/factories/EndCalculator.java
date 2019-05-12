@@ -2,11 +2,11 @@ package com.gerantech.towers.sfs.battle.factories;
 import com.gerantech.towers.sfs.battle.BattleRoom;
 public class EndCalculator
 {
-    protected final BattleRoom roomClass;
+    protected final BattleRoom room;
     public int[] scores = new int[2];
     public EndCalculator(BattleRoom roomClass)
     {
-        this.roomClass = roomClass;
+        this.room = roomClass;
     }
     public boolean check()
     {

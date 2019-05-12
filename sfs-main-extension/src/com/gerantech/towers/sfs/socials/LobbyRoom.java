@@ -4,6 +4,7 @@ import com.gerantech.towers.sfs.socials.handlers.LobbyEditHandler;
 import com.gerantech.towers.sfs.socials.handlers.LobbyInfoHandler;
 import com.gerantech.towers.sfs.socials.handlers.LobbyModerationHandler;
 import com.gerantech.towers.sfs.socials.handlers.LobbyRoomServerEventsHandler;
+import com.gt.BBGRoom;
 import com.gt.Commands;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
@@ -14,7 +15,6 @@ import com.gt.utils.BattleUtils;
 import com.gt.utils.InboxUtils;
 import com.gt.utils.LobbyUtils;
 import com.smartfoxserver.v2.core.SFSEventType;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -57,15 +57,16 @@ public class LobbyRoom extends BaseLobbyRoom
         super.organizeMessage(sender, params, false);
         if( MessageTypes.isBattle(mode) )
         {
+            BattleUtils battleUtils = BattleUtils.getInstance();
             // cancel requested battle by owner
             int battleMsgIndex = getMyRequestedBattle(params, game.player);
             if( battleMsgIndex > -1 )
             {
-                Room room = getParentZone().getRoomById(messages.getSFSObject(battleMsgIndex).getInt("bid"));
                 params.putInt("st", 3);
                 messages.getSFSObject(battleMsgIndex).putInt("st", 3);
+                BBGRoom room = battleUtils.rooms.get(messages.getSFSObject(battleMsgIndex).getInt("bid"));
                 if( room != null )
-                    BattleUtils.getInstance().removeRoom(room);
+                    battleUtils.remove(room);
                 messages.removeElementAt(battleMsgIndex);
                 return;
             }
@@ -74,10 +75,10 @@ public class LobbyRoom extends BaseLobbyRoom
             ISFSObject message = getAvailableBattle(params);
             if( message != null )
             {
-                Room room = getParentZone().getRoomById(params.getInt("bid"));
+                BBGRoom room = battleUtils.rooms.get(params.getInt("bid"));
                 if( room != null)
                 {
-                    BattleUtils.getInstance().join(sender, room, "");
+                    battleUtils.join(room, sender, "");
 
                     params.putUtfString("o", game.player.nickName);
                     message.putUtfString("o", game.player.nickName);
@@ -95,9 +96,9 @@ public class LobbyRoom extends BaseLobbyRoom
             message = getStartedBattle(params);
             if( message != null )
             {
-                Room room = getParentZone().getRoomById(params.getInt("bid"));
+                BBGRoom room = battleUtils.rooms.get(params.getInt("bid"));
                 if( room != null )
-                    BattleUtils.getInstance().join(sender, room, game.player.nickName);
+                    BattleUtils.getInstance().join(room, sender, game.player.nickName);
                 return;
             }
 
@@ -105,10 +106,9 @@ public class LobbyRoom extends BaseLobbyRoom
             if( params.getInt("st") > 0 )
                 return;
 
-            BattleUtils battleUtils = BattleUtils.getInstance();
-            Room room = battleUtils.make(sender, params.containsKey("bt")?1:0, 0, 1);
+            BBGRoom room = battleUtils.make((Class) getParentZone().getProperty("battleClass"), sender, params.containsKey("bt")?1:0, 0, 1);
             lobby.setProperty(room.getName(), true);
-            battleUtils.join(sender, room, "");
+            battleUtils.join(room, sender, "");
             params.putInt("bid", room.getId());
         }
         else if( MessageTypes.isConfirm(mode) )

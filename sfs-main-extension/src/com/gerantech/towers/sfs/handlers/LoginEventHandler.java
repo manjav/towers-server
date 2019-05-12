@@ -2,25 +2,26 @@ package com.gerantech.towers.sfs.handlers;
 import com.gerantech.towers.sfs.utils.HttpTool;
 import com.gerantech.towers.sfs.utils.LoginErrors;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
-import com.gt.towers.utils.maps.IntIntMap;
-import com.gt.utils.*;
+import com.gt.BBGRoom;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
 import com.gt.towers.LoginData;
 import com.gt.towers.Player;
+import com.gt.towers.battle.BattleField;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
 import com.gt.towers.scripts.ScriptEngine;
+import com.gt.towers.utils.maps.IntIntMap;
+import com.gt.utils.*;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSConstants;
 import com.smartfoxserver.v2.core.SFSEventParam;
 import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
@@ -204,7 +205,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("decks", dbUtils.getDecks(id));
 
 		// Find active battle room
-		Room room = BattleUtils.getInstance().findActiveBattleRoom(id);
+		BBGRoom room = BattleUtils.getInstance().find(id, BattleField.STATE_2_STARTED, BattleField.STATE_2_STARTED);
 		int joinedRoomId = room == null ? -1 : room.getId();
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
@@ -218,13 +219,13 @@ public class LoginEventHandler extends BaseServerEventHandler
 	{
 		int now = (int)Instant.now().getEpochSecond();
 		outData.putInt("serverTime", now);
+		outData.putInt("tutorialMode", 1);
 		outData.putInt("noticeVersion", loginData.noticeVersion);
 		outData.putInt("forceVersion", loginData.forceVersion);
 		outData.putText("coreVersion", loginData.coreVersion);
 		outData.putText("invitationCode", PasswordGenerator.getInvitationCode(outData.getInt("id")));
 		outData.putBool("hasQuests", true);
 		outData.putBool("hasOperations", true);
-		outData.putInt("tutorialMode", 1);
 
 		InitData initData = new InitData();
 		initData.nickName = outData.getText("name");

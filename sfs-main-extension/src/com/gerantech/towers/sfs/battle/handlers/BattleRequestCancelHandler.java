@@ -1,42 +1,35 @@
 package com.gerantech.towers.sfs.battle.handlers;
+
+import com.gt.BBGRoom;
 import com.gt.Commands;
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.BattleField;
-import com.smartfoxserver.v2.entities.Room;
-import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
+import com.gt.utils.BattleUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BattleRequestCancelHandler extends BaseClientRequestHandler
 {
-	public void handleClientRequest(User sender, ISFSObject params)
-    {
-        List<Room> battles = getParentExtension().getParentZone().getRoomListFromGroup("battles");
-        int numBattles = battles.size()-1;
-        while ( numBattles >= 0 )
+	public void handleClientRequest(User sender, ISFSObject params) {
+        Set<Map.Entry<Integer, BBGRoom>> entries = BattleUtils.getInstance().rooms.entrySet();
+        BBGRoom foundRoom = null;
+        for (Map.Entry<Integer, BBGRoom> entry : entries)
         {
-            //trace(battles.get(numBattles).getOwner().getId(), sender.getId(),  battles.get(numBattles).getProperty("state")); remove after deploy
-            if( battles.get(numBattles).getOwner().equals(sender) )
+            if( entry.getValue().getOwner().equals(sender) )
             {
-                if( (Integer) battles.get(numBattles).getProperty("state") <= BattleField.STATE_0_WAITING )
+                if( entry.getValue().getPropertyAsInt("state") < BattleField.STATE_1_CREATED )
                 {
-                    battles.get(numBattles).setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
-                    getApi().leaveRoom(sender, battles.get(numBattles));
-                    //getApi().removeRoom(battles.get(numBattles));
-                    send(Commands.BATTLE_CANCEL, null, sender);
-                    return;
+                    foundRoom = entry.getValue();
+                    break;
                 }
-                break;
             }
-            numBattles --;
         }
 
-        // not found any related battle
-        if( numBattles <= -1 )
-            send(Commands.BATTLE_CANCEL, null, sender);
-
+        if( foundRoom != null )
+            BattleUtils.getInstance().remove(foundRoom);
+        send(Commands.BATTLE_CANCEL, null, sender);
     }
 }

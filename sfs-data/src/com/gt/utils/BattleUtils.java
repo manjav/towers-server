@@ -1,5 +1,6 @@
 package com.gt.utils;
 
+import com.gt.BBGRoom;
 import com.gt.Commands;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
@@ -13,8 +14,7 @@ import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.variables.SFSUserVariable;
 import com.smartfoxserver.v2.entities.variables.UserVariable;
-import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
-import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
+import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,35 +29,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BattleUtils extends UtilBase
 {
+
     public static BattleUtils getInstance()
     {
         return (BattleUtils)UtilBase.get(BattleUtils.class);
     }
     private AtomicInteger roomId = new AtomicInteger();
     public ConcurrentHashMap<Integer, String> maps = new ConcurrentHashMap();
-    public void join(User user, Room room, String spectatedUser)
-    {
-        //user.getSession().setProperty("challengeType", challengeType);
-        Player player = ((Game)user.getSession().getProperty("core")).player;
-        trace("---------=========<<<<  JOIN user:" + user.getName() + " room:" + room.getName() + " spectatedUser:" + spectatedUser + " >>>>==========---------");
-        List<UserVariable> vars = new ArrayList();
-        vars.add(new SFSUserVariable("name", player.nickName));
-        vars.add(new SFSUserVariable("point", player.get_point()));
-        vars.add(new SFSUserVariable("spectatedUser", spectatedUser));
-        ext.getApi().setUserVariables(user, vars, true, true);
+    public ConcurrentHashMap<Integer, BBGRoom> rooms = new ConcurrentHashMap();
 
-        try
-        {
-            ext.getApi().joinRoom(user, room, null, spectatedUser!="", null);
-        }
-        catch (SFSJoinRoomException e) { e.printStackTrace(); }
-    }
-
-    public Room make(User owner, int mode, int type, int friendlyMode)
+    public BBGRoom make(Class roomClass, User owner, int mode, int type, int friendlyMode)
     {
         // temp solution
         long now = Instant.now().getEpochSecond();
-        List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
+        /*List<Room> rList = ext.getParentZone().getRoomListFromGroup("battles");
         for (Room r : rList)
         {
             // trace(">>>>>>>", r.containsProperty("startAt"), now );
@@ -67,7 +52,7 @@ public class BattleUtils extends UtilBase
                 removeRoom(r);
                 trace("** battle removed", r.getName(), now-(Integer)r.getProperty("startAt"));
             }
-        }
+        }*/
 
         int league = ((Game)owner.getSession().getProperty("core")).player.get_arena(0);
         boolean singleMode = league == 0;
@@ -78,12 +63,11 @@ public class BattleUtils extends UtilBase
         roomProperties.put("league", league);// ===> is temp
         roomProperties.put("friendlyMode", friendlyMode);
         roomProperties.put("state", BattleField.STATE_0_WAITING);
-        trace("---------=========<<<<  MAKE owner:", owner.getName(), "mode:", mode, "type:", type, "friendlyMode:", friendlyMode, " >>>>==========---------");
 
+        int id = roomId.getAndIncrement();
         CreateRoomSettings rs = new CreateRoomSettings();
-        rs.setExtension(new CreateRoomSettings.RoomExtensionSettings("TowerExtension", "com.gerantech.towers.sfs.battle.BattleRoom"));
+        rs.setName( "m" + mode + "_t" + type + "_f" + friendlyMode + "_" + id );
         rs.setAutoRemoveMode( singleMode ? SFSRoomRemoveMode.WHEN_EMPTY : SFSRoomRemoveMode.NEVER_REMOVE );
-        rs.setName( "m" + mode + "_t" + type + "_f" + friendlyMode + "_" + roomId.getAndIncrement() );
         rs.setRoomProperties( roomProperties );
         rs.setMaxUsers(singleMode ? 1 : 2);
         rs.setGroupId("battles");
@@ -91,56 +75,89 @@ public class BattleUtils extends UtilBase
         rs.setDynamic(true);
         rs.setGame(true);
 
+        BBGRoom newRoom = null;
         try {
-            return ext.getApi().createRoom(ext.getParentZone(), rs, owner);
-        } catch (SFSCreateRoomException e) { e.printStackTrace(); }
-        return null;
+            newRoom = (BBGRoom)roomClass.newInstance();
+        } catch (Exception e) { e.printStackTrace(); }
+        newRoom.init(id, rs);
+        newRoom.setOwner(owner);
+        this.rooms.put(id, newRoom);
+        ext.getLogger().info(String.format("Battle created: %s, %s, type = %s", new Object[] { newRoom.getZone().toString(), newRoom.toString(), newRoom.getClass().getSimpleName() }));
+        return newRoom;
     }
 
-    public Room findActiveBattleRoom(int playerId)
+
+    /**
+     * join users in  battle room
+     * @param room
+     * @param user
+     * @param spectatedUser
+     */
+    public void join(BBGRoom room, User user, String spectatedUser)
     {
-        List<Room> battles = ext.getParentZone().getRoomListFromGroup("battles");
-        for (Room room : battles)
+        if( room.isFull() )
         {
-            if( (int) room.getProperty("state") == BattleField.STATE_2_STARTED )
-            {
-                ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
-                if( registeredPlayers != null )
-                    for (Game g : registeredPlayers)
-                        if( g.player.id == playerId )
-                            return room;
-            }
+            trace(ExtensionLogLevel.ERROR, "Battle room " + room.getName() + " is full.");
+            return;
         }
-        return null;
+
+        //user.getSession().setProperty("challengeType", challengeType);
+        Player player = ((Game)user.getSession().getProperty("core")).player;
+        List<UserVariable> vars = new ArrayList();
+        vars.add(new SFSUserVariable("name", player.nickName));
+        vars.add(new SFSUserVariable("point", player.get_point()));
+        vars.add(new SFSUserVariable("spectatedUser", spectatedUser));
+        ext.getApi().setUserVariables(user, vars, true, true);
+        room.addUser(user, spectatedUser == "" ? BBGRoom.USER_TYPE_PLAYER : BBGRoom.USER_TYPE_SPECTATOR);
+        ext.getLogger().info(String.format("Battle joined: %s, %s, spectatedUser = %s", new Object[] { room.toString(), user.toString(), spectatedUser }));
+    }
+
+    public void leave(BBGRoom room, User user)
+    {
+        room.leave(user);
+        ext.getLogger().info(String.format("User %s exit from %s", new Object[] { user.toString(), room.getName() }));
+        if( room.getUserList().size() == 0 && room.getAutoRemoveMode() == SFSRoomRemoveMode.WHEN_EMPTY )
+            remove(room);
     }
 
     /**
      * Kick all users and remove room
      * @param room
      */
-    public void removeRoom(Room room)
+    public void remove(BBGRoom room)
     {
-        List<User> users = room.getUserList();
-        if( users.size() > 0 )
+        if( room.getUserList().size() > 0 )
         {
             room.setAutoRemoveMode(SFSRoomRemoveMode.WHEN_EMPTY);
+            List<User> users = room.getUsersByType(-1);
             for( User u : users )
-            {
-                ext.getApi().leaveRoom(u, room);
-                /*if ( u.isNpc() )
-                {
-                    RankingUtils.getInstance().setWeeklyBattles(Integer.parseInt(u.getName()), -1);
-                    ext.getApi().disconnect(u.getSession());
-                }*/
-            }
+                leave(room, u);
         }
         else
         {
-            ext.getApi().removeRoom(room, false, false);
+            room.destroy();
+            rooms.remove(room.getId());
+            ext.getLogger().info(String.format("Battle removed: %s, %s, num remaining battles = %s", new Object[] { room.getZone().toString(), room.toString(), rooms.size() }));
+
         }
     }
 
-    public void removeReferences(Room room)
+    public BBGRoom find(int userId, int minState, int maxState)
+    {
+        for( Map.Entry<Integer, BBGRoom> entry : rooms.entrySet() )
+        {
+            if (entry.getValue().getPropertyAsInt("state") >= minState && entry.getValue().getPropertyAsInt("state") <= maxState)
+            {
+                List<User> players = entry.getValue().getPlayersList();
+                for (User u : players)
+                    if (getGame(u).player.id == userId)
+                        return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public void removeReferences(BBGRoom room)
     {
         List<Room> lobbies = ext.getParentZone().getRoomListFromGroup("lobbies");
         int msgIndex = -1;
@@ -154,10 +171,13 @@ public class BattleUtils extends UtilBase
                 for (int j = msgSize-1; j >= 0; j--)
                 {
                     ISFSObject msg = messageQueue.getSFSObject(j);
-                    Short battleState = msg.getShort("st");
-                    if( msg.containsKey("bid") && msg.getInt("bid") == room.getId() && battleState < 2 )
+                    if( !msg.containsKey("bid") )
+                        continue;
+                    int battleState = msg.containsKey("st") ? msg.getInt("st") : 0;
+                    if( msg.getInt("bid") == room.getId() && battleState < 2 )
                     {
-                        msg.putShort("st", (short) (battleState == 0 ? 3 : 2));
+
+                        msg.putInt("st", battleState == 0 ? 3 : 2);
                         if( battleState == 0 )
                             msgIndex = j;
                         if( lobby.getUserList().size() > 0 )

@@ -1,18 +1,20 @@
 package com.gerantech.towers.sfs.battle.handlers;
+
 import com.gerantech.towers.sfs.handlers.LoginEventHandler;
+import com.gt.BBGRoom;
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.battle.BattleField;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.socials.Challenge;
 import com.gt.utils.BattleUtils;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BattleRequestStartHandler extends BaseClientRequestHandler
 {
@@ -35,9 +37,9 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
         this.index = params.getInt("index");
         if( params.containsKey("spectatedUser") )
         {
-            Room room = getParentExtension().getParentZone().getRoomById(index);
+            BBGRoom room = BattleUtils.getInstance().rooms.get(this.index);
             if( room != null )
-                BattleUtils.getInstance().join(sender, room, params.getText("spectatedUser"));
+                BattleUtils.getInstance().join(room, sender, params.getText("spectatedUser"));
             return;
         }
 
@@ -58,49 +60,42 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
  
 	private void joinUser(User user)
     {
-        Room room = null;
+        BBGRoom room;
+        BattleUtils bu = BattleUtils.getInstance();
         int joinedRoomId = (Integer) user.getSession().getProperty("joinedRoomId");
         if( joinedRoomId > -1 )
-            room = getParentExtension().getParentZone().getRoomById(joinedRoomId);
+            room = bu.rooms.get(joinedRoomId);
         else
             room = findWaitingBattleRoom(user);
 
-        BattleUtils bu = BattleUtils.getInstance();
         if( room == null )
-            room = bu.make(user, mode, type, friendlyMode);
+            room = bu.make((Class) getParentExtension().getParentZone().getProperty("battleClass"), user, mode, type, friendlyMode);
 
-        bu.join(user, room, "");
+        bu.join(room, user, "");
     }
 
-    private Room findWaitingBattleRoom(User user)
+    private BBGRoom findWaitingBattleRoom(User user)
     {
         //MatchExpression exp = new MatchExpression('rank', NumberMatch.GREATER_THAN, 5).and('country', StringMatch.EQUALS, 'Italy')
         //List<User> matchingUsers = sfsApi.findUsers(zone.getUserList(), exp, 50);
-        List<Room> rList = getParentExtension().getParentZone().getRoomListFromGroup("battles");
-        Room room = null;
-        try
+        ConcurrentHashMap<Integer, BBGRoom> battles = BattleUtils.getInstance().rooms;
+        trace("alive battles " + battles.size());
+        BBGRoom room = null;
+        for(Map.Entry<Integer, BBGRoom> entry : battles.entrySet())
         {
-            for(int r=0; r<rList.size(); r++)
-            {
-                room = rList.get(r);
-                if( room.isFull() )
-                    continue;
-                if( ((int)room.getProperty("friendlyMode")) > 0 )
-                    continue;
-                if( (int) room.getProperty("league") != league )
-                    continue;
-                if( (int) room.getProperty("state") == BattleField.STATE_0_WAITING )
-                    continue;
-                if( !room.containsProperty("mode") || (int) room.getProperty("mode") != mode )
-                    continue;
-                return room;
-            }
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            if( room != null )
-                trace("friendlyMode:" + room.getProperty("friendlyMode"),  "state:" + room.getProperty("state"), "league:" + room.getProperty("league"));
+            room = entry.getValue();
+            trace(room.toString());
+            if( room.isFull() )
+                continue;
+            if( room.getPropertyAsInt("friendlyMode") > 0 )
+                continue;
+            if( room.getPropertyAsInt("league") != league )
+                continue;
+            if( room.getPropertyAsInt("state") != BattleField.STATE_0_WAITING )
+                continue;
+            if( room.getPropertyAsInt("mode") != mode )
+                continue;
+            return room;
         }
         return null;
     }
