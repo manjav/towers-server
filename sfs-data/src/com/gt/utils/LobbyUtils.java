@@ -64,34 +64,11 @@ public class LobbyUtils extends UtilBase
         {
             lr = lobbyRows.getSFSObject(i);
             lobbySFS = new LobbySFS(lr);
-
-            for (int m = 0; m < lobbySFS.getMembers().size(); m++)
-                changeType(lobbySFS.getMembers().getSFSObject(m), "pr");
-            for (int m = 0; m < lobbySFS.getMessages().size(); m++)
-            {
-                changeType(lobbySFS.getMessages().getSFSObject(m), "m");
-                changeType(lobbySFS.getMessages().getSFSObject(m), "st");
-                changeType(lobbySFS.getMessages().getSFSObject(m), "bs");
-            }
-            save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), lobbySFS.getMessagesBytes());
-
             lobbiesData.put(lr.getInt("id"), lobbySFS);
         }
 
         ext.getParentZone().setProperty("lobbiesData", lobbiesData);
         trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
-    }
-
-    private void changeType(ISFSObject sfsObject, String key)
-    {
-        if (!sfsObject.containsKey(key))
-            return;
-
-        try {
-            short v = sfsObject.getShort(key);
-            sfsObject.removeElement(key);
-            sfsObject.putInt(key, v);
-        } catch (Exception e) { trace(e.getMessage() + " -> " + key); }
     }
 
     public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
@@ -186,7 +163,7 @@ public class LobbyUtils extends UtilBase
         try {
             ext.getParentZone().getDBManager().executeUpdate(query, arguments.toArray());
         } catch (SQLException e) { e.printStackTrace(); }
-        //getAllData().replace(lobbySFS.getId(), lobbySFS);
+        getAllData().replace(lobbySFS.getId(), lobbySFS);
     }
 
     public Room getLobby(int memberId)
