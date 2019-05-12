@@ -64,11 +64,30 @@ public class LobbyUtils extends UtilBase
         {
             lr = lobbyRows.getSFSObject(i);
             lobbySFS = new LobbySFS(lr);
+
+            for (int m = 0; m < lobbySFS.getMembers().size(); m++)
+                changeType(lobbySFS.getMembers().getSFSObject(m), "pr");
+
+            for (int m = 0; m < lobbySFS.getMessages().size(); m++)
+            {
+                changeType(lobbySFS.getMessages().getSFSObject(m), "m");
+                changeType(lobbySFS.getMessages().getSFSObject(m), "st");
+                changeType(lobbySFS.getMessages().getSFSObject(m), "bs");
+            }
+
             lobbiesData.put(lr.getInt("id"), lobbySFS);
         }
 
         ext.getParentZone().setProperty("lobbiesData", lobbiesData);
         trace("loaded lobbies data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
+    }
+    private void changeType(ISFSObject sfsObject, String key)
+    {
+        if( !sfsObject.containsKey(key) )
+            return;
+        Integer v = Integer.valueOf(sfsObject.getShort(key));
+        sfsObject.removeElement(key);
+        sfsObject.putInt(key, v);
     }
 
     public Room create(User owner, String name, String bio, int emblem, int capacity, int minPoint, int privacy)
@@ -79,7 +98,7 @@ public class LobbyUtils extends UtilBase
         Player player = ((Game)owner.getSession().getProperty("core")).player;
         SFSObject member = new SFSObject();
         member.putInt("id", player.id);
-        member.putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
+        member.putInt("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
         lobbySFS.getMembers().addSFSObject(member);
 
         // insert to DB
@@ -239,7 +258,7 @@ public class LobbyUtils extends UtilBase
         SFSObject member = new SFSObject();
         member.putInt("id", userId);
         member.putInt("ac", 0);
-        member.putShort("pr", (lobbySFS.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
+        member.putInt("pr", (lobbySFS.getMembers().size()==0 ? DefaultPermissionProfile.ADMINISTRATOR : DefaultPermissionProfile.GUEST).getId());
         lobbySFS.getMembers().addSFSObject(member);
         save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
         return true;
@@ -259,7 +278,7 @@ public class LobbyUtils extends UtilBase
         if( memberIndex < 0 )
             return;
 
-        Short permission = members.getSFSObject(memberIndex).getShort("pr");
+        int permission = members.getSFSObject(memberIndex).getInt("pr");
         members.removeElementAt(memberIndex);
 
         if( members.size() == 0 )
@@ -272,7 +291,7 @@ public class LobbyUtils extends UtilBase
 
         // move permission to oldest member
         if( permission == DefaultPermissionProfile.ADMINISTRATOR.getId() )
-            members.getSFSObject(0).putShort("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
+            members.getSFSObject(0).putInt("pr", DefaultPermissionProfile.ADMINISTRATOR.getId());
 
         lobbySFS.setMembers(members);
         save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
@@ -326,7 +345,7 @@ public class LobbyUtils extends UtilBase
             for(int i = 0; i < data.getMessages().size(); i++)
             {
                 message = data.getMessages().getSFSObject(i);
-                if( message.getShort("m") == (short) MessageTypes.M0_TEXT && message.getUtfString("t").indexOf( word ) > -1 )
+                if( message.getInt("m") == MessageTypes.M0_TEXT && message.getUtfString("t").indexOf( word ) > -1 )
                 {
                     message.putInt("li", data.getId());
                     message.putUtfString("ln", data.getName());

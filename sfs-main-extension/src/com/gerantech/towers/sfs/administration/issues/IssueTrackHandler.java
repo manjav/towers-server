@@ -15,7 +15,7 @@ public class IssueTrackHandler extends BaseClientRequestHandler
 	public void handleClientRequest(User sender, ISFSObject params)
     {
 		try {
-			getParentExtension().getParentZone().getDBManager().executeUpdate("UPDATE `bugs` SET `status`=" + params.getShort("status") + " WHERE id=" + params.getInt("id"), new Object[]{});
+			getParentExtension().getParentZone().getDBManager().executeUpdate("UPDATE `bugs` SET `status`=" + params.getInt("status") + " WHERE id=" + params.getInt("id"), new Object[]{});
 		} catch (SQLException e) {  e.printStackTrace(); }
     }
 }

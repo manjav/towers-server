@@ -20,7 +20,7 @@ import java.time.Instant;
 public class BaseLobbyRoom extends SFSExtension
 {
     protected Game game;
-    protected Short mode;
+    protected int mode;
     protected Room lobby;
     protected LobbySFS data;
     protected ISFSArray messages;
@@ -53,8 +53,8 @@ public class BaseLobbyRoom extends SFSExtension
 
         params.putInt("u", (int) Instant.now().getEpochSecond());
         if( !params.containsKey("m") )
-            params.putShort("m", (short) MessageTypes.M0_TEXT);
-        mode = params.getShort("m");
+            params.putInt("m", MessageTypes.M0_TEXT);
+        mode = params.getInt("m");
         messages = messageQueue();
 
         // Max 30 len message queue
@@ -67,7 +67,7 @@ public class BaseLobbyRoom extends SFSExtension
                 params.putUtfString("t", params.getUtfString("t").substring(0, 160) + " ...");
             // Merge messages from a sender
             ISFSObject last = messages.size() > 0 ? messages.getSFSObject(messages.size() - 1) : null;
-            if( last != null && last.getShort("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
+            if( last != null && last.getInt("m") == MessageTypes.M0_TEXT && last.getInt("i") == game.player.id )
             {
                 params.putUtfString("t", last.getUtfString("t") + "\n" + params.getUtfString("t"));
                 messages.removeElementAt(messages.size() - 1);

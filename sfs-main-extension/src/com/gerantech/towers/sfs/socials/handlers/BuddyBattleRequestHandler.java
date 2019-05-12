@@ -24,8 +24,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
     public void handleClientRequest(User sender, ISFSObject params)
     {
         Player player = ((Game) sender.getSession().getProperty("core")).player;
-        short battleState = params.getShort("bs");
-
+        int battleState = params.getInt("bs");
         if ( battleState == STATE_REQUEST )
         {
             Integer objectUserId = params.getInt("o");
@@ -42,7 +41,7 @@ public class BuddyBattleRequestHandler extends BaseClientRequestHandler
             else
             {
                 OneSignalUtils.getInstance().send(player.nickName + " تو رو به رقابت دوستانه دعوت می کنه ", null, objectUserId);
-                params.putShort("bs", (short) 4);
+                params.putInt("bs", 4);
                 sendResponse(params);
             }
         }

@@ -55,10 +55,10 @@ public class BanHandler extends BBGClientRequestHandler
 				List<Room> publics = getParentExtension().getParentZone().getRoomListFromGroup("publics");
 				for (Room p : publics) {
 					SFSObject msg = new SFSObject();
-					msg.putShort("m", (short) MessageTypes.M18_COMMENT_BAN);
+					msg.putInt("m",  MessageTypes.M18_COMMENT_BAN);
 					msg.putUtfString("s", "KOOT");
 					msg.putUtfString("o", players.getSFSObject(0).getUtfString("name"));
-					msg.putShort("p", (short) -1);
+					msg.putInt("p",  -1);
 					getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, p.getUserList(), p, false);
 					p.getVariable("msg").getSFSArrayValue().addSFSObject(msg);
 

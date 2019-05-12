@@ -50,7 +50,7 @@ public class LobbyJoinHandler extends BBGClientRequestHandler
             ISFSArray messages = lobbyData.getMessages();
             for (int i = messages.size()-1; i >= 0; i--)
             {
-                if( messages.getSFSObject(i).getShort("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
+                if( messages.getSFSObject(i).getInt("m") == MessageTypes.M41_CONFIRM_JOIN && messages.getSFSObject(i).getInt("o") == game.player.id && !messages.getSFSObject(i).containsKey("pr") )
                 {
                     send(MessageTypes.RESPONSE_ALREADY_SENT, lobbyData.getName(), params, sender);
                     return;
@@ -58,7 +58,7 @@ public class LobbyJoinHandler extends BBGClientRequestHandler
             }
 
             SFSObject msg = new SFSObject();
-            msg.putShort("m", (short) MessageTypes.M41_CONFIRM_JOIN);
+            msg.putInt("m", MessageTypes.M41_CONFIRM_JOIN);
             msg.putInt("u", (int) Instant.now().getEpochSecond());
             msg.putInt("o", game.player.id);
             msg.putUtfString("on", game.player.nickName);

@@ -38,8 +38,8 @@ public class InboxUtils extends UtilBase
             SFSArray messages = new SFSArray();
             SFSObject msg = new SFSObject();
             msg.putInt("id", messageId);
-            msg.putShort("read", (short)0);
-            msg.putShort("type", (short)type);
+            msg.putInt("read", 0);
+            msg.putInt("type", type);
             msg.putUtfString("text", text);
             //msg.putUtfString("sender", sender);
             msg.putInt("senderId", senderId);

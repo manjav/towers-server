@@ -19,17 +19,17 @@ public class ChangeDeckHandler extends BBGClientRequestHandler
         trace(params.getDump());
         Player player = ((Game) sender.getSession().getProperty("core")).player;
 
-        if( !player.cards.exists(params.getShort("type")) )
+        if( !player.cards.exists(params.getInt("type")) )
         {
             send(Commands.CHANGE_DECK, MessageTypes.RESPONSE_NOT_FOUND, params, sender);
             return;
         }
 
-        if( player.decks.get(params.getShort("deckIndex")).existsValue(params.getShort("type")))
+        if( player.decks.get(params.getInt("deckIndex")).existsValue(params.getInt("type")))
         {
             send(Commands.CHANGE_DECK, MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
             return;
         }
-        send(Commands.CHANGE_DECK, DBUtils.getInstance().updateDeck(player, params.getShort("deckIndex"), params.getShort("index"), params.getShort("type")), params, sender);
+        send(Commands.CHANGE_DECK, DBUtils.getInstance().updateDeck(player, params.getInt("deckIndex"), params.getInt("index"), params.getInt("type")), params, sender);
     }
 }

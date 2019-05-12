@@ -61,9 +61,9 @@ public class LobbyRoom extends BaseLobbyRoom
             int battleMsgIndex = getMyRequestedBattle(params, game.player);
             if( battleMsgIndex > -1 )
             {
-                params.putShort("st", (short) 3);
-                messages.getSFSObject(battleMsgIndex).putShort("st", (short) 3);
                 Room room = getParentZone().getRoomById(messages.getSFSObject(battleMsgIndex).getInt("bid"));
+                params.putInt("st", 3);
+                messages.getSFSObject(battleMsgIndex).putInt("st", 3);
                 if( room != null )
                     BattleUtils.getInstance().removeRoom(room);
                 messages.removeElementAt(battleMsgIndex);
@@ -85,8 +85,8 @@ public class LobbyRoom extends BaseLobbyRoom
                     params.putInt("i", message.getInt("i"));
                     params.putUtfString("s", message.getUtfString("s"));
 
-                    params.putShort("st", (short) 1);
-                    message.putShort("st", (short) 1);
+                    params.putInt("st", 1);
+                    message.putInt("st", 1);
                 }
                 return;
             }
@@ -102,7 +102,7 @@ public class LobbyRoom extends BaseLobbyRoom
             }
 
             // request new battle
-            if( params.getShort("st") > 0 )
+            if( params.getInt("st") > 0 )
                 return;
 
             BattleUtils battleUtils = BattleUtils.getInstance();
@@ -120,7 +120,7 @@ public class LobbyRoom extends BaseLobbyRoom
                 {
                     if( replyRequest(game, params) )
                         messages.removeElementAt(confirmIndex);
-                    messages.getSFSObject(confirmIndex).putShort("pr", params.getShort("pr"));
+                    messages.getSFSObject(confirmIndex).putInt("pr", params.getInt("pr"));
                 }
                 return;
             }
@@ -140,7 +140,7 @@ public class LobbyRoom extends BaseLobbyRoom
     {
         int msgSize = messages.size();
         for (int i = msgSize - 1; i >= 0; i--)
-            if( MessageTypes.isConfirm(messages.getSFSObject(i).getShort("m")) && messages.getSFSObject(i).getInt("o").equals(params.getInt("o")) )
+            if( MessageTypes.isConfirm(messages.getSFSObject(i).getInt("m")) && messages.getSFSObject(i).getInt("o").equals(params.getInt("o")) )
                 return i;
         return -1;
     }
@@ -153,7 +153,7 @@ public class LobbyRoom extends BaseLobbyRoom
         for (int i = msgSize-1; i >=0; i--)
         {
             message = messages.getSFSObject(i);
-            if( MessageTypes.isBattle(message.getShort("m")) && message.getShort("st") == 0 && message.getInt("i") == player.id )
+            if( MessageTypes.isBattle(message.getInt("m")) && message.getInt("st") == 0 && message.getInt("i") == player.id )
                 return i;
         }
         return -1;
@@ -163,7 +163,7 @@ public class LobbyRoom extends BaseLobbyRoom
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
         for (int i = msgSize-1; i >=0; i--)
-            if (MessageTypes.isBattle(messages.getSFSObject(i).getShort("m")) && params.getShort("st") == 0 && messages.getSFSObject(i).getShort("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+            if (MessageTypes.isBattle(messages.getSFSObject(i).getInt("m")) && params.getInt("st") == 0 && messages.getSFSObject(i).getInt("st") == 0 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
                 return messages.getSFSObject(i);
 
         return null;
@@ -173,22 +173,22 @@ public class LobbyRoom extends BaseLobbyRoom
         ISFSArray messages = messageQueue();
         int msgSize = messages.size();
         for (int i = msgSize-1; i >=0; i--)
-            if( MessageTypes.isBattle(messages.getSFSObject(i).getShort("m")) && params.getShort("st") == 1 && messages.getSFSObject(i).getShort("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
+            if( MessageTypes.isBattle(messages.getSFSObject(i).getInt("m")) && params.getInt("st") == 1 && messages.getSFSObject(i).getInt("st") == 1 && messages.getSFSObject(i).getInt("bid").equals(params.getInt("bid")))
                 return messages.getSFSObject(i);
         return null;
     }
 
-    public void sendComment(short mode, Player subject, String object, short permissionId)
+    public void sendComment(int mode, Player subject, String object, int permissionId)
     {
         if( subject.admin && permissionId < DefaultPermissionProfile.MODERATOR.getId() )
             return;
 
         ISFSObject msg = new SFSObject();
         msg.putUtfString("t", "");
-        msg.putShort("m", mode);
+        msg.putInt("m", mode);
         msg.putUtfString("s", subject.nickName);
         msg.putUtfString("o", object);
-        msg.putShort("p", permissionId);
+        msg.putInt("p", permissionId);
         //messageQueue().addSFSObject(msg);
         handleClientRequest(Commands.LOBBY_PUBLIC_MESSAGE, null, msg);
     }
@@ -205,7 +205,7 @@ public class LobbyRoom extends BaseLobbyRoom
 
     private boolean replyRequest(Game game, ISFSObject params)
     {
-        boolean accepted = params.getShort("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT;
+        boolean accepted = params.getInt("pr") == MessageTypes.M16_COMMENT_JOIN_ACCEPT;
         if( accepted )
         {
             if ( !LobbyUtils.getInstance().addUser(getData(), params.getInt("o")) )
@@ -217,7 +217,7 @@ public class LobbyRoom extends BaseLobbyRoom
 
         String msg = "درخواست عضویتت در دهکده " + lobby.getName() + (accepted ? " پذیرفته شد. " : " رد شد. ");
         InboxUtils.getInstance().send(accepted?MessageTypes.M50_URL:MessageTypes.M0_TEXT, msg, BanUtils.SYSTEM_ID, params.getInt("o"), "towers://open?controls=tabs&dashTab=3&socialTab=0");
-        sendComment(params.getShort("pr"), game.player, params.getUtfString("on"), (short)-1);// mode = join
+        sendComment(params.getInt("pr"), game.player, params.getUtfString("on"), -1);// mode = join
         return true;
     }
 

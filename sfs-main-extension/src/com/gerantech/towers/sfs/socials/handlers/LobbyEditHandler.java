@@ -25,7 +25,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
         int memberIndex = LobbyUtils.getInstance().getMemberIndex(lobbyData, game.player.id);
         if( memberIndex < 0 )
             return;
-        if( !game.player.admin && lobbyData.getMembers().getSFSObject(memberIndex).getShort("pr") < DefaultPermissionProfile.MODERATOR.getId() )
+        if( !game.player.admin && lobbyData.getMembers().getSFSObject(memberIndex).getInt("pr") < DefaultPermissionProfile.MODERATOR.getId() )
             return;
 
         if( params.containsKey("max") )
@@ -47,7 +47,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
                 params.containsKey("pri") ?     params.getInt("pri")        : -1,
                 null, null);
 
-        ((LobbyRoom) lobby.getExtension()).sendComment((short) MessageTypes.M15_COMMENT_EDIT, game.player, "", (short)0);
+        ((LobbyRoom) lobby.getExtension()).sendComment( MessageTypes.M15_COMMENT_EDIT, game.player, "", 0);
 
         //params.putInt("response", RESPONSE_OK);
         //send(Commands.LOBBY_EDIT, params, sender);

@@ -21,7 +21,7 @@ public class InboxBroadcastMessageHandler extends BaseClientRequestHandler
 
         int delivered = 0;
         for( int i = 0; i < receiverIds.length; i++ )
-            delivered += InboxUtils.getInstance().send(params.getShort("type"), params.getUtfString("text"), params.getInt("senderId"), receiverIds[i], data);
+            delivered += InboxUtils.getInstance().send(params.getInt("type"), params.getUtfString("text"), params.getInt("senderId"), receiverIds[i], data);
 
         //if( params.getBool("isPush") )
         //    OneSignalUtils.getInstance().send(params.getUtfString("text"), params.getText("data"), receiverIds);
