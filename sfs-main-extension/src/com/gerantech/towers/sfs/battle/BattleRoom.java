@@ -401,7 +401,7 @@ public class BattleRoom extends BBGRoom
 					updateMap.set(r, outcomesList[i].get(r));
 				else
 					insertMap.set(r, outcomesList[i].get(r));
-				trace(game.player.id + ": (", r, outcomesList[i].get(r) , ")" );
+				//trace(game.player.id + ": (", r, outcomesList[i].get(r) , ")" );
 
 				if( game.player.isBot() )
 					continue;

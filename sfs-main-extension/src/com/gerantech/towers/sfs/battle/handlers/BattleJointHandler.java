@@ -35,13 +35,11 @@ public class BattleJointHandler extends BaseServerEventHandler
 	public void handleServerEvent(ISFSEvent arg)
 	{
 		user = (User) arg.getParameter(SFSEventParam.USER);
-		trace("========>", arg.getParameter(SFSEventParam.ROOM).getClass().getSimpleName());
 		if( !arg.getParameter(SFSEventParam.ROOM).getClass().getSimpleName().equals("BattleRoom") )
 			return;
 		room = (BattleRoom) arg.getParameter(SFSEventParam.ROOM);
 		if( !arg.getType().equals(SFSEventType.USER_JOIN_ROOM) || room == null )
 			return;
-		trace("-------->", room.toString());
 		if( room.isSpectator(user) )
 		{
 			sendBattleData(user);

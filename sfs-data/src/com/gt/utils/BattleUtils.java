@@ -35,8 +35,8 @@ public class BattleUtils extends UtilBase
         return (BattleUtils)UtilBase.get(BattleUtils.class);
     }
     private AtomicInteger roomId = new AtomicInteger();
-    public ConcurrentHashMap<Integer, String> maps = new ConcurrentHashMap();
-    public ConcurrentHashMap<Integer, BBGRoom> rooms = new ConcurrentHashMap();
+    public ConcurrentHashMap<Integer, String> maps = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, BBGRoom> rooms = new ConcurrentHashMap<>();
 
     public BBGRoom make(Class roomClass, User owner, int mode, int type, int friendlyMode)
     {
@@ -60,7 +60,7 @@ public class BattleUtils extends UtilBase
         Map<Object, Object> roomProperties = new HashMap();
         roomProperties.put("mode", mode);
         roomProperties.put("type", type);
-        roomProperties.put("league", league);// ===> is temp
+        roomProperties.put("league", league);// F===> is temp
         roomProperties.put("friendlyMode", friendlyMode);
         roomProperties.put("state", BattleField.STATE_0_WAITING);
 
@@ -103,7 +103,7 @@ public class BattleUtils extends UtilBase
 
         //user.getSession().setProperty("challengeType", challengeType);
         Player player = ((Game)user.getSession().getProperty("core")).player;
-        List<UserVariable> vars = new ArrayList();
+        List<UserVariable> vars = new ArrayList<>();
         vars.add(new SFSUserVariable("name", player.nickName));
         vars.add(new SFSUserVariable("point", player.get_point()));
         vars.add(new SFSUserVariable("spectatedUser", spectatedUser));

@@ -9,7 +9,17 @@ public class UtilBase {
     static protected SFSExtension ext = null;
     static public void setExtension(SFSExtension extension) {
         if( ext == null )
+        {
             ext = extension;
+
+            // load all settings
+            ext.getParentZone().setProperty("startTime", System.currentTimeMillis());
+            //RankingUtils.getInstance().fillStatistics();
+            RankingUtils.getInstance().fillActives();
+            LobbyUtils.getInstance().loadAll();
+            ChallengeUtils.getInstance().loadAll();
+            ext.getParentZone().removeProperty("startTime");
+        }
     }
     static public void setBattleClass(Class battleClass) {
             ext.getParentZone().setProperty("battleClass", battleClass);
