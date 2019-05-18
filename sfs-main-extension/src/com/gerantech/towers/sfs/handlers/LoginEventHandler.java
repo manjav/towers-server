@@ -223,7 +223,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		//outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
 	}
 
-	private Game initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
+	private void initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
 	{
 		int now = (int)Instant.now().getEpochSecond();
 		outData.putInt("serverTime", now);
@@ -309,14 +309,15 @@ public class LoginEventHandler extends BaseServerEventHandler
 		if( ScriptEngine.script == null )
 		{
 			HttpTool.Data _data = HttpTool.post("http://localhost:8080/maps/features.js", null, false);
-			if( _data.statusCode == HttpStatus.SC_OK )
+			if( _data.statusCode != HttpStatus.SC_OK )
 			{
-				ScriptEngine.initialize(_data.text);
-				trace("http://localhost:8080/maps/features.js loaded.");
+				outData.putInt("umt", 15);
+				return;
 			}
 			else
 			{
-				trace(_data.toString());
+				ScriptEngine.initialize(_data.text);
+				trace("http://localhost:8080/maps/features.js loaded.");
 			}
         }
         outData.putText("script", ScriptEngine.script);
@@ -403,8 +404,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		else
 			QuestsUtils.getInstance().insertNewQuests(game.player);
 		outData.putSFSArray("quests", QuestsUtils.toSFS(game.player.quests));
-
-		return game;
 	}
 
 	private void addExchangeToDB(int type, ISFSArray exchanges, SFSArray newExchanges)
