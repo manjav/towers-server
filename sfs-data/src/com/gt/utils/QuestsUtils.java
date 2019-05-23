@@ -25,7 +25,7 @@ public class QuestsUtils extends UtilBase
 
     public void insertNewQuests(Player player)
     {
-        Quest.fill(player);
+        fill(player);
 
         if( player.quests.length == 0 )
             return;
@@ -87,7 +87,7 @@ public class QuestsUtils extends UtilBase
         if( response != MessageTypes.RESPONSE_SUCCEED )
             return response;
         game.player.quests.remove(quest);
-        Quest.fill(game.player);
+        fill(game.player);
         quest = game.player.quests.__get(game.player.quests.length - 1);
         quest.id = questId;
 
@@ -100,6 +100,43 @@ public class QuestsUtils extends UtilBase
 
         return response;
     }
+
+    public void fill(Player player)
+    {
+        if( player.quests == null )
+            player.quests = new Array<Quest>();
+
+        if( player.get_battleswins() < 3 )
+            return;
+
+        if( player.quests.length == 0 && player.get_battleswins() < 10 )
+        {
+            player.quests.push( Quest.instantiate(Quest.TYPE_3_BATTLES,		player) );
+            player.quests.push( Quest.instantiate(Quest.TYPE_7_CARD_COLLECT,	player) );
+            player.quests.push( Quest.instantiate(Quest.TYPE_8_CARD_UPGRADE,	player) );
+            player.quests.push( Quest.instantiate(Quest.TYPE_9_BOOK_OPEN,		player) );
+        }
+
+        if( player.quests.length >= Quest.MAX_QUESTS )
+            return;
+
+        int i = player.quests.length > 0 ? player.quests.__get(player.quests.length - 1).type : -1;
+        if( i == 9 )
+            i = 0;
+        else
+            i ++;
+        while( i < 10 )
+        {
+            if( player.getQuestIndexByType(i) == -1 && i != 2 )
+            {
+                player.quests.push( Quest.instantiate(i, player));
+                fill(player);
+                return;
+            }
+            i ++;
+        }
+    }
+
 
     public static ISFSObject toSFS(Quest quest)
     {

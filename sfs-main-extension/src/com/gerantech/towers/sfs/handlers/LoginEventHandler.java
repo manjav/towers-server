@@ -88,7 +88,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 				createPlayer(session, name, password, inData, outData, loginData);
 			else
 				loadPlayer(session, name, password, inData, outData, loginData);
-			initiateCore(session, inData, outData, loginData);
 		} catch (Exception e) { e.printStackTrace();}
 	}
 
@@ -178,6 +177,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			if( deviceUDID != null )
 				dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
+        initiateCore(session, inData, outData, loginData);
 	}
 
 	private void loadPlayer(ISession session, String name, String password, ISFSObject inData, ISFSObject outData, LoginData loginData) throws SFSException
@@ -219,8 +219,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		int joinedRoomId = room == null ? -1 : room.getId();
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
-
 		//outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
+
+        initiateCore(session, inData, outData, loginData);
 	}
 
 	private void initiateCore(ISession session, ISFSObject inData, ISFSObject outData, LoginData loginData)
@@ -385,9 +386,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();
-		for( int t : game.exchanger.items.keys() )
+		int[] keys = game.exchanger.items.keys();
+		for( int t : keys )
 			_exchanges.addSFSObject(ExchangeUtils.toSFS(game.exchanger.items.get(t)));
 		outData.putSFSArray("exchanges", _exchanges);
+
 
 		// init and update hazel data
 		ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();

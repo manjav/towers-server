@@ -110,14 +110,19 @@ public class BattleJointHandler extends BaseServerEventHandler
 			return;
 
 		SFSObject params = new SFSObject();
-		IntIntMap cost = Challenge.getRunRequiements(room.getPropertyAsInt("mode"));
-		ExchangeItem exItem = Challenge.getExchangeItem(room.getPropertyAsInt("mode"), cost, game.player.get_arena(0));
-		int response = ExchangeUtils.getInstance().process(game, exItem, 0,0);
-		if( response != MessageTypes.RESPONSE_SUCCEED )
+
+		// reduce battle cost
+		if( room.battleField.friendlyMode == 0 )
 		{
-			params.putInt("response", response);
-			send(Commands.BATTLE_START, params, user);
-			return;
+			IntIntMap cost = Challenge.getRunRequiements(room.getPropertyAsInt("mode"));
+			ExchangeItem exItem = Challenge.getExchangeItem(room.getPropertyAsInt("mode"), cost, game.player.get_arena(0));
+			int response = ExchangeUtils.getInstance().process(game, exItem, 0,0);
+			if( response != MessageTypes.RESPONSE_SUCCEED )
+			{
+				params.putInt("response", response);
+				send(Commands.BATTLE_START, params, user);
+				return;
+			}
 		}
 
 		params.putInt("side", room.getPlayerGroup(user));

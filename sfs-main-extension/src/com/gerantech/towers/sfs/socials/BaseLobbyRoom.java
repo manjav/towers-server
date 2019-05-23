@@ -35,9 +35,11 @@ public class BaseLobbyRoom extends SFSExtension
 
     public void handleClientRequest(String requestId, User sender, ISFSObject params)
     {
-        if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
-            organizeMessage(sender, params, true);
-        super.handleClientRequest(requestId, sender, params);
+        try {
+            if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
+                organizeMessage(sender, params, true);
+            super.handleClientRequest(requestId, sender, params);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)

@@ -18,6 +18,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
+        try{
         Game game = ((Game) sender.getSession().getProperty("core"));
         Room lobby = getParentExtension().getParentRoom();
         LobbySFS lobbyData = (LobbySFS)lobby.getProperty("data");
@@ -48,7 +49,7 @@ public class LobbyEditHandler extends BaseClientRequestHandler
                 null, null);
 
         ((LobbyRoom) lobby.getExtension()).sendComment( MessageTypes.M15_COMMENT_EDIT, game.player, "", 0);
-
+        } catch (Exception e) { e.printStackTrace(); }
         //params.putInt("response", RESPONSE_OK);
         //send(Commands.LOBBY_EDIT, params, sender);
     }

@@ -37,14 +37,10 @@ public class Outcome
             else
                 point = ((int) (MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * COE_POINTS - COE_POINTS * 0.5))) * mode;
         }
-        else if( ratio < 1 )
+        else if( ratio < 1 && game.player.get_point() > 50 && game.player.get_battleswins() > 6  )
         {
             point = ((int) (-MIN_POINTS + star * COE_POINTS + Math.ceil(Math.random() * COE_POINTS - COE_POINTS * 0.5))) * mode;
         }
-
-        // for novice
-        if( point < 0 && game.player.getResource(ResourceType.R2_POINT) + point < 0 )
-            point = 0;
 
         if( game.player.isBot() )
             return ret;
