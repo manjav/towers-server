@@ -56,15 +56,17 @@ public class InboxUtils extends UtilBase
 
     public ISFSArray getThreads(int playerId, int limit)
     {
-        String query = "SELECT messages.text, messages.senderId, players.name as sender, messages.status, messages.timestamp FROM messages INNER JOIN players ON messages.senderId = players.id WHERE messages.id IN ( SELECT MAX(messages.id) FROM messages WHERE messages.receiverId="
-                + playerId + " OR messages.receiverId=1000 GROUP BY messages.senderId) ORDER BY messages.id DESC LIMIT " + limit;
+        String query = "SELECT messages.text, messages.senderId, players.name as sender, messages.status, messages.timestamp FROM messages INNER JOIN players ON messages.senderId = players.id WHERE messages.id IN " +
+                "( SELECT MAX(messages.id) FROM messages WHERE messages.receiverId=" + playerId + " OR messages.receiverId=1000 GROUP BY messages.senderId) " +
+                "ORDER BY messages.id DESC LIMIT " + limit;
         ISFSArray inbox = null;
         try {
             inbox = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
         } catch (SQLException e) {  e.printStackTrace(); }
         //trace(query);
-        query = "SELECT messages.text, messages.receiverId, players.name as receiver, messages.status, messages.timestamp FROM messages INNER JOIN players ON messages.receiverId = players.id WHERE messages.id IN ( SELECT MAX(messages.id) FROM messages WHERE messages.senderId="
-                                         + playerId + " GROUP BY messages.receiverId ) ORDER BY messages.id DESC;";
+        query = "SELECT messages.text, messages.receiverId, players.name as receiver, messages.status, messages.timestamp FROM messages INNER JOIN players ON messages.receiverId = players.id WHERE messages.id IN " +
+                "( SELECT MAX(messages.id) FROM messages WHERE messages.senderId=" + playerId + " GROUP BY messages.receiverId ) " +
+                "ORDER BY messages.id DESC;";
         ISFSArray outbox = null;
         try {
             outbox = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
@@ -95,6 +97,7 @@ public class InboxUtils extends UtilBase
                 if( inbox.getSFSObject(i).getLong("timestamp") < outbox.getSFSObject(j).getLong("timestamp") )
                 {
                     inbox.removeElementAt(i);
+                    outbox.getSFSObject(j).putInt("status", 1);
                     return 1;
                 }
                 outbox.removeElementAt(j);
