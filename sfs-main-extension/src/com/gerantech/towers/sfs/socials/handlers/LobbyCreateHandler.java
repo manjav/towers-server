@@ -1,24 +1,21 @@
 package com.gerantech.towers.sfs.socials.handlers;
 
+import com.gt.BBGClientRequestHandler;
 import com.gt.Commands;
 import com.gt.callbacks.MapChangeCallback;
-import com.gt.utils.DBUtils;
 import com.gt.towers.Game;
+import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.DBUtils;
+import com.gt.utils.LobbyUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-import com.gt.utils.LobbyUtils;
 
 /**
  * Created by ManJav on 8/24/2017.
  */
-public class LobbyCreateHandler extends BaseClientRequestHandler
+public class LobbyCreateHandler extends BBGClientRequestHandler
 {
-    public static final int RESPONSE_OK = 0;
-    public static final int RESPONSE_ROOM_EXISTS = -1;
-    public static final int RESPONSE_INTERNAL_ERROR = -2;
-    public static final int RESPONSE_UNKOWN_ERROR = -10;
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
@@ -31,8 +28,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         if( !succeed )
         {
-            trace("lobby create failed: RESPONSE_INTERNAL_ERROR");
-            params.putInt("response", RESPONSE_INTERNAL_ERROR);
+            send(Commands.LOBBY_CREATE, MessageTypes.RESPONSE_NOT_ENOUGH_REQS, params, sender);
             return;
         }
         String roomName = params.getUtfString("name");
@@ -44,8 +40,7 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
 
         if( getParentExtension().getParentZone().getRoomByName(roomName) != null )
         {
-            params.putInt("response", RESPONSE_ROOM_EXISTS);
-            send("lobbyCreate", params, sender);
+            send(Commands.LOBBY_CREATE, MessageTypes.RESPONSE_ALREADY_SENT, params, sender);
             return;
         }
 
@@ -53,13 +48,10 @@ public class LobbyCreateHandler extends BaseClientRequestHandler
         Room room = LobbyUtils.getInstance().create(sender, roomName, bio, emblem, capacity, minPoint, privacy);
         if( room == null )
         {
-            //send("lobbyCreate", params, sender);
-            params.putInt("response", RESPONSE_UNKOWN_ERROR);
-            send("lobbyCreate", params, sender);
+            send(Commands.LOBBY_CREATE, MessageTypes.RESPONSE_UNKNOWN_ERROR, params, sender);
             return;
         }
 
-        params.putInt("response", RESPONSE_OK);
-        send(Commands.LOBBY_CREATE, params, sender);
+        send(Commands.LOBBY_CREATE, MessageTypes.RESPONSE_SUCCEED, params, sender);
     }
 }
