@@ -17,10 +17,7 @@ import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -144,13 +141,16 @@ public class BattleUtils extends UtilBase
 
     public BBGRoom find(int userId, int minState, int maxState)
     {
-        for( Map.Entry<Integer, BBGRoom> entry : rooms.entrySet() )
+        Set<Map.Entry<Integer, BBGRoom>> entries = rooms.entrySet();
+        for( Map.Entry<Integer, BBGRoom> entry : entries )
         {
-            if (entry.getValue().getPropertyAsInt("state") >= minState && entry.getValue().getPropertyAsInt("state") <= maxState)
+            if( entry.getValue().getPropertyAsInt("state") >= minState && entry.getValue().getPropertyAsInt("state") <= maxState )
             {
-                List<User> players = entry.getValue().getPlayersList();
-                for (User u : players)
-                    if (getGame(u).player.id == userId)
+                if( !entry.getValue().containsProperty("registeredPlayers") )
+                    continue;
+                List<Game> games = (List<Game>)entry.getValue().getProperty("registeredPlayers");
+                for( Game g : games )
+                    if( g.player.id == userId )
                         return entry.getValue();
             }
         }
