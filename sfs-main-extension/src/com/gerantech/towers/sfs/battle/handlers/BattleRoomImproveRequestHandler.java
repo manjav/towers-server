@@ -10,7 +10,9 @@ public class BattleRoomImproveRequestHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
 	{
+try {
 		BattleRoom roomClass = (BattleRoom) getParentExtension().getParentRoom().getExtension();
 		roomClass.improveBuilding(params);
+} catch (Exception | Error e) { e.printStackTrace(); }
 	}
 }

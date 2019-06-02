@@ -14,6 +14,7 @@ public class ServerReadyHandler extends BaseServerEventHandler
 {
 	public void handleServerEvent(ISFSEvent event)
     {
+try {
 		getParentExtension().getParentZone().setProperty("startTime", System.currentTimeMillis());
 
 		// load all settings
@@ -23,5 +24,6 @@ public class ServerReadyHandler extends BaseServerEventHandler
 		ChallengeUtils.getInstance().loadAll();
 
 		getParentExtension().getParentZone().removeProperty("startTime");
+} catch (Exception | Error e) { e.printStackTrace(); }
 	}
 }

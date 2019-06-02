@@ -13,6 +13,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
 {
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+try {
         List<Room> battles = getParentExtension().getParentZone().getRoomListFromGroup("battles");
         int numBattles = battles.size()-1;
         while ( numBattles >= 0 )
@@ -36,6 +37,7 @@ public class BattleRequestCancelHandler extends BaseClientRequestHandler
         // not found any related battle
         if( numBattles <= -1 )
             send(Commands.BATTLE_CANCEL, null, sender);
+} catch (Exception | Error e) { e.printStackTrace(); }
 
     }
 }

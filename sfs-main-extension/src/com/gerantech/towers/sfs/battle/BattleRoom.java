@@ -143,6 +143,7 @@ public class BattleRoom extends SFSExtension
 		timer = SmartFoxServer.getInstance().getTaskScheduler().scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
+try {
 
 				if( getState() < STATE_CREATED || getState() > STATE_BATTLE_ENDED )
 					return;
@@ -156,6 +157,8 @@ public class BattleRoom extends SFSExtension
 					buildingsUpdatedAt = battleField.now;
 				}
 				checkEnding(battleDuration);
+
+} catch (Exception | Error e) { e.printStackTrace(); }
 
 			}
 		}, 0, battleField.interval, TimeUnit.MILLISECONDS);

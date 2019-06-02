@@ -28,6 +28,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 {
 	public void handleServerEvent(ISFSEvent event) throws SFSException
 	{
+try {
 		User user = (User) event.getParameter(SFSEventParam.USER);
 		Game game = ((Game) user.getSession().getProperty("core"));
 		if( game == null )
@@ -44,6 +45,7 @@ public class JoinZoneEventHandler extends BaseServerEventHandler
 
 		// Init buddy data and link invitees to user
 		initBuddy(user, room);
+} catch (Error | Exception e) { e.printStackTrace(); }
 	}
 
 	private Room rejoinToLastLobbyRoom(User user, Player player)

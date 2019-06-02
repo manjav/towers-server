@@ -32,11 +32,13 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 
 	public void handleServerEvent(ISFSEvent arg) throws SFSException
 	{
+try {
 		user = (User) arg.getParameter(SFSEventParam.USER);
 		if (arg.getType().equals(SFSEventType.USER_DISCONNECT))
 			userDisconnected(arg);
 		else if (arg.getType().equals(SFSEventType.USER_JOIN_ROOM))
 			userJoined(arg);
+} catch (Exception | Error e) { e.printStackTrace(); }
 	}
 
 	private void userJoined(ISFSEvent arg)
@@ -88,10 +90,12 @@ public class BattleRoomServerEventsHandler extends BaseServerEventHandler
 			roomClass.autoJoinTimer = SmartFoxServer.getInstance().getTaskScheduler().schedule(new TimerTask() {
 				@Override
 				public void run() {
+try {
 					cancel();
 					roomClass.autoJoinTimer.cancel(true);
 					room.setMaxUsers(1);
 					sendStartBattleResponse(true);
+} catch (Exception | Error e) { e.printStackTrace(); }
 				}
 			}, delay, TimeUnit.MILLISECONDS);
 		}

@@ -25,6 +25,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
 
     public void handleClientRequest(User sender, ISFSObject params)
     {
+try {
         int now = (int)Instant.now().getEpochSecond();
         if( now < LoginEventHandler.UNTIL_MAINTENANCE )
         {
@@ -59,6 +60,7 @@ public class BattleRequestStartHandler extends BaseClientRequestHandler
             return;
         }
         joinUser(sender);
+} catch (Exception | Error e) { e.printStackTrace(); }
     }
  
 	private void joinUser(User user)

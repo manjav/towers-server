@@ -16,6 +16,7 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
 {
     public void handleServerEvent(ISFSEvent arg) throws SFSException
     {
+try {
         User user = (User) arg.getParameter(SFSEventParam.USER);
         if( user.getBuddyProperties().getState() == "Available" )
             return;
@@ -35,5 +36,6 @@ public class BattleUsersExitHandler extends BaseServerEventHandler
        // user.getBuddyProperties().setVariable(new SFSBuddyVariable("$point", user.getVariable("point").getIntValue()));
         user.getBuddyProperties().setState("Available");
         SmartFoxServer.getInstance().getAPIManager().getBuddyApi().setBuddyVariables(user, user.getBuddyProperties().getVariables(), true, false);
+} catch (Error | Exception e) { e.printStackTrace(); }
     }
 }
