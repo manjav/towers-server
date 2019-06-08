@@ -1,9 +1,7 @@
 package com.gerantech.towers.sfs.callbacks;
 
-import com.gerantech.towers.sfs.battle.BattleRoom;
 import com.gt.towers.battle.Troop;
 import com.gt.towers.interfaces.ITroopHitCallback;
-import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.extensions.ISFSExtension;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import haxe.root.Array;
@@ -22,7 +20,6 @@ public class HitTroopCallback implements ITroopHitCallback
         this.room = (SFSExtension) room;
     }
 
-
     @Override
     public void hit(int defenderId, List<Troop> troops)
     {
@@ -33,10 +30,6 @@ public class HitTroopCallback implements ITroopHitCallback
         room.trace(log);
     }
 
-    @Override
-    public boolean __hx_deleteField(String s) {
-        return false;
-    }
     @Override
     public Object __hx_lookupField(String s, boolean b, boolean b1) {
         return null;
@@ -70,12 +63,9 @@ public class HitTroopCallback implements ITroopHitCallback
         return 0;
     }
     @Override
-    public Object __hx_invokeField(String s, Array array) {
-        return null;
-    }
+    public Object __hx_invokeField(String s, Object[] objects) { return null; }
     @Override
     public void __hx_getFields(Array<String> array) {
 
     }
-
 }
