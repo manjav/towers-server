@@ -1,11 +1,7 @@
-package com.gerantech.towers.sfs.utils;
-
-import java.util.List;
-import java.util.Map;
+package com.gt.utils;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -14,7 +10,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-public class HttpTool
+import java.util.List;
+import java.util.Map;
+
+public class HttpUtils
 {
 	public static Data get(String url, Map<String, String> headers, boolean serializeToJSON)
 	{

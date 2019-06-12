@@ -1,12 +1,11 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.utils.ExchangeUtils;
-import com.gerantech.towers.sfs.utils.HttpTool;
-import com.gerantech.towers.sfs.utils.HttpTool.Data;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
+import com.gt.utils.HttpUtils;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -60,7 +59,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());
 			return;
 		}
-		Data data = verify(productID, purchaseToken, game.market);
+		HttpUtils.Data data = verify(productID, purchaseToken, game.market);
         // send purchase data to client
         // if consumptionState is zero, its means the product consumed.
         if( data.statusCode == HttpStatus.SC_OK )
@@ -183,7 +182,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
 		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
 		argus.add(new BasicNameValuePair("redirect_uri", "http://www.gerantech.com/tanks/test.php?a=b"));
-		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
+		HttpUtils.Data data = HttpUtils.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
 		trace("request_AccessToken", data.statusCode, data.text);
 		return(data.text);
     }
@@ -205,7 +204,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		argus.add(new BasicNameValuePair("client_id", "1PsJN4ZdDKrolOyuDRLKQZaYKhTnIrmbSkaHK40L"));
 		argus.add(new BasicNameValuePair("client_secret", "C1nYSNSzbP72dK9J0VysZzbS8bo55AjB0UKl7X6hiCLdYACizDEeyLHoVKZt"));
 		argus.add(new BasicNameValuePair("refresh_token", "7Q3ZAgkZyDTd5Iftdpbvq09IPF2iyh"));
-		Data data = HttpTool.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
+		HttpUtils.Data data = HttpUtils.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
 		trace("refresh_token", data.statusCode, data.text);
 		if(data.statusCode != HttpStatus.SC_OK || !data.json.containsKey("access_token") )
 			return false;
@@ -224,7 +223,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 	 * 	<b>"purchaseTime"</b>: purchase time in miliseconds<br/>
 	 * @return Data <br/>
 	 */
-	Data verify(String productID, String purchaseToken, String market)
+	HttpUtils.Data verify(String productID, String purchaseToken, String market)
 	{
 		// set headers
 		Map<String, String> headers = new HashMap();
@@ -239,7 +238,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			url = "https://pardakht.cafebazaar.ir/devapi/v2/api/validate/"+packageName+"/inapp/"+productID+"/purchases/"+purchaseToken+"/?access_token="+ accessToken_cafebazaar;
 
 		//trace("purchase url:", url);
-		Data data = HttpTool.get(url, headers, true);
+		HttpUtils.Data data = HttpUtils.get(url, headers, true);
 		trace("verify", data.statusCode, data.text);
 		return data;
 	}	
