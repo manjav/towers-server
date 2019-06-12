@@ -12,6 +12,8 @@ public class PublicMessageHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
+        if( params.containsKey("x") )
+            return;
         send(Commands.LOBBY_PUBLIC_MESSAGE, params, getParentExtension().getParentRoom().getUserList());
     }
 }

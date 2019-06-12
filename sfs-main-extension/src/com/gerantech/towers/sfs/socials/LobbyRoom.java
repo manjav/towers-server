@@ -51,6 +51,8 @@ public class LobbyRoom extends BaseLobbyRoom
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
     {
         super.organizeMessage(sender, params, false);
+        if( params.containsKey("x") )
+            return;
 
         if( mode == MessageTypes.M30_FRIENDLY_BATTLE )
         {

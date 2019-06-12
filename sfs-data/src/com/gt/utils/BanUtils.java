@@ -4,9 +4,20 @@ import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
+import com.smartfoxserver.v2.util.filters.FilteredMessage;
+import org.apache.http.HttpStatus;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author ManJav
@@ -14,10 +25,14 @@ import java.time.Instant;
  */
 public class BanUtils extends UtilBase
 {
-	public static BanUtils getInstance()
+	static public int ADMIN_ID = 10000;
+	static public int SYSTEM_ID = 10001;
+	static public BanUtils getInstance()
 	{
 		return (BanUtils)UtilBase.get(BanUtils.class);
 	}
+
+	private List<Pattern> patterns;
 
 	public String checkOffends(String params)
 	{
@@ -29,7 +44,7 @@ public class BanUtils extends UtilBase
 		ISFSArray offenders = null;
 		ISFSArray banneds = null;
 		ISFSArray udids = null;
-		long now = Instant.now().getEpochSecond();
+		int now = (int) Instant.now().getEpochSecond();
 
 		// search all offends
 		try {
@@ -48,7 +63,6 @@ public class BanUtils extends UtilBase
 			boolean last = i < offenders.size() - 1;
 			bannedQuery += ("player_id = " + offenders.getSFSObject(i).getInt("offender")) + (last ? " OR " : ")");
 			udidQuery += ("player_id = " + offenders.getSFSObject(i).getInt("offender") ) + (last ? " OR " : "");
-
 		}
 		trace(bannedQuery);
 		trace(udidQuery);
@@ -84,7 +98,7 @@ public class BanUtils extends UtilBase
 			}
 
 			// ban warned offenders
-			warnOrBan(db, offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?2:1, now, banTime, null);
+			warnOrBan(offenders.getSFSObject(i).getInt("offender"), offenders.getSFSObject(i).getUtfString("udid"), offenders.getSFSObject(i).containsKey("ban")?2:1, now, banTime, null);
 			// add log
 			ret += offenders.getSFSObject(i).getInt("offender") + (offenders.getSFSObject(i).containsKey("ban") ? " banned.\n" : " warned.\n");
 		}
@@ -92,14 +106,14 @@ public class BanUtils extends UtilBase
 		return ret;
 	}
 
-	public void warnOrBan(IDBManager db, Integer offender, String udid, int banMode, long now, int banTime, String message)
+	public void warnOrBan(int offender, String udid, int banMode, int now, int banHours, String message)
 	{
 		if( message == null )
 			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banTime * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), expire_at = VALUES(expire_at), time = time+1;" + ";";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banHours * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time+1;" + ";";
 		trace(q);
 		try {
-			db.executeUpdate(q, new Object[]{});
+			ext.getParentZone().getDBManager().executeUpdate(q, new Object[]{});
 		} catch (SQLException e) {e.printStackTrace();}
 
 		//OneSignalUtils.getInstance().send(message, null, offender);
@@ -108,14 +122,32 @@ public class BanUtils extends UtilBase
 		else if( banMode > 1 )
 		{
 			q = "UPDATE infractions SET proceed = 1 WHERE offender = " + offender;
-			trace(q);
+			// trace(q);
 			try {
-				db.executeUpdate(q, new Object[]{});
+				ext.getParentZone().getDBManager().executeUpdate(q, new Object[]{});
 			} catch (SQLException e) {e.printStackTrace();}
 		}
 	}
 
-	public ISFSObject checkBan(int playerId, String udid, long now)
+	public void immediateBan(int playerId, int now, String content)
+	{
+		String udid = DBUtils.getInstance().getUDID(playerId);
+		ISFSArray bannedUsers = getBannedUsers(playerId, udid, 2, 0, "time");
+		int banTimes = 0;
+		for (int i = 0; i < bannedUsers.size(); i++)
+			if( banTimes < bannedUsers.getSFSObject(i).getInt("time") )
+				banTimes = bannedUsers.getSFSObject(i).getInt("time");
+		banTimes ++;
+
+		String message = "[ " + new Date(System.currentTimeMillis()).toString() + " ] =>" + content;
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + playerId + ", '" + udid + "', '" + message + "', " + 2 + ", FROM_UNIXTIME(" + (now + banTimes * 8 * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time + 1;";
+		// trace(q);
+		try {
+			ext.getParentZone().getDBManager().executeUpdate(q, new Object[]{});
+		} catch (SQLException e) {e.printStackTrace();}
+	}
+
+	public ISFSObject checkBan(int playerId, String udid, int now)
 	{
 		ISFSArray bannedUsers = getBannedUsers(playerId, udid, 2, now, "message, expire_at, mode");
 		if( bannedUsers == null || bannedUsers.size() == 0 )
@@ -123,17 +155,18 @@ public class BanUtils extends UtilBase
 
 		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at") / 1000 - now);
 		bannedUsers.getSFSObject(0).removeElement("expire_at");
-		trace(bannedUsers.getSFSObject(0).getDump());
+		// trace(bannedUsers.getSFSObject(0).getDump());
 		return bannedUsers.getSFSObject(0);
 	}
 
-	public ISFSArray getBannedUsers(int playerId, String udid, int mode, long now, String requestFields)
+	public ISFSArray getBannedUsers(int playerId, String udid, int mode, int now, String requestFields)
 	{
 		ISFSArray ret = null;
 		if( requestFields == null )
 			requestFields = "message, expire_at, mode";
 		String timeQuery = now > 0 ? "expire_at > FROM_UNIXTIME(" + now + ")  AND" : "";
 		String query = "SELECT " + requestFields + " FROM banneds WHERE " + timeQuery + " mode >= " + mode + " AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
+		trace(query);
 		try {
 			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
 		} catch (SQLException e) { e.printStackTrace();}
@@ -163,5 +196,68 @@ public class BanUtils extends UtilBase
 			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
 		return ret;
+	}
+
+	public FilteredMessage filterBadWords(String message, boolean replaceBads)
+	{
+		if( message == null || message == "" )
+			return null;
+		if( this.patterns == null )
+		{
+			HttpUtils.Data _data = HttpUtils.post("http://localhost:8080/data/bad-words.txt", null, false);
+			if( _data.statusCode != HttpStatus.SC_OK )
+			{
+				trace(ExtensionLogLevel.WARN, "bad-words.txt not found.");
+				return null;
+			}
+
+			// compile line by line of file
+			this.patterns = new ArrayList<>();
+			String line;
+			BufferedReader reader = new BufferedReader(new StringReader(_data.text));
+			try {
+				while ((line = reader.readLine()) != null)
+				{
+					if( line == null || line.length() <= 0 )
+						break;
+					// trace(line);
+					this.patterns.add(Pattern.compile(line));
+				}
+			} catch (IOException e) { e.printStackTrace(); }
+		}
+
+		Matcher matcher;
+		int occurrences = 0;
+		StringBuilder buffer = new StringBuilder(message);
+		FilteredMessage filteredMessage = new FilteredMessage();
+		for( Pattern pattern : this.patterns )
+		{
+			matcher = pattern.matcher(buffer);
+			while( matcher.find() )
+			{
+				occurrences ++;
+				//trace("found: " + occurrences + " : " + matcher.start() + " - " + matcher.end());
+
+				if( replaceBads )
+					maskBadWord(buffer, matcher.start(), matcher.end());
+				filteredMessage.setOccurrences(occurrences);
+				filteredMessage.setMessage(buffer.toString());
+			}
+		}
+		return filteredMessage;
+	}
+
+	private void maskBadWord(StringBuilder buffer, int startPos, int endPos)
+	{
+		buffer.replace(startPos, endPos, getStringMask(endPos - startPos));
+		// trace("startPos:", startPos, "endPo:", endPos, "buffer:", buffer);
+	}
+
+	private String getStringMask(int len)
+	{
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < len; i++)
+			buf.append("*");
+		return buf.toString();
 	}
 }

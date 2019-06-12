@@ -1,16 +1,18 @@
 package com.gerantech.towers.sfs.socials;
 
-import com.gt.Commands;
 import com.gerantech.towers.sfs.socials.handlers.LobbyReportHandler;
 import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
+import com.gt.Commands;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.BanUtils;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+import com.smartfoxserver.v2.util.filters.FilteredMessage;
 
 import java.time.Instant;
 
@@ -35,9 +37,11 @@ public class BaseLobbyRoom extends SFSExtension
 
     public void handleClientRequest(String requestId, User sender, ISFSObject params)
     {
-        if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
-            organizeMessage(sender, params, true);
-        super.handleClientRequest(requestId, sender, params);
+        try {
+            if( requestId.equals(Commands.LOBBY_PUBLIC_MESSAGE) )
+                organizeMessage(sender, params, true);
+            super.handleClientRequest(requestId, sender, params);
+        } catch (Exception | Error e) { e.printStackTrace(); }
     }
 
     protected void organizeMessage(User sender, ISFSObject params, boolean alreadyAdd)
@@ -52,6 +56,17 @@ public class BaseLobbyRoom extends SFSExtension
         }
 
         params.putInt("u", (int) Instant.now().getEpochSecond());
+
+        // filter bad words
+        FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), false);
+        if( fm != null && fm.getOccurrences() > 0 )
+        {
+            BanUtils.getInstance().immediateBan(game.player.id, params.getInt("u"), params.getUtfString("t"));
+            params.putBool("x", false);
+            getApi().disconnectUser(sender);
+            return;
+        }
+
         if( !params.containsKey("m") )
             params.putShort("m", (short) MessageTypes.M0_TEXT);
         mode = params.getShort("m");

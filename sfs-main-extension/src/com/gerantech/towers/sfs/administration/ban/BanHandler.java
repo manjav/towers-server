@@ -40,20 +40,17 @@ public class BanHandler extends BBGClientRequestHandler
 			return;
 		}
 
-		// get udid
-		String udid = DBUtils.getInstance().getUDID(params.getInt("id"));
-
-		long now = Instant.now().getEpochSecond();
-		BanUtils.getInstance().warnOrBan(db, params.getInt("id"), udid, params.getInt("mode"), now, params.getInt("len"), params.getText("msg"));
+		BanUtils.getInstance().warnOrBan(params.getInt("id"), DBUtils.getInstance().getUDID(params.getInt("id")), params.getInt("mode"), (int) Instant.now().getEpochSecond(), params.getInt("len"), params.getText("msg"));
 		send(Commands.BAN, MessageTypes.RESPONSE_SUCCEED, params, sender);
 
 		if( params.getInt("mode") >= 2 )
 		{
-			User u = getParentExtension().getParentZone().getUserByName(params.getInt("id")+"");
+			User u = getParentExtension().getParentZone().getUserByName(params.getInt("id").toString());
 			if( u != null )
 			{
 				List<Room> publics = getParentExtension().getParentZone().getRoomListFromGroup("publics");
-				for (Room p : publics) {
+				for (Room p : publics)
+				{
 					SFSObject msg = new SFSObject();
 					msg.putShort("m", (short) MessageTypes.M18_COMMENT_BAN);
 					msg.putUtfString("s", "KOOT");
@@ -61,7 +58,6 @@ public class BanHandler extends BBGClientRequestHandler
 					msg.putShort("p", (short) -1);
 					getApi().sendExtensionResponse(Commands.LOBBY_PUBLIC_MESSAGE, msg, p.getUserList(), p, false);
 					p.getVariable("msg").getSFSArrayValue().addSFSObject(msg);
-
 				}
 				getApi().disconnectUser(u);
 			}
