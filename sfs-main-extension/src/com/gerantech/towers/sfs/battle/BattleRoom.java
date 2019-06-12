@@ -541,7 +541,7 @@ try {
 	{
 		if( isOperation )
 			return;
-		LobbySFS lobbySFS = null;
+		LobbySFS lobbySFS;
 		for( int i=0; i < registeredPlayers.size(); i++ )
 		{
 			Game game = registeredPlayers.get(i);
@@ -550,7 +550,8 @@ try {
 				return;
 
 			int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
-			lobbySFS.getMembers().getSFSObject(index).putInt("ac", lobbySFS.getMembers().getSFSObject(index).getInt("ac") + 1);
+			int activeness = lobbySFS.getMembers().getSFSObject(index).containsKey("ic") ? lobbySFS.getMembers().getSFSObject(index).getInt("ic") : 0;
+			lobbySFS.getMembers().getSFSObject(index).putInt("ac", activeness + 1);
 			LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
 		}
 	}
