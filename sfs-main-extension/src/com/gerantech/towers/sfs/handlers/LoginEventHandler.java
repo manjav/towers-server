@@ -329,9 +329,19 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C13_SOFT, "1003:" + Exchanger.softToHard(50000) * 0.9,	"1002:50000"	,	0, 0, true);
 
 		// -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- TICKETS -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R4_CURRENCY_HARD + ":10",		ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(10)     * 1.00,    0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R4_CURRENCY_HARD + ":50",		ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(50)     * 1.20,    0, 0, true);
-		addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R4_CURRENCY_HARD + ":100",	ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(100)    * 1.40,    0, 0, true);
+		if( initData.appVersion > 4050 )
+		{
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R4_CURRENCY_HARD + ":10",		ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(10)     * 1.000,    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R4_CURRENCY_HARD + ":50",		ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(50)     * 1.200,    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R4_CURRENCY_HARD + ":100",	ResourceType.R6_TICKET + ":" + Exchanger.hardToTicket(100)    * 1.400,    0, 0, true);
+		}
+		else
+		{
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",   ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)   * 0.750,    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",  ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(10000)  * 0.875,    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",  ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(20000)  * 1.000,    0, 0, true);
+		}
+
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_- OTHER -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 		if( !game.exchanger.items.exists(ExchangeType.C42_RENAME) )
@@ -345,6 +355,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		addExchangeItem(game, exchanges, ExchangeType.C121_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_55_PIRATE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_55_PIRATE	+ ":" + arena, 0, 0, true);
 		addExchangeItem(game, exchanges, ExchangeType.C122_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_56_JUNGLE,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_56_JUNGLE	+ ":" + arena, 0, 0, true);
 		addExchangeItem(game, exchanges, ExchangeType.C123_MAGIC, "1003:" + Exchanger.fixedRound(Exchanger.toHard(Exchanger.estimateBookOutcome(ExchangeType.BOOK_58_AMBER,	arena, game.player.splitTestCoef))),	ExchangeType.BOOK_58_AMBER	+ ":" + arena, 0, 0, true);
+
 
 		session.setProperty("core", game);
 
