@@ -337,9 +337,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 		else
 		{
-			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",   ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(2000)   * 0.750,    0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",  ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(10000)  * 0.875,    0, 0, true);
-			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",  ResourceType.R6_TICKET + ":" + Exchanger.realToTicket(20000)  * 1.000,    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C71_TICKET, ResourceType.R5_CURRENCY_REAL + ":2000",   ResourceType.R6_TICKET + ":" + Math.floor(Exchanger.realToTicket(2000) *1.5),    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C72_TICKET, ResourceType.R5_CURRENCY_REAL + ":10000",  ResourceType.R6_TICKET + ":" + Math.floor(Exchanger.realToTicket(10000)*1.8),    0, 0, true);
+			addExchangeItem(game, exchanges, ExchangeType.C73_TICKET, ResourceType.R5_CURRENCY_REAL + ":20000",  ResourceType.R6_TICKET + ":" + Math.floor(Exchanger.realToTicket(20000)*2.2),    0, 0, true);
 		}
 
 
