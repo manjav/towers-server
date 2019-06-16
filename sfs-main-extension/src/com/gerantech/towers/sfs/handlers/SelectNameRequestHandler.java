@@ -1,14 +1,16 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.Commands;
-import com.gt.utils.ExchangeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
+import com.gt.utils.BanUtils;
+import com.gt.utils.ExchangeUtils;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.smartfoxserver.v2.util.filters.FilteredMessage;
 
 import java.sql.SQLException;
 
@@ -32,8 +34,9 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 			return;
 		}
 
-		// forbidden characters ...
-		if( name.indexOf("'") > -1 )
+		// forbidden things ...
+		FilteredMessage fm = BanUtils.getInstance().filterBadWords(name, false);
+		if( (fm != null && fm.getOccurrences() > 0) || name.indexOf("'") > -1 )
 		{
 			params.putInt("response", MessageTypes.RESPONSE_NOT_ALLOWED);
 			send(Commands.SELECT_NAME, params, sender);
