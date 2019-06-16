@@ -550,7 +550,7 @@ try {
 				return;
 
 			int index = LobbyUtils.getInstance().getMemberIndex(lobbySFS, game.player.id);
-			int activeness = lobbySFS.getMembers().getSFSObject(index).containsKey("ic") ? lobbySFS.getMembers().getSFSObject(index).getInt("ic") : 0;
+			int activeness = lobbySFS.getMembers().getSFSObject(index).containsKey("ac") ? lobbySFS.getMembers().getSFSObject(index).getInt("ac") : 0;
 			lobbySFS.getMembers().getSFSObject(index).putInt("ac", activeness + 1);
 			LobbyUtils.getInstance().save(lobbySFS, null, null, -1, -1, -1, -1, lobbySFS.getMembersBytes(), null);
 		}
