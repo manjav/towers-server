@@ -222,6 +222,10 @@ public class BanUtils extends UtilBase
 						break;
 					// trace(line);
 					this.patterns.add(Pattern.compile(line));
+					this.patterns.add(Pattern.compile(line.replace('.', ' ')));
+					this.patterns.add(Pattern.compile(line.replace(' ', '-')));
+					this.patterns.add(Pattern.compile(line.replace(' ', '_')));
+//					this.patterns.add(Pattern.compile(line.replace(' ', '*'), Pattern.CASE_INSENSITIVE));
 				}
 			} catch (IOException e) { e.printStackTrace(); }
 		}
@@ -236,12 +240,12 @@ public class BanUtils extends UtilBase
 			while( matcher.find() )
 			{
 				occurrences ++;
-				//trace("found: " + occurrences + " : " + matcher.start() + " - " + matcher.end());
+//				trace("found: " + occurrences + " : " + matcher.start() + " - " + matcher.end() + "p: " + pattern.toString());
 
 				if( replaceBads )
 					maskBadWord(buffer, matcher.start(), matcher.end());
 				filteredMessage.setOccurrences(occurrences);
-				filteredMessage.setMessage(buffer.toString());
+				filteredMessage.setMessage(buffer.toString());// + "[" + pattern.toString() + "]");
 			}
 		}
 		return filteredMessage;

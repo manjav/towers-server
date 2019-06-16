@@ -63,7 +63,6 @@ public class BaseLobbyRoom extends SFSExtension
         {
             BanUtils.getInstance().immediateBan(game.player.id, params.getInt("u"), params.getUtfString("t"));
             params.putBool("x", false);
-            getApi().disconnectUser(sender);
             return;
         }
 
@@ -73,7 +72,7 @@ public class BaseLobbyRoom extends SFSExtension
         messages = messageQueue();
 
         // Max 30 len message queue
-        while (messages.size() > 30)
+        while( messages.size() > 30 )
             messages.removeElementAt(0);
 
         if( mode == MessageTypes.M0_TEXT )
