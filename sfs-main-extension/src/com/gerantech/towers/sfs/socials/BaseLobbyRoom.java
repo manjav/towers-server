@@ -5,6 +5,7 @@ import com.gerantech.towers.sfs.socials.handlers.PublicMessageHandler;
 import com.gt.Commands;
 import com.gt.data.LobbySFS;
 import com.gt.towers.Game;
+import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.utils.BanUtils;
 import com.smartfoxserver.v2.entities.Room;
@@ -58,12 +59,17 @@ public class BaseLobbyRoom extends SFSExtension
         params.putInt("u", (int) Instant.now().getEpochSecond());
 
         // filter bad words
-        FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), false);
+        boolean isAdmin = Player.isAdmin(game.player.id);
+        FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), isAdmin);
         if( fm != null && fm.getOccurrences() > 0 )
         {
-            BanUtils.getInstance().immediateBan(game.player.id, params.getInt("u"), params.getUtfString("t"));
-            params.putBool("x", false);
-            return;
+            if( !isAdmin )
+            {
+                BanUtils.getInstance().immediateBan(game.player.id, params.getInt("u"), params.getUtfString("t"));
+                params.putBool("x", false);
+                return;
+            }
+            params.putUtfString("t", fm.getMessage());
         }
 
         if( !params.containsKey("m") )
