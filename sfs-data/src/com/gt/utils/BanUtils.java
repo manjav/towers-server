@@ -264,4 +264,13 @@ public class BanUtils extends UtilBase
 			buf.append("*");
 		return buf.toString();
 	}
+
+	public void report(ISFSObject params, String lobby, int reporterId)
+	{
+		String query = "INSERT INTO `infractions` (`reporter`, `offender`, `content`, `lobby`, `offend_at`, `report_at`) VALUES ('" + reporterId + "', '" + params.getInt("i") + "', '" + params.getUtfString("t") + "', '" + lobby + "', FROM_UNIXTIME(" + params.getInt("u") + "), FROM_UNIXTIME(" + Instant.now().getEpochSecond() + "));";
+		trace(query);
+		try {
+			ext.getParentZone().getDBManager().executeInsert(query , new Object[]{});
+		} catch (SQLException e) { e.printStackTrace(); }
+	}
 }

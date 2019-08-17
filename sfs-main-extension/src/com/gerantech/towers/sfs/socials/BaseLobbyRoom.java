@@ -65,7 +65,7 @@ public class BaseLobbyRoom extends SFSExtension
         {
             if( !isAdmin )
             {
-                BanUtils.getInstance().immediateBan(game.player.id, params.getInt("u"), params.getUtfString("t"));
+                BanUtils.getInstance().report(params, lobby.getName(), 10000);
                 params.putBool("x", false);
                 return;
             }
@@ -83,6 +83,13 @@ public class BaseLobbyRoom extends SFSExtension
 
         if( mode == MessageTypes.M0_TEXT )
         {
+            String[] splited = params.getUtfString("t").split("\n");
+            if( splited.length > 4 )
+                params.putUtfString("t", splited[0]);
+            splited = params.getUtfString("t").split("\r");
+            if( splited.length > 4 )
+                params.putUtfString("t", splited[0]);
+
             if( params.getUtfString("t").length() > 160 )
                 params.putUtfString("t", params.getUtfString("t").substring(0, 160) + " ...");
             // Merge messages from a sender
