@@ -58,23 +58,27 @@ public class BaseLobbyRoom extends SFSExtension
 
         params.putInt("u", (int) Instant.now().getEpochSecond());
 
-        // filter bad words
-        boolean isAdmin = Player.isAdmin(game.player.id);
-        FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), isAdmin);
-        if( fm != null && fm.getOccurrences() > 0 )
-        {
-            if( !isAdmin )
-            {
-                BanUtils.getInstance().report(params, lobby.getName(), 10000);
-                params.putBool("x", false);
-                return;
-            }
-            params.putUtfString("t", fm.getMessage());
-        }
-
         if( !params.containsKey("m") )
             params.putShort("m", (short) MessageTypes.M0_TEXT);
         mode = params.getShort("m");
+
+        // filter bad words
+        if( mode == MessageTypes.M0_TEXT )
+        {
+            boolean isAdmin = Player.isAdmin(game.player.id);
+            FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), isAdmin);
+            if( fm != null && fm.getOccurrences() > 0 )
+            {
+                if( !isAdmin )
+                {
+                    BanUtils.getInstance().report(params, lobby.getName(), 10000);
+                    params.putBool("x", false);
+                    return;
+                }
+                params.putUtfString("t", fm.getMessage());
+            }
+        }
+
         messages = messageQueue();
 
         // Max 30 len message queue
