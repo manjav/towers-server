@@ -10,6 +10,7 @@ import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 
 import java.sql.SQLException;
@@ -260,15 +261,15 @@ public class DBUtils extends UtilBase
         }
     }
 
-    public String getUDID(int id)
+    public ISFSObject getDevice(int id)
     {
-        String query = "SELECT udid FROM devices WHERE player_id=" + id;
+        String query = "SELECT * FROM devices WHERE player_id=" + id;
         ISFSArray udids = null;
         try {
             udids = db.executeQuery(query, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         if( udids != null && udids.size() > 0 )
-            return udids.getSFSObject(0).getText("udid");
+            return udids.getSFSObject(0);
         return null;
     }
 }

@@ -34,7 +34,7 @@ public class BanUtils extends UtilBase
 
 	private List<Pattern> patterns;
 
-	public String checkOffends(String params)
+	/*public String checkOffends(String params)
 	{
 		String[] args = params.split(",");
 		int investigateScope = Integer.parseInt(args[0]);
@@ -104,13 +104,15 @@ public class BanUtils extends UtilBase
 		}
 
 		return ret;
-	}
+	}*/
 
-	public void warnOrBan(int offender, String udid, int banMode, int now, int banHours, String message)
+	public void warnOrBan(int offender, String udid, String imei, int banMode, int now, int banHours, String message)
 	{
 		if( message == null )
 			message = banMode == 1 ? "متأسفانه گزارش های زیادی مبنی بر مزاحمت یا فحاشی شما، از سایر کاربران دریافت کردیم. توجه داشته باشید به محض تکرار، کاربری شما معلق خواهد شد." : "تعلیق بعلت تخلف از قوانین بازی";
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banHours * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time+1;" + ";";
+		String imeiName = imei == null ? "" : ", imei";
+		String imeiValue = imei == null ? "" : "', '" + imei;
+		String q = "INSERT INTO banneds (player_id, udid" + imeiName + ", message, mode, expire_at, time) VALUES (" + offender + ", '" + udid + imeiValue + "', '" + message + "', " + banMode + ", FROM_UNIXTIME(" + (now + banHours * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time+1;" + ";";
 		trace(q);
 		try {
 			ext.getParentZone().getDBManager().executeUpdate(q, new Object[]{});
@@ -131,8 +133,8 @@ public class BanUtils extends UtilBase
 
 	public void immediateBan(int playerId, int now, String content)
 	{
-		String udid = DBUtils.getInstance().getUDID(playerId);
-		ISFSArray bannedUsers = getBannedUsers(playerId, udid, 2, 0, "time");
+		ISFSObject deviceData = DBUtils.getInstance().getDevice(playerId);
+		ISFSArray bannedUsers = getBannedUsers(playerId, deviceData.getText("udid"), deviceData.getText("imei"), 2, 0, "time");
 		int banTimes = 0;
 		for (int i = 0; i < bannedUsers.size(); i++)
 			if( banTimes < bannedUsers.getSFSObject(i).getInt("time") )
@@ -140,36 +142,44 @@ public class BanUtils extends UtilBase
 		banTimes ++;
 
 		String message = "[ " + new Date(System.currentTimeMillis()).toString() + " ] =>" + content;
-		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + playerId + ", '" + udid + "', '" + message + "', " + 2 + ", FROM_UNIXTIME(" + (now + banTimes * 8 * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time + 1;";
+		String q = "INSERT INTO banneds (player_id, udid, message, mode, expire_at, time) VALUES (" + playerId + ", '" + deviceData.getText("udid") + "', '" + message + "', " + 2 + ", FROM_UNIXTIME(" + (now + banTimes * 8 * 3600) + "), 1 ) ON DUPLICATE KEY UPDATE message = VALUES(message), expire_at = VALUES(expire_at), time = time + 1;";
 		// trace(q);
 		try {
 			ext.getParentZone().getDBManager().executeUpdate(q, new Object[]{});
 		} catch (SQLException e) {e.printStackTrace();}
 	}
 
-	public ISFSObject checkBan(int playerId, String udid, int now)
+	public ISFSObject checkBan(int playerId, String udid, String imei, int now)
 	{
-		ISFSArray bannedUsers = getBannedUsers(playerId, udid, 2, now, "message, expire_at, mode");
+		ISFSArray bannedUsers = getBannedUsers(playerId, udid, imei, 2, now, "message, expire_at, mode");
 		if( bannedUsers == null || bannedUsers.size() == 0 )
 			return null;
 
-		bannedUsers.getSFSObject(0).putLong("until", bannedUsers.getSFSObject(0).getLong("expire_at") / 1000 - now);
-		bannedUsers.getSFSObject(0).removeElement("expire_at");
+		int index = 0;
+		int expireAt = 0;
+		for (int i = 0; i < bannedUsers.size(); i++)
+			if( bannedUsers.getSFSObject(i).getLong("expire_at") > expireAt )
+				index = i + 0;
+
+		bannedUsers.getSFSObject(index).putLong("until", bannedUsers.getSFSObject(index).getLong("expire_at") / 1000 - now);
+		// bannedUsers.getSFSObject(0).removeElement("expire_at");
 		// trace(bannedUsers.getSFSObject(0).getDump());
-		return bannedUsers.getSFSObject(0);
+		return bannedUsers.getSFSObject(index);
 	}
 
-	public ISFSArray getBannedUsers(int playerId, String udid, int mode, int now, String requestFields)
+	public ISFSArray getBannedUsers(int playerId, String udid, String imei, int mode, int now, String requestFields)
 	{
 		ISFSArray ret = null;
 		if( requestFields == null )
 			requestFields = "message, expire_at, mode";
-		String timeQuery = now > 0 ? "expire_at > FROM_UNIXTIME(" + now + ")  AND" : "";
-		String query = "SELECT " + requestFields + " FROM banneds WHERE " + timeQuery + " mode >= " + mode + " AND (player_id = " + playerId + (udid == null ? "" : (" OR udid = '" + udid + "'")) + ")";
+		String timeQuery = now > 0 ? "expire_at > FROM_UNIXTIME(" + now + ") AND" : "";
+		String udidQuery = udid == null ? "" : (" OR udid = '" + udid + "'");
+		String imeiQuery = (imei == null || imei.isEmpty()) ? "" : (" OR imei = '" + imei + "'");
+		String query = "SELECT " + requestFields + " FROM banneds WHERE " + timeQuery + " mode >= " + mode + " AND (player_id = " + playerId + udidQuery + imeiQuery + ")";
 		trace(query);
 		try {
 			ret = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
-		} catch (SQLException e) { e.printStackTrace();}
+		} catch (SQLException e) { e.printStackTrace(); }
 		return ret;
 	}
 
