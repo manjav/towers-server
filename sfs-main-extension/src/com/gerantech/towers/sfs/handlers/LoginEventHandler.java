@@ -79,7 +79,9 @@ public class LoginEventHandler extends BaseServerEventHandler
 			createPlayer(session, name, password, inData, outData, loginData);
 		else
 			loadPlayer(session, name, password, inData, outData, loginData);
-} catch (Exception | Error e) { e.printStackTrace();}
+		outData.putText("forbidenApps", "parallel,dualspace,ludashi,cloneapp,mochat,multiaccounts,trendmicro,cloner,multiapp,clone");
+
+	} catch (Exception | Error e) { e.printStackTrace();}
 	}
 
 	// Create new user ============================================================
@@ -87,7 +89,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 	{
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		String deviceUDID = inData.getText("udid");
-		String deviceIMEI = inData.containsKey("imei") && inData.getText("imei") != "" ? "' OR imei='" + inData.getText("imei") : "";
+		String deviceIMEI = inData.containsKey("imei") && !inData.getText("imei").isEmpty() ? "' OR imei='" + inData.getText("imei") : "";
 		String deviceModel = inData.getText("device");
 		if( inData.getInt("id") == -1 )
 		{
