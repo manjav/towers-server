@@ -134,7 +134,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 			resources.addSFSObject( so );
 		}
 
-		int id = 0;
 		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
 		for(int i=0; i<resources.size(); i++)
 		{
@@ -142,17 +141,8 @@ public class LoginEventHandler extends BaseServerEventHandler
 			query += i<resources.size()-1 ? ", " : ";";
 		}
 		try {
-			id = Math.toIntExact((long) dbManager.executeInsert(query, new Object[] {}));
+			dbManager.executeInsert(query, new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
-		if( id == 0 )
-		{
-			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error! resources id=" + id + " is wrong.", new String[]{"Login error! resources id=" + id + " is wrong."});
-			return;
-		}
-
-		// add  Ids
-		for(int i=0; i<resources.size(); i++)
-			resources.getSFSObject(i).putInt("id", id + i);
 
 		session.setProperty("joinedRoomId", -1);
 
@@ -189,6 +179,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		int id = Integer.parseInt(name);
 		ISFSArray res = null;
 		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
+			if( res.size() == 0 )
+			{
+				DBUtils.getInstance().recoverFromInactives(id);
+				res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
+			}
 		} catch(SQLException e) { e.printStackTrace(); }
 
 		if( res == null || res.size() != 1 )
@@ -267,9 +262,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
-		IntIntMap dbItems = new IntIntMap();
-		for(int i=0; i<exchanges.size(); i++)
-			dbItems.set(exchanges.getSFSObject(i).getInt("type"), exchanges.getSFSObject(i).getInt("id"));
 
 		boolean contained;
 		SFSArray newExchanges = new SFSArray();
@@ -305,14 +297,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.player.tutorialMode = outData.getInt("tutorialMode");
 		game.player.hasOperations = outData.getBool("hasOperations");
 		game.exchanger.updater = new ExchangeUpdater(game);
-		game.exchanger.dbItems = dbItems;
-		
-		game.player.resourceIds = new ConcurrentHashMap();
-		for(int i=0; i<resources.size(); i++)
-		{
-			game.player.resourceIds.put(resources.getSFSObject(i).getInt("type"), resources.getSFSObject(i).getInt("id"));
-			resources.getSFSObject(i).removeElement("id");
-		}
 
 		for(int i=0; i<exchanges.size(); i++)
 		{

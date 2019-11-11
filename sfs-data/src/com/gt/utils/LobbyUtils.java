@@ -284,7 +284,6 @@ public class LobbyUtils extends UtilBase
     {
         String log = "reset activities:\n";
         ISFSArray members;
-        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         Map<Integer, LobbySFS> lobbiesData = getAllData();
         for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
         {
@@ -295,11 +294,11 @@ public class LobbyUtils extends UtilBase
             while( index < size )
             {
                 member = members.getSFSObject(index);
-                member.putInt("ac", 0);
+                member.putInt("ac", (int)(member.getInt("ac") * 0.5));
                 index ++;
             }
             save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
-            log += (entry.getValue().getName() + "=> 0\n");
+            log += (entry.getValue().getName() + "=> " + "act" + "\n");
         }
         return log;
     }
