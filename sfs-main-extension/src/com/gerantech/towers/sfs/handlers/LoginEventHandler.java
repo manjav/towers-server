@@ -79,6 +79,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			createPlayer(session, name, password, inData, outData, loginData);
 		else
 			loadPlayer(session, name, password, inData, outData, loginData);
+
 		outData.putText("forbidenApps", "parallel,dualspace,ludashi,cloneapp,mochat,multiaccounts,trendmicro,cloner,multiapp,clone");
 
 	} catch (Exception | Error e) { e.printStackTrace();}
@@ -155,7 +156,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("operations", new SFSArray());
 		outData.putSFSArray("exchanges", new SFSArray());
 		outData.putSFSArray("prefs", new SFSArray());
-		initiateCore(session, inData, outData, loginData);
 
 		// add udid and device as account id for restore players
 		try {
@@ -205,7 +205,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("sessionsCount", userData.getInt("sessions_count"));
 		outData.putSFSArray("resources", dbUtils.getResources(id));
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
-		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
+		outData.putSFSArray("exchanges", dbUtils.getExchanges(id, (int)Instant.now().getEpochSecond()));
 		outData.putSFSArray("quests", new SFSArray());
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id));
 
@@ -214,7 +214,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		int joinedRoomId = room == null ? -1 : room.getId();
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
-
 		initiateCore(session, inData, outData, loginData);
 //		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
 	}
@@ -352,7 +351,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("core", game);
 
 		for( ExchangeItem item : game.exchanger.updater.changes )
-			DBUtils.getInstance().updateExchange(game, item.type, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+			DBUtils.getInstance().updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();

@@ -122,8 +122,8 @@ public class TowerExtension extends SFSExtension
 		trace(cmdName, params);
 		if( cmdName.equals("setumtime") )
 			return (LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params)) + ";;";
-		else if( cmdName.equals("ban") )
-			return BanUtils.getInstance().checkOffends((String) params);
+		// else if( cmdName.equals("ban") )
+		//	return BanUtils.getInstance().checkOffends((String) params);
 		else if( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
 		else if( cmdName.equals("resetkeylimit") )
@@ -132,6 +132,10 @@ public class TowerExtension extends SFSExtension
 			return LobbyUtils.getInstance().resetActivities();
 		else if( cmdName.equals("getplayernamebyic") )
 			return PasswordGenerator.getIdAndNameByInvitationCode((String) params);
+		// Database-Recovery: adds a command to remove inactives accepts 
+		// hoursAgo as parameter and cleans inactives since then.
+		else if( cmdName.equals("cleanInactives"))
+			return DBUtils.getInstance().cleanInactiveUsers((String) params);
 		//else if( cmdName.equals("custom") )
 		//	return LobbyUtils.getInstance().moveActiveness();
 		

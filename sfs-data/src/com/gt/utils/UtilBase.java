@@ -9,8 +9,12 @@ public class UtilBase
 
     static public void setExtension(SFSExtension extension)
     {
-        if( ext == null )
+        if( ext == null ) {
             ext = extension;
+            // Cleans inactive users since 720 hours ago from database on 
+            // server startup.
+            DBUtils.getInstance().cleanInactiveUsers("720");
+        }
     }
 
     static public Object get(Class _class)

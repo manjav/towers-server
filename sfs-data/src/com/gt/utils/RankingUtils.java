@@ -29,7 +29,11 @@ public class RankingUtils extends UtilBase
 
         ConcurrentHashMap<Integer, RankData> users = new ConcurrentHashMap();
         // fill top players
-        String query = "SELECT players.id, players.name, resources.count FROM " + DBUtils.getInstance().inactiveDB  +".players INNER JOIN " + DBUtils.getInstance().inactiveDB  +".resources ON players.id = resources.player_id WHERE resources.type = "
+        // Database-Recovery: Fills top players from recovery database.
+        String query = "SELECT players.id, players.name, resources.count FROM " + DBUtils.getInstance().inactiveDB  +
+                ".players INNER JOIN " + DBUtils.getInstance().inactiveDB  +
+                ".resources ON players.id = resources.player_id WHERE resources.type = " +
+                ResourceType.R2_POINT + " AND resources.count > 0";
         ISFSArray dbResult = null;
         try {
             dbResult = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});
