@@ -122,8 +122,8 @@ public class TowerExtension extends SFSExtension
 		trace(cmdName, params);
 		if( cmdName.equals("setumtime") )
 			return (LoginEventHandler.UNTIL_MAINTENANCE = (int)Instant.now().getEpochSecond() + Integer.parseInt((String) params)) + ";;";
-		else if( cmdName.equals("ban") )
-			return BanUtils.getInstance().checkOffends((String) params);
+//		else if( cmdName.equals("ban") )
+//			return BanUtils.getInstance().checkOffends((String) params);
 		else if( cmdName.equals("servercheck") )
 			return "OK HAHAHA.";
 		else if( cmdName.equals("resetkeylimit") )

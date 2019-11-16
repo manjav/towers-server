@@ -19,7 +19,7 @@ public class InboxUtils extends UtilBase
         return (InboxUtils)UtilBase.get(InboxUtils.class);
     }
 
-    public int send(int type, String text, String sender, int senderId, int receiverId, String data)
+    public int send(Integer type, String text, String sender, Integer senderId, Integer receiverId, String data)
     {
         int ret = 0;
         String query = "INSERT INTO `inbox`(`type`, `text`, `sender`, `senderId`, `receiverId`, `data`, `utc`) VALUES " +
@@ -37,7 +37,7 @@ public class InboxUtils extends UtilBase
             SFSObject msg = new SFSObject();
             msg.putInt("id", messageId);
             msg.putShort("read", (short)0);
-            msg.putShort("type", (short)type);
+            msg.putShort("type", type.shortValue());
             msg.putUtfString("text", text);
             msg.putUtfString("sender", sender);
             msg.putInt("senderId", senderId);

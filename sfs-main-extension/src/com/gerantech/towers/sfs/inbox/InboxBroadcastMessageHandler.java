@@ -8,6 +8,7 @@ import com.gerantech.towers.sfs.utils.PushProvider;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.gt.towers.Game;
 
 import java.util.Collection;
 
@@ -20,6 +21,7 @@ public class InboxBroadcastMessageHandler extends BaseClientRequestHandler
     {
         Collection<Integer> receivers = params.getIntArray("receiverIds");
         Integer[] receiverIds = receivers.toArray(new Integer[receivers.size()]);
+        String data = params.containsKey("data") ? params.getText("data") : null;
         PushProvider pushProvider = PushProvider.FCM;
 
         // check is admin and 10000 usage
@@ -27,10 +29,10 @@ public class InboxBroadcastMessageHandler extends BaseClientRequestHandler
             return;
 
         for( int i = 0; i < receiverIds.length; i++ )
-            InboxUtils.getInstance().send(params.getInt("type"), params.getUtfString("text"), params.getInt("senderId"), receiverIds[i], data);
+            InboxUtils.getInstance().send(params.getInt("type"), params.getUtfString("text"), sender.getName() ,params.getInt("senderId"), receiverIds[i], data);
 
         int delivered = 0;
-        if ( params.containsKey("isPush") && params.getBool("isPush") )
+        if( params.containsKey("isPush") && params.getBool("isPush") )
         {
             switch (pushProvider)
             {
