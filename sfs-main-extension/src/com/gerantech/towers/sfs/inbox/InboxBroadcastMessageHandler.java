@@ -19,7 +19,7 @@ public class InboxBroadcastMessageHandler extends BaseClientRequestHandler
 {
     public void handleClientRequest(User sender, ISFSObject params)
     {
-        Collection<Integer> receivers = params.getIntArray("receiverIds");
+        Collection<Integer> receivers = params.getIntArray("receivers");
         Integer[] receiverIds = receivers.toArray(new Integer[receivers.size()]);
         String data = params.containsKey("data") ? params.getText("data") : null;
         PushProvider pushProvider = PushProvider.FCM;
