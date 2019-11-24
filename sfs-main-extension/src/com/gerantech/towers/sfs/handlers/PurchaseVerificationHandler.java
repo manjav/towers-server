@@ -159,6 +159,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		String afterPurchaseData = game.player.resources.toString();
 
 		resObj.putBool("success", true);
+		resObj.putText("productID", productID);
 		resObj.putInt("consumptionState", consumptionState);
 		resObj.putInt("purchaseState", purchaseState);
 		resObj.putText("developerPayload", developerPayload);
