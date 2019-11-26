@@ -288,17 +288,22 @@ public class LobbyUtils extends UtilBase
         for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
         {
             members = entry.getValue().getMembers();
+            ISFSObject[] all = LobbyDataUtils.getInstance().getMembers(members, RankingUtils.getInstance().getUsers(), false);
+            int beforeActivity = LobbyDataUtils.getInstance().getLobbyPoint(all, "activity");
             int index = 0;
             int size = members.size();
             ISFSObject member;
             while( index < size )
             {
                 member = members.getSFSObject(index);
-                member.putInt("ac", (int)(member.getInt("ac") * 0.5));
+                if( member.getInt("ac") != null )
+                    member.putInt("ac", (int)(member.getInt("ac") * 0.5));
                 index ++;
             }
             save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
-            log += (entry.getValue().getName() + "=> " + "act" + "\n");
+            all = LobbyDataUtils.getInstance().getMembers(members, RankingUtils.getInstance().getUsers(), false);
+            int afterActivity = LobbyDataUtils.getInstance().getLobbyPoint(all, "activity");
+            log += (entry.getValue().getName() + ": " + beforeActivity + " => " + afterActivity + "\n");
         }
         return log;
     }

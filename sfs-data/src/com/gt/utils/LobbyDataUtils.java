@@ -94,7 +94,7 @@ public class LobbyDataUtils extends UtilBase
      * @return
      */
     private static float[] RANK_COEFS = {0.50f, 0.25f, 0.12f, 0.10f, 0.03f};
-    private int getLobbyPoint(ISFSObject[] members, String attribute)
+    public int getLobbyPoint(ISFSObject[] members, String attribute)
     {
         Arrays.sort(members, (rhs, lhs) -> lhs.getInt(attribute) - rhs.getInt(attribute));
         float sum = 0;
@@ -113,7 +113,7 @@ public class LobbyDataUtils extends UtilBase
         return Math.round(sum) ;
     }
 
-    private ISFSObject[] getMembers(ISFSArray all, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers)
+    public ISFSObject[] getMembers(ISFSArray all, ConcurrentHashMap<Integer, RankData> users, boolean includeMembers)
     {
         // fill hazelcast data to members
         int index = 0;
