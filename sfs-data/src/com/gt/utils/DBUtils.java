@@ -86,9 +86,6 @@ public class DBUtils extends UtilBase
                 // lobbies
                 columns = new ArrayList<String>(Arrays.asList("id","name","bio","emblem","capacity","min_point","privacy","create_at","members","messages"));
                 backupTable("lobbies", columns, statement);
-                // messages
-                columns = new ArrayList<String>(Arrays.asList("id","type","text","senderId","receiverId","data","status","timestamp"));
-                backupTable("messages", columns, statement);
                 // operations
                 columns = new ArrayList<String>(Arrays.asList("index","player_id","score","create_at"));
                 backupTable("operations", columns, statement);
