@@ -29,7 +29,7 @@ public class QuestsUtils extends UtilBase
         if( player.quests.length == 0 )
             return;
 
-        String query = "INSERT INTO quests (player_id, `type`, `key`, step) VALUES ";
+        String query = "INSERT INTO " + DBUtils.getInstance().liveDB + ".quests (player_id, `type`, `key`, step) VALUES ";
         Quest q;
         for(int i = 0; i < player.quests.length; i++ )
         {
@@ -49,7 +49,7 @@ public class QuestsUtils extends UtilBase
 
     public ISFSArray getAll(int playerId)
     {
-        String query = "SELECT id, `type`, `key`, step FROM quests WHERE player_id = " + playerId + " ORDER BY timestamp";
+        String query = "SELECT id, `type`, `key`, step FROM " + DBUtils.getInstance().liveDB + ".quests WHERE player_id = " + playerId + " ORDER BY timestamp";
         ISFSArray quests = new SFSArray();
         try {
             quests = ext.getParentZone().getDBManager().executeQuery(query, new Object[]{});

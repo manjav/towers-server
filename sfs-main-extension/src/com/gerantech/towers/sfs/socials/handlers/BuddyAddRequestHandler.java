@@ -7,6 +7,7 @@ import com.gt.towers.Game;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.towers.constants.ResourceType;
 import com.gt.towers.socials.Lobby;
+import com.gt.utils.DBUtils;
 import com.gt.utils.InboxUtils;
 import com.gt.utils.OneSignalUtils;
 import com.smartfoxserver.v2.api.ISFSBuddyApi;
@@ -110,7 +111,7 @@ public class BuddyAddRequestHandler extends BBGClientRequestHandler
             {
                 // Invitee reward consumption
                 game.player.resources.increase(ResourceType.R4_CURRENCY_HARD, Lobby.buddyInviteeReward);
-                queryStr = "UPDATE resources SET count=" + game.player.get_hards() + " WHERE type=1003 AND player_id=" + inviteeId + ";";
+                queryStr = "UPDATE " + DBUtils.getInstance().liveDB + ".resources SET count=" + game.player.get_hards() + " WHERE type=1003 AND player_id=" + inviteeId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
                 params.putInt("rewardType", ResourceType.R4_CURRENCY_HARD);
@@ -125,7 +126,7 @@ public class BuddyAddRequestHandler extends BBGClientRequestHandler
             // Inviter reward consumption if invitee is new player
             if( !existsUDID && sfsArray.size() == 0 )
             {
-                queryStr = "UPDATE resources SET count=count+" + Lobby.buddyInviterReward + " WHERE type=1003 AND player_id=" + inviterId + ";";
+                queryStr = "UPDATE " + DBUtils.getInstance().liveDB + ".resources SET count=count+" + Lobby.buddyInviterReward + " WHERE type=1003 AND player_id=" + inviterId + ";";
                 trace("add reward query:", queryStr);
                 dbManager.executeUpdate(queryStr, new Object[] {});
                 msg = (game.player.nickName.equals("guest")?"یه نفر":game.player.nickName) + " باهات رفیق شد و تو هم " + Lobby.buddyInviterReward + " تا جواهر جایزه گرفتی. ";

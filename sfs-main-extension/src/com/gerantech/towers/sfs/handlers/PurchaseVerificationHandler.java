@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.utils.DBUtils;
 import com.gt.utils.ExchangeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
@@ -182,7 +183,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 	{
 		ISFSArray res = null;
 		try {
-			res = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT count From resources WHERE player_id = " + playerID + " AND type = 1003", new Object[]{});
+			res = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT count From " + DBUtils.getInstance().liveDB + ".resources WHERE player_id = " + playerID + " AND type = 1003", new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		if( res != null && res.size() > 0 )

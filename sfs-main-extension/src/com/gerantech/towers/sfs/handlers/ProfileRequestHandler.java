@@ -1,6 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
 import com.gt.Commands;
+import com.gt.utils.DBUtils;
 import com.gt.utils.LobbyUtils;
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.data.LobbySFS;
@@ -24,32 +25,31 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
-		String query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type=1000 OR type=1001 OR type=1201 OR type=1202);") ;
+		String query = "SELECT type, count, level FROM " + DBUtils.getInstance().liveDB + ".resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type<13);");
+		ISFSArray resources = null;
+		boolean isOld = false;
 		try {
-			params.putSFSArray("resources", dbManager.executeQuery(query, new Object[]{}));
+			resources = dbManager.executeQuery(query, new Object[]{});
+			isOld = resources.size() < 1;
+			if( isOld )
+			{
+				query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type<13);");
+				resources = dbManager.executeQuery(query, new Object[]{});
+			}
 		} catch (SQLException e) { e.printStackTrace(); }
+		params.putSFSArray("resources", resources);
+		String liveDB = isOld ? "" : (DBUtils.getInstance().liveDB + ".");
 
 		//  -=-=-=-=-=-=-=-=-  add player data  -=-=-=-=-=-=-=-=-
 		if( params.containsKey("pd") )
 		{
-			query = "SELECT * FROM players WHERE id=" + playerId + " Limit 1;";
-			ISFSArray dataArray = null;
+			query = "SELECT * FROM " + liveDB + "players WHERE id=" + playerId + " Limit 1;";
+			ISFSArray players = null;
 			try {
-				dataArray = dbManager.executeQuery(query, new Object[]{});
+				players = dbManager.executeQuery(query, new Object[]{});
 			} catch (SQLException e) { e.printStackTrace(); }
-			params.putSFSObject("pd", dataArray.getSFSObject(0));
+			params.putSFSObject("pd", players.getSFSObject(0));
 		}
-
-		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
-		LobbySFS lobbyData = null;
-		if( params.containsKey("lp") )
-			lobbyData = LobbyUtils.getInstance().getDataByMember(playerId);
-		if( lobbyData != null )
-		{
-			params.putText("ln", lobbyData.getName());
-			params.putInt("lp", lobbyData.getEmblem());
-		}
-
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
 		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
 

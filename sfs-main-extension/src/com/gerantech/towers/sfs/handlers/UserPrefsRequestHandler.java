@@ -21,7 +21,7 @@ public class UserPrefsRequestHandler extends BaseClientRequestHandler
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		Game game = ((Game)sender.getSession().getProperty("core"));
 		if( params.containsKey("k") ) {
-			String queryStr = "INSERT INTO userprefs (k, v, player_id) VALUES ("+ params.getInt("k")+",'"+params.getText("v")+"',"+game.player.id+") ON DUPLICATE KEY UPDATE v='" + params.getText("v")+"'";
+			String queryStr = "INSERT INTO " + DBUtils.getInstance().liveDB + ".userprefs (k, v, player_id) VALUES ("+ params.getInt("k")+",'"+params.getText("v")+"',"+game.player.id+") ON DUPLICATE KEY UPDATE v='" + params.getText("v")+"'";
 			try {
 				dbManager.executeUpdate(queryStr, new Object[]{});
 			} catch (SQLException e) { e.printStackTrace(); }

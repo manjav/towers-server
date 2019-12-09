@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1555744503;
+	public static int UNTIL_MAINTENANCE = 1575203259;
 
 	public void handleServerEvent(ISFSEvent event)
 	{
@@ -96,16 +96,18 @@ public class LoginEventHandler extends BaseServerEventHandler
 		{
 			// retrieve user that saved account before
 			try {
-				ISFSArray res = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + deviceIMEI + "'", new Object[]{});
-				if ( res.size() > 0 )
+				ISFSArray devices = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + deviceIMEI + "'", new Object[]{});
+				if( devices.size() > 0 )
 				{
-					ISFSArray res2 = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + res.getSFSObject(0).getInt("player_id"), new Object[]{});
-					if ( res2.size() > 0 )
+					ISFSArray players = dbManager.executeQuery("SELECT id, name, password FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + devices.getSFSObject(0).getInt("player_id"), new Object[]{});
+					if( players.size() < 1 )
+						players = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + devices.getSFSObject(0).getInt("player_id"), new Object[]{});
+					if ( players.size() > 0 )
 					{
 						outData.putBool("exists", true);
-						outData.putInt("id", res2.getSFSObject(0).getInt("id"));
-						outData.putText("name", res2.getSFSObject(0).getText("name"));
-						outData.putText("password", res2.getSFSObject(0).getText("password"));
+						outData.putInt("id", players.getSFSObject(0).getInt("id"));
+						outData.putText("name", players.getSFSObject(0).getText("name"));
+						outData.putText("password", players.getSFSObject(0).getText("password"));
 						return;
 					}
 				}
@@ -114,17 +116,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		password = PasswordGenerator.generate().toString();
 
-		// Insert to DataBase
+		// Insert into database
 		int playerId = 0;
 		try {
-			playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
+			playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO " + DBUtils.getInstance().liveDB + ".players (name, password) VALUES ('guest', '" + password + "');", new Object[] {}));
 			outData.putUtfString(SFSConstants.NEW_LOGIN_NAME, playerId + "");
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		// get initial user resources
+		// Get initial user resources
 		SFSArray resources = new SFSArray();
-		for (int i : loginData.resources.keys())
+		for( int i : loginData.resources.keys() )
 		{
 			SFSObject so = new SFSObject();
 
@@ -135,7 +137,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 			resources.addSFSObject( so );
 		}
 
-		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
+		String query = "INSERT INTO " + DBUtils.getInstance().liveDB + ".resources (`player_id`, `type`, `count`, `level`) VALUES ";
 		for(int i=0; i<resources.size(); i++)
 		{
 			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
@@ -178,11 +180,11 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// Find player in DB ===========================================================
 		int id = Integer.parseInt(name);
 		ISFSArray res = null;
-		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
+		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + id, new Object[]{});
 			if( res.size() == 0 )
 			{
-				DBUtils.getInstance().recoverFromInactives(id);
-				res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
+				DBUtils.getInstance().restore(id);
+				res = dbManager.executeQuery("SELECT name, password, sessions_count FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + id, new Object[]{});
 			}
 		} catch(SQLException e) { e.printStackTrace(); }
 

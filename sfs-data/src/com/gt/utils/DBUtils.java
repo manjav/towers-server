@@ -32,8 +32,9 @@ public class DBUtils extends UtilBase
 {
     private final IDBManager db;
     private final Boolean DEBUG_MODE = true;
-    public final String mainDB = ext.getParentZone().getDBManager().getConfig().connectionString.split("/")[3].split("\\?")[0];
-    public final String inactiveDB = mainDB + "_inactive";
+    private final String _DB = ext.getParentZone().getDBManager().getConfig().connectionString.split("/")[3].split("\\?")[0];
+    public final String liveDB = _DB + "_live";
+
     public DBUtils()
     {
         super();
@@ -54,60 +55,15 @@ public class DBUtils extends UtilBase
             try {
                 con.setAutoCommit(false);
                 Statement statement = con.createStatement();
-                List<String> columns = new ArrayList<String>();
                 // ---------- Table Backups ------------
-                // accounts
-                columns = new ArrayList<String>(Arrays.asList("id","player_id","type","social_id","name","image_url","timestamp"));
-                backupTable("accounts", columns, statement);
-                // banneds
-                columns = new ArrayList<String>(Arrays.asList("id", "player_id", "udid", "imei", "message", "mode", "timestamp", "expire_at", "time"));
-                backupTable("banneds", columns, statement);
-                // bugs
-                columns = new ArrayList<String>(Arrays.asList("id","player_id","email","description","status","report_at"));
-                backupTable("bugs", columns, statement);
-                // challenges
-                columns = new ArrayList<String>(Arrays.asList("id","type","start_at","attendees"));
-                backupTable("challenges", columns, statement);
-                // devices
-                columns = new ArrayList<String>(Arrays.asList("player_id","model","udid","imei"));
-                backupTable("devices", columns, statement);
-                // exchanges
-                columns = new ArrayList<String>(Arrays.asList("id","type","player_id","num_exchanges","expired_at","outcome","reqs"));
-                backupTable("exchanges", columns, statement);
-                // friendship
-                columns = new ArrayList<String>(Arrays.asList("id","inviter_id","invitee_id","invitation_code","has_reward"));
-                backupTable("friendship", columns, statement);
-                // inbox
-                columns = new ArrayList<String>(Arrays.asList("id","type","text","sender","senderId","receiverId","data","read","utc"));
-                backupTable("inbox", columns, statement);
-                // infractions
-                columns = new ArrayList<String>(Arrays.asList("id","reporter","offender","content","lobby","offend_at","report_at","proceed"));
-                backupTable("infractions", columns, statement);
-                // lobbies
-                columns = new ArrayList<String>(Arrays.asList("id","name","bio","emblem","capacity","min_point","privacy","create_at","members","messages"));
-                backupTable("lobbies", columns, statement);
-                // operations
-                columns = new ArrayList<String>(Arrays.asList("index","player_id","score","create_at"));
-                backupTable("operations", columns, statement);
-                // players
-                columns = new ArrayList<String>(Arrays.asList("name", "password", "create_at", "app_version", "last_login", "sessions_count"));
-                backupTable("players", columns, statement);
-                // purchases
-                columns = new ArrayList<String>(Arrays.asList("player_id","id","market","token","consumed","state","time","timestamp","old_res","new_res"));
-                backupTable("purchases", columns, statement);
-                // pushtokens
-                columns = new ArrayList<String>(Arrays.asList("player_id","fcm_token","os_pid","os_token"));
-                backupTable("pushtokens", columns, statement);
-                // quests
-                columns = new ArrayList<String>(Arrays.asList("id","player_id","type","key","step","timestamp"));
-                backupTable("quests", columns, statement);
-                // resources
-                columns = new ArrayList<String>(Arrays.asList("type", "count", "level"));            
-                backupTable("resources", columns, statement);
-                // userprefs
-                columns = new ArrayList<String>(Arrays.asList("player_id","k","v"));
-                backupTable("userprefs", columns, statement);
-                query = "DELETE FROM " + mainDB + ".players WHERE id != 10000 AND last_login < \"" + timestamp.toString() + "\"";
+                backupTable(statement, "players",    new String[]{"name","password","create_at","app_version","last_login","sessions_count"});
+                backupTable(statement, "exchanges",  new String[]{"player_id","type","num_exchanges","expired_at","outcome","reqs"});
+                backupTable(statement, "operations", new String[]{"index","player_id","score","create_at"});
+                backupTable(statement, "quests",     new String[]{"player_id","type","key","step","timestamp"});
+                backupTable(statement, "resources",  new String[]{"player_id","type","count","level"});
+                backupTable(statement, "userprefs",  new String[]{"player_id","k","v"});
+
+                query = "DELETE FROM " + liveDB + ".players WHERE last_login < \"" + timestamp.toString() + "\"";
                 traceQuery(query);
                 statement.execute(query);
                 con.commit();
@@ -127,8 +83,8 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    private String getOnDuplicateKeyChanges(List<String> columns) {
-        String ret = "ON DUPLICATE KEY UPDATE ";
+    private String getOnDuplicateKeyChanges(String[] columns) {
+        String ret = " ON DUPLICATE KEY UPDATE ";
         List<String> valueColumn = new ArrayList<String>();
         for ( String column : columns ) {
             valueColumn.add("`"+column+"`=VALUES(`"+column+"`)");
@@ -137,40 +93,23 @@ public class DBUtils extends UtilBase
         return ret;
     }
 
-    public Boolean recoverFromInactives(int playerId) {
-        List<String> columns = new ArrayList<String>();
-        // players
-        columns = new ArrayList<String>(Arrays.asList("name", "password", "create_at", "app_version", "last_login", "sessions_count"));
-        String query = "INSERT INTO " + mainDB + ".players SELECT * FROM " + inactiveDB + ".players " + getOnDuplicateKeyChanges(columns);
-        try { db.executeInsert(query, new Object[] {}); } catch(SQLException e) {e.printStackTrace(); }
-        // exchanges
-        columns = new ArrayList<String>(Arrays.asList("id","type","player_id","num_exchanges","expired_at","outcome","reqs"));
-        recoverInactivePlayerFromTable("exchanges", columns, playerId);
-        // quests
-        columns = new ArrayList<String>(Arrays.asList("id","player_id","type","key","step","timestamp"));
-        recoverInactivePlayerFromTable("quests", columns, playerId);
-        // resources
-        columns = new ArrayList<String>(Arrays.asList("type", "count", "level"));            
-        recoverInactivePlayerFromTable("resources", columns, playerId);
-        // userprefs
-        columns = new ArrayList<String>(Arrays.asList("player_id","k","v"));
-        recoverInactivePlayerFromTable("userprefs", columns, playerId);
-        return false;
+    public void restore(int playerId) {
+        restorePlayer(playerId, "id",          "players",      new String[]{"name","password","create_at","app_version","last_login","sessions_count"});
+        restorePlayer(playerId, "player_id",   "exchanges",    new String[]{"player_id","type","num_exchanges","expired_at","outcome","reqs"});
+        restorePlayer(playerId, "player_id",   "operations",   new String[]{"index","player_id","score","create_at"});
+        restorePlayer(playerId, "player_id",   "quests",       new String[]{"player_id","type","key","step","timestamp"});
+        restorePlayer(playerId, "player_id",   "resources",    new String[]{"player_id","type","count","level"});
+        restorePlayer(playerId, "player_id",   "userprefs",    new String[]{"player_id","k","v"});
     }
 
-    private void backupTable(String table, List<String> columns, Statement statement) throws SQLException {
-        String query = "INSERT INTO " + inactiveDB + "." + table + " SELECT * FROM " + mainDB + "." + table + " " + getOnDuplicateKeyChanges(columns);
+    private void backupTable(Statement statement, String table, String[] columns) throws SQLException {
+        String query = "INSERT INTO " + table + " SELECT * FROM " + liveDB + "." + table + getOnDuplicateKeyChanges(columns);
         traceQuery(query);
         statement.execute(query);
     }
 
-    private void recoverInactivePlayerFromTable(String table, List<String> columns, int playerId)
-    {
-        String query =  "INSERT INTO " + mainDB + "." + table +
-                        " SELECT " + inactiveDB + "." + table + ".* FROM " + inactiveDB +
-                        "." + table + " INNER JOIN " + inactiveDB + ".players ON players.id=" + table + ".player_id " +
-                        " WHERE player_id=" + playerId +
-                        " " + getOnDuplicateKeyChanges(columns);
+    private void restorePlayer(int playerId, String idName, String table, String[] columns) {
+        String query =  "INSERT INTO " + liveDB + "." + table + " SELECT * FROM " + table + " WHERE " + idName + "=" + playerId + getOnDuplicateKeyChanges(columns);
         traceQuery(query);
         try {
             db.executeInsert(query, new Object[]{});
@@ -182,7 +121,7 @@ public class DBUtils extends UtilBase
     {
         SFSArray ret = new SFSArray();
         try {
-            ret = (SFSArray) db.executeQuery("SELECT id, type, count, level FROM resources WHERE player_id = " + playerId, new Object[] {});
+            ret = (SFSArray) db.executeQuery("SELECT id, type, count, level FROM " + liveDB + ".resources WHERE player_id = " + playerId, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
@@ -195,7 +134,7 @@ public class DBUtils extends UtilBase
             return;
 
         boolean hasRankFields = false;
-        String query = "UPDATE resources SET count= CASE";
+        String query = "UPDATE " + liveDB + ".resources SET count= CASE";
         for (int i = 0; i < keyLen; i++)
         {
             if( resources.get(keys[i]) == 0 || ResourceType.isBook(keys[i]) )
@@ -238,7 +177,7 @@ public class DBUtils extends UtilBase
         if( keyLen == 0 )
             return;
 
-        String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
+        String query = "INSERT INTO " + liveDB + ".resources (`player_id`, `type`, `count`, `level`) VALUES ";
         for (int i = 0; i < keyLen; i++)
         {
             if( ResourceType.isBook(res.get(i)) )
@@ -246,7 +185,7 @@ public class DBUtils extends UtilBase
             query += "('" + player.id + "', '" + res.get(i) + "', '" + player.resources.get(res.get(i)) + "', '" + (ResourceType.isBuilding(res.get(i))?player.buildings.get(res.get(i)).get_level():0) + "')";
             query += i < keyLen - 1 ? ", " : ";";
         }
-        if( query == "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES " )
+        if( query == "INSERT INTO " + liveDB + ".resources (`player_id`, `type`, `count`, `level`) VALUES " )
             return;
         try{
         db.executeInsert(query, new Object[] {});
@@ -259,13 +198,13 @@ public class DBUtils extends UtilBase
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT type, num_exchanges, expired_at, outcome, reqs FROM exchanges WHERE player_id=" + playerId + " OR player_id=10000", new Object[]{});
+            ret = db.executeQuery("SELECT type, num_exchanges, expired_at, outcome, reqs FROM " + liveDB + ".exchanges WHERE player_id=" + playerId + " OR player_id=10000", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
     public void updateExchange(int type, int playerId, int expireAt, int numExchanges, String outcomesStr, String reqsStr)
     {
-        String query = "SELECT _func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "', '" + reqsStr + "')";
+        String query = "SELECT " + liveDB + "._func_exchanges(" + type + "," + playerId + "," + numExchanges + "," + expireAt + ",'" + outcomesStr + "', '" + reqsStr + "')";
         try {
             db.executeQuery(query, new Object[] {});
         } catch (SQLException e) { e.printStackTrace(); }
@@ -276,7 +215,7 @@ public class DBUtils extends UtilBase
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT `index`,`score` FROM operations WHERE player_id=" + playerId, new Object[]{});
+            ret = db.executeQuery("SELECT `index`,`score` FROM " + liveDB + ".operations WHERE player_id=" + playerId, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
         return ret;
     }
@@ -284,16 +223,16 @@ public class DBUtils extends UtilBase
     {
         try {
             if( player.operations.exists( index ) )
-                db.executeUpdate("UPDATE `operations` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
+                db.executeUpdate("UPDATE " + liveDB + ".`operations` SET `score`='" + score + "' WHERE `index`=" + index + " AND `player_id`=" + player.id + ";", new Object[] {});
             else
-                db.executeInsert("INSERT INTO operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
+                db.executeInsert("INSERT INTO " + liveDB + ".operations (`index`, `player_id`, `score`) VALUES ('" + index + "', '" + player.id + "', '" + score + "');", new Object[] {});
         } catch (Exception e) { e.printStackTrace(); }
     }
 
     // _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-   OTHERS  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     public void upgradeBuilding(Player player, int type, int level)
     {
-        String query = "UPDATE `resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";";
+        String query = "UPDATE " + liveDB + ".`resources` SET `level`='" + level + "' WHERE `type`=" + type + " AND `player_id`=" + player.id + ";";
         try {
         db.executeUpdate(query, new Object[] {});
         } catch (Exception e) { e.printStackTrace(); }
@@ -303,7 +242,7 @@ public class DBUtils extends UtilBase
     {
         SFSArray decks = null;
         try {
-            decks = (SFSArray) db.executeQuery("SELECT * FROM decks WHERE player_id=" + playerId, new Object[]{});
+            decks = (SFSArray) db.executeQuery("SELECT * FROM " + liveDB + ".decks WHERE player_id = " + playerId, new Object[] {});
         } catch (Exception e) { e.printStackTrace(); }
         return decks;
     }
@@ -323,7 +262,7 @@ public class DBUtils extends UtilBase
     {
         ISFSArray ret = null;
         try {
-            ret = db.executeQuery("SELECT k,v FROM userprefs WHERE player_id=" + id, new Object[]{});
+            ret = db.executeQuery("SELECT k,v FROM " + liveDB + ".userprefs WHERE player_id=" + id, new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
 
         for( int i=0; i < ret.size(); i ++ )
@@ -346,7 +285,7 @@ public class DBUtils extends UtilBase
     {
         String result = "";
         try {
-            db.executeUpdate("UPDATE `exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
+            db.executeUpdate("UPDATE " + liveDB + ".`exchanges` SET `num_exchanges`= 0 WHERE `type`=29 AND `num_exchanges` != 0;", new Object[] {});
         } catch (SQLException e) { return "Query failed"; }
 
         // reset disconnected in-battle players
