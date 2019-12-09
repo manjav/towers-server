@@ -25,7 +25,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 		int playerId = params.getInt("id");
 
 		//  -=-=-=-=-=-=-=-=-  add resources data  -=-=-=-=-=-=-=-=-
-		String query = "SELECT type, count, level FROM " + DBUtils.getInstance().liveDB + ".resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type<13);");
+		String query = "SELECT type, count, level FROM " + DBUtils.getInstance().liveDB + ".resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type=1000 OR type=1001 OR type=1201 OR type=1202);");
 		ISFSArray resources = null;
 		boolean isOld = false;
 		try {
@@ -33,7 +33,7 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			isOld = resources.size() < 1;
 			if( isOld )
 			{
-				query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type<13);");
+				query = "SELECT type, count, level FROM resources WHERE player_id = " + playerId + (params.containsKey("am") ? ";" : " AND (type=1000 OR type=1001 OR type=1201 OR type=1202);") ;
 				resources = dbManager.executeQuery(query, new Object[]{});
 			}
 		} catch (SQLException e) { e.printStackTrace(); }
@@ -50,6 +50,17 @@ public class ProfileRequestHandler extends BaseClientRequestHandler
 			} catch (SQLException e) { e.printStackTrace(); }
 			params.putSFSObject("pd", players.getSFSObject(0));
 		}
+
+		//  -=-=-=-=-=-=-=-=-  add lobby data  -=-=-=-=-=-=-=-=-
+		LobbySFS lobbyData = null;
+		if( params.containsKey("lp") )
+			lobbyData = LobbyUtils.getInstance().getDataByMember(playerId);
+		if( lobbyData != null )
+		{
+			params.putText("ln", lobbyData.getName());
+			params.putInt("lp", lobbyData.getEmblem());
+		}
+
 		//  -=-=-=-=-=-=-=-=-  add player tag  -=-=-=-=-=-=-=-=-
 		params.putText("tag", PasswordGenerator.getInvitationCode(playerId));
 
