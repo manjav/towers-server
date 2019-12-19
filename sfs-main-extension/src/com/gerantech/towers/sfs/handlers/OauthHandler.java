@@ -24,7 +24,7 @@ public class OauthHandler extends BaseClientRequestHandler
 		try {
 
 			// retrieve user that saved account before
-			ISFSArray accounts = dbManager.executeQuery("SELECT type, player_id FROM accounts WHERE id='" + params.getText("accountId") + "'", new Object[] {});
+			ISFSArray accounts = dbManager.executeQuery("SELECT type, player_id FROM accounts WHERE social_id='" + params.getText("accountId") + "'", new Object[] {});
 			boolean needInsert = accounts.size() == 0;
 			if( !needInsert && playerId != accounts.getSFSObject(0).getInt("player_id") )// if exists player and his id equals player id
 	        {
@@ -39,7 +39,7 @@ public class OauthHandler extends BaseClientRequestHandler
 			}
 
 			if( needInsert )
-				dbManager.executeInsert("INSERT INTO accounts (`player_id`, `type`, `id`, `name`, `image_url`) VALUES ('" + playerId + "', '" + params.getInt("accountType") + "', '" + params.getText("accountId") + "', '" + params.getText("accountName") + "', '" + params.getText("accountImageURL") + "');", new Object[] {});
+				dbManager.executeInsert("INSERT INTO accounts (`player_id`, `type`, `social_id`, `name`, `image_url`) VALUES ('" + playerId + "', '" + params.getInt("accountType") + "', '" + params.getText("accountId") + "', '" + params.getText("accountName") + "', '" + params.getText("accountImageURL") + "');", new Object[] {});
 
 		} catch (SQLException e) { e.printStackTrace(); }
 

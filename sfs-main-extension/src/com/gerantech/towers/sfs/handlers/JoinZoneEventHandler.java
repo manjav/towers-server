@@ -1,5 +1,6 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gt.utils.DBUtils;
 import com.gt.utils.LobbyUtils;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -35,7 +36,7 @@ try {
 			return;
 
 		// Update player data
-		String query = "UPDATE `players` SET `app_version`='" + game.appVersion + "', `sessions_count`='" + (game.sessionsCount+1) + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";
+		String query = "UPDATE " + DBUtils.getInstance().liveDB + ".`players` SET `app_version`='" + game.appVersion + "', `sessions_count`='" + (game.sessionsCount+1) + "', `last_login`='" + Timestamp.from(Instant.now()) + "' WHERE `id`=" + game.player.id + ";";
 		try {
 			getParentExtension().getParentZone().getDBManager().executeUpdate(query, new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }

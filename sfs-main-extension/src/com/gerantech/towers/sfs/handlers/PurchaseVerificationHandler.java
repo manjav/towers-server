@@ -1,5 +1,7 @@
 package com.gerantech.towers.sfs.handlers;
 
+import com.gt.towers.exchanges.ExchangeItem;
+import com.gt.utils.DBUtils;
 import com.gt.utils.ExchangeUtils;
 import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
@@ -30,12 +32,13 @@ import java.util.Map;
 public class PurchaseVerificationHandler extends BaseClientRequestHandler
 {
 
+	private ExchangeItem item;
 	private static String packageName = "***";
 	private static String accessToken_cafebazaar = "***";
 
 	public void handleClientRequest(User sender, ISFSObject params)
-    {
-        // Get the client parameters
+	{
+		// Get the client parameters
 		String productID = params.getText("productID");//com.grantech.towers.item_x
 		String purchaseToken = params.getText("purchaseToken");
 		if( params.containsKey("consume") )
@@ -44,56 +47,91 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 			return;
 		}
 
-        sendResult(sender, productID, purchaseToken);
-    }
+		sendResult(sender, productID, purchaseToken);
+	}
 
 	private void sendResult(User sender, String productID, String purchaseToken)
 	{
-        // Create a response object
-        ISFSObject resObj = SFSObject.newInstance();
+		// Create a response object
+		ISFSObject resObj = SFSObject.newInstance();
 		Game game = ((Game)sender.getSession().getProperty("core"));
+		item = game.exchanger.items.get(Integer.parseInt(productID.replaceAll("^.*_", "")));
 
 		trace("Player Purchase --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", game.player.resources.get(ResourceType.R4_CURRENCY_HARD) );
-		if( !game.market.equals("cafebazaar") && !game.market.equals("myket") )
+		if( !game.market.equals("cafebazaar") && !game.market.equals("myket") && !game.market.equals("zarinpal") )
 		{
 			sendSuccessResult(sender, game, productID, purchaseToken, 1, 0, "", Instant.now().toEpochMilli());
 			return;
 		}
-		HttpUtils.Data data = verify(productID, purchaseToken, game.market);
-        // send purchase data to client
-        // if consumptionState is zero, its means the product consumed.
-        if( data.statusCode == HttpStatus.SC_OK )
-        {
+
+		HttpUtils.Data data;
+		// If market is zarinpal we verify it with amount
+		if( game.market.equals("zarinpal") )
+		{
+			String amount = Integer.toString(item.requirements.get(ResourceType.R5_CURRENCY_REAL));
+			data = verify(productID, purchaseToken, game.market, amount);
+		}
+		else
+		{
+			data = verify(productID, purchaseToken, game.market, null);
+		}
+
+		// send purchase data to client
+		// if consumptionState is zero, its means the product consumed.
+		if( data.statusCode == HttpStatus.SC_OK )
+		{
+			if( game.market.equals("zarinpal") )
+			{
+				if( data.json.getInt("Status") == 100 )
+				{
+					String refid = data.json.getString("RefID");
+					sendSuccessResult(sender, game, productID, refid, 0, 0, "", Instant.now().toEpochMilli());
+				}
+				else if( data.json.getInt("Status") == 101 )
+				{
+					resObj.putBool("success", false);
+					resObj.putText("message", "already used");
+					send("verify", resObj, sender);
+				}
+				else
+				{
+					resObj.putBool("success", false);
+					resObj.putText("message", "not valid");
+					send("verify", resObj, sender);
+				}
+				return;
+			}
+
 			sendSuccessResult(sender, game, productID, purchaseToken, data.json.getInt("consumptionState"), data.json.getInt("purchaseState"), data.json.getString("developerPayload"), data.json.getLong("purchaseTime"));
 			return;
-        }
-        
-        // when product id or purchase token is wrong
-        if( data.statusCode == HttpStatus.SC_NOT_FOUND )
+		}
+
+		// when product id or purchase token is wrong
+		if( data.statusCode == HttpStatus.SC_NOT_FOUND )
 		{
 			resObj.putBool("success", false);
 			resObj.putText("message", data.json.getString("error_description"));
-		    send("verify", resObj, sender);
-    		return;
-	    }
-        
-        // when access token expired
+			send("verify", resObj, sender);
+			return;
+		}
+
+		// when access token expired
 		if( data.statusCode == HttpStatus.SC_UNAUTHORIZED )
 		{
 			if( refreshAccessToken() )
-		        sendResult(sender, productID, purchaseToken);
-	        else
-	        {
+				sendResult(sender, productID, purchaseToken);
+			else
+			{
 				resObj.putBool("success", false);
 				resObj.putText("error_description", "refresh access token faild.");
-			    send("verify", resObj, sender);
-			    trace(ExtensionLogLevel.ERROR, "refresh access token faild.");
+				send("verify", resObj, sender);
+				trace(ExtensionLogLevel.ERROR, "refresh access token faild.");
 			}
-    		return;
+			return;
 		}
-		
-        // unknown error
-	    trace(ExtensionLogLevel.ERROR, "Unknown Error.");
+
+		// unknown error
+		trace(ExtensionLogLevel.ERROR, "Unknown Error.");
 	}
 
 	private void sendSuccessResult(User sender, Game game, String productID, String purchaseToken, int consumptionState, int purchaseState, String developerPayload, long purchaseTime)
@@ -108,10 +146,9 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		}
 
 		String beforePurchaseData = game.player.resources.toString();
-		int item = Integer.parseInt(productID.split("_")[1]);
-		if( ExchangeType.getCategory(item) == ExchangeType.C0_HARD )
+		if( item.category == ExchangeType.C0_HARD )
 		{
-			int res = ExchangeUtils.getInstance().process(game, item, 0, 0);
+			int res = ExchangeUtils.getInstance().process(game, item.type, 0, 0);
 			if( res != MessageTypes.RESPONSE_SUCCEED )
 			{
 				resObj.putBool("success", false);
@@ -123,11 +160,12 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		String afterPurchaseData = game.player.resources.toString();
 
 		resObj.putBool("success", true);
+		resObj.putText("productID", productID);
 		resObj.putInt("consumptionState", consumptionState);
 		resObj.putInt("purchaseState", purchaseState);
 		resObj.putText("developerPayload", developerPayload);
 		resObj.putLong("purchaseTime", purchaseTime);
-		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime, game.exchanger.items.get(item).requirements.values()[0], beforePurchaseData, afterPurchaseData);
+		insertToDB(game, productID, purchaseToken, purchaseState, purchaseTime, item.requirements.values()[0], beforePurchaseData, afterPurchaseData);
 		send("verify", resObj, sender);
 		trace("Purchase Succeed --playerId:", game.player.id, "--market:", game.market,  "--productID:", productID, "--purchaseToken:", purchaseToken, "--Hard Currency:", getHardOnDB(game.player.id) );
 	}
@@ -145,7 +183,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 	{
 		ISFSArray res = null;
 		try {
-			res = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT count From resources WHERE player_id = " + playerID + " AND type = 1003", new Object[]{});
+			res = getParentExtension().getParentZone().getDBManager().executeQuery("SELECT count From " + DBUtils.getInstance().liveDB + ".resources WHERE player_id = " + playerID + " AND type = 1003", new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		if( res != null && res.size() > 0 )
@@ -185,7 +223,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		HttpUtils.Data data = HttpUtils.post("https://pardakht.cafebazaar.ir/devapi/v2/auth/token/", argus, true);
 		trace("request_AccessToken", data.statusCode, data.text);
 		return(data.text);
-    }
+	}
 
 	/**
 	 * This method called when access token expired.<br/>
@@ -211,7 +249,7 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 
 		accessToken_cafebazaar = data.json.getString("access_token");
 		return true;
-    }
+	}
 
 	/**
 	 * Server side purchase verification method.<br/>
@@ -223,15 +261,34 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 	 * 	<b>"purchaseTime"</b>: purchase time in miliseconds<br/>
 	 * @return Data <br/>
 	 */
-	HttpUtils.Data verify(String productID, String purchaseToken, String market)
+	HttpUtils.Data verify(String productID, String purchaseToken, String market, String amount)
 	{
 		// set headers
 		Map<String, String> headers = new HashMap();
 		if( market.equals("myket") )
+		{
 			headers.put("X-Access-Token", "4cc2d302-836c-460e-a3a7-e72c8cd9c666");
-
+		}
+		else if( market.equals("zarinpal") )
+		{
+			headers.put("User-Agent", "Zarinpal REST");
+			headers.put("Content-Type", "application/json");
+		}
 		String url = null;
 		// set url
+		if( market.equals("zarinpal") )
+		{
+			url = "https://www.zarinpal.com/pg/rest/WebGate/PaymentVerification.json";
+			List<NameValuePair> argus = new ArrayList<>();
+			argus.add(new BasicNameValuePair("MerchantID", "b37e90ce-b2bc-11e9-832c-000c29344814"));
+			argus.add(new BasicNameValuePair("Authority", purchaseToken));
+			argus.add(new BasicNameValuePair("Amount", amount));
+			HttpUtils.Data data = HttpUtils.post(url, argus, true, true);
+			
+			trace("verify", data.statusCode, data.text);
+			return data;
+		}
+
 		if( market.equals("myket") )
 			url = "https://developer.myket.ir/api/applications/" + packageName + "/purchases/products/" + productID + "/tokens/" + purchaseToken;
 		else if( market.equals("cafebazaar") )
@@ -241,5 +298,5 @@ public class PurchaseVerificationHandler extends BaseClientRequestHandler
 		HttpUtils.Data data = HttpUtils.get(url, headers, true);
 		trace("verify", data.statusCode, data.text);
 		return data;
-	}	
+	}
 }

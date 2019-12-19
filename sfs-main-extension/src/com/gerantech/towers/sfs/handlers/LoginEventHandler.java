@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoginEventHandler extends BaseServerEventHandler 
 {
-	public static int UNTIL_MAINTENANCE = 1555744503;
+	public static int UNTIL_MAINTENANCE = 1575203259;
 
 	public void handleServerEvent(ISFSEvent event)
 	{
@@ -53,7 +53,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		}
 
 		// check ban
-		ISFSObject banData = BanUtils.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), now);
+		ISFSObject banData = BanUtils.getInstance().checkBan(inData.getInt("id"), inData.getText("udid"), inData.containsKey("imei")?inData.getText("imei"):null, now);
 		if( banData != null )
 		{
 			outData.putSFSObject("ban", banData);
@@ -79,7 +79,10 @@ public class LoginEventHandler extends BaseServerEventHandler
 			createPlayer(session, name, password, inData, outData, loginData);
 		else
 			loadPlayer(session, name, password, inData, outData, loginData);
-} catch (Exception | Error e) { e.printStackTrace();}
+
+		outData.putText("forbidenApps", "parallel,dualspace,ludashi,cloneapp,mochat,multiaccounts,trendmicro,cloner,multiapp,clone");
+
+	} catch (Exception | Error e) { e.printStackTrace();}
 	}
 
 	// Create new user ============================================================
@@ -87,21 +90,24 @@ public class LoginEventHandler extends BaseServerEventHandler
 	{
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
 		String deviceUDID = inData.getText("udid");
+		String deviceIMEI = inData.containsKey("imei") && !inData.getText("imei").isEmpty() ? "' OR imei='" + inData.getText("imei") : "";
 		String deviceModel = inData.getText("device");
 		if( inData.getInt("id") == -1 )
 		{
 			// retrieve user that saved account before
 			try {
-				ISFSArray res = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + "'", new Object[]{});
-				if ( res.size() > 0 )
+				ISFSArray devices = dbManager.executeQuery("SELECT player_id FROM devices WHERE udid='" + deviceUDID + "' AND model='" + deviceModel + deviceIMEI + "'", new Object[]{});
+				if( devices.size() > 0 )
 				{
-					ISFSArray res2 = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + res.getSFSObject(0).getInt("player_id"), new Object[]{});
-					if ( res2.size() > 0 )
+					ISFSArray players = dbManager.executeQuery("SELECT id, name, password FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + devices.getSFSObject(0).getInt("player_id"), new Object[]{});
+					if( players.size() < 1 )
+						players = dbManager.executeQuery("SELECT id, name, password FROM players WHERE id=" + devices.getSFSObject(0).getInt("player_id"), new Object[]{});
+					if ( players.size() > 0 )
 					{
 						outData.putBool("exists", true);
-						outData.putInt("id", res2.getSFSObject(0).getInt("id"));
-						outData.putText("name", res2.getSFSObject(0).getText("name"));
-						outData.putText("password", res2.getSFSObject(0).getText("password"));
+						outData.putInt("id", players.getSFSObject(0).getInt("id"));
+						outData.putText("name", players.getSFSObject(0).getText("name"));
+						outData.putText("password", players.getSFSObject(0).getText("password"));
 						return;
 					}
 				}
@@ -110,17 +116,17 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		password = PasswordGenerator.generate().toString();
 
-		// Insert to DataBase
+		// Insert into database
 		int playerId = 0;
 		try {
-			playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO players (name, password) VALUES ('guest', '"+password+"');", new Object[] {}));
+			playerId = Math.toIntExact((Long)dbManager.executeInsert("INSERT INTO " + DBUtils.getInstance().liveDB + ".players (name, password) VALUES ('guest', '" + password + "');", new Object[] {}));
 			outData.putUtfString(SFSConstants.NEW_LOGIN_NAME, playerId + "");
 		} catch (SQLException e) { e.printStackTrace(); }
 
 		// _-_-_-_-_-_-_-_-_-_-_-_-_-_-_- INSERT INITIAL RESOURCES -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-		// get initial user resources
+		// Get initial user resources
 		SFSArray resources = new SFSArray();
-		for (int i : loginData.resources.keys())
+		for( int i : loginData.resources.keys() )
 		{
 			SFSObject so = new SFSObject();
 
@@ -131,25 +137,15 @@ public class LoginEventHandler extends BaseServerEventHandler
 			resources.addSFSObject( so );
 		}
 
-		int id = 0;
-		String query = "INSERT INTO resources (`player_id`, `type`, `count`, `level`) VALUES ";
+		String query = "INSERT INTO " + DBUtils.getInstance().liveDB + ".resources (`player_id`, `type`, `count`, `level`) VALUES ";
 		for(int i=0; i<resources.size(); i++)
 		{
 			query += "('" + playerId + "', '" + resources.getSFSObject(i).getInt("type") + "', '" + resources.getSFSObject(i).getInt("count") + "', '" + resources.getSFSObject(i).getInt("level") + "')" ;
 			query += i<resources.size()-1 ? ", " : ";";
 		}
 		try {
-			id = Math.toIntExact((long) dbManager.executeInsert(query, new Object[] {}));
+			dbManager.executeInsert(query, new Object[] {});
 		} catch (SQLException e) { e.printStackTrace(); }
-		if( id == 0 )
-		{
-			LoginErrors.dispatch(LoginErrors.LOGIN_BAD_USERNAME, "Login error! resources id=" + id + " is wrong.", new String[]{"Login error! resources id=" + id + " is wrong."});
-			return;
-		}
-
-		// add  Ids
-		for(int i=0; i<resources.size(); i++)
-			resources.getSFSObject(i).putInt("id", id + i);
 
 		session.setProperty("joinedRoomId", -1);
 
@@ -162,12 +158,16 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putSFSArray("operations", new SFSArray());
 		outData.putSFSArray("exchanges", new SFSArray());
 		outData.putSFSArray("prefs", new SFSArray());
-		initiateCore(session, inData, outData, loginData);
 
 		// add udid and device as account id for restore players
 		try {
 			if( deviceUDID != null )
-				dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
+			{
+				if( deviceIMEI == "" )
+					dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "');", new Object[] {});
+				else
+					dbManager.executeInsert("INSERT INTO devices (`player_id`, `model`, `udid`, `imei`) VALUES ('" + playerId + "', '" + deviceModel + "', '" + deviceUDID + "', '" + inData.getText("imei") + "');", new Object[] {});
+			}
 		} catch (SQLException e) { e.printStackTrace(); }
 		initiateCore(session, inData, outData, loginData);
 	}
@@ -180,7 +180,12 @@ public class LoginEventHandler extends BaseServerEventHandler
 		// Find player in DB ===========================================================
 		int id = Integer.parseInt(name);
 		ISFSArray res = null;
-		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM players WHERE id=" + id, new Object[]{});
+		try { res = dbManager.executeQuery("SELECT name, password, sessions_count FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + id, new Object[]{});
+			if( res.size() == 0 )
+			{
+				DBUtils.getInstance().restore(id);
+				res = dbManager.executeQuery("SELECT name, password, sessions_count FROM " + DBUtils.getInstance().liveDB + ".players WHERE id=" + id, new Object[]{});
+			}
 		} catch(SQLException e) { e.printStackTrace(); }
 
 		if( res == null || res.size() != 1 )
@@ -202,7 +207,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		outData.putInt("sessionsCount", userData.getInt("sessions_count"));
 		outData.putSFSArray("resources", dbUtils.getResources(id));
 		outData.putSFSArray("operations", dbUtils.getOperations(id));
-		outData.putSFSArray("exchanges", dbUtils.getExchanges(id));
+		outData.putSFSArray("exchanges", dbUtils.getExchanges(id, (int)Instant.now().getEpochSecond()));
 		outData.putSFSArray("quests", new SFSArray());
 		outData.putSFSArray("prefs", dbUtils.getPrefs(id));
 
@@ -211,7 +216,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		int joinedRoomId = room == null ? -1 : room.getId();
 		session.setProperty("joinedRoomId", joinedRoomId);
 		outData.putBool("inBattle", joinedRoomId > -1 );
-
 		initiateCore(session, inData, outData, loginData);
 //		outData.putSFSArray("challenges", ChallengeUtils.getInstance().getChallengesOfAttendee(-1, game.player, false));
 	}
@@ -259,9 +263,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 
 		// create exchanges init data
 		ISFSArray exchanges = outData.getSFSArray("exchanges");
-		IntIntMap dbItems = new IntIntMap();
-		for(int i=0; i<exchanges.size(); i++)
-			dbItems.set(exchanges.getSFSObject(i).getInt("type"), exchanges.getSFSObject(i).getInt("id"));
 
 		boolean contained;
 		SFSArray newExchanges = new SFSArray();
@@ -297,14 +298,6 @@ public class LoginEventHandler extends BaseServerEventHandler
 		game.player.tutorialMode = outData.getInt("tutorialMode");
 		game.player.hasOperations = outData.getBool("hasOperations");
 		game.exchanger.updater = new ExchangeUpdater(game);
-		game.exchanger.dbItems = dbItems;
-		
-		game.player.resourceIds = new ConcurrentHashMap();
-		for(int i=0; i<resources.size(); i++)
-		{
-			game.player.resourceIds.put(resources.getSFSObject(i).getInt("type"), resources.getSFSObject(i).getInt("id"));
-			resources.getSFSObject(i).removeElement("id");
-		}
 
 		for(int i=0; i<exchanges.size(); i++)
 		{
@@ -360,7 +353,7 @@ public class LoginEventHandler extends BaseServerEventHandler
 		session.setProperty("core", game);
 
 		for( ExchangeItem item : game.exchanger.updater.changes )
-			DBUtils.getInstance().updateExchange(game, item.type, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
+			DBUtils.getInstance().updateExchange(item.type, game.player.id, item.expiredAt, item.numExchanges, item.outcomesStr, item.requirementsStr);
 
 		// create exchange data
 		SFSArray _exchanges = new SFSArray();

@@ -284,22 +284,26 @@ public class LobbyUtils extends UtilBase
     {
         String log = "reset activities:\n";
         ISFSArray members;
-        ConcurrentHashMap<Integer, RankData> users = RankingUtils.getInstance().getUsers();
         Map<Integer, LobbySFS> lobbiesData = getAllData();
         for (Map.Entry<Integer, LobbySFS> entry : lobbiesData.entrySet())
         {
             members = entry.getValue().getMembers();
+            ISFSObject[] all = LobbyDataUtils.getInstance().getMembers(members, RankingUtils.getInstance().getUsers(), false);
+            int beforeActivity = LobbyDataUtils.getInstance().getLobbyPoint(all, "activity");
             int index = 0;
             int size = members.size();
             ISFSObject member;
             while( index < size )
             {
                 member = members.getSFSObject(index);
-                member.putInt("ac", 0);
+                if( member.getInt("ac") != null )
+                    member.putInt("ac", (int)(member.getInt("ac") * 0.5));
                 index ++;
             }
             save(entry.getValue(), null, null, -1, -1, -1, -1, entry.getValue().getMembersBytes(), null);
-            log += (entry.getValue().getName() + "=> 0\n");
+            all = LobbyDataUtils.getInstance().getMembers(members, RankingUtils.getInstance().getUsers(), false);
+            int afterActivity = LobbyDataUtils.getInstance().getLobbyPoint(all, "activity");
+            log += (entry.getValue().getName() + ": " + beforeActivity + " => " + afterActivity + "\n");
         }
         return log;
     }

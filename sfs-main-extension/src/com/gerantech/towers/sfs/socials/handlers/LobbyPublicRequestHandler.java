@@ -2,6 +2,7 @@ package com.gerantech.towers.sfs.socials.handlers;
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
+import com.gt.utils.BanUtils;
 import com.smartfoxserver.v2.api.CreateRoomSettings;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.SFSRoomRemoveMode;
@@ -16,6 +17,8 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
 
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,17 +29,22 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
 
 	public void handleClientRequest(User sender, ISFSObject params)
     {
+        Player player = ((Game)sender.getSession().getProperty("core")).player;
+        if( params.containsKey("imei") || !params.getText("imei").isEmpty() )
+        {
+            String queryStr = "INSERT INTO devices(`player_id`, `model`, `udid`, `imei`) VALUES (" + player.id + ", '', '', '" + params.getText("imei") + "') ON DUPLICATE KEY UPDATE imei='" + params.getText("imei") + "'";
+            // trace(queryStr);
+            try {
+                getParentExtension().getParentZone().getDBManager().executeUpdate(queryStr, new Object[]{});
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
         Room theRoom = findReady(sender);
+        ISFSObject banParams = BanUtils.getInstance().checkBan(player.id, null, params.getText("imei"), (int)Instant.now().getEpochSecond());
 
         if( theRoom == null )
-        {
             theRoom = make(sender);
-            /*LobbySFS lobbyData = new.LobbySFS(theRoom.getId(), theRoom.getName(), "", 0,0,0,0,null, null);
-            lobbyData.setMessages(new SFSArray());
-            theRoom.setProperty("data", lobbyData);*/
-        }
         join(sender, theRoom);
-        send(Commands.LOBBY_PUBLIC, null, sender);
+        send(Commands.LOBBY_PUBLIC, banParams, sender);
     }
 
     private Room findReady(User user)

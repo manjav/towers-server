@@ -24,7 +24,7 @@ public class GetOffenderDataHandler extends BBGClientRequestHandler
 		}
 
 		// get ban count
-		ISFSArray bannes = BanUtils.getInstance().getBannedUsers(params.getInt("id"), null, 2, 0, "time");
+		ISFSArray bannes = BanUtils.getInstance().getBannedUsers(params.getInt("id"), null, null, 2, 0, "time");
 		params.putInt("time", bannes.size() > 0 ? bannes.getSFSObject(0).getInt("time") : 0);
 
 		// get all opened infractions

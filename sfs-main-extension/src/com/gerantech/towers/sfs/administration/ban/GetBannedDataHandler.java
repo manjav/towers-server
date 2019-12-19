@@ -25,13 +25,13 @@ public class GetBannedDataHandler extends BBGClientRequestHandler
 			return;
 		}
 
-		// get udid
-		String udid = DBUtils.getInstance().getUDID(params.getInt("id"));
+		// get device
+		ISFSObject device = DBUtils.getInstance().getDevice(params.getInt("id"));
 
 		// create query
 		String query = "SELECT players.id, players.name, banneds.message, banneds.mode, banneds.expire_at, banneds.timestamp, banneds.time FROM players INNER JOIN banneds ON players.id = banneds.player_id WHERE players.id = " + params.getInt("id");
-		if( udid != null )
-			query += " OR banneds.udid = '" + udid + "'";
+		if( device != null && device.getText("udid") != null )
+			query += " OR banneds.udid = '" + device.getText("udid") + "'";
 		trace(query);
 		ISFSArray bannes = null;
 		try {
