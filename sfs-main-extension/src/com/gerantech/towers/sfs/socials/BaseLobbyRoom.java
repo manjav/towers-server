@@ -63,7 +63,7 @@ public class BaseLobbyRoom extends SFSExtension
         mode = params.getShort("m");
 
         // filter bad words
-        if( mode == MessageTypes.M0_TEXT )
+        if( mode == MessageTypes.M0_TEXT && lobby.getGroupId().equals("publics") )
         {
             boolean isAdmin = Player.isAdmin(game.player.id);
             FilteredMessage fm = BanUtils.getInstance().filterBadWords(params.getUtfString("t"), isAdmin);
