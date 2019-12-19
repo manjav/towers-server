@@ -5,6 +5,7 @@ import com.gt.towers.Game;
 import com.gt.towers.constants.ExchangeType;
 import com.gt.towers.constants.MessageTypes;
 import com.gt.utils.BanUtils;
+import com.gt.utils.DBUtils;
 import com.gt.utils.ExchangeUtils;
 import com.smartfoxserver.v2.db.IDBManager;
 import com.smartfoxserver.v2.entities.User;
@@ -56,7 +57,7 @@ public class SelectNameRequestHandler extends BaseClientRequestHandler
 
 		IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
   		try {
-			dbManager.executeUpdate("UPDATE `players` SET `name`='" + name + "' WHERE `id`=" + game.player.id + ";", new Object[] {});
+			dbManager.executeUpdate("UPDATE " + DBUtils.getInstance().liveDB + ".`players` SET `name`='" + name + "' WHERE `id`=" + game.player.id + ";", new Object[] {});
 		} catch (SQLException e) {
 			params.putText("errorCode", e.getErrorCode() + "");
 			trace(e.getMessage());
