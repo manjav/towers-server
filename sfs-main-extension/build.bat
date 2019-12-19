@@ -1,0 +1,1 @@
+jar cvMf C:\SmartFoxServer_2X\SFS2X\extensions\TowerExtension\sfs-main-extension.jar -C bin .

@@ -1,14 +1,13 @@
 package com.gerantech.towers.sfs.administration;
 
-import com.gt.Commands;
-import com.gt.utils.DBUtils;
+import java.sql.SQLException;
+
 import com.gerantech.towers.sfs.utils.PasswordGenerator;
+import com.gt.Commands;
 import com.gt.towers.Game;
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-
-import java.sql.SQLException;
 
 /**
  * @author ManJav
