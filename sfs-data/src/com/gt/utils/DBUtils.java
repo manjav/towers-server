@@ -1,5 +1,16 @@
 package com.gt.utils;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -12,18 +23,6 @@ import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
 
 /**
  * Created by ManJav on 12/4/2017.
@@ -38,7 +37,7 @@ public class DBUtils extends UtilBase
     public DBUtils()
     {
         super();
-        db = this.ext.getParentZone().getDBManager();
+        db = ext.getParentZone().getDBManager();
     }
     public static DBUtils getInstance()
     {
@@ -292,9 +291,9 @@ public class DBUtils extends UtilBase
         List<Room> battles = ext.getParentZone().getRoomManager().getRoomListFromGroup("battles");
         for( Room r : battles )
         {
-            List<Game> registeredPlayers = (List<Game>) r.getProperty("registeredPlayers");
-            for( Game game : registeredPlayers )
-                result += resetDailyBattlesOfUsers(game,  " in game " + r.getName());
+            List<?> registeredPlayers = (List<?>) r.getProperty("registeredPlayers");
+            for( Object g : registeredPlayers )
+                result += resetDailyBattlesOfUsers((Game)g,  " in game " + r.getName());
         }
 
         // reset connected players

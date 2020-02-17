@@ -185,7 +185,7 @@ public class BattleBot
         int step = allPlaces.size() - 1;
         int weakestPlace = -1;
         double mostPriority = 1000;
-        List<Integer> samePriorities = new ArrayList();
+        List<Integer> samePriorities = new ArrayList<>();
         while (step >= 0)
         {
             if( isNeighbor(allPlaces.get(step), true) )
@@ -244,9 +244,9 @@ public class BattleBot
         }
 
         List<Integer> findingPath = new ArrayList<>();
-        List<Integer> candidatedfighters = new ArrayList();
+        List<Integer> candidatedfighters = new ArrayList<>();
         if( sceduledfighters == null )
-            sceduledfighters = new ConcurrentHashMap();
+            sceduledfighters = new ConcurrentHashMap<>();
 
         addFighters(target, findingPath, candidatedfighters, forceTargetHealth);
         findingPath.clear();

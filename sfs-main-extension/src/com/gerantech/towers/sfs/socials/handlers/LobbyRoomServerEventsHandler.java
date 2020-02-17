@@ -25,9 +25,9 @@ public class LobbyRoomServerEventsHandler extends BaseServerEventHandler
 	{
 		if( arg.getType().equals(SFSEventType.USER_DISCONNECT) )
 		{
-			LinkedList<Room> joinedRooms = (LinkedList<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
 			List<Room> empties = new ArrayList<>();
-			for ( Object o : joinedRooms )
+			LinkedList<?> joinedRooms = (LinkedList<?>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
+			for( Object o : joinedRooms )
 			{
 				Room r = (Room)o;
 				if( r.getGroupId() == "lobbies" )

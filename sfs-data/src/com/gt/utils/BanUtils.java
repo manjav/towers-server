@@ -1,13 +1,5 @@
 package com.gt.utils;
 
-import com.smartfoxserver.v2.db.IDBManager;
-import com.smartfoxserver.v2.entities.data.ISFSArray;
-import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSArray;
-import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
-import com.smartfoxserver.v2.util.filters.FilteredMessage;
-import org.apache.http.HttpStatus;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -18,6 +10,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.smartfoxserver.v2.entities.data.ISFSArray;
+import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
+import com.smartfoxserver.v2.extensions.ExtensionLogLevel;
+import com.smartfoxserver.v2.util.filters.FilteredMessage;
+
+import org.apache.http.HttpStatus;
 
 /**
  * @author ManJav

@@ -95,7 +95,7 @@ public class BattleRoom extends SFSExtension
 		room.setProperty("singleMode", singleMode);
 
 		// reserve player data
-		registeredPlayers = new ArrayList();
+		registeredPlayers = new ArrayList<>();
 		for (User u: players)
 		{
 			Game g = (Game)u.getSession().getProperty("core");
@@ -198,7 +198,7 @@ try {
 		// Set variables
 		if( vars.size() > 0 )
 		{
-			List<RoomVariable> listOfVars = new ArrayList();
+			List<RoomVariable> listOfVars = new ArrayList<>();
 			listOfVars.add(new SFSRoomVariable("towers", vars));
 			sfsApi.setRoomVariables(null, room, listOfVars);
 		}
@@ -259,7 +259,7 @@ try {
 		}
 
 		// Set variables
-		List<RoomVariable> listOfVars = new ArrayList();
+		List<RoomVariable> listOfVars = new ArrayList<>();
 		listOfVars.add( new SFSRoomVariable("s", fighters) );
 		listOfVars.add( new SFSRoomVariable("d", target) );
 		listOfVars.add( new SFSRoomVariable("n", troopsDivision) );

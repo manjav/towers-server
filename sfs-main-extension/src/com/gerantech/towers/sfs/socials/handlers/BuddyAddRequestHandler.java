@@ -158,7 +158,7 @@ public class BuddyAddRequestHandler extends BBGClientRequestHandler
 
         // Send friendship notification to inviter inbox
         InboxUtils.getInstance().send(MessageTypes.M50_URL, msg, game.player.nickName, inviteeId, inviterId, "towers://open?controls=tabs&dashTab=3&socialTab=2" );
-        OneSignalUtils.getInstance().getInstance().send(msg, null, inviterId);
+        OneSignalUtils.getInstance().send(msg, null, inviterId);
         send(Commands.BUDDY_ADD, MessageTypes.RESPONSE_SUCCEED, params, sender);
     }
 

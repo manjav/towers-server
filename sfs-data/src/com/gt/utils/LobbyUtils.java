@@ -1,7 +1,12 @@
 package com.gt.utils;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.gt.data.LobbySFS;
-import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
 import com.gt.towers.constants.MessageTypes;
@@ -18,13 +23,6 @@ import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.security.DefaultPermissionProfile;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Created by ManJav on 10/15/2017.
  */
@@ -35,6 +33,7 @@ public class LobbyUtils extends UtilBase
         return (LobbyUtils)UtilBase.get(LobbyUtils.class);
     }
 
+    @SuppressWarnings("unchecked")
     public Map<Integer, LobbySFS> getAllData()
     {
         return (Map<Integer, LobbySFS>) ext.getParentZone().getProperty("lobbiesData");
@@ -59,7 +58,7 @@ public class LobbyUtils extends UtilBase
 
         ISFSObject lr;
         LobbySFS lobbySFS;
-        Map<Integer, LobbySFS> lobbiesData = new HashMap();
+        Map<Integer, LobbySFS> lobbiesData = new HashMap<>();
         for (int i = 0; i < lobbyRows.size(); i++)
         {
             lr = lobbyRows.getSFSObject(i);
@@ -114,7 +113,9 @@ public class LobbyUtils extends UtilBase
         //rs.setMaxVariablesAllowed(7);
         rs.setMaxUsers(lobbySFS.getCapacity());
 
-        rs.setRoomProperties(new HashMap(){{put("data", lobbySFS);}});
+        Map<Object,Object> mapData = new HashMap<>();
+        mapData.put("data", lobbySFS);
+        rs.setRoomProperties(mapData);
 
         Room lobby = null;
         try {
@@ -139,7 +140,7 @@ public class LobbyUtils extends UtilBase
     public void save(LobbySFS lobbySFS, String name, String bio, int emblem, int capacity, int minPoint, int privacy, byte[] members, byte[] messages)
     {
         String query = "UPDATE lobbies SET ";
-        List<String> changes =  new ArrayList();
+        List<String> changes =  new ArrayList<>();
         if( name != null )      changes.add("name = '" + name + "'");
         if( bio != null )       changes.add("bio = '" + bio + "'");
         if( emblem != -1 )      changes.add("emblem = " + emblem);
@@ -157,7 +158,7 @@ public class LobbyUtils extends UtilBase
         query += "WHERE id = " + lobbySFS.getId() + ";";
         //trace(query);
 
-        List<Object> arguments = new ArrayList();
+        List<Object> arguments = new ArrayList<>    ();
         if( members != null ) arguments.add(members);
         if( messages != null ) arguments.add(messages);
         try {
@@ -221,7 +222,6 @@ public class LobbyUtils extends UtilBase
     {
         if( user == null )
             return;
-        Game game = ((Game) user.getSession().getProperty("core"));
         try {
             ext.getApi().joinRoom(user, room, null, false, null);
         } catch (SFSJoinRoomException e) { e.printStackTrace(); }

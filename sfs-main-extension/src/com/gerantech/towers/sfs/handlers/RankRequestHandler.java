@@ -1,5 +1,10 @@
 package com.gerantech.towers.sfs.handlers;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.utils.RankingUtils;
@@ -8,12 +13,6 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author ManJav
@@ -47,8 +46,6 @@ public class RankRequestHandler extends BaseClientRequestHandler
 		// a comparator which helps to sort in descending order of point field
 		Comparator<? super Map.Entry<Integer, RankData>> descendingComparator2 = (e1, e2) -> e2.getValue().point - e1.getValue().point;
 		List<Map.Entry<Integer, RankData>> result = users.entrySet().stream().parallel().sorted(descendingComparator2).limit(PAGE_SIZE).collect(Collectors.toList());
-
-		long milis = Instant.now().toEpochMilli();
 
 		int i = 0;
 		int playerIndex = -1;

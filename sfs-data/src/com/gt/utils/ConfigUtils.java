@@ -31,10 +31,7 @@ public class ConfigUtils extends UtilBase
 		try {
 			properties.load(new FileInputStream(name));
 		}
-		catch (IOException e) {
-			// TODO: requires to log as error after 2203-logs branch merge.
-			// getLogger().error("Could not load config: " + name);
-		}
+		catch (IOException e) { e.printStackTrace(); }
 		this.propertyList.put(name, properties);
 		return properties;
 	}

@@ -1,7 +1,11 @@
 package com.gerantech.towers.sfs.handlers;
-import com.gt.towers.utils.maps.IntIntMap;
-import com.gt.utils.*;
-import com.gerantech.towers.sfs.utils.*;
+
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.gerantech.towers.sfs.utils.LoginErrors;
+import com.gerantech.towers.sfs.utils.PasswordGenerator;
 import com.gt.data.RankData;
 import com.gt.towers.Game;
 import com.gt.towers.InitData;
@@ -12,6 +16,12 @@ import com.gt.towers.constants.ResourceType;
 import com.gt.towers.exchanges.ExchangeItem;
 import com.gt.towers.exchanges.ExchangeUpdater;
 import com.gt.towers.exchanges.Exchanger;
+import com.gt.utils.BanUtils;
+import com.gt.utils.BattleUtils;
+import com.gt.utils.DBUtils;
+import com.gt.utils.ExchangeUtils;
+import com.gt.utils.QuestsUtils;
+import com.gt.utils.RankingUtils;
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSConstants;
@@ -24,9 +34,6 @@ import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author ManJav

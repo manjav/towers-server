@@ -60,7 +60,6 @@ public class FCMUtils extends UtilBase implements IPushUtils
         List<String> pushIds = getPushIds(players);
         if( pushIds.size() == 0 )
         {
-            // TODO: requires log as warn after 2203-logs merge.
             // getLogger().warn("Push Notification | Unable to find reciverIds.");
             return 0;
         }

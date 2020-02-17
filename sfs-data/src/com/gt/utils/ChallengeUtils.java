@@ -38,8 +38,8 @@ public class ChallengeUtils extends UtilBase
             challenges = ext.getParentZone().getDBManager().executeQuery("SELECT * FROM challenges WHERE start_at > NOW() - INTERVAL 1 WEEK;", new Object[]{});
         } catch (SQLException e) { e.printStackTrace(); }
 
-        Map<Integer, ChallengeSFS> allChallenges = new ConcurrentHashMap();
-        Map<Integer, ChallengeSFS> waitingChallenges = new ConcurrentHashMap();
+        Map<Integer, ChallengeSFS> allChallenges = new ConcurrentHashMap<>();
+        Map<Integer, ChallengeSFS> waitingChallenges = new ConcurrentHashMap<>();
         ISFSObject ch = null;
         ChallengeSFS challengeSFS;
         for( int i=0; i<challenges.size(); i++ )
@@ -56,6 +56,8 @@ public class ChallengeUtils extends UtilBase
         ext.getParentZone().setProperty("waitingChallenges", waitingChallenges);
         trace("loaded challenges data in " + (System.currentTimeMillis() - (long)ext.getParentZone().getProperty("startTime")) + " milliseconds.");
     }
+
+    @SuppressWarnings("unchecked")
     public ConcurrentHashMap<Integer, ChallengeSFS> getAll()
     {
         return (ConcurrentHashMap<Integer, ChallengeSFS>) ext.getParentZone().getProperty("allChallenges");
@@ -68,6 +70,8 @@ public class ChallengeUtils extends UtilBase
             return null;
         return all.get(challengeId);
     }
+
+    @SuppressWarnings("unchecked")
     private ChallengeSFS getWaiting(int type, int now)
     {
         ConcurrentHashMap<Integer, ChallengeSFS> ws = (ConcurrentHashMap<Integer, ChallengeSFS>) ext.getParentZone().getProperty("waitingChallenges");
@@ -119,7 +123,7 @@ public class ChallengeUtils extends UtilBase
     public ISFSArray getChallengesOfAttendee(int type, Player player, boolean createIfNotExists)
     {
         ISFSObject attendee;
-        Map<Integer, Boolean> types = new HashMap();
+        Map<Integer, Boolean> types = new HashMap<>();
         ISFSArray ret = new SFSArray();
         Iterator<Map.Entry<Integer, ChallengeSFS>> iterator = getAll().entrySet().iterator();
         while( iterator.hasNext() )

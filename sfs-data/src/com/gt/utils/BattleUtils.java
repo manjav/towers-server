@@ -38,7 +38,7 @@ public class BattleUtils extends UtilBase
         user.getSession().setProperty("challengeType", challengeType);
         Player player = ((Game)user.getSession().getProperty("core")).player;
         trace("---------=========<<<<  JOIN user:"+user.getName()+" theRoom:"+theRoom.getName()+" spectatedUser:"+spectatedUser+" >>>>==========---------");
-        List<UserVariable> vars = new ArrayList();
+        List<UserVariable> vars = new ArrayList<>();
         vars.add(new SFSUserVariable("name", player.nickName));
         vars.add(new SFSUserVariable("point", player.get_point()));
         vars.add(new SFSUserVariable("spectatedUser", spectatedUser));
@@ -126,10 +126,10 @@ public class BattleUtils extends UtilBase
         {
             if( (int) room.getProperty("state") == 2 )//BattleRoom.STATE_BATTLE_STARTED
             {
-                ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+                ArrayList<?> registeredPlayers = (ArrayList<?>)room.getProperty("registeredPlayers");
                 if( registeredPlayers != null )
-                    for (Game g : registeredPlayers)
-                        if ( g.player.id == playerId )
+                    for (Object g : registeredPlayers)
+                        if ( ((Game)g).player.id == playerId )
                             return room;
             }
         }

@@ -140,10 +140,7 @@ public class LobbySFS extends SFSDataModel
     {
         return getInt("create_at");
     }
-    private void setCreateAt(int createAt)
-    {
-        putInt("create_at", createAt);
-    }
+
 
     /**
      * all players who participate challenge

@@ -17,7 +17,7 @@ public class UtilBase
         }
     }
 
-    static public Object get(Class _class)
+    static public Object get(Class<?> _class)
     {
         //trace("get", _class.getSimpleName(), ext.getParentZone());
         if( !ext.getParentZone().containsProperty(_class.getSimpleName()) ) {

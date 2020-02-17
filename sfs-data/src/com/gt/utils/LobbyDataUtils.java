@@ -29,7 +29,7 @@ public class LobbyDataUtils extends UtilBase
         Map<Integer, LobbySFS> all = LobbyUtils.getInstance().getAllData();
         LobbySFS data;
         SFSObject r;
-        List<SFSObject> roomsList = new ArrayList();
+        List<SFSObject> roomsList = new ArrayList<>();
         for (Map.Entry<Integer, LobbySFS> entry : all.entrySet())
         {
             data = entry.getValue();

@@ -1,4 +1,11 @@
 package com.gerantech.towers.sfs.socials.handlers;
+
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.gt.Commands;
 import com.gt.towers.Game;
 import com.gt.towers.Player;
@@ -16,12 +23,6 @@ import com.smartfoxserver.v2.entities.variables.UserVariable;
 import com.smartfoxserver.v2.exceptions.SFSCreateRoomException;
 import com.smartfoxserver.v2.exceptions.SFSJoinRoomException;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
-
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class LobbyPublicRequestHandler extends BaseClientRequestHandler
 {
@@ -91,7 +92,7 @@ public class LobbyPublicRequestHandler extends BaseClientRequestHandler
     {
         Player player = ((Game)user.getSession().getProperty("core")).player;
         trace("---------=========<<<<  JOIN user:"+user.getName()+" the public lobby:"+theRoom.getName()+" >>>>==========---------");
-        List<UserVariable> vars = new ArrayList();
+        List<UserVariable> vars = new ArrayList<>();
         vars.add(new SFSUserVariable("name", player.nickName));
         //vars.add(new SFSUserVariable("point", player.get_point()));
         getApi().setUserVariables(user, vars, true, true);

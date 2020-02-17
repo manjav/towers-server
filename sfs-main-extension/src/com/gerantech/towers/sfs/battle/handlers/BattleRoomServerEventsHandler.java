@@ -103,9 +103,10 @@ try {
 
 	private void userDisconnected(ISFSEvent arg)
 	{
-		List<Room> joinedRooms = (List<Room>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
-		for(Room r:joinedRooms)
+		List<?> joinedRooms = (List<?>) arg.getParameter(SFSEventParam.JOINED_ROOMS);
+		for(Object o:joinedRooms)
 		{
+			Room r = (Room) o;
 			if( r.getGroupId() != "battles" || r.containsProperty("enabled"))
 				continue;
 			r.setProperty("enabled", false);
@@ -165,17 +166,18 @@ try {
 		sfsO.putText("mapName", getMapName((boolean)room.getProperty("isOperation")));
 
 		boolean isSpectator = player.isSpectator(room);
-		ArrayList<Game> registeredPlayers = (ArrayList)room.getProperty("registeredPlayers");
+		ArrayList<?> registeredPlayers = (ArrayList<?>) room.getProperty("registeredPlayers");
 		int i = 0;
-		for ( Game g : registeredPlayers )
+		for (Object o : registeredPlayers)
 		{
+			Player pl = ((Game) o).player;
 			SFSObject p = new SFSObject();
-			p.putUtfString("name", g.player.nickName);
-			p.putInt("point", g.player.get_point());
+			p.putUtfString("name", pl.nickName);
+			p.putInt("point", pl.get_point());
 			if( isSpectator )
 				sfsO.putSFSObject( i == 0 ? "allis" : "axis", p );
 			else
-				sfsO.putSFSObject( g.player.id == Integer.parseInt(player.getName()) ? "allis" : "axis", p );
+				sfsO.putSFSObject( pl.id == Integer.parseInt(player.getName()) ? "allis" : "axis", p );
 
 			i ++;
 		}

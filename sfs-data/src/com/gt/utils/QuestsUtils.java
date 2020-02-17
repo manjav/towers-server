@@ -62,7 +62,7 @@ public class QuestsUtils extends UtilBase
 
         ISFSObject q = null;
         Quest quest = null;
-        player.quests = new Array();
+        player.quests = new Array<Quest>();
         for(int i = 0; i < quests.size(); i++ )
         {
             q = quests.getSFSObject(i);
